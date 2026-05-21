@@ -8,6 +8,7 @@ const docs = [
 	'README.md',
 	'docs/README.md',
 	'docs/getting-started.md',
+	'docs/guides/install-authoring-skill.md',
 	'docs/guides/author-scene-deltas.md',
 	'docs/guides/deploy-static-bundle.md',
 	'docs/examples/README.md',
@@ -62,11 +63,19 @@ describe('public docs inventory', () => {
 
 	test('static deployment docs describe public output and runtime boundary', async () => {
 		const rootReadme = await readFile(join(root, 'README.md'), 'utf8');
+		const gettingStarted = await readFile(
+			join(root, 'docs/getting-started.md'),
+			'utf8'
+		);
 		const text = await readFile(
 			join(root, 'docs/guides/deploy-static-bundle.md'),
 			'utf8'
 		);
 		const docsIndex = await readFile(join(root, 'docs/README.md'), 'utf8');
+		const skillsGuide = await readFile(
+			join(root, 'docs/guides/install-authoring-skill.md'),
+			'utf8'
+		);
 		const examplesIndex = await readFile(
 			join(root, 'docs/examples/README.md'),
 			'utf8'
@@ -90,7 +99,12 @@ describe('public docs inventory', () => {
 		expect(rootReadme).toContain('./docs/guides/deploy-static-bundle.md');
 		expect(rootReadme).toContain('bun run examples:basic:bundle');
 		expect(rootReadme).toContain('bunx --package @sebastianwessel/isostate-cli isostate bundle');
+		expect(docsIndex).toContain('./guides/install-authoring-skill.md');
 		expect(docsIndex).toContain('./guides/deploy-static-bundle.md');
+		expect(gettingStarted).toContain('bunx skills add sebastianwessel/isostate');
+		expect(skillsGuide).toContain('bunx skills add sebastianwessel/isostate');
+		expect(skillsGuide).toContain('--skill authoring-isostate-scenes');
+		expect(skillsGuide).toContain('--agent codex');
 		expect(examplesIndex).toContain('../guides/deploy-static-bundle.md');
 	});
 

@@ -465,11 +465,14 @@ export class AnimationController {
 		if (entryAnim === "none") return;
 
 		animateElement(state.node, `iso-anim-${entryAnim}`, "enter");
+		const expectedAnimation = state.node.style.animation;
 
 		state.node.addEventListener(
 			"animationend",
 			() => {
-				state.node.style.animation = "";
+				if (state.node.style.animation === expectedAnimation) {
+					state.node.style.animation = "";
+				}
 			},
 			{ once: true },
 		);
@@ -483,11 +486,14 @@ export class AnimationController {
 		}
 
 		animateElement(state.node, `iso-anim-${exitAnim}`, "exit");
+		const expectedAnimation = state.node.style.animation;
 
 		state.node.addEventListener(
 			"animationend",
 			() => {
-				hideElementAfterExit(state.node);
+				if (state.node.style.animation === expectedAnimation) {
+					hideElementAfterExit(state.node);
+				}
 			},
 			{ once: true },
 		);
@@ -501,11 +507,14 @@ export class AnimationController {
 		if (entryAnim === "none") return;
 
 		animateElement(state.node, `iso-anim-${entryAnim}`, "enter");
+		const expectedAnimation = state.node.style.animation;
 
 		state.node.addEventListener(
 			"animationend",
 			() => {
-				state.node.style.animation = "";
+				if (state.node.style.animation === expectedAnimation) {
+					state.node.style.animation = "";
+				}
 			},
 			{ once: true },
 		);
@@ -522,11 +531,14 @@ export class AnimationController {
 		}
 
 		animateElement(state.node, `iso-anim-${exitAnim}`, "exit");
+		const expectedAnimation = state.node.style.animation;
 
 		state.node.addEventListener(
 			"animationend",
 			() => {
-				hideElementAfterExit(state.node);
+				if (state.node.style.animation === expectedAnimation) {
+					hideElementAfterExit(state.node);
+				}
 			},
 			{ once: true },
 		);

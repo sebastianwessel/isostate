@@ -7,7 +7,7 @@ import { RenderError } from "../types/errors.ts";
 import type { CompiledFloor, CompiledLayout, RuntimeBundle } from "../types/runtime-bundle.ts";
 
 const RUNTIME_BUNDLE_FORMAT = "isostate-runtime-bundle";
-const RUNTIME_VERSION = "0.1.0";
+const RUNTIME_VERSION = "0.1.1";
 const HEX_DIGEST_PATTERN = /^[a-f0-9]{64}$/;
 
 export interface MountSceneOptions {

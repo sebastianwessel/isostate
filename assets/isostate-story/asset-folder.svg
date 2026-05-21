@@ -1,0 +1,9 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SVG asset folder">
+	<g stroke="#1f2726" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M11 25 29 15l24 12-18 10z" fill="#f2f6f2"/>
+		<path d="M11 25v17l24 13V37z" fill="#ccd8cc"/>
+		<path d="M53 27v17L35 55V37z" fill="#9fb39f"/>
+		<path d="M18 24.5 30 18l8 4 7 1.5-12 6.5z" fill="#80d8be"/>
+		<path d="m24 39 4 4 8-8M36 42l4 4 8-8" fill="none" stroke="#15584d"/>
+	</g>
+</svg>

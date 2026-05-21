@@ -2,6 +2,8 @@ import { describe, expect, test } from 'bun:test';
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 
+const buildTimeoutMs = 60_000;
+
 function ensureDistBuilt(): void {
 	if (
 		existsSync('packages/core/dist/browser/isostate.runtime.js') &&
@@ -13,11 +15,12 @@ function ensureDistBuilt(): void {
 
 	const result = spawnSync('bun', ['run', 'build'], {
 		cwd: process.cwd(),
-		encoding: 'utf8'
+		encoding: 'utf8',
+		timeout: buildTimeoutMs
 	});
 
-	expect(result.stderr).not.toContain('error');
-	expect(result.status).toBe(0);
+	expect(result.stderr, result.stderr).not.toContain('error');
+	expect(result.status, result.stderr || result.stdout).toBe(0);
 }
 
 describe('built package entrypoints', () => {
@@ -46,7 +49,7 @@ describe('built package entrypoints', () => {
 
 		expect(result.stderr).toBe('');
 		expect(result.status).toBe(0);
-	});
+	}, buildTimeoutMs);
 
 	test('CLI dist package runs through the published bin artifact', () => {
 		ensureDistBuilt();
@@ -67,5 +70,5 @@ describe('built package entrypoints', () => {
 		expect(result.stderr).toBe('');
 		expect(result.stdout).toContain('OK examples/basic/source.isostate.yaml');
 		expect(result.status).toBe(0);
-	});
+	}, buildTimeoutMs);
 });

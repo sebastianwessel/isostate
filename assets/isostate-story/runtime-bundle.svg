@@ -1,0 +1,9 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Runtime bundle">
+	<g stroke="#1f2726" stroke-width="1.4" stroke-linejoin="round">
+		<path d="M12 23 32 12l20 11-20 11z" fill="#f7f8f3"/>
+		<path d="M12 23v22l20 11V34z" fill="#dce1d7"/>
+		<path d="M52 23v22L32 56V34z" fill="#b9c3b7"/>
+		<path d="M21 23.5 32 17.5l11 6-11 6z" fill="#15584d"/>
+		<path d="M19 36.5 32 44l13-7.5M19 43.5 32 51l13-7.5" fill="none" stroke="#1f2726" stroke-linecap="round"/>
+	</g>
+</svg>

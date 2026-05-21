@@ -1,0 +1,265 @@
+header:
+  version: "1.0"
+  name: isostate-route-story
+  className: product-story-surface
+  theme: light
+  assetBaseUrl: ../../../assets/isostate-story
+  assets:
+    - id: route-house-start
+      path: route-house-start-provided
+      anchor: [0.5, 1]
+    - id: route-house-end
+      path: route-house-end-provided
+      anchor: [0.5, 1]
+    - id: route-car
+      path: route-car-provided
+      anchor: [0.5, 1]
+    - id: route-tree
+      path: route-tree
+      anchor: [0.5, 1]
+    - id: route-building-1
+      path: route-building-1-provided
+      anchor: [0.5, 1]
+    - id: route-building-2
+      path: route-building-2-provided
+      anchor: [0.5, 1]
+    - id: route-building-3
+      path: route-building-3-provided
+      anchor: [0.5, 1]
+    - id: route-building-4
+      path: route-building-4-provided
+      anchor: [0.5, 1]
+  grid:
+    cellSize: 64
+  floor:
+    visible: true
+    layer: ground
+  layers:
+    - name: ground
+    - name: streets
+    - name: buildings
+    - name: landscape
+    - name: vehicles
+    - name: route
+    - name: labels
+
+scenes:
+  - id: ground-only
+    elements: []
+    connections: []
+
+  - id: neighborhood-enters
+    add:
+      elements:
+        - id: tree-one
+          asset: route-tree
+          layer: landscape
+          at: [2, 3]
+          enter: rise-from-ground
+        - id: tree-two
+          asset: route-tree
+          layer: landscape
+          at: [3, 2]
+          enter: rise-from-ground
+        - id: tree-three
+          asset: route-tree
+          layer: landscape
+          at: [4, 3]
+          enter: rise-from-ground
+        - id: tree-four
+          asset: route-tree
+          layer: landscape
+          at: [11, 2]
+          enter: rise-from-ground
+        - id: tree-five
+          asset: route-tree
+          layer: landscape
+          at: [12, 3]
+          enter: rise-from-ground
+        - id: start-yard
+          asset: rectangle
+          layer: ground
+          at: [1, 8]
+          size: 2
+          enter: fade-in-grow
+          primitive:
+            rectangle:
+              fill: "#78d9ba"
+              stroke: "#0f5f4f"
+              strokeWidth: 1
+              opacity: 0.16
+        - id: end-yard
+          asset: rectangle
+          layer: ground
+          at: [14, 5]
+          size: 2
+          enter: fade-in-grow
+          primitive:
+            rectangle:
+              fill: "#e7bd45"
+              stroke: "#9a741d"
+              strokeWidth: 1
+              opacity: 0.18
+        - id: start-house
+          asset: route-house-start
+          layer: buildings
+          at: [1, 9]
+          size: 2
+          enter: slide-in-left
+        - id: end-house
+          asset: route-house-end
+          layer: buildings
+          at: [15, 6]
+          size: 2
+          enter: slide-in-right
+        - id: market-house
+          asset: route-building-1
+          layer: buildings
+          at: [5, 5]
+          size: 2
+          enter: rise-from-ground
+        - id: corner-house
+          asset: route-building-2
+          layer: buildings
+          at: [8, 10]
+          size: 2
+          enter: rise-from-ground
+        - id: block-house
+          asset: route-building-3
+          layer: buildings
+          at: [10, 4]
+          size: 2
+          enter: rise-from-ground
+        - id: tower-house
+          asset: route-building-4
+          layer: buildings
+          at: [13, 9]
+          size: 2
+          enter: rise-from-ground
+      connections:
+        - id: main-road
+          route: [[3, 8], [14, 8]]
+          layer: streets
+          enter: fade-in
+          style:
+            variant: road
+            lane: center-dashed
+            stroke: "#3e4748"
+            strokeWidth: 20
+          start: none
+          end: none
+
+  - id: route-appears
+    add:
+      elements:
+        - id: start-label
+          asset: text
+          layer: labels
+          at: [3, 7]
+          enter: fade-in
+          text:
+            value: Start
+            align: middle
+            fontSize: 14
+            fontWeight: 800
+            fill: "#0a2e24"
+        - id: end-label
+          asset: text
+          layer: labels
+          at: [14, 7]
+          enter: fade-in
+          text:
+            value: End
+            align: middle
+            fontSize: 14
+            fontWeight: 800
+            fill: "#0a2e24"
+      connections:
+        - id: navigation-arrow
+          route: [[3, 7], [14, 7]]
+          layer: route
+          enter: slide-in-left
+          style:
+            pattern: dotted
+            stroke: "#2f80ed"
+            strokeWidth: 5
+            opacity: 0.55
+          start: dot
+          end: arrow
+
+  - id: car-start
+    add:
+      elements:
+        - id: route-car
+          asset: route-car
+          layer: vehicles
+          at: [3, 8]
+          enter: slide-in-left
+    update:
+      connections:
+        - id: navigation-arrow
+          style:
+            pattern: dotted
+            stroke: "#2f80ed"
+            strokeWidth: 7
+            opacity: 1
+          ambient:
+            - name: flow
+
+  - id: car-center
+    update:
+      elements:
+        - id: route-car
+          at: [8, 8]
+          ambient:
+            - name: pulse
+      connections:
+        - id: navigation-arrow
+          style:
+            pattern: dotted
+            stroke: "#2f80ed"
+            strokeWidth: 7
+            opacity: 1
+          ambient:
+            - name: flow
+
+  - id: car-finish
+    update:
+      elements:
+        - id: route-car
+          at: [14, 8]
+          ambient:
+            - name: pulse
+      connections:
+        - id: navigation-arrow
+          style:
+            pattern: dotted
+            stroke: "#2f80ed"
+            strokeWidth: 7
+            opacity: 1
+          ambient:
+            - name: flow
+
+  - id: destination-reached
+    add:
+      elements:
+        - id: arrival-label
+          asset: text
+          layer: labels
+          at: [17, 12]
+          enter: rise-from-ground
+          text:
+            value: Arrived
+            align: end
+            fontSize: 24
+            fontWeight: 900
+            fill: "#2563eb"
+    update:
+      connections:
+        - id: navigation-arrow
+          style:
+            pattern: solid
+            stroke: "#2f80ed"
+            strokeWidth: 7
+            opacity: 1
+          ambient: []

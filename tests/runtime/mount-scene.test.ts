@@ -186,6 +186,34 @@ describe('mountScene', () => {
 		mounted.destroy();
 	});
 
+	test('controller ignores stale exit animationend after an element re-enters', async () => {
+		const target = document.createElement('div');
+		const mounted = mountScene(target, createLifecycleBundle(), {
+			controller: { transitionDuration: 0 }
+		});
+		const badge = mounted.svg.querySelector('[data-id="badge"]') as
+			| TestElement
+			| null;
+
+		mounted.controller?.setProgress(0.5);
+		await nextFrame();
+		expect(badge?.style.visibility).toBe('visible');
+
+		mounted.controller?.setProgress(0);
+		await nextFrame();
+		expect(badge?.style.animation).toContain('iso-anim-fade-out');
+
+		mounted.controller?.setProgress(0.5);
+		await nextFrame();
+		expect(badge?.style.visibility).toBe('visible');
+		expect(badge?.style.animation).toContain('iso-anim-fade-in');
+
+		badge?.dispatchEvent(new Event('animationend'));
+
+		expect(badge?.style.visibility).toBe('visible');
+		mounted.destroy();
+	});
+
 	test('controller keeps hidden later elements at their authored position when scrubbing backward', async () => {
 		const target = document.createElement('div');
 		const mounted = mountScene(target, createLifecycleBundle(), {
@@ -261,7 +289,7 @@ describe('mountScene', () => {
 function createBundle(options: { version?: string } = {}): RuntimeBundle {
 	return withDigest({
 		_format: 'isostate-runtime-bundle',
-		_version: options.version ?? '0.1.0',
+		_version: options.version ?? '0.1.1',
 		_digest: '',
 		grid: { cellSize: 72 },
 		floor: { size: [2, 2], origin: [0, 0], visible: true, layer: 'base' },
@@ -627,6 +655,7 @@ class TestElement {
 	readonly attributes: Array<{ name: string; value: string }> = [];
 	readonly classList = new TestClassList();
 	readonly style = new TestStyle();
+	private listeners = new Map<string, EventListener[]>();
 	parentNode: TestElement | null = null;
 	parentElement: TestElement | null = null;
 	textContent = '';
@@ -712,9 +741,23 @@ class TestElement {
 		return clone;
 	}
 
-	addEventListener(): void {}
+	addEventListener(type: string, listener: EventListener): void {
+		this.listeners.set(type, [...(this.listeners.get(type) ?? []), listener]);
+	}
 
-	removeEventListener(): void {}
+	removeEventListener(type: string, listener: EventListener): void {
+		this.listeners.set(
+			type,
+			(this.listeners.get(type) ?? []).filter((item) => item !== listener)
+		);
+	}
+
+	dispatchEvent(event: Event): boolean {
+		for (const listener of this.listeners.get(event.type) ?? []) {
+			listener.call(this, event);
+		}
+		return true;
+	}
 
 	getBoundingClientRect(): DOMRect {
 		return {

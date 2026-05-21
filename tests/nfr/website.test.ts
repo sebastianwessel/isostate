@@ -4,6 +4,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const root = process.cwd();
+const websiteBuildTimeoutMs = 60_000;
 
 async function listFiles(dir: string): Promise<string[]> {
 	const entries = await readdir(dir, { withFileTypes: true });
@@ -25,11 +26,12 @@ async function ensureWebsiteBuilt(): Promise<void> {
 	} catch {
 		const result = spawnSync('bun', ['run', 'site:build'], {
 			cwd: root,
-			encoding: 'utf8'
+			encoding: 'utf8',
+			timeout: websiteBuildTimeoutMs
 		});
 
-		expect(result.stderr).not.toContain('[ERROR]');
-		expect(result.status).toBe(0);
+		expect(result.stderr, result.stderr).not.toContain('[ERROR]');
+		expect(result.status, result.stderr || result.stdout).toBe(0);
 	}
 }
 
@@ -56,10 +58,19 @@ describe('Astro website', () => {
 		expect(config).toContain("output: 'static'");
 		expect(config).toContain("base: '/isostate'");
 		expect(docs).toContain("from '../../docs/getting-started.md'");
+		expect(docs).toContain(
+			"from '../../docs/guides/install-authoring-skill.md'"
+		);
 		expect(docs).toContain("from '../../docs/guides/deploy-static-bundle.md'");
 		expect(docs).toContain("from '../../docs/reference/public-api.md'");
-		expect(index).toContain('Isometric visual storytelling');
-		expect(index).toContain('PUBLIC_ISOSTATE_VERSION');
+		expect(index).toContain('Isometric 3D scenes from YAML');
+		expect(index).toContain('id="isostate-demo"');
+		expect(index).toContain('mountScene');
+		expect(index).toContain("import { Code } from 'astro:components'");
+		expect(index).toContain('sceneSnippets');
+		expect(index).toContain('route-car');
+		expect(index).toContain('Scroll to watch a route come to life');
+		expect(index).not.toContain('PUBLIC_ISOSTATE_VERSION');
 		expect(route).toContain('getStaticPaths');
 		expect(route).toContain('<Content />');
 	});
@@ -76,8 +87,11 @@ describe('Astro website', () => {
 		expect(relativeFiles).toContain('index.html');
 		expect(relativeFiles).toContain('docs/getting-started.md/index.html');
 		expect(relativeFiles).toContain(
+			'docs/guides/install-authoring-skill.md/index.html'
+		);
+		expect(relativeFiles).toContain(
 			'docs/guides/deploy-static-bundle.md/index.html'
 		);
 		expect(relativeFiles).toContain('docs/reference/public-api.md/index.html');
-	});
+	}, websiteBuildTimeoutMs);
 });

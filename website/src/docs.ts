@@ -1,5 +1,6 @@
 import { Content as DocsReadme } from '../../docs/README.md';
 import { Content as GettingStarted } from '../../docs/getting-started.md';
+import { Content as InstallAuthoringSkill } from '../../docs/guides/install-authoring-skill.md';
 import { Content as AuthorSceneDeltas } from '../../docs/guides/author-scene-deltas.md';
 import { Content as DeployStaticBundle } from '../../docs/guides/deploy-static-bundle.md';
 import { Content as ExamplesReadme } from '../../docs/examples/README.md';
@@ -26,6 +27,12 @@ type AstroComponentFactory = (_props: Record<string, unknown>) => unknown;
 
 export const docs: DocEntry[] = [
 	{ slug: 'README.md', title: 'Documentation', group: 'Start', Content: DocsReadme },
+	{
+		slug: 'guides/install-authoring-skill.md',
+		title: 'Install Authoring Skill',
+		group: 'Start',
+		Content: InstallAuthoringSkill
+	},
 	{ slug: 'getting-started.md', title: 'Getting Started', group: 'Start', Content: GettingStarted },
 	{
 		slug: 'guides/author-scene-deltas.md',

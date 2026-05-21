@@ -906,7 +906,7 @@ function applyConnectorAmbientClasses(state: ConnectorState, ambient: RuntimeCon
 		if (!next.has(name)) state.shaft.classList.remove(`iso-ambient-${name}`);
 	}
 	for (const name of next) {
-		if (!state.ambient.has(name)) state.shaft.classList.add(`iso-ambient-${name}`);
+		state.shaft.classList.add(`iso-ambient-${name}`);
 	}
 	state.ambient = next;
 }

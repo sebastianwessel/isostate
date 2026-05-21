@@ -14,6 +14,8 @@ describe('GitHub workflows', () => {
 		expect(workflow).toContain('pull_request:');
 		expect(workflow).toContain('branches:');
 		expect(workflow).toContain('- main');
+		expect(workflow).toContain('actions/setup-node@v6');
+		expect(workflow).toContain('node-version: 24');
 		expect(workflow).toContain('bun ci');
 		expect(workflow).toContain('bun run format');
 		expect(workflow).toContain('git diff --exit-code');
@@ -45,7 +47,9 @@ describe('GitHub workflows', () => {
 		expect(workflow).toContain('bun run size');
 		expect(workflow).toContain('bun run publint');
 		expect(workflow).toContain('bun run examples:basic:bundle');
-		expect(workflow).toContain('bun run site:build');
+		expect(workflow).toContain('withastro/action@v6');
+		expect(workflow).toContain('build-cmd: bun run site:build');
+		expect(workflow).toContain('out-dir: website/dist');
 		expect(workflow).toContain('npm view "@sebastianwessel/isostate@$version"');
 		expect(workflow).toContain('npm view "@sebastianwessel/isostate-cli@$version"');
 		expect(workflow).toContain('npm publish --access public --provenance ./packages/core');
@@ -53,9 +57,9 @@ describe('GitHub workflows', () => {
 		expect(workflow).toContain('secrets.NPM_TOKEN');
 		expect(workflow).toContain('git tag -a "$tag"');
 		expect(workflow).toContain('softprops/action-gh-release@v2');
-		expect(workflow).toContain('actions/upload-pages-artifact@v3');
-		expect(workflow).toContain('path: website/dist');
-		expect(workflow).toContain('actions/deploy-pages@v4');
+		expect(workflow).toContain('Deploy website to GitHub Pages');
+		expect(workflow).toContain('needs: release');
+		expect(workflow).toContain('actions/deploy-pages@v5');
 		expect(workflow).toContain('id: deployment');
 		expect(workflow).toContain('github-pages');
 		expect(workflow).toContain('pages: write');

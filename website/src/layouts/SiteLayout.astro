@@ -4,15 +4,23 @@ import { docGroups, docs } from '../docs';
 type Props = {
 	title: string;
 	description?: string;
+	docsShell?: boolean;
 };
 
-const { title, description = 'isostate documentation' } = Astro.props;
+const {
+	title,
+	description = 'isostate creates compiled isometric SVG scenes for technical storytelling.',
+	docsShell = false
+} = Astro.props;
 const currentPath = Astro.url.pathname.replace(/\/$/, '');
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-const version = import.meta.env.PUBLIC_ISOSTATE_VERSION ?? 'local';
 
 function href(path: string): string {
 	return `${base}${path}`;
+}
+
+function isActive(path: string): boolean {
+	return currentPath === `${base}${path}` || currentPath.startsWith(`${base}${path}/`);
 }
 ---
 
@@ -23,33 +31,66 @@ function href(path: string): string {
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="description" content={description} />
 		<title>{title} | isostate</title>
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 		<style>
 			:root {
 				color-scheme: light;
-				--ink: #182026;
-				--muted: #58656f;
-				--line: #d8e0e6;
-				--panel: #f6f8fa;
-				--accent: #0f766e;
-				--accent-ink: #064e46;
-				--code: #eef3f6;
-				font-family:
-					Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+				--ink: #101415;
+				--soft-ink: #303835;
+				--muted: #68706a;
+				--faint: #9a9b8d;
+				--paper: #f6f3ea;
+				--paper-2: #ebe5d5;
+				--panel: #fffdf5;
+				--line: #d9d2bf;
+				--line-strong: #17201d;
+				--green: #0f5f4f;
+				--green-dark: #083f35;
+				--mint: #78d9ba;
+				--yellow: #e7bd45;
+				--blue: #537d99;
+				--red: #b35b47;
+				--code: #ece6d7;
+				--shadow: 0 1px 3px rgba(16, 20, 21, 0.1);
+				--font-display: "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+				font-family: "Inter", "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 			}
 
 			* {
 				box-sizing: border-box;
 			}
 
+			html {
+				overflow-x: clip;
+				scroll-behavior: smooth;
+			}
+
 			body {
 				margin: 0;
-				background: #ffffff;
+				overflow-x: clip;
+				background:
+					linear-gradient(90deg, rgba(16, 20, 21, 0.028) 1px, transparent 1px) 0 0 / 64px 64px,
+					linear-gradient(rgba(16, 20, 21, 0.022) 1px, transparent 1px) 0 0 / 64px 64px,
+					var(--paper);
 				color: var(--ink);
 			}
 
+			body::before {
+				position: fixed;
+				inset: 0;
+				z-index: -1;
+				background:
+					radial-gradient(ellipse 80% 60% at 20% 0%, rgba(120, 217, 186, 0.07), transparent),
+					radial-gradient(ellipse 60% 40% at 80% 100%, rgba(231, 189, 69, 0.05), transparent),
+					linear-gradient(180deg, rgba(255, 253, 245, 0.6), transparent 70%);
+				content: "";
+			}
+
 			a {
-				color: var(--accent-ink);
-				text-decoration-color: rgba(15, 118, 110, 0.35);
+				color: inherit;
+				text-decoration-color: rgba(17, 20, 23, 0.32);
 				text-underline-offset: 0.18em;
 			}
 
@@ -57,213 +98,429 @@ function href(path: string): string {
 				text-decoration-color: currentColor;
 			}
 
-			.shell {
-				display: grid;
-				grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
-				min-height: 100vh;
-			}
-
-			.sidebar {
-				border-right: 1px solid var(--line);
-				background: var(--panel);
-				padding: 24px;
+			.site-topbar {
 				position: sticky;
 				top: 0;
-				height: 100vh;
-				overflow: auto;
+				z-index: 50;
+				display: grid;
+				grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr);
+				align-items: center;
+				min-height: 64px;
+				padding: 10px clamp(20px, 4vw, 56px);
+				border-bottom: 1px solid rgba(16, 20, 21, 0.1);
+				background: rgba(246, 243, 234, 0.94);
+				backdrop-filter: blur(20px);
+				-webkit-backdrop-filter: blur(20px);
 			}
 
 			.brand {
-				display: flex;
-				flex-direction: column;
-				gap: 6px;
-				padding-bottom: 20px;
-				border-bottom: 1px solid var(--line);
-			}
-
-			.brand a {
-				color: var(--ink);
-				font-size: 1.2rem;
-				font-weight: 750;
+				display: inline-flex;
+				align-items: center;
+				gap: 10px;
+				width: max-content;
+				font-size: 1rem;
+				font-weight: 700;
+				letter-spacing: -0.01em;
 				text-decoration: none;
+				color: var(--ink);
 			}
 
-			.version {
+			/* Isometric cube logo mark */
+			.brand-mark {
+				position: relative;
+				width: 28px;
+				height: 28px;
+				flex-shrink: 0;
+			}
+
+			.brand-mark svg {
+				width: 100%;
+				height: 100%;
+			}
+
+			.nav-links {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 2px;
+				padding: 3px;
+				border: 1px solid rgba(16, 20, 21, 0.12);
+				background: rgba(255, 253, 245, 0.9);
+				border-radius: 10px;
+			}
+
+			.nav-links a {
+				display: inline-flex;
+				align-items: center;
+				min-height: 32px;
+				padding: 6px 13px;
 				color: var(--muted);
-				font-size: 0.82rem;
+				font-size: 0.875rem;
+				font-weight: 500;
+				border-radius: 7px;
+				text-decoration: none;
+				transition:
+					background-color 140ms ease,
+					color 140ms ease;
 			}
 
-			.nav-group {
-				margin-top: 22px;
+			.nav-links a[aria-current="page"] {
+				background: var(--ink);
+				color: #fffdf7;
+				font-weight: 600;
+			}
+
+			.nav-links a:hover:not([aria-current="page"]) {
+				background: rgba(16, 20, 21, 0.06);
+				color: var(--ink);
+			}
+
+			.topbar-meta {
+				justify-self: end;
+				display: inline-flex;
+				align-items: center;
+				height: 34px;
+				padding: 0 16px;
+				border: none;
+				border-radius: 8px;
+				background: var(--green);
+				color: #fffdf5;
+				font-size: 0.85rem;
+				font-weight: 600;
+				letter-spacing: 0.01em;
+				text-decoration: none;
+				transition: background 140ms ease, transform 140ms ease;
+			}
+
+			.topbar-meta:hover {
+				background: var(--green-dark);
+				transform: translateY(-1px);
+			}
+
+			main {
+				min-width: 0;
+			}
+
+			.page-shell {
+				min-height: calc(100vh - 64px);
+			}
+
+			.docs-shell {
+				display: grid;
+				grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
+				gap: clamp(24px, 4vw, 52px);
+				max-width: 1300px;
+				margin: 0 auto;
+				padding: 40px clamp(20px, 4vw, 56px) 100px;
+				align-items: start;
+			}
+
+			.docs-sidebar {
+				position: sticky;
+				top: 80px;
+				align-self: start;
+				max-height: calc(100vh - 100px);
+				overflow-y: auto;
+				padding: 6px 0;
+			}
+
+			.docs-kicker {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+				margin: 0 0 16px;
+				padding: 0 12px;
+				color: var(--green-dark);
+				font-size: 0.7rem;
+				font-weight: 700;
+				letter-spacing: 0.07em;
+				text-transform: uppercase;
+			}
+
+			.docs-kicker::before {
+				content: "";
+				display: block;
+				width: 14px;
+				height: 14px;
+				background: var(--green);
+				clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+				flex-shrink: 0;
+			}
+
+			.nav-group + .nav-group {
+				margin-top: 24px;
 			}
 
 			.nav-group h2 {
-				color: var(--muted);
-				font-size: 0.72rem;
-				letter-spacing: 0.08em;
-				margin: 0 0 8px;
+				margin: 0 0 4px;
+				padding: 0 12px;
+				color: var(--faint);
+				font-size: 0.68rem;
+				font-weight: 700;
+				letter-spacing: 0.06em;
 				text-transform: uppercase;
 			}
 
 			.nav-group ul {
-				list-style: none;
 				margin: 0;
 				padding: 0;
-			}
-
-			.nav-group li + li {
-				margin-top: 3px;
+				list-style: none;
 			}
 
 			.nav-group a {
-				border-radius: 6px;
-				color: var(--ink);
 				display: block;
-				font-size: 0.92rem;
-				padding: 6px 8px;
+				padding: 6px 12px 6px 14px;
+				color: var(--muted);
+				font-size: 0.875rem;
+				font-weight: 500;
 				text-decoration: none;
+				border-left: 2px solid transparent;
+				border-radius: 0 6px 6px 0;
+				transition: color 120ms, background 120ms, border-color 120ms;
 			}
 
 			.nav-group a[aria-current="page"] {
-				background: #dcebe8;
-				color: var(--accent-ink);
-				font-weight: 650;
+				border-color: var(--green);
+				background: rgba(15, 95, 79, 0.07);
+				color: var(--green-dark);
+				font-weight: 600;
 			}
 
-			.content {
+			.nav-group a:hover:not([aria-current="page"]) {
+				background: rgba(16, 20, 21, 0.04);
+				color: var(--ink);
+				border-color: rgba(15, 95, 79, 0.2);
+			}
+
+			.docs-content {
 				min-width: 0;
+				max-width: 860px;
+				padding: clamp(28px, 4vw, 48px) clamp(24px, 4vw, 52px);
+				border: 1px solid rgba(15, 95, 79, 0.1);
+				border-radius: 12px;
+				background: rgba(255, 255, 255, 0.82);
 			}
 
-			.content-inner {
-				max-width: 920px;
-				padding: 48px 44px 72px;
+			@media (prefers-reduced-motion: reduce) {
+				*,
+				*::before,
+				*::after {
+					animation-duration: 1ms !important;
+					scroll-behavior: auto !important;
+					transition-duration: 1ms !important;
+				}
 			}
 
 			:global(article) {
 				font-size: 1rem;
-				line-height: 1.7;
+				line-height: 1.72;
+				color: var(--soft-ink);
 			}
 
 			:global(article h1) {
-				font-size: clamp(2.1rem, 5vw, 4.2rem);
-				letter-spacing: 0;
-				line-height: 1.02;
-				margin: 0 0 18px;
+				margin: 0 0 20px;
+				font-family: var(--font-display);
+				font-size: clamp(2rem, 4.5vw, 3.4rem);
+				font-weight: 800;
+				letter-spacing: -0.02em;
+				line-height: 1.0;
+				color: var(--ink);
 			}
 
 			:global(article h2) {
-				border-top: 1px solid var(--line);
-				font-size: 1.45rem;
-				margin: 38px 0 12px;
+				margin: 48px 0 14px;
 				padding-top: 24px;
+				border-top: 1px solid rgba(15, 95, 79, 0.12);
+				font-family: var(--font-display);
+				font-size: 1.55rem;
+				font-weight: 700;
+				letter-spacing: -0.01em;
+				color: var(--ink);
 			}
 
 			:global(article h3) {
-				font-size: 1.08rem;
-				margin: 26px 0 8px;
+				margin: 28px 0 8px;
+				font-size: 1.05rem;
+				font-weight: 600;
+				color: var(--ink);
 			}
 
 			:global(article p),
 			:global(article ul),
-			:global(article ol),
+			:global(article ol) {
+				color: var(--soft-ink);
+			}
+
 			:global(article table) {
-				color: var(--muted);
+				color: var(--soft-ink);
+			}
+
+			:global(article a) {
+				color: var(--green-dark);
+				text-decoration-color: rgba(15, 95, 79, 0.3);
+			}
+
+			:global(article a:hover) {
+				text-decoration-color: var(--green-dark);
 			}
 
 			:global(article strong),
 			:global(article th) {
 				color: var(--ink);
+				font-weight: 600;
 			}
 
 			:global(article code) {
-				background: var(--code);
+				padding: 0.14em 0.38em;
 				border-radius: 4px;
-				color: #14333f;
-				font-size: 0.92em;
-				padding: 0.12em 0.32em;
+				background: rgba(15, 95, 79, 0.08);
+				color: var(--green-dark);
+				font-size: 0.875em;
+				font-family: "SFMono-Regular", Consolas, monospace;
 			}
 
 			:global(article pre) {
-				background: #172027;
-				border-radius: 8px;
-				color: #eef6f5;
 				overflow: auto;
-				padding: 18px;
+				padding: 20px 22px;
+				border-radius: 10px;
+				border: 1px solid rgba(15, 95, 79, 0.14);
+				background: #0f1c18;
+				color: #c8f0e0;
 			}
 
 			:global(article pre code) {
+				padding: 0;
 				background: transparent;
 				color: inherit;
-				padding: 0;
+				font-size: 0.84rem;
 			}
 
 			:global(article table) {
-				border-collapse: collapse;
 				display: block;
-				overflow: auto;
 				width: 100%;
+				overflow: auto;
+				border-collapse: collapse;
+				border-radius: 8px;
+				overflow: hidden;
+			}
+
+			:global(article th) {
+				background: rgba(15, 95, 79, 0.06);
+				font-size: 0.82rem;
+				letter-spacing: 0.03em;
+				text-transform: uppercase;
 			}
 
 			:global(article th),
 			:global(article td) {
-				border-bottom: 1px solid var(--line);
-				padding: 9px 12px;
+				padding: 10px 14px;
+				border-bottom: 1px solid rgba(15, 95, 79, 0.1);
 				text-align: left;
 				vertical-align: top;
 			}
 
-			@media (max-width: 820px) {
-				.shell {
+			:global(article blockquote) {
+				margin: 0;
+				padding: 14px 20px;
+				border-left: 3px solid var(--green);
+				background: rgba(15, 95, 79, 0.05);
+				border-radius: 0 8px 8px 0;
+				color: var(--soft-ink);
+			}
+
+			:global(article hr) {
+				border: none;
+				border-top: 1px solid rgba(15, 95, 79, 0.12);
+				margin: 36px 0;
+			}
+
+			@media (max-width: 900px) {
+				.site-topbar {
+					grid-template-columns: 1fr;
+					gap: 10px;
+				}
+
+				.nav-links {
+					justify-content: flex-start;
+					overflow-x: auto;
+				}
+
+				.topbar-meta {
+					display: none;
+				}
+
+				.docs-shell {
 					display: block;
+					padding-top: 24px;
 				}
 
-				.sidebar {
-					height: auto;
+				.docs-sidebar {
 					position: relative;
-				}
-
-				.content-inner {
-					padding: 34px 22px 56px;
+					top: auto;
+					max-height: none;
+					margin-bottom: 22px;
 				}
 			}
 		</style>
 	</head>
 	<body>
-		<div class="shell">
-			<aside class="sidebar" aria-label="Documentation navigation">
-				<div class="brand">
-					<a href={href('/')}>isostate</a>
-					<span class="version">version {version}</span>
-				</div>
+		<header class="site-topbar">
+			<a class="brand" href={href('/')} aria-label="isostate home">
+				<span class="brand-mark" aria-hidden="true">
+					<svg viewBox="0 0 28 28" xmlns="http://www.w3.org/2000/svg">
+						<!-- isometric cube -->
+						<polygon points="14,3 25,9.5 25,20.5 14,27 3,20.5 3,9.5" fill="#e7bd45" stroke="#083f35" stroke-width="1.5" stroke-linejoin="round"/>
+						<polygon points="14,3 25,9.5 14,16 3,9.5" fill="#78d9ba" stroke="#083f35" stroke-width="1.5" stroke-linejoin="round"/>
+						<polygon points="14,16 25,9.5 25,20.5 14,27" fill="#0f5f4f" stroke="#083f35" stroke-width="1.5" stroke-linejoin="round"/>
+						<polygon points="14,16 3,9.5 3,20.5 14,27" fill="#083f35" stroke="#083f35" stroke-width="1.5" stroke-linejoin="round"/>
+					</svg>
+				</span>
+				<span>isostate</span>
+			</a>
+			<nav class="nav-links" aria-label="Primary navigation">
+				<a href={href('/')} aria-current={currentPath === base || currentPath === `${base}/` ? 'page' : undefined}>Overview</a>
+				<a href={href('/#story')}>Demo</a>
+				<a href={href('/docs/getting-started.md')} aria-current={isActive('/docs') ? 'page' : undefined}>Docs</a>
+				<a href="https://github.com/sebastianwessel/isostate">GitHub</a>
+			</nav>
+			<a class="topbar-meta" href={href('/docs/getting-started.md')}>Get started →</a>
+		</header>
 
-				{
-					docGroups.map((group) => (
-						<nav class="nav-group" aria-labelledby={`nav-${group}`}>
-							<h2 id={`nav-${group}`}>{group}</h2>
-							<ul>
-								{docs
-									.filter((doc) => doc.group === group)
-									.map((doc) => {
-										const path = `/docs/${doc.slug}`;
-										const active = currentPath === `${base}${path}`;
-										return (
-											<li>
-												<a href={href(path)} aria-current={active ? 'page' : undefined}>
-													{doc.title}
-												</a>
-											</li>
-										);
-									})}
-							</ul>
-						</nav>
-					))
-				}
-			</aside>
-			<main class="content">
-				<div class="content-inner">
+		<main class={docsShell ? 'docs-shell' : 'page-shell'}>
+			{
+				docsShell ? (
+					<>
+						<aside class="docs-sidebar" aria-label="Documentation navigation">
+							<p class="docs-kicker">Documentation</p>
+							{docGroups.map((group) => (
+								<nav class="nav-group" aria-labelledby={`nav-${group}`}>
+									<h2 id={`nav-${group}`}>{group}</h2>
+									<ul>
+										{docs
+											.filter((doc) => doc.group === group)
+											.map((doc) => {
+												const path = `/docs/${doc.slug}`;
+												const active = currentPath === `${base}${path}`;
+												return (
+													<li>
+														<a href={href(path)} aria-current={active ? 'page' : undefined}>
+															{doc.title}
+														</a>
+													</li>
+												);
+											})}
+									</ul>
+								</nav>
+							))}
+						</aside>
+						<div class="docs-content">
+							<slot />
+						</div>
+					</>
+				) : (
 					<slot />
-				</div>
-			</main>
-		</div>
+				)
+			}
+		</main>
 	</body>
 </html>

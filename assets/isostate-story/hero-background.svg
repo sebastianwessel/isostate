@@ -1,0 +1,129 @@
+<svg viewBox="0 0 1600 1000" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Rendered isometric scene for scroll-driven technical storytelling">
+	<defs>
+		<linearGradient id="sky" x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0" stop-color="#fffdf5"/>
+			<stop offset=".54" stop-color="#eee7d7"/>
+			<stop offset="1" stop-color="#d9d2bf"/>
+		</linearGradient>
+		<linearGradient id="topA" x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0" stop-color="#fff8dc"/>
+			<stop offset="1" stop-color="#dfb73f"/>
+		</linearGradient>
+		<linearGradient id="topB" x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0" stop-color="#effbf6"/>
+			<stop offset="1" stop-color="#71c7ad"/>
+		</linearGradient>
+		<linearGradient id="topC" x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0" stop-color="#f5fbff"/>
+			<stop offset="1" stop-color="#86a9bd"/>
+		</linearGradient>
+		<linearGradient id="faceLeft" x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0" stop-color="#e8e1cf"/>
+			<stop offset="1" stop-color="#a8b7aa"/>
+		</linearGradient>
+		<linearGradient id="faceRight" x1="0" x2="1" y1="0" y2="1">
+			<stop offset="0" stop-color="#c8d6cd"/>
+			<stop offset="1" stop-color="#668f83"/>
+		</linearGradient>
+		<linearGradient id="screenGlow" x1="0" x2="1">
+			<stop offset="0" stop-color="#0f5f4f"/>
+			<stop offset=".55" stop-color="#78d9ba"/>
+			<stop offset="1" stop-color="#e7bd45"/>
+		</linearGradient>
+		<filter id="softShadow" x="-30%" y="-30%" width="160%" height="160%">
+			<feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#17201d" flood-opacity=".18"/>
+		</filter>
+		<filter id="ambient" x="-20%" y="-20%" width="140%" height="140%">
+			<feGaussianBlur stdDeviation="10"/>
+		</filter>
+		<pattern id="paperGrid" width="72" height="72" patternUnits="userSpaceOnUse">
+			<path d="M72 0H0v72" fill="none" stroke="#cfc7b5" stroke-width="1" opacity=".5"/>
+		</pattern>
+	</defs>
+
+	<rect width="1600" height="1000" fill="url(#sky)"/>
+	<rect width="1600" height="1000" fill="url(#paperGrid)" opacity=".58"/>
+	<ellipse cx="1100" cy="690" rx="480" ry="170" fill="#0f5f4f" opacity=".08" filter="url(#ambient)"/>
+	<ellipse cx="1220" cy="430" rx="360" ry="120" fill="#e7bd45" opacity=".11" filter="url(#ambient)"/>
+
+	<g transform="translate(540 180)" filter="url(#softShadow)">
+		<path d="M95 390 555 145l715 378-462 255z" fill="#e9f0e8" stroke="#93b0a7" stroke-width="3"/>
+		<path d="M95 390v92l713 380v-84z" fill="#d3ded4" stroke="#93b0a7" stroke-width="3"/>
+		<path d="M1270 523v82L808 862v-84z" fill="#b6cbc2" stroke="#93b0a7" stroke-width="3"/>
+		<g stroke="#a8c7bc" stroke-width="1.4" opacity=".72">
+			<path d="M175 348 888 727M250 309l713 379M325 270l713 379M400 230l713 379M475 190l713 379M550 151l713 379"/>
+			<path d="M172 435 632 190M247 475 707 230M322 515 782 270M397 555 857 310M472 595 932 350M547 635 1007 390M622 675 1082 430M697 715 1157 470"/>
+		</g>
+		<g opacity=".28" stroke="#ffffff" stroke-width="5">
+			<path d="M150 395 808 746 1232 511"/>
+			<path d="M250 455 804 751 1168 550"/>
+		</g>
+	</g>
+
+	<g transform="translate(640 310)" filter="url(#softShadow)" stroke="#17201d" stroke-linejoin="round" stroke-linecap="round">
+		<g stroke-width="3">
+			<path d="M0 86 82 42l110 58-82 46z" fill="url(#topA)"/>
+			<path d="M0 86v92l110 66v-98z" fill="#d7a930"/>
+			<path d="M192 100v88l-82 56v-98z" fill="#9f7c27"/>
+			<path d="M52 95h62M43 124h88M43 153h73" fill="none" stroke="#15584d" stroke-width="4"/>
+		</g>
+		<g transform="translate(294 -42)" stroke-width="3">
+			<path d="M0 96 102 42l134 70-102 58z" fill="url(#topB)"/>
+			<path d="M0 96v116l134 80V170z" fill="#c9e3d9"/>
+			<path d="M236 112v110l-102 70V170z" fill="#7eb8a4"/>
+			<path d="M70 102 112 80l45 23-43 24z" fill="#0f5f4f"/>
+			<path d="M54 158h56M54 188h92M54 218h68" fill="none" stroke="#0f5f4f" stroke-width="4"/>
+		</g>
+		<g transform="translate(640 154)" stroke-width="3">
+			<path d="M0 96 92 48l126 66-92 52z" fill="url(#topC)"/>
+			<path d="M0 96v104l126 74V166z" fill="#c9dbe4"/>
+			<path d="M218 114v98l-92 62V166z" fill="#85aabc"/>
+			<path d="M54 108h94M72 142h58M46 178h104" fill="none" stroke="#0f5f4f" stroke-width="4"/>
+		</g>
+		<g transform="translate(300 310)" stroke-width="3">
+			<path d="M0 72 72 34l96 50-72 40z" fill="#f7f9f5"/>
+			<path d="M0 72v76l96 58v-82z" fill="#d8e2dc"/>
+			<path d="M168 84v72l-72 50v-82z" fill="#9eb9ad"/>
+			<path d="M45 86h78M45 113h48M45 140h66" fill="none" stroke="#537d99" stroke-width="4"/>
+		</g>
+	</g>
+
+	<g transform="translate(765 490)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+		<path d="M72 12 C188 -56 240 -44 335 -12" stroke="#0f5f4f" stroke-width="8" stroke-dasharray="2 22"/>
+		<path d="M470 92 C552 92 578 150 604 220" stroke="#537d99" stroke-width="8" stroke-dasharray="28 18"/>
+		<path d="M50 250 C190 380 430 420 674 290" stroke="#b35b47" stroke-width="8" stroke-dasharray="2 22"/>
+		<path d="M236 178 C340 130 410 134 515 182" stroke="#e7bd45" stroke-width="7" stroke-dasharray="18 16"/>
+	</g>
+
+	<g transform="translate(940 705)" filter="url(#softShadow)">
+		<path d="M0 28 28 0h440a28 28 0 0 1 28 28v174a28 28 0 0 1-28 28H28A28 28 0 0 1 0 202z" fill="#151b19" opacity=".96"/>
+		<path d="M28 0v28H0" fill="#2c3530"/>
+		<rect x="24" y="52" width="448" height="2" fill="#38443f"/>
+		<g font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="23" font-weight="800">
+			<text x="34" y="91" fill="#78d9ba">isostate</text>
+			<text x="154" y="91" fill="#fff7e8">compile story.isostate.yaml</text>
+			<text x="34" y="135" fill="#e7bd45">✓</text>
+			<text x="76" y="135" fill="#fff7e8">validate anchors, routes, deltas</text>
+			<text x="34" y="176" fill="#78d9ba">→</text>
+			<text x="76" y="176" fill="#fff7e8">emit static scene bundle</text>
+			<text x="34" y="212" fill="#8fb3c6">browser runtime: SVG only</text>
+		</g>
+	</g>
+
+	<g transform="translate(1075 110)" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" font-weight="900" letter-spacing=".06em">
+		<rect x="0" y="0" width="136" height="40" rx="7" fill="#0f5f4f"/>
+		<text x="20" y="27" fill="#fffdf5">YAML</text>
+		<rect x="154" y="0" width="150" height="40" rx="7" fill="#e7bd45"/>
+		<text x="174" y="27" fill="#17201d">compile</text>
+		<rect x="322" y="0" width="148" height="40" rx="7" fill="#537d99"/>
+		<text x="342" y="27" fill="#fffdf5">runtime</text>
+	</g>
+
+	<g transform="translate(1110 560)" opacity=".72">
+		<path d="M0 112 196 8l232 122-196 108z" fill="none" stroke="#9eb9ad" stroke-width="2"/>
+		<g stroke="#b9cfc6" stroke-width="1">
+			<path d="M42 90 274 212M86 67l232 122M130 44l232 122M174 20l232 122"/>
+			<path d="M38 135 232 32M83 159 277 55M128 183 322 79M173 207 367 103"/>
+		</g>
+	</g>
+</svg>

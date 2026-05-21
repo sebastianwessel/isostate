@@ -384,7 +384,7 @@ function interpolateConnector(
 		route: interpolateRoute(prev.route, next.route, t),
 		layer: t < 1 ? prev.layer : next.layer,
 		lifecycle,
-		style: cloneConnectorStyle(next.style),
+		style: cloneConnectorStyle(t < 1 ? prev.style : next.style),
 		start: next.start,
 		end: next.end,
 		direction: next.direction,

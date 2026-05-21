@@ -5,7 +5,7 @@ import type { RuntimeBundle } from '../../packages/core/src/types/index.ts';
 function bundle(): RuntimeBundle {
 	return {
 		_format: 'isostate-runtime-bundle',
-		_version: '0.1.0',
+		_version: '0.1.1',
 		_digest: '',
 		grid: { cellSize: 64 },
 		floor: { size: [4, 4], origin: [0, 0], visible: true, layer: 'base' },
@@ -211,6 +211,22 @@ describe('AnimationEngine', () => {
 		]);
 	});
 
+	test('holds connector style until the destination stop is reached', () => {
+		const engine = new AnimationEngine();
+		engine.init(bundleWithConnectorStyleChange());
+
+		engine.setProgress(0.5);
+		expect(engine.getConnectorUpdate('request-flow').style.pattern).toBe(
+			'dashed'
+		);
+
+		engine.setProgress(1);
+		expect(engine.getConnectorUpdate('request-flow').style.pattern).toBe(
+			'solid'
+		);
+		expect(engine.getConnectorUpdate('request-flow').ambient).toEqual([]);
+	});
+
 	test('mirrors element lifecycle for connector add remove and backward scrubbing', () => {
 		const engine = new AnimationEngine();
 		engine.init(bundleWithConnectorLifecycle());
@@ -398,6 +414,51 @@ function bundleWithConnectorLifecycle(): RuntimeBundle {
 				id: 'connector-out',
 				progress: 1,
 				connectors: [connector({ presence: 'exiting', exit: 'fade-out' })]
+			}
+		]
+	};
+}
+
+function bundleWithConnectorStyleChange(): RuntimeBundle {
+	const base = bundle();
+	return {
+		...base,
+		scenes: [
+			{
+				...base.scenes[0],
+				progress: 0,
+				connectors: [
+					connector({
+						style: {
+							variant: 'line',
+							pattern: 'dashed',
+							stroke: '#2f80ed',
+							strokeWidth: 5,
+							opacity: 1,
+							outlineWidth: 0,
+							lane: 'none'
+						},
+						ambient: [{ name: 'flow' }]
+					})
+				]
+			},
+			{
+				...base.scenes[0],
+				progress: 1,
+				connectors: [
+					connector({
+						style: {
+							variant: 'line',
+							pattern: 'solid',
+							stroke: '#2f80ed',
+							strokeWidth: 5,
+							opacity: 1,
+							outlineWidth: 0,
+							lane: 'none'
+						},
+						ambient: []
+					})
+				]
 			}
 		]
 	};
