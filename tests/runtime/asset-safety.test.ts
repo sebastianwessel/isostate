@@ -166,7 +166,7 @@ function createScene(
 ): RuntimeBundle {
 	return {
 		_format: 'isostate-runtime-bundle',
-		_version: '0.1.1',
+		_version: '0.1.2',
 		_digest: '0'.repeat(64),
 		grid: { cellSize: 64 },
 		floor: {

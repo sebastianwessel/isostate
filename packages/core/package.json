@@ -1,7 +1,15 @@
 {
 	"name": "@sebastianwessel/isostate",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Isometric scene engine — SVG rendering, animation, and YAML DSL for browser-based isometric scenes.",
+	"keywords": [
+		"isostate",
+		"isometric",
+		"svg",
+		"animation",
+		"yaml",
+		"scrollytelling"
+	],
 	"type": "module",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
@@ -55,6 +63,10 @@
 	},
 	"author": "Sebastian Wessel",
 	"license": "MIT",
+	"homepage": "https://sebastianwessel.github.io/isostate",
+	"bugs": {
+		"url": "https://github.com/sebastianwessel/isostate/issues"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+ssh://git@github.com/sebastianwessel/isostate.git",

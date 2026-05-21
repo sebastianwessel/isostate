@@ -26,6 +26,8 @@ describe('NFR package scripts', () => {
 		) as {
 			author?: string;
 			license?: string;
+			homepage?: string;
+			bugs?: { url?: string };
 			name?: string;
 			private?: boolean;
 			repository?: { type?: string; url?: string };
@@ -35,6 +37,9 @@ describe('NFR package scripts', () => {
 		) as {
 			author?: string;
 			files?: string[];
+			homepage?: string;
+			bugs?: { url?: string };
+			keywords?: string[];
 			license?: string;
 			name?: string;
 			publishConfig?: { access?: string; registry?: string };
@@ -50,6 +55,9 @@ describe('NFR package scripts', () => {
 			dependencies?: Record<string, string>;
 			exports?: { '.'?: { import?: string; types?: string } };
 			files?: string[];
+			homepage?: string;
+			bugs?: { url?: string };
+			keywords?: string[];
 			license?: string;
 			version?: string;
 			name?: string;
@@ -63,6 +71,12 @@ describe('NFR package scripts', () => {
 		expect(rootPackage.private).toBe(true);
 		expect(rootPackage.author).toBe('Sebastian Wessel');
 		expect(rootPackage.license).toBe('MIT');
+		expect(rootPackage.homepage).toBe(
+			'https://sebastianwessel.github.io/isostate'
+		);
+		expect(rootPackage.bugs?.url).toBe(
+			'https://github.com/sebastianwessel/isostate/issues'
+		);
 		expect(rootPackage.repository).toEqual({
 			type: 'git',
 			url: 'git+ssh://git@github.com/sebastianwessel/isostate.git'
@@ -79,6 +93,13 @@ describe('NFR package scripts', () => {
 		for (const pkg of [corePackage, cliPackage]) {
 			expect(pkg.author).toBe('Sebastian Wessel');
 			expect(pkg.license).toBe('MIT');
+			expect(pkg.homepage).toBe(
+				'https://sebastianwessel.github.io/isostate'
+			);
+			expect(pkg.bugs?.url).toBe(
+				'https://github.com/sebastianwessel/isostate/issues'
+			);
+			expect(pkg.keywords).toContain('isostate');
 			expect(pkg.publishConfig).toEqual({
 				access: 'public',
 				registry: 'https://registry.npmjs.org/'
