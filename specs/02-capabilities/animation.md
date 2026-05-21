@@ -95,7 +95,12 @@ For each progress update:
 7. For elements or connectors removed at the destination stop, keep the previous
    placement until `t === 1`, then transition to `removed` after the exit
    lifecycle.
-8. Apply discrete layer, style, endpoint, direction, and ambient changes at the
+8. A removed element frame must still carry valid authored geometry. Before the
+   first appearance, use the first non-removed element state. Between a removal
+   and a later re-add, use the next non-removed element state. After the final
+   removal, fall back to the previous non-removed state. Removed elements must
+   never fall back to `[0, 0]` or blank asset/layer metadata.
+9. Apply discrete layer, style, endpoint, direction, and ambient changes at the
    destination stop.
 
 Connector route interpolation rule:

@@ -186,6 +186,26 @@ describe('mountScene', () => {
 		mounted.destroy();
 	});
 
+	test('controller keeps hidden later elements at their authored position when scrubbing backward', async () => {
+		const target = document.createElement('div');
+		const mounted = mountScene(target, createLifecycleBundle(), {
+			controller: { transitionDuration: 0 }
+		});
+		const badge = mounted.svg.querySelector('[data-id="badge"]');
+		const authoredTransform = badge?.getAttribute('transform');
+
+		mounted.controller?.setProgress(0.5);
+		await nextFrame();
+		mounted.controller?.setProgress(0);
+		await nextFrame();
+
+		expect(badge?.getAttribute('transform')).toBe(authoredTransform);
+		expect(badge?.getAttribute('transform')).not.toBe(
+			mounted.svg.querySelector('[data-id="block-1"]')?.getAttribute('transform')
+		);
+		mounted.destroy();
+	});
+
 	test('controller updates mounted connector routes on progress changes', async () => {
 		const target = document.createElement('div');
 		const mounted = mountScene(target, createConnectorBundle(), {

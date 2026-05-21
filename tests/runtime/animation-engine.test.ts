@@ -121,6 +121,32 @@ describe('AnimationEngine', () => {
 
 		engine.setProgress(0);
 		expect(engine.getElementUpdate('badge').lifecycle).toBe('removed');
+		expect(engine.getElementUpdate('badge').pos).toEqual([1, 1]);
+	});
+
+	test('keeps removed elements at their nearest authored position across repeated lifecycle spans', () => {
+		const engine = new AnimationEngine();
+		engine.init(bundleWithRepeatedElementLifecycle());
+
+		engine.setProgress(0);
+		expect(engine.getElementUpdate('badge')).toEqual(
+			expect.objectContaining({
+				lifecycle: 'removed',
+				pos: [1, 1],
+				asset: 'box',
+				layer: 'base'
+			})
+		);
+
+		engine.setProgress(0.625);
+		expect(engine.getElementUpdate('badge')).toEqual(
+			expect.objectContaining({
+				lifecycle: 'removed',
+				pos: [2, 1],
+				asset: 'box',
+				layer: 'base'
+			})
+		);
 	});
 
 	test('uses discrete ambient values from the destination stop', () => {
@@ -231,6 +257,73 @@ function bundleWithAddedElement(): RuntimeBundle {
 						asset: 'box',
 						layer: 'base',
 						pos: [1, 1],
+						size: 1,
+						presence: 'entering',
+						enter: 'fade-in'
+					}
+				]
+			}
+		]
+	};
+}
+
+function bundleWithRepeatedElementLifecycle(): RuntimeBundle {
+	const base = bundle();
+	return {
+		...base,
+		scenes: [
+			base.scenes[0],
+			{
+				id: 'badge-added',
+				progress: 0.25,
+				connectors: [],
+				elements: [
+					...base.scenes[0].elements,
+					{
+						id: 'badge',
+						asset: 'box',
+						layer: 'base',
+						pos: [1, 1],
+						size: 1,
+						presence: 'entering',
+						enter: 'fade-in'
+					}
+				]
+			},
+			{
+				id: 'badge-removed',
+				progress: 0.5,
+				connectors: [],
+				elements: [
+					...base.scenes[0].elements,
+					{
+						id: 'badge',
+						asset: 'box',
+						layer: 'base',
+						pos: [1, 1],
+						size: 1,
+						presence: 'exiting',
+						exit: 'fade-out'
+					}
+				]
+			},
+			{
+				id: 'badge-absent',
+				progress: 0.625,
+				connectors: [],
+				elements: [...base.scenes[0].elements]
+			},
+			{
+				id: 'badge-added-again',
+				progress: 0.75,
+				connectors: [],
+				elements: [
+					...base.scenes[0].elements,
+					{
+						id: 'badge',
+						asset: 'box',
+						layer: 'base',
+						pos: [2, 1],
 						size: 1,
 						presence: 'entering',
 						enter: 'fade-in'
