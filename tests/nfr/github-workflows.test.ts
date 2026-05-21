@@ -36,6 +36,10 @@ describe('GitHub workflows', () => {
 		);
 
 		expect(workflow).toContain('workflow_dispatch:');
+		expect(workflow).toContain('push:');
+		expect(workflow).toContain('- package.json');
+		expect(workflow).toContain('- packages/core/package.json');
+		expect(workflow).toContain('- packages/cli/package.json');
 		expect(workflow).toContain("github.ref == 'refs/heads/main'");
 		expect(workflow).toContain('bun ci');
 		expect(workflow).toContain('bun run format');

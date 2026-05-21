@@ -2,6 +2,13 @@ name: Release
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+      - packages/core/package.json
+      - packages/cli/package.json
 
 permissions:
   contents: write
@@ -25,7 +32,7 @@ jobs:
           bun-version: latest
 
       - name: Setup Node registry
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 24
           registry-url: https://registry.npmjs.org

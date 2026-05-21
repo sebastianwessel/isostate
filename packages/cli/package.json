@@ -2,6 +2,13 @@
 	"name": "@sebastianwessel/isostate-cli",
 	"version": "0.1.1",
 	"description": "Command line tools for validating and compiling Isostate scene DSL files.",
+	"keywords": [
+		"isostate",
+		"isometric",
+		"svg",
+		"yaml",
+		"cli"
+	],
 	"type": "module",
 	"bin": {
 		"isostate": "./dist/bin.js"
@@ -36,6 +43,10 @@
 	},
 	"author": "Sebastian Wessel",
 	"license": "MIT",
+	"homepage": "https://sebastianwessel.github.io/isostate",
+	"bugs": {
+		"url": "https://github.com/sebastianwessel/isostate/issues"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+ssh://git@github.com/sebastianwessel/isostate.git",

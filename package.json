@@ -6,6 +6,10 @@
 	"type": "module",
 	"author": "Sebastian Wessel",
 	"license": "MIT",
+	"homepage": "https://sebastianwessel.github.io/isostate",
+	"bugs": {
+		"url": "https://github.com/sebastianwessel/isostate/issues"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+ssh://git@github.com/sebastianwessel/isostate.git"

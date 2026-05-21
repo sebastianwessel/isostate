@@ -6,6 +6,8 @@ const root = process.cwd();
 
 const docs = [
 	'README.md',
+	'packages/core/README.md',
+	'packages/cli/README.md',
 	'docs/README.md',
 	'docs/getting-started.md',
 	'docs/guides/install-authoring-skill.md',
