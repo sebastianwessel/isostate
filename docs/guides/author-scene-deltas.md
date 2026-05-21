@@ -146,6 +146,29 @@ update:
         value: "Auth\nGateway"
 ```
 
+## Primitive Underlays And Markers
+
+Use built-in primitive assets for simple generated SVG geometry. They are not
+declared in `header.assets`.
+
+```yaml
+- id: service-zone
+  asset: rectangle
+  layer: ground
+  at: [1, 1]
+  size: 3
+  primitive:
+    rectangle:
+      fill: "#2563eb"
+      stroke: "#1d4ed8"
+      strokeWidth: 1
+      opacity: 0.16
+```
+
+Available primitive asset ids are `rectangle`, `circle`, `polygon`, and `line`.
+`polygon.points` and `line.points` use normalized local coordinates from `0` to
+`1`. Use whole-cell `size` values to scale primitives over the grid.
+
 ## Later Scenes
 
 Every later scene is a delta from the previous resolved scene.

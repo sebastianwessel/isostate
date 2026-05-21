@@ -112,7 +112,7 @@ An asset becomes an **element** when placed in a scene. Instantiation creates an
 
 The asset's visual size is determined by its `size` property in the DSL: `visualSize = cellSize * size`. The SVG image is scaled via CSS `transform: scale()` to fill the allocated grid cell area. Runtime validates asset URLs but does not parse or inject SVG markup.
 
-## Built-In Text Asset
+## Built-In Generated Assets
 
 `asset: text` creates a generated SVG text label:
 
@@ -133,6 +133,29 @@ The asset's visual size is determined by its `size` property in the DSL: `visual
 ```
 
 Text elements do not use `assetBaseUrl`, image loading, or SVG parsing. The renderer creates `<text>` and `<tspan>` nodes directly and assigns authored lines through `textContent`. This makes labels safe for untrusted YAML text content and keeps common labels out of the asset catalog.
+
+The DSL also reserves generated primitive asset ids: `rectangle`, `circle`,
+`polygon`, and `line`. Primitive elements use an element-level `primitive`
+payload instead of `header.assets`:
+
+```yaml
+- id: service-zone
+  asset: rectangle
+  layer: ground
+  at: [1, 1]
+  size: 3
+  primitive:
+    rectangle:
+      fill: "#2563eb"
+      stroke: "#1d4ed8"
+      strokeWidth: 1
+      opacity: 0.16
+```
+
+Primitive coordinates are normalized local grid coordinates from `0` to `1`.
+They are generated with DOM SVG APIs, never loaded through browser image assets,
+and are intended for ground underlays, markers, and simple authored geometry.
+Primitive ids are reserved and must not appear in `header.assets`.
 
 ## Theme System
 

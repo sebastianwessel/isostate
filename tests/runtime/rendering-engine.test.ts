@@ -311,6 +311,58 @@ describe('rendering engine', () => {
 		expect(lines[1]?.getAttribute('dy')).toBe('14.399999999999999');
 	});
 
+	test('renders built-in primitive assets as generated svg nodes', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const bundle = createBundle({
+			assets: undefined,
+			scenes: [
+				sceneStop([
+					{
+						id: 'service-zone',
+						asset: 'rectangle',
+						layer: 'main',
+						primitive: {
+							rectangle: {
+								fill: '#2563eb',
+								stroke: '#1d4ed8',
+								strokeWidth: 1,
+								opacity: 0.16
+							}
+						}
+					},
+					{
+						id: 'route-line',
+						asset: 'line',
+						layer: 'main',
+						primitive: {
+							line: {
+								points: [
+									[0, 0.5],
+									[1, 0.5]
+								],
+								stroke: '#111111',
+								strokeWidth: 2
+							}
+						}
+					}
+				])
+			]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const rectangle = svg
+			.querySelector('[data-id="service-zone"]')
+			?.querySelector('polygon');
+		const line = svg
+			.querySelector('[data-id="route-line"]')
+			?.querySelector('polyline');
+
+		expect(rectangle?.getAttribute('fill')).toBe('#2563eb');
+		expect(rectangle?.getAttribute('opacity')).toBe('0.16');
+		expect(line?.getAttribute('stroke')).toBe('#111111');
+		expect(line?.getAttribute('fill')).toBe('none');
+	});
+
 	test('rejects unsafe URL assets before assigning image href', () => {
 		const container = new MiniElement('div', null) as unknown as HTMLElement;
 		const bundle = createBundle({
@@ -645,6 +697,7 @@ type ElementInput = {
 	presence?: 'present' | 'entering' | 'exiting' | 'removed';
 	enter?: RuntimeBundle['scenes'][number]['elements'][number]['enter'];
 	text?: RuntimeBundle['scenes'][number]['elements'][number]['text'];
+	primitive?: RuntimeBundle['scenes'][number]['elements'][number]['primitive'];
 };
 
 type ConnectorInput = Partial<

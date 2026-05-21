@@ -16,6 +16,7 @@ import { buildKeyframeCSS } from './animation-css.ts';
 import {
 	createAssetNode,
 	createAssetResolver,
+	createPrimitiveAssetNode,
 	createTextAssetNode
 } from './asset-node.ts';
 import type { AssetResolver } from './asset-node.ts';
@@ -23,6 +24,12 @@ import { applyThemeToElement } from './theme.ts';
 
 const NS = 'http://www.w3.org/2000/svg';
 const BUILT_IN_TEXT_ASSET_ID = 'text';
+const BUILT_IN_PRIMITIVE_ASSET_IDS = new Set([
+	'rectangle',
+	'circle',
+	'polygon',
+	'line'
+]);
 const DEFAULT_CONNECTOR_DASH: Record<'dashed' | 'dotted', [number, number]> = {
 	dashed: [12, 8],
 	dotted: [0, 8]
@@ -168,8 +175,7 @@ export function buildSceneDOM(
 			hideElementAfterExit(instance.node);
 		}
 		applyAmbientClasses(instance, initial.ambient ?? []);
-		const parent =
-			def.asset === BUILT_IN_TEXT_ASSET_ID ? labelGroup : depthGroup;
+		const parent = isTextAsset(def.asset) ? labelGroup : depthGroup;
 		parent.appendChild(instance.node);
 		elementMap.set(def.id, instance);
 	}
@@ -199,6 +205,7 @@ export function updateElementTransforms(
 		for (const def of elements) {
 			const state = map.get(def.id) as ElementState | undefined;
 			if (!state) continue;
+			updateGeneratedElementContent(state.node, def, layout);
 			applyElementTransform(state.node, def, layout);
 			applyAmbientClasses(state, def.ambient ?? []);
 		}
@@ -583,7 +590,8 @@ function sortElementsForPerspective(
 }
 
 function renderBucket(element: RuntimeElementState): number {
-	if (element.asset === BUILT_IN_TEXT_ASSET_ID) return 2;
+	if (isPrimitiveAsset(element.asset)) return 0;
+	if (isTextAsset(element.asset)) return 2;
 	return 1;
 }
 
@@ -630,7 +638,9 @@ function createElementInstance(
 	const node =
 		def.asset === BUILT_IN_TEXT_ASSET_ID
 			? createTextAssetNode(def.text, def.asset, layout.cellSize)
-			: createResolvedAssetNode(def, resolveAsset, layout.cellSize);
+			: isPrimitiveAsset(def.asset)
+				? createPrimitiveAssetNode(def.asset, def.primitive, layout.cellSize)
+				: createResolvedAssetNode(def, resolveAsset, layout.cellSize);
 	node.classList.add('iso-element', `iso-element-${def.id}`);
 	node.setAttribute('data-id', def.id);
 	node.setAttribute('data-asset', def.asset);
@@ -655,6 +665,14 @@ function createElementInstance(
 	return { node, isHidden: false, ambient: new Set() };
 }
 
+function isTextAsset(assetId: string): boolean {
+	return assetId === BUILT_IN_TEXT_ASSET_ID;
+}
+
+function isPrimitiveAsset(assetId: string): boolean {
+	return BUILT_IN_PRIMITIVE_ASSET_IDS.has(assetId);
+}
+
 function createResolvedAssetNode(
 	def: RuntimeElementState,
 	resolveAsset: AssetResolver,
@@ -668,6 +686,23 @@ function createResolvedAssetNode(
 		});
 	}
 	return createAssetNode(asset, def.asset, cellSize);
+}
+
+function updateGeneratedElementContent(
+	node: SVGGElement,
+	def: RuntimeElementState,
+	layout: ResolvedLayoutState
+): void {
+	if (!isTextAsset(def.asset) && !isPrimitiveAsset(def.asset)) return;
+	const replacement = isTextAsset(def.asset)
+		? createTextAssetNode(def.text, def.asset, layout.cellSize)
+		: createPrimitiveAssetNode(def.asset, def.primitive, layout.cellSize);
+	clearChildren(node);
+	while (replacement.firstChild) {
+		const child = replacement.firstChild;
+		replacement.removeChild(child);
+		node.appendChild(child);
+	}
 }
 
 function createConnectorInstance(

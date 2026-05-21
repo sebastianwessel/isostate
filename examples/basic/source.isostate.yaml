@@ -13,10 +13,10 @@ header:
       anchor: [0.5, 1]
     - id: aws-internet-gateway
       path: internet-gateway
-      anchor: [0.5, 1]
+      anchor: [0.125, 1]
     - id: aws-vpc-gateway
       path: vpc-gateway
-      anchor: [0.5, 1]
+      anchor: [0.875, 1]
     - id: aws-load-balancer
       path: elastic-load-balancing
       anchor: [0.5, 1]
@@ -47,6 +47,17 @@ header:
 scenes:
   - id: edge-entry
     elements:
+      - id: public-edge-zone
+        asset: rectangle
+        layer: ground
+        at: [2, 3]
+        size: 2
+        primitive:
+          rectangle:
+            fill: "#2563eb"
+            stroke: "#2563eb"
+            strokeWidth: 1
+            opacity: 0.08
       - id: user
         asset: aws-end-user
         layer: network
@@ -58,11 +69,12 @@ scenes:
       - id: internet-gateway
         asset: aws-internet-gateway
         layer: network
-        at: [3, 4]
+        at: [2, 3]
+        size: 2
       - id: edge-label
         asset: text
         layer: labels
-        at: [3, 3]
+        at: [3, 2]
         text:
           value: |
             Public
@@ -107,14 +119,26 @@ scenes:
   - id: secured-vpc
     add:
       elements:
+        - id: private-vpc-zone
+          asset: rectangle
+          layer: ground
+          at: [5, 3]
+          size: 2
+          primitive:
+            rectangle:
+              fill: "#fbbf24"
+              stroke: "#f59e0b"
+              strokeWidth: 1
+              opacity: 0.12
         - id: vpc-gateway
           asset: aws-vpc-gateway
           layer: network
-          at: [5, 4]
+          at: [5, 3]
+          size: 2
         - id: auth-label
           asset: text
           layer: labels
-          at: [5, 3]
+          at: [6, 2]
           text:
             value: |
               Private
@@ -161,23 +185,23 @@ scenes:
         - id: load-balancer
           asset: aws-load-balancer
           layer: compute
-          at: [7, 4]
+          at: [8, 4]
         - id: app-server-a
           asset: aws-app-server
           layer: compute
-          at: [9, 3]
+          at: [10, 3]
         - id: app-server-b
           asset: aws-app-server
           layer: compute
-          at: [9, 5]
+          at: [10, 5]
         - id: lambda-worker
           asset: aws-lambda
           layer: compute
-          at: [8, 6]
+          at: [9, 6]
         - id: compute-label
           asset: text
           layer: labels
-          at: [9, 2]
+          at: [10, 2]
           text:
             value: |
               Compute
@@ -228,15 +252,15 @@ scenes:
         - id: database
           asset: aws-rds
           layer: data
-          at: [11, 3]
+          at: [12, 3]
         - id: object-store
           asset: aws-s3
           layer: data
-          at: [11, 6]
+          at: [12, 6]
         - id: data-label
           asset: text
           layer: labels
-          at: [11, 2]
+          at: [12, 2]
           text:
             value: |
               Data

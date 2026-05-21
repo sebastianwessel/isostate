@@ -368,7 +368,9 @@ export class AnimationController {
 			presence: update.lifecycle,
 			enter: update.entry as RuntimeElementState['enter'],
 			exit: update.exit as RuntimeElementState['exit'],
-			ambient: update.ambient
+			ambient: update.ambient,
+			text: update.text,
+			primitive: update.primitive
 		}));
 		const connectors = this._engine
 			.getConnectorFrameUpdates()

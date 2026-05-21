@@ -224,6 +224,25 @@ describe('mountScene', () => {
 		mounted.destroy();
 	});
 
+	test('controller updates generated text and primitive payloads on progress changes', async () => {
+		const target = document.createElement('div');
+		const mounted = mountScene(target, createGeneratedContentBundle(), {
+			controller: { transitionDuration: 0 }
+		});
+		const label = mounted.svg.querySelector('[data-id="label"]');
+		const zone = mounted.svg.querySelector('[data-id="zone"]');
+
+		expect(label?.querySelector('tspan')?.textContent).toBe('Start');
+		expect(zone?.querySelector('polygon')?.getAttribute('fill')).toBe('#2563eb');
+
+		mounted.controller?.setProgress(1);
+		await nextFrame();
+
+		expect(label?.querySelector('tspan')?.textContent).toBe('End');
+		expect(zone?.querySelector('polygon')?.getAttribute('fill')).toBe('#fbbf24');
+		mounted.destroy();
+	});
+
 	test('applies runtime theme overrides without mutating bundle digests', () => {
 		const target = document.createElement('div');
 		const mounted = mountScene(target, createBundle(), {
@@ -289,6 +308,79 @@ function createBundle(options: { version?: string } = {}): RuntimeBundle {
 						pos: [2, 0],
 						size: 1,
 						presence: 'present'
+					}
+				]
+			}
+		]
+	});
+}
+
+function createGeneratedContentBundle(): RuntimeBundle {
+	return withDigest({
+		...createBundle(),
+		assets: undefined,
+		layers: [
+			{ name: 'base', order: 0 },
+			{ name: 'labels', order: 1 }
+		],
+		scenes: [
+			{
+				id: 'start',
+				progress: 0,
+				connectors: [],
+				elements: [
+					{
+						id: 'zone',
+						asset: 'rectangle',
+						layer: 'base',
+						pos: [0, 0],
+						size: 1,
+						presence: 'present',
+						primitive: {
+							rectangle: {
+								fill: '#2563eb',
+								opacity: 0.2
+							}
+						}
+					},
+					{
+						id: 'label',
+						asset: 'text',
+						layer: 'labels',
+						pos: [0, 0],
+						size: 1,
+						presence: 'present',
+						text: { value: 'Start' }
+					}
+				]
+			},
+			{
+				id: 'end',
+				progress: 1,
+				connectors: [],
+				elements: [
+					{
+						id: 'zone',
+						asset: 'rectangle',
+						layer: 'base',
+						pos: [0, 0],
+						size: 1,
+						presence: 'present',
+						primitive: {
+							rectangle: {
+								fill: '#fbbf24',
+								opacity: 0.2
+							}
+						}
+					},
+					{
+						id: 'label',
+						asset: 'text',
+						layer: 'labels',
+						pos: [0, 0],
+						size: 1,
+						presence: 'present',
+						text: { value: 'End' }
 					}
 				]
 			}

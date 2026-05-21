@@ -12,9 +12,9 @@ The validator runs after parsing and before compilation. It never runs in the br
 
 | Check | Rule | Error Code |
 |---|---|---|
-| Asset catalog exists | `header.assets` contains at least one entry unless every placement uses built-in `asset: text` | `NO_ASSETS` |
+| Asset catalog exists | `header.assets` contains at least one entry unless every placement uses built-in generated assets | `NO_ASSETS` |
 | Duplicate asset ids | `header.assets[].id` values are unique | `DUPLICATE_ASSET_ID` |
-| Reserved built-in ids | `header.assets[].id` must not be `text` | `BUILTIN_ASSET_ID_RESERVED` |
+| Reserved built-in ids | `header.assets[].id` must not be `text`, `rectangle`, `circle`, `polygon`, or `line` | `BUILTIN_ASSET_ID_RESERVED` |
 | Asset URL source | Each declared external asset can resolve to a URL through `header.assetBaseUrl` plus asset `path` or `id` | `ASSET_URL_REQUIRED` |
 | Asset anchor | `header.assets[].anchor`, when supplied, is a normalized `[x, y]` tuple where both values are `0..1` | `INVALID_ASSET_ANCHOR` |
 | Floor config | `header.floor`, when present, is a mapping | `DSL_SCHEMA_TYPE_ERROR` |
@@ -50,15 +50,16 @@ The validator walks scenes in order and maintains a resolved presence map.
 | Update/remove conflict | Same id is not both updated and removed in one scene | `ELEMENT_DELTA_CONFLICT` |
 | Declared asset | Placement `asset` exists in `header.assets` | `ASSET_NOT_DECLARED` |
 | Built-in text payload | `asset: text` has valid `text.value`; non-text assets do not define `text` | `TEXT_CONTENT_REQUIRED`, `TEXT_CONTENT_FOR_NON_TEXT_ASSET`, `INVALID_TEXT_CONTENT`, `INVALID_TEXT_STYLE` |
+| Built-in primitive payload | `asset: rectangle`, `circle`, `polygon`, or `line` has exactly one matching `primitive` payload; external assets do not define `primitive` | `PRIMITIVE_CONTENT_REQUIRED`, `PRIMITIVE_CONTENT_MISMATCH`, `INVALID_PRIMITIVE_POINTS`, `INVALID_PRIMITIVE_STYLE`, `GENERATED_CONTENT_FOR_EXTERNAL_ASSET` |
 | Declared layer | Placement/patch `layer` exists in `header.layers` | `LAYER_NOT_FOUND` |
 | Valid position | `at` tuple contains finite non-negative numbers | `INVALID_POSITION` |
-| Valid size | `size` is finite and `> 0` | `INVALID_SIZE` |
+| Valid size | `size` is a positive whole-grid-cell count | `INVALID_SIZE` |
 | Known animation | `enter` and `exit` values are built-ins or registered custom names | `UNKNOWN_ANIMATION` |
 | Known ambient | `ambient[].name` is built-in or registered custom CSS | `UNKNOWN_AMBIENT_ANIMATION` |
 
 The authored DSL must not use `pos`, `states`, `keyframes`, or `lifecycle.status`. The parser should reject these as `UNKNOWN_FIELD` before semantic validation.
 
-For patches, `text` is legal only when the target element is already a text element. Patch text payloads replace the previous payload in full.
+For patches, `text` is legal only when the target element is already a text element. Patch text payloads replace the previous payload in full. `primitive` follows the same rule for primitive elements.
 
 When an element is removed, the validator must inspect the resolved connection
 map before applying removals. Any present connection that references the removed

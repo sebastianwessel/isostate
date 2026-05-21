@@ -46,7 +46,10 @@ Validator responsibilities:
   connector-specific ambient classes such as `flow`
 - resolve endpoint-routed connectors (`from`/`to`) into concrete route points
   using the dev-time connector router
-- validate built-in text elements: `asset: text` requires `text.value`, is not declared in `header.assets`, and bypasses URL resolution
+- validate built-in generated elements: `asset: text` requires `text.value`;
+  `asset: rectangle`, `circle`, `polygon`, and `line` require matching
+  `primitive` payloads; generated asset ids are not declared in
+  `header.assets` and bypass URL resolution
 
 ### 3. Expand Deltas
 
@@ -78,8 +81,9 @@ Expansion rules:
   compiler never cascades connection removal
 - omitted elements retain previous resolved properties
 - omitted connectors retain previous resolved properties
-- `text` payloads are carried forward like other element properties;
-  `update.elements[].text` replaces the previous payload
+- `text` and `primitive` payloads are carried forward like other element
+  properties; `update.elements[].text` or `update.elements[].primitive`
+  replaces the previous payload
 - runtime progress values are deterministically derived from ordered scene steps
 
 Connector style defaults are materialized during expansion/compilation so the
@@ -135,7 +139,8 @@ The compiler emits one URL asset entry for every external asset referenced by re
 
 If an external asset cannot resolve to a URL, compilation fails with `ASSET_URL_REQUIRED`.
 
-The built-in `asset: text` is never URL-generated. Its text data remains on runtime element snapshots.
+Built-in generated assets are never URL-generated. `text` data remains on
+runtime element snapshots as `text`; primitive data remains as `primitive`.
 
 Connectors are never URL-generated and never appear under `RuntimeBundle.assets`.
 They compile to route/style data under each runtime scene stop.
@@ -160,4 +165,4 @@ Until the CLI is fully specified, examples may use the dev-time SDK directly.
 
 ## Runtime Boundary
 
-The compiler, parser, validator, `yaml`, and filesystem access are dev-time only. The browser runtime consumes only `RuntimeBundle` data, browser-loadable asset URLs, and generated built-ins such as `asset: text`.
+The compiler, parser, validator, `yaml`, and filesystem access are dev-time only. The browser runtime consumes only `RuntimeBundle` data, browser-loadable asset URLs, and generated built-ins such as `asset: text` and primitive assets.

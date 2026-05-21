@@ -241,6 +241,59 @@ scenes:
 		});
 	});
 
+	test('parses built-in primitive asset content', () => {
+		const scene = parseScene(`
+header:
+  assets: []
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements:
+      - id: service-zone
+        asset: rectangle
+        at: [1, 1]
+        size: 3
+        layer: ground
+        primitive:
+          rectangle:
+            fill: "#2563eb"
+            stroke: "#1d4ed8"
+            strokeWidth: 1
+            opacity: 0.16
+      - id: route-line
+        asset: line
+        at: [1, 3]
+        layer: ground
+        primitive:
+          line:
+            points: [[0, 0.5], [1, 0.5]]
+            stroke: "#111827"
+            strokeWidth: 2
+            lineCap: round
+`);
+
+		expect(scene.scenes[0].elements?.[0]).toEqual({
+			id: 'service-zone',
+			asset: 'rectangle',
+			at: [1, 1],
+			size: 3,
+			layer: 'ground',
+			primitive: {
+				rectangle: {
+					fill: '#2563eb',
+					stroke: '#1d4ed8',
+					strokeWidth: 1,
+					opacity: 0.16
+				}
+			}
+		});
+		expect(scene.scenes[0].elements?.[1]?.primitive?.line?.points).toEqual([
+			[0, 0.5],
+			[1, 0.5]
+		]);
+	});
+
 	test('rejects old array-style scene operations', () => {
 		expectParseErrorCode(
 			`

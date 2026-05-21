@@ -171,7 +171,7 @@ maxY = anchorRawY + screenSize * (1 - anchorY)
 
 When an element is instantiated (first appearance or re-addition after removal):
 
-1. Create a normalized SVG `<image>` node for URL-loaded assets, or a generated built-in node such as `asset: text`.
+1. Create a normalized SVG `<image>` node for URL-loaded assets, or a generated built-in node such as `asset: text`, `asset: rectangle`, `asset: circle`, `asset: polygon`, or `asset: line`.
 2. Apply the scene's theme CSS variables (via `style.setProperty()` on the root SVG element).
 3. Assign the element a unique CSS class (`iso-element-<id>`) for targeted styling.
 4. Apply the element's initial transform (position + scale).

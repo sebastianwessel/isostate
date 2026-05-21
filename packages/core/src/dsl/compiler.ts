@@ -21,6 +21,12 @@ export interface CompileOptions {
 const DEFAULT_VERSION = '0.1.0';
 const RUNTIME_BUNDLE_FORMAT = 'isostate-runtime-bundle';
 const BUILT_IN_TEXT_ASSET_ID = 'text';
+const BUILT_IN_PRIMITIVE_ASSET_IDS = new Set([
+	'rectangle',
+	'circle',
+	'polygon',
+	'line'
+]);
 
 export function compileScene(
 	document: SceneDocument,
@@ -237,12 +243,19 @@ function uniqueReferencedAssetNames(
 	}
 	for (const scene of scenes) {
 		for (const element of scene.elements) {
-			if (element.asset !== BUILT_IN_TEXT_ASSET_ID) {
+			if (!isBuiltInGeneratedAsset(element.asset)) {
 				names.add(element.asset);
 			}
 		}
 	}
 	return Array.from(names).sort();
+}
+
+function isBuiltInGeneratedAsset(assetId: string): boolean {
+	return (
+		assetId === BUILT_IN_TEXT_ASSET_ID ||
+		BUILT_IN_PRIMITIVE_ASSET_IDS.has(assetId)
+	);
 }
 
 function defaultFloorLayer(document: SceneDocument): string {

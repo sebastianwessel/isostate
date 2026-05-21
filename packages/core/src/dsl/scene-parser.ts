@@ -15,6 +15,8 @@ import type {
 	FloorConfig,
 	GridConfig,
 	LayerDefinition,
+	LinePrimitive,
+	PrimitiveContent,
 	SceneDocument,
 	SceneHeader,
 	SceneStep,
@@ -269,6 +271,12 @@ function parseAmbient(raw: unknown, context: string): AmbientAnimation[] {
 	});
 }
 
+function parsePointArray(raw: unknown, context: string): [number, number][] {
+	return requireArray(raw, context).map((point, index) =>
+		parseTuple2(point, `${context}[${index}]`)
+	);
+}
+
 function parseTextContent(raw: unknown, context: string): TextContent {
 	const text = requireObject(raw, context);
 	assertKnownFields(
@@ -307,6 +315,114 @@ function parseTextContent(raw: unknown, context: string): TextContent {
 	return parsed;
 }
 
+function parsePrimitiveStyle(
+	raw: Record<string, unknown>,
+	context: string,
+	allowed: string[]
+): Record<string, unknown> {
+	assertKnownFields(raw, new Set(allowed), context);
+	const parsed: Record<string, unknown> = {};
+	if (raw.fill !== undefined)
+		parsed.fill = requireString(raw.fill, `${context}.fill`);
+	if (raw.stroke !== undefined)
+		parsed.stroke = requireString(raw.stroke, `${context}.stroke`);
+	if (raw.strokeWidth !== undefined) {
+		parsed.strokeWidth = requireNumber(
+			raw.strokeWidth,
+			`${context}.strokeWidth`
+		);
+	}
+	if (raw.opacity !== undefined) {
+		parsed.opacity = requireNumber(raw.opacity, `${context}.opacity`);
+	}
+	if (raw.dash !== undefined)
+		parsed.dash = parseTuple2(raw.dash, `${context}.dash`);
+	return parsed;
+}
+
+function parsePrimitiveContent(
+	raw: unknown,
+	context: string
+): PrimitiveContent {
+	const primitive = requireObject(raw, context);
+	assertKnownFields(
+		primitive,
+		new Set(['rectangle', 'circle', 'polygon', 'line']),
+		context
+	);
+	const parsed: PrimitiveContent = {};
+	if (primitive.rectangle !== undefined) {
+		const rectangle = requireObject(
+			primitive.rectangle,
+			`${context}.rectangle`
+		);
+		parsed.rectangle = parsePrimitiveStyle(rectangle, `${context}.rectangle`, [
+			'fill',
+			'stroke',
+			'strokeWidth',
+			'opacity',
+			'dash',
+			'rx'
+		]);
+		if (rectangle.rx !== undefined) {
+			parsed.rectangle.rx = requireNumber(
+				rectangle.rx,
+				`${context}.rectangle.rx`
+			);
+		}
+	}
+	if (primitive.circle !== undefined) {
+		parsed.circle = parsePrimitiveStyle(
+			requireObject(primitive.circle, `${context}.circle`),
+			`${context}.circle`,
+			['fill', 'stroke', 'strokeWidth', 'opacity', 'dash']
+		);
+	}
+	if (primitive.polygon !== undefined) {
+		const polygon = requireObject(primitive.polygon, `${context}.polygon`);
+		parsed.polygon = {
+			...parsePrimitiveStyle(polygon, `${context}.polygon`, [
+				'points',
+				'fill',
+				'stroke',
+				'strokeWidth',
+				'opacity',
+				'dash'
+			]),
+			points: parsePointArray(polygon.points, `${context}.polygon.points`)
+		};
+	}
+	if (primitive.line !== undefined) {
+		const line = requireObject(primitive.line, `${context}.line`);
+		const parsedLine: LinePrimitive = {
+			...parsePrimitiveStyle(line, `${context}.line`, [
+				'points',
+				'stroke',
+				'strokeWidth',
+				'opacity',
+				'dash',
+				'lineCap',
+				'lineJoin'
+			]),
+			points: parsePointArray(line.points, `${context}.line.points`)
+		};
+		if (line.lineCap !== undefined) {
+			parsedLine.lineCap = requireString(
+				line.lineCap,
+				`${context}.line.lineCap`
+			) as never;
+		}
+		if (line.lineJoin !== undefined) {
+			parsedLine.lineJoin = requireString(
+				line.lineJoin,
+				`${context}.line.lineJoin`
+			) as never;
+		}
+		parsed.line = parsedLine;
+	}
+	return parsed;
+}
+
 function parsePlacement(raw: unknown, context: string): ElementPlacement {
 	const element = requireObject(raw, context);
 	assertKnownFields(
@@ -320,7 +436,8 @@ function parsePlacement(raw: unknown, context: string): ElementPlacement {
 			'enter',
 			'exit',
 			'ambient',
-			'text'
+			'text',
+			'primitive'
 		]),
 		context
 	);
@@ -347,6 +464,12 @@ function parsePlacement(raw: unknown, context: string): ElementPlacement {
 	if (element.text !== undefined) {
 		parsed.text = parseTextContent(element.text, `${context}.text`);
 	}
+	if (element.primitive !== undefined) {
+		parsed.primitive = parsePrimitiveContent(
+			element.primitive,
+			`${context}.primitive`
+		);
+	}
 	return parsed;
 }
 
@@ -354,7 +477,17 @@ function parsePatch(raw: unknown, context: string): ElementPatch {
 	const patch = requireObject(raw, context);
 	assertKnownFields(
 		patch,
-		new Set(['id', 'at', 'size', 'layer', 'enter', 'exit', 'ambient', 'text']),
+		new Set([
+			'id',
+			'at',
+			'size',
+			'layer',
+			'enter',
+			'exit',
+			'ambient',
+			'text',
+			'primitive'
+		]),
 		context
 	);
 	const parsed: ElementPatch = {
@@ -380,6 +513,12 @@ function parsePatch(raw: unknown, context: string): ElementPatch {
 	}
 	if (patch.text !== undefined) {
 		parsed.text = parseTextContent(patch.text, `${context}.text`);
+	}
+	if (patch.primitive !== undefined) {
+		parsed.primitive = parsePrimitiveContent(
+			patch.primitive,
+			`${context}.primitive`
+		);
 	}
 	return parsed;
 }

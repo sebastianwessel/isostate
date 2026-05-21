@@ -9,6 +9,7 @@ import type {
 	ElementPatch,
 	ElementPlacement,
 	ElementRemoval,
+	PrimitiveContent,
 	RuntimeConnectorState,
 	RuntimeConnectorStyle,
 	RuntimeElementState,
@@ -21,8 +22,15 @@ import type {
 } from '../types/index.ts';
 
 const BUILT_IN_TEXT_ASSET_ID = 'text';
+const BUILT_IN_PRIMITIVE_ASSET_IDS = new Set([
+	'rectangle',
+	'circle',
+	'polygon',
+	'line'
+]);
 const MAX_TEXT_CHARACTERS = 1000;
 const MAX_TEXT_LINES = 20;
+const MAX_PRIMITIVE_POINTS = 100;
 
 const VALID_ENTRY_ANIMATIONS: ReadonlySet<string> = new Set([
 	'fade-in',
@@ -108,6 +116,16 @@ const VALID_TEXT_ALIGN: ReadonlySet<string> = new Set([
 	'end'
 ]);
 const VALID_TEXT_WEIGHT: ReadonlySet<string> = new Set(['normal', 'bold']);
+const VALID_LINE_CAPS: ReadonlySet<string> = new Set([
+	'butt',
+	'round',
+	'square'
+]);
+const VALID_LINE_JOINS: ReadonlySet<string> = new Set([
+	'miter',
+	'round',
+	'bevel'
+]);
 
 interface ResolvedElementRecord {
 	id: string;
@@ -119,6 +137,7 @@ interface ResolvedElementRecord {
 	exit?: ElementPlacement['exit'];
 	ambient?: AmbientAnimation[];
 	text?: TextContent;
+	primitive?: PrimitiveContent;
 }
 
 export interface ResolvedSceneSnapshot {
@@ -206,7 +225,14 @@ function hasUrlAssetSource(document: SceneDocument, assetId: string): boolean {
 }
 
 function isBuiltInAsset(assetId: string): boolean {
-	return assetId === BUILT_IN_TEXT_ASSET_ID;
+	return (
+		assetId === BUILT_IN_TEXT_ASSET_ID ||
+		BUILT_IN_PRIMITIVE_ASSET_IDS.has(assetId)
+	);
+}
+
+function isPrimitiveAsset(assetId: string): boolean {
+	return BUILT_IN_PRIMITIVE_ASSET_IDS.has(assetId);
 }
 
 function hasExternalAssetReferences(document: SceneDocument): boolean {
@@ -227,7 +253,7 @@ function hasExternalAssetReferences(document: SceneDocument): boolean {
 	return false;
 }
 
-function hasBuiltInTextElements(document: SceneDocument): boolean {
+function hasBuiltInElements(document: SceneDocument): boolean {
 	for (const scene of document.scenes) {
 		for (const element of [
 			...(scene.elements ?? []),
@@ -250,7 +276,7 @@ function validateHeader(
 	const assets = document.header.assets;
 	if (
 		assets.length === 0 &&
-		(hasExternalAssetReferences(document) || !hasBuiltInTextElements(document))
+		(hasExternalAssetReferences(document) || !hasBuiltInElements(document))
 	) {
 		errors.push(issue('NO_ASSETS', 'Header must declare at least one asset'));
 	}
@@ -371,9 +397,11 @@ function validateHeader(
 		}
 		if (floor.asset !== undefined && isBuiltInAsset(floor.asset)) {
 			errors.push(
-				issue('INVALID_FLOOR_ASSET', 'Floor asset cannot use built-in text', {
-					assetName: floor.asset
-				})
+				issue(
+					'INVALID_FLOOR_ASSET',
+					'Floor asset cannot use a built-in generated asset',
+					{ assetName: floor.asset }
+				)
 			);
 		}
 	}
@@ -451,7 +479,7 @@ function validatePlacement(
 	sceneId: string
 ): void {
 	validateElementCommon(placement, document, errors, sceneId);
-	validateTextForAsset(placement, placement.asset, errors, sceneId);
+	validateGeneratedContentForAsset(placement, placement.asset, errors, sceneId);
 	if (
 		!isBuiltInAsset(placement.asset) &&
 		!declaredAssetNames(document).has(placement.asset)
@@ -487,7 +515,7 @@ function validatePatch(
 ): void {
 	validateElementCommon(patch, document, errors, sceneId);
 	if (currentAsset !== undefined) {
-		validateTextForAsset(patch, currentAsset, errors, sceneId);
+		validateGeneratedContentForAsset(patch, currentAsset, errors, sceneId);
 	}
 	if (patch.at !== undefined && !isValidPosition(patch.at)) {
 		errors.push(
@@ -526,6 +554,21 @@ function validateElementCommon(
 		);
 	}
 	if (
+		element.size !== undefined &&
+		(!Number.isInteger(element.size) || element.size < 1)
+	) {
+		errors.push(
+			issue(
+				'INVALID_SIZE',
+				'Element size must be a positive whole grid cell count',
+				{
+					sceneId,
+					elementId: element.id
+				}
+			)
+		);
+	}
+	if (
 		element.layer !== undefined &&
 		!declaredLayerNames(document).has(element.layer)
 	) {
@@ -559,24 +602,18 @@ function validateElementCommon(
 	validateAmbient(element.ambient, errors, sceneId, element.id);
 }
 
-function validateTextForAsset(
+function validateGeneratedContentForAsset(
 	element: ElementPlacement | ElementPatch,
 	assetId: string,
 	errors: ValidationError[],
 	sceneId: string
 ): void {
 	if (isBuiltInAsset(assetId)) {
-		if (!element.text) {
-			errors.push(
-				issue(
-					'TEXT_CONTENT_REQUIRED',
-					'Built-in text elements require text content',
-					{ sceneId, elementId: element.id }
-				)
-			);
+		if (assetId === BUILT_IN_TEXT_ASSET_ID) {
+			validateTextForAsset(element, errors, sceneId);
 			return;
 		}
-		validateTextContent(element.text, errors, sceneId, element.id);
+		validatePrimitiveForAsset(element, assetId, errors, sceneId);
 		return;
 	}
 
@@ -586,6 +623,221 @@ function validateTextForAsset(
 				'TEXT_CONTENT_FOR_NON_TEXT_ASSET',
 				'Only built-in text elements may define text content',
 				{ sceneId, elementId: element.id, assetName: assetId }
+			)
+		);
+	}
+	if (element.primitive !== undefined) {
+		errors.push(
+			issue(
+				'GENERATED_CONTENT_FOR_EXTERNAL_ASSET',
+				'Only built-in generated assets may define primitive content',
+				{ sceneId, elementId: element.id, assetName: assetId }
+			)
+		);
+	}
+}
+
+function validateTextForAsset(
+	element: ElementPlacement | ElementPatch,
+	errors: ValidationError[],
+	sceneId: string
+): void {
+	if (!element.text) {
+		errors.push(
+			issue(
+				'TEXT_CONTENT_REQUIRED',
+				'Built-in text elements require text content',
+				{ sceneId, elementId: element.id }
+			)
+		);
+		return;
+	}
+	if (element.primitive !== undefined) {
+		errors.push(
+			issue(
+				'PRIMITIVE_CONTENT_FOR_TEXT_ASSET',
+				'Built-in text elements may not define primitive content',
+				{ sceneId, elementId: element.id }
+			)
+		);
+	}
+	validateTextContent(element.text, errors, sceneId, element.id);
+}
+
+function validatePrimitiveForAsset(
+	element: ElementPlacement | ElementPatch,
+	assetId: string,
+	errors: ValidationError[],
+	sceneId: string
+): void {
+	if (!isPrimitiveAsset(assetId)) return;
+	if (element.text !== undefined) {
+		errors.push(
+			issue(
+				'TEXT_CONTENT_FOR_PRIMITIVE_ASSET',
+				'Primitive elements may not define text content',
+				{ sceneId, elementId: element.id }
+			)
+		);
+	}
+	const primitive = element.primitive;
+	if (!primitive) {
+		errors.push(
+			issue(
+				'PRIMITIVE_CONTENT_REQUIRED',
+				'Built-in primitive elements require primitive content',
+				{ sceneId, elementId: element.id, assetName: assetId }
+			)
+		);
+		return;
+	}
+
+	const activeKeys = Object.entries(primitive)
+		.filter(([, value]) => value !== undefined)
+		.map(([key]) => key);
+	if (activeKeys.length !== 1 || activeKeys[0] !== assetId) {
+		errors.push(
+			issue(
+				'PRIMITIVE_CONTENT_MISMATCH',
+				'Primitive content must define exactly the payload matching its asset id',
+				{ sceneId, elementId: element.id, assetName: assetId }
+			)
+		);
+		return;
+	}
+
+	const payload = primitive[assetId as keyof PrimitiveContent];
+	validatePrimitiveStyle(payload, errors, sceneId, element.id);
+	if (assetId === 'rectangle') {
+		const rx = primitive.rectangle?.rx;
+		if (rx !== undefined && (!Number.isFinite(rx) || rx < 0 || rx > 0.5)) {
+			errors.push(
+				issue('INVALID_PRIMITIVE_STYLE', 'Rectangle rx must be from 0 to 0.5', {
+					sceneId,
+					elementId: element.id
+				})
+			);
+		}
+	}
+	if (assetId === 'polygon') {
+		validatePrimitivePoints(
+			primitive.polygon?.points,
+			3,
+			errors,
+			sceneId,
+			element.id
+		);
+	}
+	if (assetId === 'line') {
+		validatePrimitivePoints(
+			primitive.line?.points,
+			2,
+			errors,
+			sceneId,
+			element.id
+		);
+		if (
+			primitive.line?.lineCap !== undefined &&
+			!VALID_LINE_CAPS.has(primitive.line.lineCap)
+		) {
+			errors.push(
+				issue('INVALID_PRIMITIVE_STYLE', 'Line cap is invalid', {
+					sceneId,
+					elementId: element.id
+				})
+			);
+		}
+		if (
+			primitive.line?.lineJoin !== undefined &&
+			!VALID_LINE_JOINS.has(primitive.line.lineJoin)
+		) {
+			errors.push(
+				issue('INVALID_PRIMITIVE_STYLE', 'Line join is invalid', {
+					sceneId,
+					elementId: element.id
+				})
+			);
+		}
+	}
+}
+
+function validatePrimitiveStyle(
+	style: PrimitiveContent[keyof PrimitiveContent] | undefined,
+	errors: ValidationError[],
+	sceneId: string,
+	elementId: string
+): void {
+	if (!style) return;
+	for (const token of [
+		style.stroke,
+		'fill' in style ? style.fill : undefined
+	]) {
+		if (token !== undefined && !isSafeTextStyleToken(token)) {
+			errors.push(
+				issue('INVALID_PRIMITIVE_STYLE', 'Primitive color token is unsafe', {
+					sceneId,
+					elementId
+				})
+			);
+		}
+	}
+	if (
+		style.strokeWidth !== undefined &&
+		(!Number.isFinite(style.strokeWidth) || style.strokeWidth < 0)
+	) {
+		errors.push(
+			issue('INVALID_PRIMITIVE_STYLE', 'Primitive strokeWidth is invalid', {
+				sceneId,
+				elementId
+			})
+		);
+	}
+	if (
+		style.opacity !== undefined &&
+		(!Number.isFinite(style.opacity) || style.opacity < 0 || style.opacity > 1)
+	) {
+		errors.push(
+			issue('INVALID_PRIMITIVE_STYLE', 'Primitive opacity must be 0..1', {
+				sceneId,
+				elementId
+			})
+		);
+	}
+	if (
+		style.dash !== undefined &&
+		(!isValidPositiveTuple(style.dash) ||
+			style.dash.some((part) => !Number.isFinite(part)))
+	) {
+		errors.push(
+			issue('INVALID_PRIMITIVE_STYLE', 'Primitive dash is invalid', {
+				sceneId,
+				elementId
+			})
+		);
+	}
+}
+
+function validatePrimitivePoints(
+	points: [number, number][] | undefined,
+	minCount: number,
+	errors: ValidationError[],
+	sceneId: string,
+	elementId: string
+): void {
+	if (
+		!points ||
+		points.length < minCount ||
+		points.length > MAX_PRIMITIVE_POINTS ||
+		points.some(
+			(point) =>
+				!isValidPosition(point) || point.some((part) => part < 0 || part > 1)
+		)
+	) {
+		errors.push(
+			issue(
+				'INVALID_PRIMITIVE_POINTS',
+				'Primitive points must use normalized coordinates from 0 to 1',
+				{ sceneId, elementId }
 			)
 		);
 	}
@@ -1758,7 +2010,8 @@ function normalizePlacement(
 		enter: element.enter,
 		exit: element.exit,
 		ambient: element.ambient,
-		text: element.text
+		text: element.text,
+		primitive: element.primitive
 	};
 }
 
@@ -1802,7 +2055,8 @@ function toRuntimeState(
 				? (exit ?? element.exit ?? 'fade-out')
 				: (exit ?? element.exit),
 		ambient: element.ambient,
-		text: element.text
+		text: element.text,
+		primitive: element.primitive
 	};
 }
 

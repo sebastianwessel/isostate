@@ -38,6 +38,11 @@ Common fixes:
 | `TEXT_CONTENT_FOR_NON_TEXT_ASSET` | Remove `text` from non-text assets. |
 | `INVALID_TEXT_CONTENT` | Keep text non-empty, ≤1000 characters, and ≤20 lines. |
 | `INVALID_TEXT_STYLE` | Use supported text style values and safe fill colors. |
+| `PRIMITIVE_CONTENT_REQUIRED` | Add the matching `primitive` payload to built-in primitive assets. |
+| `PRIMITIVE_CONTENT_MISMATCH` | Keep exactly one primitive payload and match it to the asset id. |
+| `INVALID_PRIMITIVE_POINTS` | Keep primitive points normalized from `0` to `1`. |
+| `INVALID_PRIMITIVE_STYLE` | Use supported primitive style values and safe color tokens. |
+| `GENERATED_CONTENT_FOR_EXTERNAL_ASSET` | Remove primitive payloads from external SVG assets. |
 | `INVALID_CONNECTOR_ROUTE` | Provide at least two finite non-negative connector route points and keep manual segments on one grid axis. |
 | `INVALID_CONNECTOR_STYLE` | Use supported connector style values for pattern, variant, stroke, dash, road, and opacity fields. |
 | `INVALID_CONNECTOR_ENDPOINT` | Use `none`, `arrow`, `dot`, `circle`, `diamond`, or `bar`. |

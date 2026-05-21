@@ -84,6 +84,56 @@ export interface TextContent {
 	fill?: string;
 }
 
+/** Built-in generated primitive asset ids. These are not declared in header assets. */
+export type PrimitiveAssetId = 'rectangle' | 'circle' | 'polygon' | 'line';
+
+/** Shared safe SVG style fields for generated primitive assets. */
+export interface PrimitiveStyle {
+	/** SVG fill color or safe CSS color token. Defaults to `currentColor`. */
+	fill?: string;
+	/** SVG stroke color or safe CSS color token. Defaults to `none`. */
+	stroke?: string;
+	/** SVG stroke width in CSS pixels before element scaling. Defaults to `0`. */
+	strokeWidth?: number;
+	/** Element opacity from `0` to `1`. Defaults to `1`. */
+	opacity?: number;
+	/** Optional dash/gap pair for stroked primitives. */
+	dash?: [number, number];
+}
+
+/** Generated projected rectangle/diamond primitive content. */
+export interface RectanglePrimitive extends PrimitiveStyle {
+	/** Optional corner radius for screen-space rectangles. Defaults to `0`. */
+	rx?: number;
+}
+
+/** Generated circle primitive content. */
+export interface CirclePrimitive extends PrimitiveStyle {}
+
+/** Generated polygon primitive content using normalized local grid coordinates. */
+export interface PolygonPrimitive extends PrimitiveStyle {
+	/** Polygon points in local normalized grid coordinates from `0` to `1`. */
+	points: [number, number][];
+}
+
+/** Generated line/polyline primitive content using normalized local grid coordinates. */
+export interface LinePrimitive extends Omit<PrimitiveStyle, 'fill'> {
+	/** Line points in local normalized grid coordinates from `0` to `1`. */
+	points: [number, number][];
+	/** SVG line cap. Defaults to `round`. */
+	lineCap?: 'butt' | 'round' | 'square';
+	/** SVG line join. Defaults to `round`. */
+	lineJoin?: 'miter' | 'round' | 'bevel';
+}
+
+/** Element-level payload for generated primitive assets. */
+export interface PrimitiveContent {
+	rectangle?: RectanglePrimitive;
+	circle?: CirclePrimitive;
+	polygon?: PolygonPrimitive;
+	line?: LinePrimitive;
+}
+
 /** Element placement used in first-scene elements and later add operations. */
 export interface ElementPlacement {
 	id: string;
@@ -95,6 +145,7 @@ export interface ElementPlacement {
 	exit?: ExitAnimation;
 	ambient?: AmbientAnimation[];
 	text?: TextContent;
+	primitive?: PrimitiveContent;
 }
 
 /** Element patch used by scene update operations. */
@@ -107,6 +158,7 @@ export interface ElementPatch {
 	exit?: ExitAnimation;
 	ambient?: AmbientAnimation[];
 	text?: TextContent;
+	primitive?: PrimitiveContent;
 }
 
 /** Element removal used by scene remove operations. */
@@ -263,6 +315,7 @@ export interface RuntimeElementState {
 	exit?: ExitAnimation;
 	ambient?: AmbientAnimation[];
 	text?: TextContent;
+	primitive?: PrimitiveContent;
 }
 
 // ── Type guards ──────────────────────────────────────────────────────────────

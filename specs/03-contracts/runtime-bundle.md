@@ -42,6 +42,7 @@ interface RuntimeElementState {
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
   text?: TextContent;
+  primitive?: PrimitiveContent;
 }
 
 interface CompiledAsset {
@@ -120,7 +121,10 @@ Runtime compatibility uses semver:
 
 The compiler emits one `CompiledAsset` entry for every external SVG asset referenced by resolved scene elements or the floor asset. Each entry must contain a browser-loadable `url` resolved from `header.assetBaseUrl` plus the asset `path` or `id`, with `.svg` appended when the path omits an extension. If the authored asset declares `anchor`, the compiler preserves it so the browser runtime can align the asset's real ground contact point to the projected footprint anchor.
 
-The built-in `asset: text` is not an embeddable asset. It never appears under `RuntimeBundle.assets`; its content remains on each `RuntimeElementState.text` payload.
+Built-in generated assets (`text`, `rectangle`, `circle`, `polygon`, and
+`line`) are not embeddable assets. They never appear under
+`RuntimeBundle.assets`; their content remains on `RuntimeElementState.text` or
+`RuntimeElementState.primitive`.
 
 The runtime loads external assets through SVG `<image href="...">`. It never receives raw SVG strings, parses asset SVG markup, or injects per-asset CSS.
 

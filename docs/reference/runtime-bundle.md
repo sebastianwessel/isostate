@@ -43,6 +43,20 @@ Text elements keep their text payload on the element snapshot:
 }
 ```
 
+Primitive elements keep their primitive payload on the element snapshot:
+
+```json
+{
+	"id": "service-zone",
+	"asset": "rectangle",
+	"pos": [1, 1],
+	"size": 3,
+	"layer": "ground",
+	"presence": "present",
+	"primitive": { "rectangle": { "fill": "#2563eb", "opacity": 0.16 } }
+}
+```
+
 Connectors keep generated geometry inputs on the connector snapshot:
 
 ```json
@@ -86,7 +100,7 @@ Compiled external assets contain browser-loadable URLs produced from
 }
 ```
 
-`asset: text` and connectors are not emitted under `assets` and never need an
+Built-in generated assets and connectors are not emitted under `assets` and never need an
 external asset URL.
 
 ## Serialization

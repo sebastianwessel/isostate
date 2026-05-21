@@ -1,5 +1,5 @@
 export default {
-  "_digest": "1a9427295a6820ffcbefc7547d2a88dfea36f8b1fefa064adb2bdd34a9b56eb5",
+  "_digest": "41e81978344adfcc0f8281f9295248ebccce0670c7bc5b957abcdb0ba4e24f05",
   "_format": "isostate-runtime-bundle",
   "_version": "0.1.0",
   "assets": {
@@ -26,7 +26,7 @@ export default {
     },
     "aws-internet-gateway": {
       "anchor": [
-        0.5,
+        0.125,
         1
       ],
       "url": "../../assets/aws-3d/internet-gateway.svg"
@@ -61,7 +61,7 @@ export default {
     },
     "aws-vpc-gateway": {
       "anchor": [
-        0.5,
+        0.875,
         1
       ],
       "url": "../../assets/aws-3d/vpc-gateway.svg"
@@ -75,7 +75,7 @@ export default {
       0
     ],
     "size": [
-      12,
+      13,
       8
     ],
     "visible": true
@@ -172,11 +172,11 @@ export default {
               5.5
             ],
             [
-              3.5,
+              3,
               5.5
             ],
             [
-              3.5,
+              3,
               5
             ]
           ],
@@ -197,6 +197,25 @@ export default {
         }
       ],
       "elements": [
+        {
+          "asset": "rectangle",
+          "id": "public-edge-zone",
+          "layer": "ground",
+          "pos": [
+            2,
+            3
+          ],
+          "presence": "present",
+          "primitive": {
+            "rectangle": {
+              "fill": "#2563eb",
+              "opacity": 0.08,
+              "stroke": "#2563eb",
+              "strokeWidth": 1
+            }
+          },
+          "size": 2
+        },
         {
           "asset": "aws-end-user",
           "id": "user",
@@ -224,11 +243,11 @@ export default {
           "id": "internet-gateway",
           "layer": "network",
           "pos": [
-            3,
-            4
+            2,
+            3
           ],
           "presence": "present",
-          "size": 1
+          "size": 2
         },
         {
           "asset": "text",
@@ -236,7 +255,7 @@ export default {
           "layer": "labels",
           "pos": [
             3,
-            3
+            2
           ],
           "presence": "present",
           "size": 1,
@@ -307,11 +326,11 @@ export default {
               5.5
             ],
             [
-              3.5,
+              3,
               5.5
             ],
             [
-              3.5,
+              3,
               5
             ]
           ],
@@ -346,11 +365,11 @@ export default {
           "route": [
             [
               4,
-              4.5
+              4
             ],
             [
               5,
-              4.5
+              4
             ]
           ],
           "start": "none",
@@ -370,6 +389,25 @@ export default {
         }
       ],
       "elements": [
+        {
+          "asset": "rectangle",
+          "id": "public-edge-zone",
+          "layer": "ground",
+          "pos": [
+            2,
+            3
+          ],
+          "presence": "present",
+          "primitive": {
+            "rectangle": {
+              "fill": "#2563eb",
+              "opacity": 0.08,
+              "stroke": "#2563eb",
+              "strokeWidth": 1
+            }
+          },
+          "size": 2
+        },
         {
           "asset": "aws-end-user",
           "id": "user",
@@ -397,11 +435,11 @@ export default {
           "id": "internet-gateway",
           "layer": "network",
           "pos": [
-            3,
-            4
+            2,
+            3
           ],
           "presence": "present",
-          "size": 1
+          "size": 2
         },
         {
           "asset": "text",
@@ -409,7 +447,7 @@ export default {
           "layer": "labels",
           "pos": [
             3,
-            3
+            2
           ],
           "presence": "present",
           "size": 1,
@@ -423,16 +461,36 @@ export default {
           }
         },
         {
+          "asset": "rectangle",
+          "enter": "fade-in",
+          "id": "private-vpc-zone",
+          "layer": "ground",
+          "pos": [
+            5,
+            3
+          ],
+          "presence": "entering",
+          "primitive": {
+            "rectangle": {
+              "fill": "#fbbf24",
+              "opacity": 0.12,
+              "stroke": "#f59e0b",
+              "strokeWidth": 1
+            }
+          },
+          "size": 2
+        },
+        {
           "asset": "aws-vpc-gateway",
           "enter": "fade-in",
           "id": "vpc-gateway",
           "layer": "network",
           "pos": [
             5,
-            4
+            3
           ],
           "presence": "entering",
-          "size": 1
+          "size": 2
         },
         {
           "asset": "text",
@@ -440,8 +498,8 @@ export default {
           "id": "auth-label",
           "layer": "labels",
           "pos": [
-            5,
-            3
+            6,
+            2
           ],
           "presence": "entering",
           "size": 1,
@@ -512,11 +570,11 @@ export default {
               5.5
             ],
             [
-              3.5,
+              3,
               5.5
             ],
             [
-              3.5,
+              3,
               5
             ]
           ],
@@ -551,11 +609,11 @@ export default {
           "route": [
             [
               4,
-              4.5
+              4
             ],
             [
               5,
-              4.5
+              4
             ]
           ],
           "start": "none",
@@ -583,12 +641,12 @@ export default {
           "presence": "entering",
           "route": [
             [
-              6,
-              4.5
+              7,
+              4
             ],
             [
-              7,
-              4.5
+              8.5,
+              4
             ]
           ],
           "start": "none",
@@ -618,23 +676,23 @@ export default {
           "presence": "entering",
           "route": [
             [
-              7.5,
+              8.5,
               5
             ],
             [
-              7.5,
+              8.5,
               7.5
             ],
             [
-              10.5,
+              11.5,
               7.5
             ],
             [
-              10.5,
+              11.5,
               5.5
             ],
             [
-              10,
+              11,
               5.5
             ]
           ],
@@ -655,6 +713,25 @@ export default {
         }
       ],
       "elements": [
+        {
+          "asset": "rectangle",
+          "id": "public-edge-zone",
+          "layer": "ground",
+          "pos": [
+            2,
+            3
+          ],
+          "presence": "present",
+          "primitive": {
+            "rectangle": {
+              "fill": "#2563eb",
+              "opacity": 0.08,
+              "stroke": "#2563eb",
+              "strokeWidth": 1
+            }
+          },
+          "size": 2
+        },
         {
           "asset": "aws-end-user",
           "id": "user",
@@ -682,11 +759,11 @@ export default {
           "id": "internet-gateway",
           "layer": "network",
           "pos": [
-            3,
-            4
+            2,
+            3
           ],
           "presence": "present",
-          "size": 1
+          "size": 2
         },
         {
           "asset": "text",
@@ -694,7 +771,7 @@ export default {
           "layer": "labels",
           "pos": [
             3,
-            3
+            2
           ],
           "presence": "present",
           "size": 1,
@@ -708,23 +785,42 @@ export default {
           }
         },
         {
+          "asset": "rectangle",
+          "id": "private-vpc-zone",
+          "layer": "ground",
+          "pos": [
+            5,
+            3
+          ],
+          "presence": "present",
+          "primitive": {
+            "rectangle": {
+              "fill": "#fbbf24",
+              "opacity": 0.12,
+              "stroke": "#f59e0b",
+              "strokeWidth": 1
+            }
+          },
+          "size": 2
+        },
+        {
           "asset": "aws-vpc-gateway",
           "id": "vpc-gateway",
           "layer": "network",
           "pos": [
             5,
-            4
+            3
           ],
           "presence": "present",
-          "size": 1
+          "size": 2
         },
         {
           "asset": "text",
           "id": "auth-label",
           "layer": "labels",
           "pos": [
-            5,
-            3
+            6,
+            2
           ],
           "presence": "present",
           "size": 1,
@@ -743,7 +839,7 @@ export default {
           "id": "load-balancer",
           "layer": "compute",
           "pos": [
-            7,
+            8,
             4
           ],
           "presence": "entering",
@@ -755,7 +851,7 @@ export default {
           "id": "app-server-a",
           "layer": "compute",
           "pos": [
-            9,
+            10,
             3
           ],
           "presence": "entering",
@@ -767,7 +863,7 @@ export default {
           "id": "app-server-b",
           "layer": "compute",
           "pos": [
-            9,
+            10,
             5
           ],
           "presence": "entering",
@@ -779,7 +875,7 @@ export default {
           "id": "lambda-worker",
           "layer": "compute",
           "pos": [
-            8,
+            9,
             6
           ],
           "presence": "entering",
@@ -791,7 +887,7 @@ export default {
           "id": "compute-label",
           "layer": "labels",
           "pos": [
-            9,
+            10,
             2
           ],
           "presence": "entering",
@@ -863,11 +959,11 @@ export default {
               5.5
             ],
             [
-              3.5,
+              3,
               5.5
             ],
             [
-              3.5,
+              3,
               5
             ]
           ],
@@ -902,11 +998,11 @@ export default {
           "route": [
             [
               4,
-              4.5
+              4
             ],
             [
               5,
-              4.5
+              4
             ]
           ],
           "start": "none",
@@ -934,12 +1030,12 @@ export default {
           "presence": "present",
           "route": [
             [
-              6,
-              4.5
+              7,
+              4
             ],
             [
-              7,
-              4.5
+              8.5,
+              4
             ]
           ],
           "start": "none",
@@ -969,15 +1065,15 @@ export default {
           "presence": "present",
           "route": [
             [
-              7.5,
+              8.5,
               5
             ],
             [
-              7.5,
+              8.5,
               5.5
             ],
             [
-              10,
+              11,
               5.5
             ]
           ],
@@ -1006,11 +1102,11 @@ export default {
           "presence": "entering",
           "route": [
             [
-              10,
+              11,
               3.5
             ],
             [
-              11,
+              12,
               3.5
             ]
           ],
@@ -1044,11 +1140,11 @@ export default {
           "presence": "entering",
           "route": [
             [
-              9,
+              10,
               6.5
             ],
             [
-              11,
+              12,
               6.5
             ]
           ],
@@ -1069,6 +1165,25 @@ export default {
         }
       ],
       "elements": [
+        {
+          "asset": "rectangle",
+          "id": "public-edge-zone",
+          "layer": "ground",
+          "pos": [
+            2,
+            3
+          ],
+          "presence": "present",
+          "primitive": {
+            "rectangle": {
+              "fill": "#2563eb",
+              "opacity": 0.08,
+              "stroke": "#2563eb",
+              "strokeWidth": 1
+            }
+          },
+          "size": 2
+        },
         {
           "asset": "aws-end-user",
           "id": "user",
@@ -1096,11 +1211,11 @@ export default {
           "id": "internet-gateway",
           "layer": "network",
           "pos": [
-            3,
-            4
+            2,
+            3
           ],
           "presence": "present",
-          "size": 1
+          "size": 2
         },
         {
           "asset": "text",
@@ -1108,7 +1223,7 @@ export default {
           "layer": "labels",
           "pos": [
             3,
-            3
+            2
           ],
           "presence": "present",
           "size": 1,
@@ -1122,23 +1237,42 @@ export default {
           }
         },
         {
+          "asset": "rectangle",
+          "id": "private-vpc-zone",
+          "layer": "ground",
+          "pos": [
+            5,
+            3
+          ],
+          "presence": "present",
+          "primitive": {
+            "rectangle": {
+              "fill": "#fbbf24",
+              "opacity": 0.12,
+              "stroke": "#f59e0b",
+              "strokeWidth": 1
+            }
+          },
+          "size": 2
+        },
+        {
           "asset": "aws-vpc-gateway",
           "id": "vpc-gateway",
           "layer": "network",
           "pos": [
             5,
-            4
+            3
           ],
           "presence": "present",
-          "size": 1
+          "size": 2
         },
         {
           "asset": "text",
           "id": "auth-label",
           "layer": "labels",
           "pos": [
-            5,
-            3
+            6,
+            2
           ],
           "presence": "present",
           "size": 1,
@@ -1156,7 +1290,7 @@ export default {
           "id": "load-balancer",
           "layer": "compute",
           "pos": [
-            7,
+            8,
             4
           ],
           "presence": "present",
@@ -1167,7 +1301,7 @@ export default {
           "id": "app-server-a",
           "layer": "compute",
           "pos": [
-            9,
+            10,
             3
           ],
           "presence": "present",
@@ -1178,7 +1312,7 @@ export default {
           "id": "app-server-b",
           "layer": "compute",
           "pos": [
-            9,
+            10,
             5
           ],
           "presence": "present",
@@ -1189,7 +1323,7 @@ export default {
           "id": "lambda-worker",
           "layer": "compute",
           "pos": [
-            8,
+            9,
             6
           ],
           "presence": "present",
@@ -1200,7 +1334,7 @@ export default {
           "id": "compute-label",
           "layer": "labels",
           "pos": [
-            9,
+            10,
             2
           ],
           "presence": "present",
@@ -1220,7 +1354,7 @@ export default {
           "id": "database",
           "layer": "data",
           "pos": [
-            11,
+            12,
             3
           ],
           "presence": "entering",
@@ -1232,7 +1366,7 @@ export default {
           "id": "object-store",
           "layer": "data",
           "pos": [
-            11,
+            12,
             6
           ],
           "presence": "entering",
@@ -1244,7 +1378,7 @@ export default {
           "id": "data-label",
           "layer": "labels",
           "pos": [
-            11,
+            12,
             2
           ],
           "presence": "entering",

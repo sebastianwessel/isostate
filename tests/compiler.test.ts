@@ -440,6 +440,52 @@ describe('compileScene', () => {
 		);
 	});
 
+	test('preserves built-in primitive content and skips asset resolution for primitives', () => {
+		const baseDocument = createDocument();
+		const bundle = compileScene(
+			createDocument({
+				header: {
+					...baseDocument.header,
+					assets: [],
+					floor: { visible: true },
+					layers: [{ name: 'ground' }]
+				},
+				scenes: [
+					{
+						id: 'initial',
+						elements: [
+							{
+								id: 'service-zone',
+								asset: 'rectangle',
+								at: [1, 1],
+								size: 2,
+								layer: 'ground',
+								primitive: {
+									rectangle: {
+										fill: '#2563eb',
+										stroke: '#1d4ed8',
+										strokeWidth: 1,
+										opacity: 0.16
+									}
+								}
+							}
+						]
+					}
+				]
+			})
+		);
+
+		expect(bundle.assets).toBeUndefined();
+		expect(bundle.scenes[0].elements[0]).toEqual(
+			expect.objectContaining({
+				asset: 'rectangle',
+				primitive: {
+					rectangle: expect.objectContaining({ fill: '#2563eb' })
+				}
+			})
+		);
+	});
+
 	test('throws ASSET_URL_REQUIRED for referenced assets without assetBaseUrl', () => {
 		const baseDocument = createDocument();
 

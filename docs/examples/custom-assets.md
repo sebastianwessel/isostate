@@ -34,6 +34,10 @@ mountScene(document.querySelector('#scene'), scene);
 Plain labels do not need custom SVG assets. Use the reserved built-in
 `asset: text` with a `text.value` payload instead.
 
+Simple underlays and markers also do not need custom SVG assets. Use reserved
+built-in primitive assets such as `asset: rectangle` with a matching
+`primitive.rectangle` payload.
+
 This also works with path-style libraries such as draw.io SVG sets: set
 `assetBaseUrl` to the library root, then use paths like
 `mscae/Active_Directory` or `azure2/Virtual_Machine`. Asset files must be
@@ -88,6 +92,10 @@ header:
 - The anchor is not a CSS transform origin. It is a geometry contract between
   the asset catalog and the renderer, and the renderer does not infer it from
   SVG path geometry.
+- If an imported SVG is visually a two-cell object, place it with `size: 2` and
+  declare the anchor that matches its real ground contact. If it is actually two
+  independent objects, split it into two asset files or two elements so each
+  object owns its own grid footprint and connector ports.
 
 ## Authoring Checklist
 

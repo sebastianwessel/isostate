@@ -1,9 +1,11 @@
 import type {
 	AmbientAnimation,
 	LifecycleStatus,
+	PrimitiveContent,
 	RuntimeConnectorState,
 	RuntimeConnectorStyle,
-	RuntimeElementState
+	RuntimeElementState,
+	TextContent
 } from '../types/node.ts';
 import type { RuntimeBundle } from '../types/runtime-bundle.ts';
 
@@ -20,6 +22,8 @@ interface ElementFrame {
 	layer: string;
 	entry?: string;
 	exit?: string;
+	text?: TextContent;
+	primitive?: PrimitiveContent;
 }
 
 /** Internal state tracked per connector across frames. */
@@ -48,6 +52,8 @@ export interface FrameUpdate {
 	layer: string;
 	entry?: string;
 	exit?: string;
+	text?: TextContent;
+	primitive?: PrimitiveContent;
 }
 
 /** Interpolation result for a connector frame update. */
@@ -367,7 +373,9 @@ function interpolateElement(
 		ambient: cloneAmbient(next.ambient),
 		layer: t < 1 ? prev.layer : next.layer,
 		entry: next.enter ?? prev.enter,
-		exit: next.exit ?? prev.exit
+		exit: next.exit ?? prev.exit,
+		text: cloneText(next.text ?? prev.text),
+		primitive: clonePrimitive(next.primitive ?? prev.primitive)
 	};
 }
 
@@ -440,7 +448,9 @@ function withRemovedElementGeometry(
 		ambient: cloneAmbient(reference.ambient),
 		layer: reference.layer,
 		entry: reference.enter,
-		exit: reference.exit
+		exit: reference.exit,
+		text: cloneText(reference.text),
+		primitive: clonePrimitive(reference.primitive)
 	};
 }
 
@@ -479,7 +489,9 @@ function frameFromElement(
 		ambient: cloneAmbient(element.ambient),
 		layer: element.layer,
 		entry: element.enter,
-		exit: element.exit
+		exit: element.exit,
+		text: cloneText(element.text),
+		primitive: clonePrimitive(element.primitive)
 	};
 }
 
@@ -582,7 +594,9 @@ function frameToUpdate(frame: ElementFrame): FrameUpdate {
 		size: frame.size,
 		layer: frame.layer,
 		entry: frame.entry,
-		exit: frame.exit
+		exit: frame.exit,
+		text: cloneText(frame.text),
+		primitive: clonePrimitive(frame.primitive)
 	};
 }
 
@@ -610,10 +624,64 @@ function cloneFrameMap(
 		clone.set(id, {
 			...frame,
 			pos: [...frame.pos],
-			ambient: cloneAmbient(frame.ambient)
+			ambient: cloneAmbient(frame.ambient),
+			text: cloneText(frame.text),
+			primitive: clonePrimitive(frame.primitive)
 		});
 	}
 	return clone;
+}
+
+function cloneText(text: TextContent | undefined): TextContent | undefined {
+	return text ? { ...text } : undefined;
+}
+
+function clonePrimitive(
+	primitive: PrimitiveContent | undefined
+): PrimitiveContent | undefined {
+	if (!primitive) return undefined;
+	return {
+		...(primitive.rectangle
+			? {
+					rectangle: {
+						...primitive.rectangle,
+						dash: cloneDash(primitive.rectangle.dash)
+					}
+				}
+			: {}),
+		...(primitive.circle
+			? {
+					circle: {
+						...primitive.circle,
+						dash: cloneDash(primitive.circle.dash)
+					}
+				}
+			: {}),
+		...(primitive.polygon
+			? {
+					polygon: {
+						...primitive.polygon,
+						dash: cloneDash(primitive.polygon.dash),
+						points: cloneRoute(primitive.polygon.points)
+					}
+				}
+			: {}),
+		...(primitive.line
+			? {
+					line: {
+						...primitive.line,
+						dash: cloneDash(primitive.line.dash),
+						points: cloneRoute(primitive.line.points)
+					}
+				}
+			: {})
+	};
+}
+
+function cloneDash(
+	dash: [number, number] | undefined
+): [number, number] | undefined {
+	return dash ? [dash[0], dash[1]] : undefined;
 }
 
 function cloneConnectorFrameMap(

@@ -492,6 +492,54 @@ scenes:
 		expect(snapshots[1].elements[0].text?.value).toBe('Auth\nGateway');
 	});
 
+	test('validates built-in primitive elements without requiring external assets', () => {
+		const document = parseScene(`
+header:
+  assets: []
+  floor:
+    size: [4, 4]
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements:
+      - id: service-zone
+        asset: rectangle
+        at: [1, 1]
+        size: 2
+        layer: ground
+        primitive:
+          rectangle:
+            fill: "#2563eb"
+            stroke: "#1d4ed8"
+            strokeWidth: 1
+            opacity: 0.16
+      - id: diagonal-marker
+        asset: line
+        at: [1, 1]
+        layer: ground
+        primitive:
+          line:
+            points: [[0, 0], [1, 1]]
+            stroke: "#111111"
+            strokeWidth: 2
+`);
+
+		const report = validateScene(document);
+		const snapshots = resolveSceneSnapshots(document);
+
+		expect(report.isValid).toBe(true);
+		expect(report.errors).toEqual([]);
+		expect(snapshots[0].elements[0]).toEqual(
+			expect.objectContaining({
+				asset: 'rectangle',
+				primitive: {
+					rectangle: expect.objectContaining({ opacity: 0.16 })
+				}
+			})
+		);
+	});
+
 	test('rejects invalid text asset authoring', () => {
 		const missingText = validDocument();
 		firstInitialElement(missingText).asset = 'text';

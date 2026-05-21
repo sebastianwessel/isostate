@@ -186,6 +186,7 @@ interface ElementPlacement {
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
   text?: TextContent;
+  primitive?: PrimitiveContent;
 }
 
 interface ElementPatch {
@@ -197,6 +198,7 @@ interface ElementPatch {
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
   text?: TextContent;
+  primitive?: PrimitiveContent;
 }
 
 interface ElementRemoval {
@@ -212,6 +214,27 @@ interface TextContent {
   lineHeight?: number;
   fill?: string;
 }
+
+type PrimitiveAssetId = 'rectangle' | 'circle' | 'polygon' | 'line';
+
+interface PrimitiveContent {
+  rectangle?: PrimitiveStyle;
+  circle?: PrimitiveStyle;
+  polygon?: PrimitiveStyle & { points: [number, number][] };
+  line?: Omit<PrimitiveStyle, 'fill'> & {
+    points: [number, number][];
+    lineCap?: 'butt' | 'round' | 'square';
+    lineJoin?: 'miter' | 'round' | 'bevel';
+  };
+}
+
+interface PrimitiveStyle {
+  fill?: string;
+  stroke?: string;
+  strokeWidth?: number;
+  opacity?: number;
+  dash?: [number, number];
+}
 ```
 
 `at` is the authored grid coordinate. The old authored `pos` field is not accepted in `.isostate.yaml`; the compiler may map `at` to runtime `pos`.
@@ -222,7 +245,12 @@ Validation rules:
 - `add.elements[].id` must not already be present in the previous scene.
 - `update.elements[].id` and `remove.elements[].id` must be present in the previous scene.
 - `remove.elements[].id` may not also appear in the same scene's `update.elements`.
-- `asset` must be declared in `header.assets[]` and resolve through `assetBaseUrl`, except the reserved built-in `asset: text`.
+- `asset` must be declared in `header.assets[]` and resolve through
+  `assetBaseUrl`, except reserved built-in generated assets: `text`,
+  `rectangle`, `circle`, `polygon`, and `line`.
+- Built-in primitive assets require `primitive` with exactly one matching
+  payload and must not use `text`.
+- `size` must be a positive whole-grid-cell count.
 - `layer` defaults to `structures` when that layer exists, otherwise the first declared layer.
 - `size` defaults to `1` and must be a positive finite number. Human-authored examples use whole-cell values.
 - `at` coordinates must be finite numbers, each `>= 0`. Human-authored examples use whole-cell values.

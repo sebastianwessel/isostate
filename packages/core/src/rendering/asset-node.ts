@@ -1,6 +1,13 @@
 import { RenderError } from '../types/errors.ts';
-import type { TextAlign, TextContent } from '../types/node.ts';
+import type {
+	LinePrimitive,
+	PrimitiveContent,
+	PrimitiveStyle,
+	TextAlign,
+	TextContent
+} from '../types/node.ts';
 import type { RuntimeBundle } from '../types/runtime-bundle.ts';
+import { projectToRaw } from '../utils/projection.ts';
 
 const NS = 'http://www.w3.org/2000/svg';
 
@@ -73,6 +80,49 @@ export function createTextAssetNode(
 	return group;
 }
 
+export function createPrimitiveAssetNode(
+	assetName: string,
+	primitive: PrimitiveContent | undefined,
+	cellSize: number
+): SVGGElement {
+	const group = document.createElementNS(NS, 'g') as SVGGElement;
+	switch (assetName) {
+		case 'rectangle':
+			appendProjectedPolygon(
+				group,
+				rectanglePoints(),
+				primitive?.rectangle,
+				cellSize
+			);
+			return group;
+		case 'polygon':
+			appendProjectedPolygon(
+				group,
+				primitive?.polygon?.points,
+				primitive?.polygon,
+				cellSize
+			);
+			return group;
+		case 'line':
+			appendProjectedPolyline(
+				group,
+				primitive?.line,
+				primitive?.line,
+				cellSize
+			);
+			return group;
+		case 'circle':
+			appendCircle(group, primitive?.circle, cellSize);
+			return group;
+		default:
+			throw new RenderError(
+				'PRIMITIVE_ASSET_UNKNOWN',
+				`Unknown built-in primitive asset: ${assetName}`,
+				{ asset: assetName }
+			);
+	}
+}
+
 function textAnchorX(align: TextAlign, cellSize: number): number {
 	if (align === 'start') return -cellSize / 2;
 	if (align === 'end') return cellSize / 2;
@@ -82,6 +132,92 @@ function textAnchorX(align: TextAlign, cellSize: number): number {
 function normalizeTextLines(value: string): string[] {
 	const normalized = value.replace(/\r\n?/g, '\n').replace(/\n$/, '');
 	return normalized.split('\n');
+}
+
+function rectanglePoints(): [number, number][] {
+	return [
+		[0, 0],
+		[1, 0],
+		[1, 1],
+		[0, 1]
+	];
+}
+
+function appendProjectedPolygon(
+	group: SVGGElement,
+	points: [number, number][] | undefined,
+	style: PrimitiveStyle | undefined,
+	cellSize: number
+): void {
+	if (!points) return;
+	const polygon = document.createElementNS(NS, 'polygon') as SVGPolygonElement;
+	polygon.setAttribute(
+		'points',
+		points.map((point) => projectLocalPoint(point, cellSize)).join(' ')
+	);
+	applyPrimitiveStyle(polygon, style, { fill: 'currentColor', stroke: 'none' });
+	group.appendChild(polygon);
+}
+
+function appendProjectedPolyline(
+	group: SVGGElement,
+	line: LinePrimitive | undefined,
+	style: PrimitiveStyle | undefined,
+	cellSize: number
+): void {
+	if (!line?.points) return;
+	const polyline = document.createElementNS(
+		NS,
+		'polyline'
+	) as SVGPolylineElement;
+	polyline.setAttribute(
+		'points',
+		line.points.map((point) => projectLocalPoint(point, cellSize)).join(' ')
+	);
+	polyline.setAttribute('fill', 'none');
+	polyline.setAttribute('stroke-linecap', line.lineCap ?? 'round');
+	polyline.setAttribute('stroke-linejoin', line.lineJoin ?? 'round');
+	applyPrimitiveStyle(polyline, style, {
+		fill: 'none',
+		stroke: 'currentColor'
+	});
+	group.appendChild(polyline);
+}
+
+function appendCircle(
+	group: SVGGElement,
+	style: PrimitiveStyle | undefined,
+	cellSize: number
+): void {
+	const center = projectLocalPoint([0.5, 0.5], cellSize);
+	const circle = document.createElementNS(NS, 'circle') as SVGCircleElement;
+	const [cx, cy] = center.split(',').map(Number);
+	circle.setAttribute('cx', String(cx));
+	circle.setAttribute('cy', String(cy));
+	circle.setAttribute('r', String(cellSize * 0.2));
+	applyPrimitiveStyle(circle, style, {
+		fill: 'currentColor',
+		stroke: 'none'
+	});
+	group.appendChild(circle);
+}
+
+function projectLocalPoint(point: [number, number], cellSize: number): string {
+	const projected = projectToRaw(point[0], point[1], cellSize);
+	const anchor = projectToRaw(1, 1, cellSize);
+	return `${projected.rawX - anchor.rawX},${projected.rawY - anchor.rawY}`;
+}
+
+function applyPrimitiveStyle(
+	node: SVGElement,
+	style: PrimitiveStyle | undefined,
+	defaults: { fill: string; stroke: string }
+): void {
+	node.setAttribute('fill', style?.fill ?? defaults.fill);
+	node.setAttribute('stroke', style?.stroke ?? defaults.stroke);
+	node.setAttribute('stroke-width', String(style?.strokeWidth ?? 0));
+	node.setAttribute('opacity', String(style?.opacity ?? 1));
+	if (style?.dash) node.setAttribute('stroke-dasharray', style.dash.join(' '));
 }
 
 function createUrlAssetNode(

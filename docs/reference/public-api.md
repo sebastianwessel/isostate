@@ -48,7 +48,8 @@ in the runtime bundle and the renderer loads them with SVG `<image>` nodes.
 Use `header.assets[].anchor` to align imported SVGs whose visual ground contact
 is not centered in the viewport.
 
-The reserved built-in `asset: text` does not use an external asset URL:
+Reserved built-in generated assets do not use external asset URLs. Use
+`asset: text` for labels:
 
 ```yaml
 - id: service-label
@@ -56,6 +57,19 @@ The reserved built-in `asset: text` does not use an external asset URL:
   at: [2, 1]
   text:
     value: "Service\nAPI"
+```
+
+Use primitive assets for simple underlays or markers:
+
+```yaml
+- id: service-zone
+  asset: rectangle
+  at: [1, 1]
+  size: 3
+  primitive:
+    rectangle:
+      fill: "#2563eb"
+      opacity: 0.16
 ```
 
 Connections also do not use external asset URLs. They are authored under

@@ -124,7 +124,10 @@ assets:
     anchor: [0.5, 1]
 ```
 
-An element can reference only assets declared in `header.assets`, except the reserved built-in `asset: text`. If an external asset has no URL source from `assetBaseUrl`, validation fails before compilation.
+An element can reference only assets declared in `header.assets`, except
+reserved built-in generated assets: `text`, `rectangle`, `circle`, `polygon`,
+and `line`. If an external asset has no URL source from `assetBaseUrl`,
+validation fails before compilation.
 
 URL-loaded files must be standalone SVG documents with `xmlns="http://www.w3.org/2000/svg"` and a valid `viewBox`.
 
@@ -154,6 +157,39 @@ Text labels use the reserved asset id `text` and an element-level `text` object.
 ```
 
 `text.value` supports line breaks. The compiler preserves the text payload in runtime scene snapshots and excludes `text` from asset URL generation. The runtime renderer creates SVG text nodes directly; it never treats `text.value` as SVG or HTML.
+
+### Built-In Primitives
+
+Primitive geometry uses reserved asset ids and an element-level `primitive`
+object. Primitive assets are not listed in `header.assets` and are generated
+directly with SVG DOM APIs.
+
+```yaml
+- id: service-zone
+  asset: rectangle
+  layer: ground
+  at: [1, 1]
+  size: 3
+  primitive:
+    rectangle:
+      fill: "#2563eb"
+      stroke: "#1d4ed8"
+      strokeWidth: 1
+      opacity: 0.16
+```
+
+Rules:
+
+- `primitive` must contain exactly one child matching the asset id.
+- `rectangle`, `circle`, and `polygon` accept `fill`, `stroke`,
+  `strokeWidth`, `opacity`, and `dash`.
+- `line` accepts `points`, `stroke`, `strokeWidth`, `opacity`, `dash`,
+  `lineCap`, and `lineJoin`.
+- `polygon.points` and `line.points` are normalized local grid coordinates from
+  `0` to `1`; polygons require at least three points and lines require at least
+  two.
+- Element `size` is a positive whole-grid-cell count. Use `size: 2` for
+  two-cell visual footprints instead of fractional sizes.
 
 ## Visual Connectors
 

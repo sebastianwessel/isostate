@@ -64,7 +64,8 @@ import type {
 	SceneDocument,
 	SceneHeader,
 	SceneStep,
-	TextContent
+	TextContent,
+	PrimitiveContent
 } from '@isostate/core';
 ```
 
@@ -94,6 +95,16 @@ Text elements do not need `header.assets` or `assetBaseUrl`.
 The runtime renders them as SVG `<text>/<tspan>` nodes and supports line breaks
 in `value`.
 
+`PrimitiveContent` is used by reserved built-in primitive assets:
+
+```ts
+type PrimitiveAssetId = 'rectangle' | 'circle' | 'polygon' | 'line';
+```
+
+Use `asset: rectangle`, `circle`, `polygon`, or `line` with a matching
+`primitive` payload. Primitive points use normalized local grid coordinates from
+`0` to `1`; primitive elements do not need `header.assets` or `assetBaseUrl`.
+
 ## Assets and Themes
 
 ```ts
@@ -105,8 +116,9 @@ import type {
 ```
 
 Authored YAML uses document-local `header.assets[].id` values; those ids must
-resolve to browser-loaded SVG files through `header.assetBaseUrl`. `asset: text`
-is the reserved built-in exception and is never registered or URL-loaded.
+resolve to browser-loaded SVG files through `header.assetBaseUrl`. Built-in
+generated assets (`text`, `rectangle`, `circle`, `polygon`, `line`) are reserved
+exceptions and are never registered or URL-loaded.
 External asset definitions may declare `anchor: [x, y]` with normalized viewport
 coordinates so imported SVGs align their real ground contact point to the grid.
 Theme variables are `Record<string, string>` values whose keys must start with

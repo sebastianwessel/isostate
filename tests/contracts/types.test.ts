@@ -8,6 +8,7 @@ import type {
 	RuntimeBundle,
 	RuntimeConnectorState,
 	RuntimeConnectorStyle,
+	PrimitiveContent,
 	SceneDocument,
 	SceneStep,
 	TextContent
@@ -55,12 +56,26 @@ describe('public type contracts', () => {
 			lineHeight: 1.2,
 			fill: '#111111'
 		} satisfies TextContent;
+		const zonePrimitive = {
+			rectangle: {
+				fill: '#2563eb',
+				stroke: '#1d4ed8',
+				strokeWidth: 1,
+				opacity: 0.16
+			}
+		} satisfies PrimitiveContent;
 
 		const initial = {
 			id: 'initial',
 			elements: [
 				{ id: 'app-server', asset: 'iso-server', at: [2, 2] },
-				{ id: 'app-label', asset: 'text', at: [2, 1], text: labelText }
+				{ id: 'app-label', asset: 'text', at: [2, 1], text: labelText },
+				{
+					id: 'service-zone',
+					asset: 'rectangle',
+					at: [1, 1],
+					primitive: zonePrimitive
+				}
 			],
 			connections: [
 				{
