@@ -1,0 +1,9 @@
+facts:
+  - source: user
+    statement: Authored YAML should use a header for assets and required settings.
+  - source: user
+    statement: Scenes should be ordered, with the first scene as full placement and following scenes as deltas.
+  - source: user
+    statement: The grid and surface should fit available width and height with minimal whitespace and centered content.
+  - source: inference
+    statement: Existing implementation and tests remain based on the old state/keyframe model and need a remediation wave.

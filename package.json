@@ -1,0 +1,41 @@
+{
+	"name": "isostate",
+	"version": "0.1.0",
+	"description": "Scroll-driven animated isometric illustrations with a textual DSL",
+	"private": true,
+	"type": "module",
+	"files": ["packages/core/dist"],
+	"workspaces": ["packages/*"],
+	"scripts": {
+		"clean": "rm -rf packages/core/dist",
+		"build": "bun run clean && tsx node_modules/rollup/dist/bin/rollup -c rollup.config.ts && tsc -p packages/core/tsconfig.json --emitDeclarationOnly --noCheck",
+		"lint": "biome check packages/",
+		"format": "biome format --write packages/",
+		"test": "bun test",
+		"coverage": "bun test --coverage --coverage-reporter=text --coverage-reporter=lcov && tsx scripts/check-coverage.ts",
+		"typecheck": "tsc --noEmit",
+		"size": "tsx scripts/check-size.ts",
+		"publint": "publint run packages/core",
+		"compile": "tsx scripts/compile.ts",
+		"validate": "tsx scripts/validate.ts"
+	},
+	"peerDependencies": {
+		"yaml": ">=2.0.0"
+	},
+	"peerDependenciesMeta": {
+		"yaml": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.0",
+		"@rollup/plugin-node-resolve": "^16.0.0",
+		"@types/bun": "^1.1.0",
+		"publint": "^0.2.0",
+		"rollup": "^4.24.0",
+		"tsx": "^4.19.0",
+		"typescript": "^5.5.0",
+		"yaml": "^2.9.0"
+	},
+	"license": "MIT"
+}

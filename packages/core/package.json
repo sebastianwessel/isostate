@@ -1,0 +1,55 @@
+{
+	"name": "@isostate/core",
+	"version": "0.1.0",
+	"description": "Isometric scene engine — SVG rendering, animation, and YAML DSL for browser-based isometric scenes.",
+	"type": "module",
+	"main": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./runtime": {
+			"types": "./dist/runtime/index.d.ts",
+			"import": "./dist/runtime/index.js"
+		},
+		"./dsl": {
+			"types": "./dist/dsl/index.d.ts",
+			"import": "./dist/dsl/index.js"
+		}
+	},
+	"files": ["dist"],
+	"sideEffects": false,
+	"scripts": {
+		"clean": "rm -rf dist",
+		"build": "bun run clean && tsx ../../node_modules/rollup/dist/bin/rollup -c ../../rollup.config.ts && tsc -p tsconfig.json --emitDeclarationOnly --noCheck",
+		"lint": "biome check src/",
+		"format": "biome format --write src/",
+		"test": "bun test",
+		"prepublishOnly": "bun run build && bun run lint"
+	},
+	"devDependencies": {
+		"typescript": "^5.4.0",
+		"@biomejs/biome": "^1.9.0",
+		"yaml": "^2.9.0",
+		"publint": "^0.2.0",
+		"size-limit": "^11.1.0"
+	},
+	"peerDependencies": {
+		"yaml": "^2.9.0"
+	},
+	"peerDependenciesMeta": {
+		"yaml": {
+			"optional": true
+		}
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/anomalyco/isometric.git"
+	}
+}

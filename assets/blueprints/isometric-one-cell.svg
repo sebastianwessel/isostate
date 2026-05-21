@@ -1,0 +1,12 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="One-cell isometric asset blueprint">
+	<g id="asset" stroke="#202020" stroke-width="1.25" stroke-linejoin="round">
+		<path d="M16 24 32 16 48 24 32 32Z" fill="var(--iso-top, #f4f4f4)" />
+		<path d="M16 24v20l16 10V32Z" fill="var(--iso-front, #d4d4d4)" />
+		<path d="M48 24v20L32 54V32Z" fill="var(--iso-side, #a8a8a8)" />
+	</g>
+	<g id="authoring-guides" fill="none" stroke-linecap="round">
+		<path d="M0 64H64" stroke="#94a3b8" stroke-dasharray="3 3" />
+		<path d="M32 0V64" stroke="#94a3b8" stroke-dasharray="3 3" />
+		<circle cx="32" cy="64" r="2" fill="#ef4444" stroke="none" />
+	</g>
+</svg>

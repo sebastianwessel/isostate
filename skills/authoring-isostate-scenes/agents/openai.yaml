@@ -1,0 +1,3 @@
+display_name: Authoring isostate scenes
+short_description: Write and review isostate YAML scenes, assets, and connections.
+default_prompt: Create or review an isostate .isostate.yaml scene using the current scene-delta DSL.

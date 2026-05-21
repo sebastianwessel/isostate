@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+packages/*/dist/
+*.tsbuildinfo
+
+# Test and coverage output
+coverage/
+*.lcov
+
+# Local environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+bun-debug.log*
+
+# OS and editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Local caches and temporary output
+.cache/
+.tmp/
+tmp/
+.codex/tmp/
+playwright-report/
+test-results/
+*-screenshot.png
+isostate-*-demo*.png
+
+# Package manager alternates for this Bun project
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

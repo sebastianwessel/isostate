@@ -1,0 +1,102 @@
+# Getting Started
+
+Use isostate in two steps:
+
+1. Compile `.isostate.yaml` during development or CI.
+2. Import the compiled `.isostate.js` bundle in browser code and call
+   `mountScene`.
+
+## Run The Demo
+
+From the repository root:
+
+```bash
+bun install
+bun run build
+python3 -m http.server 4173
+```
+
+Open:
+
+```text
+http://localhost:4173/examples/basic/
+```
+
+The browser loads `examples/basic/scene.isostate.js`. It does not parse YAML.
+
+## Runtime Usage
+
+```ts
+import { mountScene, type RuntimeBundle } from '@isostate/core';
+import sceneBundle from './scene.isostate.js';
+
+const target = document.querySelector<HTMLElement>('#scene');
+if (!target) throw new Error('Missing #scene');
+
+const mounted = mountScene(target, sceneBundle as RuntimeBundle, {
+	label: 'Infrastructure scene',
+	controller: false
+});
+
+mounted.engine.setProgress(0.5);
+```
+
+## Dev-Time Compile
+
+```ts
+import {
+	compileScene,
+	parseScene,
+	toJs,
+	validateScene
+} from '@isostate/core/dsl';
+
+const document = parseScene(yamlText);
+const report = validateScene(document);
+if (!report.isValid) throw new Error(report.errors[0]?.message);
+
+const bundle = compileScene(document);
+const moduleText = toJs(bundle);
+```
+
+## Authoring Shape
+
+YAML starts with a `header`, then defines ordered `scenes`.
+
+```yaml
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: service-box
+      path: service-box
+  floor:
+    layer: structures
+  layers:
+    - name: structures
+
+scenes:
+  - id: initial
+    elements:
+      - id: api
+        asset: service-box
+        layer: structures
+        at: [1, 1]
+      - id: api-label
+        asset: text
+        layer: structures
+        at: [1, 1]
+        text:
+          value: "Service\nAPI"
+
+  - id: scaled
+    update:
+      elements:
+        - id: api
+          at: [2, 1]
+          size: 2
+```
+
+The first scene is the full placement snapshot. Later scenes define only deltas.
+`asset: text` is built in and is not declared in `header.assets`.
+
+Next: [Author Scene Deltas](./guides/author-scene-deltas.md).

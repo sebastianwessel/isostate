@@ -1,0 +1,23 @@
+artifacts:
+  - path: 00-vision.md
+    layer: foundation
+  - path: 00-stack.md
+    layer: foundation
+  - path: 00-conventions.md
+    layer: foundation
+  - path: 00-architecture-overview.md
+    layer: foundation
+  - path: glossary.md
+    layer: foundation
+  - path: 01-domains/scene.md
+    layer: domain
+  - path: 01-domains/node.md
+    layer: domain
+  - path: 01-domains/connector.md
+    layer: domain
+  - path: 02-capabilities/rendering/connector-routing.md
+    layer: capability
+  - path: 03-contracts/scene-schema.md
+    layer: contract
+  - path: 03-contracts/runtime-bundle.md
+    layer: contract

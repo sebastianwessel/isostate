@@ -1,0 +1,46 @@
+tickets:
+  TICKET-001:
+    status: implementation_ready
+    wave: wave_01_foundation
+    depends_on: []
+    blocked_by: []
+  TICKET-002:
+    status: implementation_ready
+    wave: wave_02_parallel_core
+    depends_on: [TICKET-001]
+    blocked_by: [TICKET-001]
+  TICKET-003:
+    status: implementation_ready
+    wave: wave_02_parallel_core
+    depends_on: [TICKET-001, TICKET-002]
+    blocked_by: [TICKET-001, TICKET-002]
+  TICKET-004:
+    status: implementation_ready
+    wave: wave_02_parallel_core
+    depends_on: [TICKET-001, TICKET-002]
+    blocked_by: [TICKET-001, TICKET-002]
+  TICKET-005:
+    status: implementation_ready
+    wave: wave_02_parallel_core
+    depends_on: [TICKET-001, TICKET-002, TICKET-004]
+    blocked_by: [TICKET-001, TICKET-002, TICKET-004]
+  TICKET-006:
+    status: implementation_ready
+    wave: wave_02_parallel_core
+    depends_on: [TICKET-001, TICKET-002]
+    blocked_by: [TICKET-001, TICKET-002]
+  TICKET-007:
+    status: implementation_ready
+    wave: wave_02_parallel_core
+    depends_on: [TICKET-001, TICKET-002]
+    blocked_by: [TICKET-001, TICKET-002]
+  TICKET-008:
+    status: implementation_ready
+    wave: wave_02_parallel_core
+    depends_on: [TICKET-001]
+    blocked_by: [TICKET-001]
+  TICKET-009:
+    status: implementation_ready
+    wave: wave_02_parallel_core
+    depends_on: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
+    blocked_by: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]

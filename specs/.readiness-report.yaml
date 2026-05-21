@@ -1,0 +1,34 @@
+status: approved
+generated_at: 2026-05-21
+human_approval:
+  status: approved
+  required_for: none
+summary:
+  reason: Specs were corrected from the old state/keyframe authoring model to the intended header plus scene-delta model and the implementation was updated to match the revised DSL, connection, compiler, runtime, rendering, docs, and example contracts.
+  foundation: updated
+  domains: updated
+  contracts: updated
+  flows: updated
+  nfrs: unchanged
+blocking_gaps: []
+resolved_gaps:
+  - Authored YAML contract now uses `header` plus ordered `scenes`.
+  - First scene is a full placement snapshot; following scenes are deltas.
+  - Authored `keyframes`, top-level `states`, top-level `elements`, `pos`, and `lifecycle.status` are explicitly rejected.
+  - Runtime layout contract now requires tight projected bounds, contain fitting, explicit centering, and no hard-coded `800x600` whitespace.
+  - Runtime bundle contract now carries `floor`, `layout`, and compiled `scenes[]` snapshots.
+  - Connector spec now defines generated SVG ground-plane routes, endpoint-based auto-routing with obstacle avoidance, line/road variants, endpoint geometry, fixed dash/dot patterns, and direction-aware CSS flow animation.
+  - Connector route ambiguity was closed: hand-authored manual routes are whole-grid only, `from`/`to` ports may compile to fractional runtime route points, endpoint `offset` math is defined, and arrowheads/endcaps are projected ground-plane geometry rather than stretched SVG assets or screen-space markers.
+  - Implementation now parses public `connections`, nested `add/update/remove` operation sections, validates endpoint lifecycle, compiles runtime `connectors[]`, renders generated connector SVG, updates connector animation frames, and regenerates the browser example bundle.
+planning_gate:
+  status: passed
+  reason: Implementation proceeded directly from the current approved specs using scoped parallel agents; stale tickets remain historical and were not reused.
+gate_simulation:
+  status: passed
+  reason: Parser, validator, compiler, runtime, rendering, animation, docs, example, and verification slices were executed with disjoint write scopes.
+deterministic_check:
+  command: node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
+  status: passed
+confidence: high
+risks:
+  - Runtime bundle compatibility is intentionally breaking; old generated bundles must be recompiled.

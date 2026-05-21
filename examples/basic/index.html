@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>isostate basic demo</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css?v=8" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="toolbar" aria-label="Scene controls">
+        <div>
+          <h1>isostate runtime demo</h1>
+          <p>Compiled YAML scene rendered by the browser runtime.</p>
+        </div>
+        <label class="progress-control">
+          <span>Progress</span>
+          <input id="progress" type="range" min="0" max="100" value="0" />
+        </label>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="scene" class="stage"></div>
+      </section>
+
+      <section class="state-panel" aria-label="Resolved runtime config">
+        <span id="state-label">initial</span>
+        <code id="config-label"></code>
+      </section>
+    </main>
+
+    <script type="module" src="./main.js?v=8"></script>
+  </body>
+</html>

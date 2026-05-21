@@ -1,0 +1,1243 @@
+export default {
+  "_digest": "e0bbb779bc8470318ccdc7423737ff192af9fb6df72a841e6cfdab1ee054eff4",
+  "_format": "isostate-runtime-bundle",
+  "_version": "0.1.0",
+  "assets": {
+    "aws-app-server": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/application-server.svg"
+    },
+    "aws-client": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/client.svg"
+    },
+    "aws-end-user": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/end-user.svg"
+    },
+    "aws-internet-gateway": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/internet-gateway.svg"
+    },
+    "aws-lambda": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/lambda.svg"
+    },
+    "aws-load-balancer": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/elastic-load-balancing.svg"
+    },
+    "aws-rds": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/rds.svg"
+    },
+    "aws-s3": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/s3-bucket.svg"
+    },
+    "aws-vpc-gateway": {
+      "anchor": [
+        0.5,
+        1
+      ],
+      "url": "../../assets/aws-3d/vpc-gateway.svg"
+    }
+  },
+  "className": "demo-surface",
+  "floor": {
+    "layer": "ground",
+    "origin": [
+      0,
+      0
+    ],
+    "size": [
+      12,
+      7
+    ],
+    "visible": true
+  },
+  "grid": {
+    "cellSize": 64
+  },
+  "layers": [
+    {
+      "name": "ground",
+      "order": 0
+    },
+    {
+      "name": "network",
+      "order": 1
+    },
+    {
+      "name": "compute",
+      "order": 2
+    },
+    {
+      "name": "data",
+      "order": 3
+    },
+    {
+      "name": "labels",
+      "order": 4
+    }
+  ],
+  "layout": {
+    "align": [
+      0.5,
+      0.5
+    ],
+    "bounds": "union",
+    "fit": "contain",
+    "padding": {
+      "x": 64,
+      "y": 64
+    }
+  },
+  "scenes": [
+    {
+      "connectors": [
+        {
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "user-to-client",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              1,
+              6.5
+            ],
+            [
+              1,
+              5.5
+            ]
+          ],
+          "start": "dot",
+          "style": {
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "solid",
+            "stroke": "#111111",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "client-to-edge",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              1.5,
+              5
+            ],
+            [
+              3.5,
+              5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              0,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dotted",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        }
+      ],
+      "elements": [
+        {
+          "asset": "aws-end-user",
+          "id": "user",
+          "layer": "network",
+          "pos": [
+            0,
+            6
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-client",
+          "id": "client",
+          "layer": "network",
+          "pos": [
+            1,
+            5
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-internet-gateway",
+          "id": "internet-gateway",
+          "layer": "network",
+          "pos": [
+            3,
+            4
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "id": "edge-label",
+          "layer": "labels",
+          "pos": [
+            3,
+            3
+          ],
+          "presence": "present",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Public\nEdge\n"
+          }
+        }
+      ],
+      "id": "edge-entry",
+      "progress": 0
+    },
+    {
+      "connectors": [
+        {
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "user-to-client",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              1,
+              6.5
+            ],
+            [
+              1,
+              5.5
+            ]
+          ],
+          "start": "dot",
+          "style": {
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "solid",
+            "stroke": "#111111",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "client-to-edge",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              1.5,
+              5
+            ],
+            [
+              3.5,
+              5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              0,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dotted",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "edge-to-vpc",
+          "layer": "ground",
+          "presence": "entering",
+          "route": [
+            [
+              4,
+              4.5
+            ],
+            [
+              5,
+              4.5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              12,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dashed",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        }
+      ],
+      "elements": [
+        {
+          "asset": "aws-end-user",
+          "id": "user",
+          "layer": "network",
+          "pos": [
+            0,
+            6
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-client",
+          "id": "client",
+          "layer": "network",
+          "pos": [
+            1,
+            5
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-internet-gateway",
+          "id": "internet-gateway",
+          "layer": "network",
+          "pos": [
+            3,
+            4
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "id": "edge-label",
+          "layer": "labels",
+          "pos": [
+            3,
+            3
+          ],
+          "presence": "present",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Authenticated\nEdge\n"
+          }
+        },
+        {
+          "asset": "aws-vpc-gateway",
+          "enter": "fade-in",
+          "id": "vpc-gateway",
+          "layer": "network",
+          "pos": [
+            5,
+            4
+          ],
+          "presence": "entering",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "enter": "fade-in",
+          "id": "auth-label",
+          "layer": "labels",
+          "pos": [
+            5,
+            3
+          ],
+          "presence": "entering",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Private\nVPC\n"
+          }
+        }
+      ],
+      "id": "secured-vpc",
+      "progress": 0.3333333333333333
+    },
+    {
+      "connectors": [
+        {
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "user-to-client",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              1,
+              6.5
+            ],
+            [
+              1,
+              5.5
+            ]
+          ],
+          "start": "dot",
+          "style": {
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "solid",
+            "stroke": "#111111",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "client-to-edge",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              1.5,
+              5
+            ],
+            [
+              3.5,
+              5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              0,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dotted",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "edge-to-vpc",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              4,
+              4.5
+            ],
+            [
+              5,
+              4.5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              12,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dashed",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "direction": "route",
+          "end": "none",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "vpc-to-load-balancer",
+          "layer": "ground",
+          "presence": "entering",
+          "route": [
+            [
+              6,
+              4.5
+            ],
+            [
+              7,
+              4.5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "lane": "center-dashed",
+            "opacity": 1,
+            "outline": "#ffffff",
+            "outlineWidth": 2,
+            "pattern": "solid",
+            "stroke": "#fbbf24",
+            "strokeWidth": 12,
+            "variant": "road"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "load-balancer-to-apps",
+          "layer": "ground",
+          "presence": "entering",
+          "route": [
+            [
+              8,
+              5
+            ],
+            [
+              9,
+              5
+            ],
+            [
+              9,
+              4
+            ],
+            [
+              10,
+              4
+            ],
+            [
+              10,
+              6
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              0,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dotted",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        }
+      ],
+      "elements": [
+        {
+          "asset": "aws-end-user",
+          "id": "user",
+          "layer": "network",
+          "pos": [
+            0,
+            6
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-client",
+          "id": "client",
+          "layer": "network",
+          "pos": [
+            1,
+            5
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-internet-gateway",
+          "id": "internet-gateway",
+          "layer": "network",
+          "pos": [
+            3,
+            4
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "id": "edge-label",
+          "layer": "labels",
+          "pos": [
+            3,
+            3
+          ],
+          "presence": "present",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Authenticated\nEdge\n"
+          }
+        },
+        {
+          "asset": "aws-vpc-gateway",
+          "id": "vpc-gateway",
+          "layer": "network",
+          "pos": [
+            5,
+            4
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "id": "auth-label",
+          "layer": "labels",
+          "pos": [
+            5,
+            3
+          ],
+          "presence": "present",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Private\nVPC\n"
+          }
+        },
+        {
+          "asset": "aws-load-balancer",
+          "enter": "fade-in",
+          "id": "load-balancer",
+          "layer": "compute",
+          "pos": [
+            7,
+            4
+          ],
+          "presence": "entering",
+          "size": 1
+        },
+        {
+          "asset": "aws-app-server",
+          "enter": "fade-in",
+          "id": "app-server-a",
+          "layer": "compute",
+          "pos": [
+            9,
+            3
+          ],
+          "presence": "entering",
+          "size": 1
+        },
+        {
+          "asset": "aws-app-server",
+          "enter": "fade-in",
+          "id": "app-server-b",
+          "layer": "compute",
+          "pos": [
+            9,
+            5
+          ],
+          "presence": "entering",
+          "size": 1
+        },
+        {
+          "asset": "aws-lambda",
+          "enter": "fade-in",
+          "id": "lambda-worker",
+          "layer": "compute",
+          "pos": [
+            8,
+            6
+          ],
+          "presence": "entering",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "enter": "fade-in",
+          "id": "compute-label",
+          "layer": "labels",
+          "pos": [
+            9,
+            2
+          ],
+          "presence": "entering",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Compute\nTier\n"
+          }
+        }
+      ],
+      "id": "compute-tier",
+      "progress": 0.6666666666666666
+    },
+    {
+      "connectors": [
+        {
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "user-to-client",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              1,
+              6.5
+            ],
+            [
+              1,
+              5.5
+            ]
+          ],
+          "start": "dot",
+          "style": {
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "solid",
+            "stroke": "#111111",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "client-to-edge",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              1.5,
+              5
+            ],
+            [
+              3.5,
+              5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              0,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dotted",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "edge-to-vpc",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              4,
+              4.5
+            ],
+            [
+              5,
+              4.5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              12,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dashed",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "direction": "route",
+          "end": "none",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "vpc-to-load-balancer",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              6,
+              4.5
+            ],
+            [
+              7,
+              4.5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "lane": "center-dashed",
+            "opacity": 1,
+            "outline": "#ffffff",
+            "outlineWidth": 2,
+            "pattern": "solid",
+            "stroke": "#fbbf24",
+            "strokeWidth": 12,
+            "variant": "road"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "load-balancer-to-apps",
+          "layer": "ground",
+          "presence": "present",
+          "route": [
+            [
+              8,
+              5
+            ],
+            [
+              9,
+              5
+            ],
+            [
+              9,
+              4
+            ],
+            [
+              10,
+              4
+            ],
+            [
+              10,
+              6
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              0,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dotted",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "apps-to-database",
+          "layer": "ground",
+          "presence": "entering",
+          "route": [
+            [
+              10,
+              3.5
+            ],
+            [
+              11,
+              3.5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              12,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dashed",
+            "stroke": "#111111",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        },
+        {
+          "ambient": [
+            {
+              "name": "flow"
+            }
+          ],
+          "direction": "route",
+          "end": "arrow",
+          "enter": "fade-in",
+          "exit": "fade-out",
+          "id": "lambda-to-object-store",
+          "layer": "ground",
+          "presence": "entering",
+          "route": [
+            [
+              9,
+              6.5
+            ],
+            [
+              11,
+              6.5
+            ]
+          ],
+          "start": "none",
+          "style": {
+            "dash": [
+              0,
+              8
+            ],
+            "lane": "none",
+            "opacity": 1,
+            "outlineWidth": 0,
+            "pattern": "dotted",
+            "stroke": "#2563eb",
+            "strokeWidth": 4,
+            "variant": "line"
+          }
+        }
+      ],
+      "elements": [
+        {
+          "asset": "aws-end-user",
+          "id": "user",
+          "layer": "network",
+          "pos": [
+            0,
+            6
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-client",
+          "id": "client",
+          "layer": "network",
+          "pos": [
+            1,
+            5
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-internet-gateway",
+          "id": "internet-gateway",
+          "layer": "network",
+          "pos": [
+            3,
+            4
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "id": "edge-label",
+          "layer": "labels",
+          "pos": [
+            3,
+            3
+          ],
+          "presence": "present",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Authenticated\nEdge\n"
+          }
+        },
+        {
+          "asset": "aws-vpc-gateway",
+          "id": "vpc-gateway",
+          "layer": "network",
+          "pos": [
+            5,
+            4
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "id": "auth-label",
+          "layer": "labels",
+          "pos": [
+            5,
+            3
+          ],
+          "presence": "present",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Private\nVPC\n"
+          }
+        },
+        {
+          "asset": "aws-load-balancer",
+          "id": "load-balancer",
+          "layer": "compute",
+          "pos": [
+            7,
+            4
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-app-server",
+          "id": "app-server-a",
+          "layer": "compute",
+          "pos": [
+            9,
+            3
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-app-server",
+          "id": "app-server-b",
+          "layer": "compute",
+          "pos": [
+            9,
+            5
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "aws-lambda",
+          "id": "lambda-worker",
+          "layer": "compute",
+          "pos": [
+            8,
+            6
+          ],
+          "presence": "present",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "id": "compute-label",
+          "layer": "labels",
+          "pos": [
+            9,
+            2
+          ],
+          "presence": "present",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Compute\nTier\n"
+          }
+        },
+        {
+          "asset": "aws-rds",
+          "enter": "fade-in",
+          "id": "database",
+          "layer": "data",
+          "pos": [
+            11,
+            3
+          ],
+          "presence": "entering",
+          "size": 1
+        },
+        {
+          "asset": "aws-s3",
+          "enter": "fade-in",
+          "id": "object-store",
+          "layer": "data",
+          "pos": [
+            11,
+            6
+          ],
+          "presence": "entering",
+          "size": 1
+        },
+        {
+          "asset": "text",
+          "enter": "fade-in",
+          "id": "data-label",
+          "layer": "labels",
+          "pos": [
+            11,
+            2
+          ],
+          "presence": "entering",
+          "size": 1,
+          "text": {
+            "align": "middle",
+            "fill": "#111111",
+            "fontSize": 12,
+            "fontWeight": 700,
+            "lineHeight": 1.2,
+            "value": "Data\nServices\n"
+          }
+        }
+      ],
+      "id": "data-services",
+      "progress": 1
+    }
+  ],
+  "theme": "light"
+};

@@ -1,0 +1,273 @@
+header:
+  version: "0.1"
+  name: aws-network-3d-flow
+  className: demo-surface
+  theme: light
+  assetBaseUrl: ../../assets/aws-3d
+  assets:
+    - id: aws-end-user
+      path: end-user
+      anchor: [0.5, 1]
+    - id: aws-client
+      path: client
+      anchor: [0.5, 1]
+    - id: aws-internet-gateway
+      path: internet-gateway
+      anchor: [0.5, 1]
+    - id: aws-vpc-gateway
+      path: vpc-gateway
+      anchor: [0.5, 1]
+    - id: aws-load-balancer
+      path: elastic-load-balancing
+      anchor: [0.5, 1]
+    - id: aws-app-server
+      path: application-server
+      anchor: [0.5, 1]
+    - id: aws-lambda
+      path: lambda
+      anchor: [0.5, 1]
+    - id: aws-rds
+      path: rds
+      anchor: [0.5, 1]
+    - id: aws-s3
+      path: s3-bucket
+      anchor: [0.5, 1]
+  grid:
+    cellSize: 64
+  floor:
+    visible: true
+    layer: ground
+  layers:
+    - name: ground
+    - name: network
+    - name: compute
+    - name: data
+    - name: labels
+
+scenes:
+  - id: edge-entry
+    elements:
+      - id: user
+        asset: aws-end-user
+        layer: network
+        at: [0, 6]
+      - id: client
+        asset: aws-client
+        layer: network
+        at: [1, 5]
+      - id: internet-gateway
+        asset: aws-internet-gateway
+        layer: network
+        at: [3, 4]
+      - id: edge-label
+        asset: text
+        layer: labels
+        at: [3, 3]
+        text:
+          value: |
+            Public
+            Edge
+          align: middle
+          fontSize: 12
+          fontWeight: 700
+          lineHeight: 1.2
+          fill: "#111111"
+    connections:
+      - id: user-to-client
+        from:
+          element: user
+          side: auto
+        to:
+          element: client
+          side: auto
+        style:
+          pattern: solid
+          stroke: "#111111"
+          strokeWidth: 4
+        start: dot
+        end: arrow
+      - id: client-to-edge
+        from:
+          element: client
+          side: auto
+        to:
+          element: internet-gateway
+          side: auto
+        routing:
+          mode: orthogonal
+          avoid: objects
+        style:
+          pattern: dotted
+          stroke: "#2563eb"
+          strokeWidth: 4
+        end: arrow
+        ambient:
+          - name: flow
+
+  - id: secured-vpc
+    add:
+      elements:
+        - id: vpc-gateway
+          asset: aws-vpc-gateway
+          layer: network
+          at: [5, 4]
+        - id: auth-label
+          asset: text
+          layer: labels
+          at: [5, 3]
+          text:
+            value: |
+              Private
+              VPC
+            align: middle
+            fontSize: 12
+            fontWeight: 700
+            lineHeight: 1.2
+            fill: "#111111"
+      connections:
+        - id: edge-to-vpc
+          from:
+            element: internet-gateway
+            side: auto
+          to:
+            element: vpc-gateway
+            side: auto
+          routing:
+            mode: orthogonal
+            avoid: objects
+          style:
+            pattern: dashed
+            stroke: "#2563eb"
+            strokeWidth: 4
+          end: arrow
+          ambient:
+            - name: flow
+    update:
+      elements:
+        - id: edge-label
+          text:
+            value: |
+              Authenticated
+              Edge
+            align: middle
+            fontSize: 12
+            fontWeight: 700
+            lineHeight: 1.2
+            fill: "#111111"
+
+  - id: compute-tier
+    add:
+      elements:
+        - id: load-balancer
+          asset: aws-load-balancer
+          layer: compute
+          at: [7, 4]
+        - id: app-server-a
+          asset: aws-app-server
+          layer: compute
+          at: [9, 3]
+        - id: app-server-b
+          asset: aws-app-server
+          layer: compute
+          at: [9, 5]
+        - id: lambda-worker
+          asset: aws-lambda
+          layer: compute
+          at: [8, 6]
+        - id: compute-label
+          asset: text
+          layer: labels
+          at: [9, 2]
+          text:
+            value: |
+              Compute
+              Tier
+            align: middle
+            fontSize: 12
+            fontWeight: 700
+            lineHeight: 1.2
+            fill: "#111111"
+      connections:
+        - id: vpc-to-load-balancer
+          from:
+            element: vpc-gateway
+            side: auto
+          to:
+            element: load-balancer
+            side: auto
+          routing:
+            mode: orthogonal
+            avoid: objects
+          style:
+            variant: road
+            lane: center-dashed
+            stroke: "#fbbf24"
+            strokeWidth: 12
+          start: none
+          end: none
+        - id: load-balancer-to-apps
+          route: [[8, 5], [9, 5], [9, 4], [10, 4], [10, 6]]
+          style:
+            pattern: dotted
+            stroke: "#2563eb"
+            strokeWidth: 4
+          end: arrow
+          ambient:
+            - name: flow
+  - id: data-services
+    add:
+      elements:
+        - id: database
+          asset: aws-rds
+          layer: data
+          at: [11, 3]
+        - id: object-store
+          asset: aws-s3
+          layer: data
+          at: [11, 6]
+        - id: data-label
+          asset: text
+          layer: labels
+          at: [11, 2]
+          text:
+            value: |
+              Data
+              Services
+            align: middle
+            fontSize: 12
+            fontWeight: 700
+            lineHeight: 1.2
+            fill: "#111111"
+      connections:
+        - id: apps-to-database
+          from:
+            element: app-server-a
+            side: auto
+          to:
+            element: database
+            side: auto
+          routing:
+            mode: orthogonal
+            avoid: objects
+          style:
+            pattern: dashed
+            stroke: "#111111"
+            strokeWidth: 4
+          end: arrow
+        - id: lambda-to-object-store
+          from:
+            element: lambda-worker
+            side: auto
+          to:
+            element: object-store
+            side: auto
+          routing:
+            mode: orthogonal
+            avoid: objects
+          style:
+            pattern: dotted
+            stroke: "#2563eb"
+            strokeWidth: 4
+          end: arrow
+          ambient:
+            - name: flow

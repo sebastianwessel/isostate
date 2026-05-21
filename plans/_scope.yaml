@@ -1,0 +1,12 @@
+in_scope:
+  - Browser runtime package boundary for `@isostate/core`.
+  - Dev-time DSL entrypoint for `@isostate/core/dsl`.
+  - Parser, validator, compiler, runtime bundle, rendering, animation, controller, background renderer.
+  - Runtime and DSL tests required by specs.
+  - Referenced docs/examples and NFR verification scripts/tests.
+out_of_scope:
+  - `@isostate/cli` command implementation.
+  - Mermaid converter implementation.
+  - Visual drag-and-drop editor.
+  - Server-side rendering.
+  - Three.js or CSS 3D transforms.
