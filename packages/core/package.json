@@ -1,6 +1,6 @@
 {
 	"name": "@sebastianwessel/isostate",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"description": "Isometric scene engine — SVG rendering, animation, and YAML DSL for browser-based isometric scenes.",
 	"keywords": [
 		"isostate",

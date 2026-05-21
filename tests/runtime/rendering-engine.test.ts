@@ -802,7 +802,7 @@ function createBundle(overrides: Record<string, unknown>): RuntimeBundle {
 	const assets = normalizeTestAssets(overrides.assets);
 	return {
 		_format: 'isostate-runtime-bundle',
-		_version: '0.1.1',
+		_version: '0.1.2',
 		_digest: '',
 		grid: { cellSize: 64 },
 		floor: { size: [4, 4], origin: [0, 0], visible: true, layer: 'main' },

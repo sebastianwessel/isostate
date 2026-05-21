@@ -256,7 +256,7 @@ function interpolateConnector(id, prevStop, nextStop, t) {
         route: interpolateRoute(prev.route, next.route, t),
         layer: t < 1 ? prev.layer : next.layer,
         lifecycle,
-        style: cloneConnectorStyle(next.style),
+        style: cloneConnectorStyle(t < 1 ? prev.style : next.style),
         start: next.start,
         end: next.end,
         direction: next.direction,
@@ -1527,8 +1527,7 @@ function applyConnectorAmbientClasses(state, ambient) {
             state.shaft.classList.remove(`iso-ambient-${name}`);
     }
     for (const name of next) {
-        if (!state.ambient.has(name))
-            state.shaft.classList.add(`iso-ambient-${name}`);
+        state.shaft.classList.add(`iso-ambient-${name}`);
     }
     state.ambient = next;
 }
@@ -1935,8 +1934,11 @@ class AnimationController {
         if (entryAnim === "none")
             return;
         animateElement(state.node, `iso-anim-${entryAnim}`, "enter");
+        const expectedAnimation = state.node.style.animation;
         state.node.addEventListener("animationend", () => {
-            state.node.style.animation = "";
+            if (state.node.style.animation === expectedAnimation) {
+                state.node.style.animation = "";
+            }
         }, { once: true });
     }
     _applyExitAnimation(elDef, state) {
@@ -1946,8 +1948,11 @@ class AnimationController {
             return;
         }
         animateElement(state.node, `iso-anim-${exitAnim}`, "exit");
+        const expectedAnimation = state.node.style.animation;
         state.node.addEventListener("animationend", () => {
-            hideElementAfterExit(state.node);
+            if (state.node.style.animation === expectedAnimation) {
+                hideElementAfterExit(state.node);
+            }
         }, { once: true });
     }
     _applyConnectorEntryAnimation(connectorDef, state) {
@@ -1955,8 +1960,11 @@ class AnimationController {
         if (entryAnim === "none")
             return;
         animateElement(state.node, `iso-anim-${entryAnim}`, "enter");
+        const expectedAnimation = state.node.style.animation;
         state.node.addEventListener("animationend", () => {
-            state.node.style.animation = "";
+            if (state.node.style.animation === expectedAnimation) {
+                state.node.style.animation = "";
+            }
         }, { once: true });
     }
     _applyConnectorExitAnimation(connectorDef, state) {
@@ -1966,8 +1974,11 @@ class AnimationController {
             return;
         }
         animateElement(state.node, `iso-anim-${exitAnim}`, "exit");
+        const expectedAnimation = state.node.style.animation;
         state.node.addEventListener("animationend", () => {
-            hideElementAfterExit(state.node);
+            if (state.node.style.animation === expectedAnimation) {
+                hideElementAfterExit(state.node);
+            }
         }, { once: true });
     }
     // ── Scene transitions ──────────────────────────────────────────────────
@@ -2202,7 +2213,7 @@ function oppositeEntryAnimation(exit) {
 }
 
 const RUNTIME_BUNDLE_FORMAT = "isostate-runtime-bundle";
-const RUNTIME_VERSION = "0.1.0";
+const RUNTIME_VERSION = "0.1.2";
 const HEX_DIGEST_PATTERN = /^[a-f0-9]{64}$/;
 /** Mount a compiled runtime bundle into an HTML element. */
 function mountScene(target, bundle, options = {}) {

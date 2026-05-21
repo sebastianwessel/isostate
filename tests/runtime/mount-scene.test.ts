@@ -289,7 +289,7 @@ describe('mountScene', () => {
 function createBundle(options: { version?: string } = {}): RuntimeBundle {
 	return withDigest({
 		_format: 'isostate-runtime-bundle',
-		_version: options.version ?? '0.1.1',
+		_version: options.version ?? '0.1.2',
 		_digest: '',
 		grid: { cellSize: 72 },
 		floor: { size: [2, 2], origin: [0, 0], visible: true, layer: 'base' },
