@@ -40,7 +40,9 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not stretch SVG arrow assets for flows. Use `connections`.
 - Do not declare built-in generated assets in `header.assets`: `text`,
   `rectangle`, `circle`, `polygon`, or `line`.
-- Do not use fractional `size` values in authored YAML. Use whole grid-cell
-  sizes and accurate anchors, or split composite SVGs into separate elements.
+- Do not use fractional `size` values in authored YAML. Do not enlarge imported
+  composite SVGs with `size` unless the SVG was authored for that footprint;
+  split multi-object SVGs when possible, or keep `size: 1` with a checked
+  anchor.
 - Do not auto-remove connections when an endpoint element is removed; remove those connections explicitly in the same scene.
 - Do not put parser, validator, compiler, YAML parsing, or routing packages in browser runtime code.

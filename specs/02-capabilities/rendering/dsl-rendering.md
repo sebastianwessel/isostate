@@ -188,8 +188,11 @@ Rules:
 - `polygon.points` and `line.points` are normalized local grid coordinates from
   `0` to `1`; polygons require at least three points and lines require at least
   two.
-- Element `size` is a positive whole-grid-cell count. Use `size: 2` for
-  two-cell visual footprints instead of fractional sizes.
+- Element `size` is a positive whole-grid-cell count. Use larger sizes only for
+  assets or primitives intentionally authored for larger footprints. Imported
+  composite SVGs must not be enlarged with `size` as an alignment workaround;
+  split multi-object SVGs when possible, or keep the source asset at `size: 1`
+  with a checked `anchor`.
 
 ## Visual Connectors
 

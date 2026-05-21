@@ -119,6 +119,8 @@ The `skills/` directory contains AI agent workflow guides. These are **not runti
 - Built-in generated assets (`text`, `rectangle`, `circle`, `polygon`, `line`)
   are reserved and must not be declared in `header.assets`.
 - Hand-authored element `at`, manual routes, and `size` values use whole grid
-  cells unless a spec explicitly says otherwise. Composite visual assets should
-  be authored with explicit whole-cell `size` and correct `anchor`, or split
-  into separate one-cell assets/elements.
+  cells unless a spec explicitly says otherwise. Do not enlarge imported
+  composite SVGs with `size` unless the SVG was intentionally authored for that
+  footprint. Prefer splitting multi-object SVGs into separate one-cell assets;
+  otherwise keep the source asset's native one-cell size and use its checked
+  `anchor`.

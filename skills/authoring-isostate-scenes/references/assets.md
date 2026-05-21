@@ -99,8 +99,10 @@ Rules:
 Some imported SVGs contain a multi-cell visual object or multiple visual
 objects. Do not let those drift against the grid:
 
-- If the SVG is one logical multi-cell object, author it with a whole-cell
-  `size` such as `2` and the correct normalized `anchor`.
+- Do not enlarge an imported composite SVG with `size` unless the SVG was
+  intentionally authored for that multi-cell footprint.
 - If the SVG contains independent objects, split it into separate asset files
   and place each object as its own element.
+- If splitting is not practical, keep the source asset at `size: 1` and use the
+  checked catalog `anchor`.
 - Do not compensate with fractional `at` or fractional `size` values.

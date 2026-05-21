@@ -50,9 +50,10 @@
   URL-loaded.
 - Element `size` is a positive whole-grid-cell count. Do not use fractional
   sizes in authored YAML.
-- Composite external SVG assets must either be split into separate one-cell
-  assets/elements or authored as explicit whole-cell footprints with accurate
-  `anchor` values.
+- Do not use `size` to compensate for imported composite SVGs unless the SVG was
+  intentionally authored for that multi-cell footprint. Split multi-object SVGs
+  into separate one-cell assets/elements when possible; otherwise keep their
+  native one-cell size and use a checked `anchor`.
 - Browser runtime must not ship YAML parsing, validation, compiler code, raw SVG
   parsing, or per-asset CSS injection.
 

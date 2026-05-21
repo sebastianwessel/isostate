@@ -92,10 +92,12 @@ header:
 - The anchor is not a CSS transform origin. It is a geometry contract between
   the asset catalog and the renderer, and the renderer does not infer it from
   SVG path geometry.
-- If an imported SVG is visually a two-cell object, place it with `size: 2` and
-  declare the anchor that matches its real ground contact. If it is actually two
+- Do not enlarge imported composite SVGs with `size` unless the SVG was
+  intentionally authored for that multi-cell footprint. If it contains
   independent objects, split it into two asset files or two elements so each
-  object owns its own grid footprint and connector ports.
+  object owns its own grid footprint and connector ports. If splitting is not
+  practical, keep the source asset at `size: 1` and declare the anchor that
+  matches its real ground contact.
 
 ## Authoring Checklist
 

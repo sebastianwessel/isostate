@@ -69,8 +69,7 @@ scenes:
       - id: internet-gateway
         asset: aws-internet-gateway
         layer: network
-        at: [2, 3]
-        size: 2
+        at: [3, 4]
       - id: edge-label
         asset: text
         layer: labels
@@ -133,8 +132,7 @@ scenes:
         - id: vpc-gateway
           asset: aws-vpc-gateway
           layer: network
-          at: [5, 3]
-          size: 2
+          at: [5, 4]
         - id: auth-label
           asset: text
           layer: labels

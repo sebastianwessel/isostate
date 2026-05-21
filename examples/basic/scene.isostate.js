@@ -1,5 +1,5 @@
 export default {
-  "_digest": "41e81978344adfcc0f8281f9295248ebccce0670c7bc5b957abcdb0ba4e24f05",
+  "_digest": "4303a2136dd4f0af3cd8bfb1990e96975b3a74158837a151156ce93fbd2e3efa",
   "_format": "isostate-runtime-bundle",
   "_version": "0.1.0",
   "assets": {
@@ -172,11 +172,11 @@ export default {
               5.5
             ],
             [
-              3,
+              3.5,
               5.5
             ],
             [
-              3,
+              3.5,
               5
             ]
           ],
@@ -243,11 +243,11 @@ export default {
           "id": "internet-gateway",
           "layer": "network",
           "pos": [
-            2,
-            3
+            3,
+            4
           ],
           "presence": "present",
-          "size": 2
+          "size": 1
         },
         {
           "asset": "text",
@@ -326,11 +326,11 @@ export default {
               5.5
             ],
             [
-              3,
+              3.5,
               5.5
             ],
             [
-              3,
+              3.5,
               5
             ]
           ],
@@ -365,11 +365,11 @@ export default {
           "route": [
             [
               4,
-              4
+              4.5
             ],
             [
               5,
-              4
+              4.5
             ]
           ],
           "start": "none",
@@ -435,11 +435,11 @@ export default {
           "id": "internet-gateway",
           "layer": "network",
           "pos": [
-            2,
-            3
+            3,
+            4
           ],
           "presence": "present",
-          "size": 2
+          "size": 1
         },
         {
           "asset": "text",
@@ -487,10 +487,10 @@ export default {
           "layer": "network",
           "pos": [
             5,
-            3
+            4
           ],
           "presence": "entering",
-          "size": 2
+          "size": 1
         },
         {
           "asset": "text",
@@ -570,11 +570,11 @@ export default {
               5.5
             ],
             [
-              3,
+              3.5,
               5.5
             ],
             [
-              3,
+              3.5,
               5
             ]
           ],
@@ -609,11 +609,11 @@ export default {
           "route": [
             [
               4,
-              4
+              4.5
             ],
             [
               5,
-              4
+              4.5
             ]
           ],
           "start": "none",
@@ -641,12 +641,12 @@ export default {
           "presence": "entering",
           "route": [
             [
-              7,
-              4
+              6,
+              4.5
             ],
             [
-              8.5,
-              4
+              8,
+              4.5
             ]
           ],
           "start": "none",
@@ -759,11 +759,11 @@ export default {
           "id": "internet-gateway",
           "layer": "network",
           "pos": [
-            2,
-            3
+            3,
+            4
           ],
           "presence": "present",
-          "size": 2
+          "size": 1
         },
         {
           "asset": "text",
@@ -809,10 +809,10 @@ export default {
           "layer": "network",
           "pos": [
             5,
-            3
+            4
           ],
           "presence": "present",
-          "size": 2
+          "size": 1
         },
         {
           "asset": "text",
@@ -959,11 +959,11 @@ export default {
               5.5
             ],
             [
-              3,
+              3.5,
               5.5
             ],
             [
-              3,
+              3.5,
               5
             ]
           ],
@@ -998,11 +998,11 @@ export default {
           "route": [
             [
               4,
-              4
+              4.5
             ],
             [
               5,
-              4
+              4.5
             ]
           ],
           "start": "none",
@@ -1030,12 +1030,12 @@ export default {
           "presence": "present",
           "route": [
             [
-              7,
-              4
+              6,
+              4.5
             ],
             [
-              8.5,
-              4
+              8,
+              4.5
             ]
           ],
           "start": "none",
@@ -1211,11 +1211,11 @@ export default {
           "id": "internet-gateway",
           "layer": "network",
           "pos": [
-            2,
-            3
+            3,
+            4
           ],
           "presence": "present",
-          "size": 2
+          "size": 1
         },
         {
           "asset": "text",
@@ -1261,10 +1261,10 @@ export default {
           "layer": "network",
           "pos": [
             5,
-            3
+            4
           ],
           "presence": "present",
-          "size": 2
+          "size": 1
         },
         {
           "asset": "text",
