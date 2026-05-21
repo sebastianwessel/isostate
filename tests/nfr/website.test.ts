@@ -4,6 +4,7 @@ import { readdir, readFile, stat } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const root = process.cwd();
+const websiteBuildTimeoutMs = 60_000;
 
 async function listFiles(dir: string): Promise<string[]> {
 	const entries = await readdir(dir, { withFileTypes: true });
@@ -25,11 +26,12 @@ async function ensureWebsiteBuilt(): Promise<void> {
 	} catch {
 		const result = spawnSync('bun', ['run', 'site:build'], {
 			cwd: root,
-			encoding: 'utf8'
+			encoding: 'utf8',
+			timeout: websiteBuildTimeoutMs
 		});
 
-		expect(result.stderr).not.toContain('[ERROR]');
-		expect(result.status).toBe(0);
+		expect(result.stderr, result.stderr).not.toContain('[ERROR]');
+		expect(result.status, result.stderr || result.stdout).toBe(0);
 	}
 }
 
@@ -91,5 +93,5 @@ describe('Astro website', () => {
 			'docs/guides/deploy-static-bundle.md/index.html'
 		);
 		expect(relativeFiles).toContain('docs/reference/public-api.md/index.html');
-	});
+	}, websiteBuildTimeoutMs);
 });
