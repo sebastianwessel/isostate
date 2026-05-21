@@ -110,6 +110,8 @@ describe('public docs inventory', () => {
 		expect(bundle).not.toContain('\n  "elements": [');
 
 		expect(main).toContain('getResolvedConfig().scenes');
+		expect(main).toContain("svg.querySelector('.iso-depth-layer')");
+		expect(main).toContain('asset?.anchor ?? [0.5, 1]');
 		expect(main).not.toContain('getResolvedConfig().states');
 		expect(main).not.toContain('scrollProgress');
 		expect(main).not.toContain('sceneBundle.elements');

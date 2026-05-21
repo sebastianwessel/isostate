@@ -1,5 +1,5 @@
-import { mountScene } from '../../packages/core/dist/index.js?example=derived-grid-v2';
-import sceneBundle from './scene.isostate.js?example=derived-grid-v2';
+import { mountScene } from '../../packages/core/dist/index.js?example=grid-overlay-v3';
+import sceneBundle from './scene.isostate.js?example=grid-overlay-v3';
 
 const target = document.querySelector('#scene');
 const progress = document.querySelector('#progress');
@@ -95,8 +95,8 @@ function addGridOverlay(svg, bundle) {
     }
   }
 
-  const firstLayer = svg.querySelector('.iso-layer');
-  svg.insertBefore(group, firstLayer);
+  const depthLayer = svg.querySelector('.iso-depth-layer');
+  svg.insertBefore(group, depthLayer);
 }
 
 function gridLine(start, end) {
@@ -123,17 +123,26 @@ function resolveExampleLayout(bundle) {
     for (const element of scene.elements) {
       if (element.presence === 'removed') continue;
       const visualSize = cellSize * element.size;
+      const asset = bundle.assets?.[element.asset];
+      const [anchorX, anchorY] = asset?.anchor ?? [0.5, 1];
       const raw = projectToRaw(
         element.pos[0] + element.size,
         element.pos[1] + element.size,
         cellSize,
       );
       includeBounds(content, {
-        minX: raw.x - visualSize / 2,
-        minY: raw.y - visualSize,
-        maxX: raw.x + visualSize / 2,
-        maxY: raw.y,
+        minX: raw.x - visualSize * anchorX,
+        minY: raw.y - visualSize * anchorY,
+        maxX: raw.x + visualSize * (1 - anchorX),
+        maxY: raw.y + visualSize * (1 - anchorY),
       });
+    }
+    for (const connector of scene.connectors ?? []) {
+      if (connector.presence === 'removed') continue;
+      for (const point of connector.route) {
+        const raw = projectToRaw(point[0], point[1], cellSize);
+        includePoint(content, raw.x, raw.y);
+      }
     }
   }
 
