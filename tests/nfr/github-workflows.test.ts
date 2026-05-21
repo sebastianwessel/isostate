@@ -14,6 +14,8 @@ describe('GitHub workflows', () => {
 		expect(workflow).toContain('pull_request:');
 		expect(workflow).toContain('branches:');
 		expect(workflow).toContain('- main');
+		expect(workflow).toContain('actions/setup-node@v6');
+		expect(workflow).toContain('node-version: 24');
 		expect(workflow).toContain('bun ci');
 		expect(workflow).toContain('bun run format');
 		expect(workflow).toContain('git diff --exit-code');
