@@ -320,6 +320,53 @@ describe('compileScene', () => {
 		}
 	});
 
+	test('adds outside stubs for element side ports before entering the object edge', () => {
+		const baseDocument = createDocument();
+		const bundle = compileScene(
+			createDocument({
+				header: {
+					...baseDocument.header,
+					floor: { visible: true }
+				},
+				scenes: [
+					{
+						id: 'initial',
+						elements: [
+							{
+								id: 'source',
+								asset: 'building-office',
+								at: [0, 0],
+								size: 1
+							},
+							{
+								id: 'target',
+								asset: 'tree-oak',
+								at: [3, 3],
+								size: 1
+							}
+						],
+						connections: [
+							{
+								id: 'source-to-target',
+								from: { element: 'source', side: 'bottom' },
+								to: { element: 'target', side: 'right' },
+								routing: { mode: 'orthogonal', avoid: 'none' }
+							}
+						]
+					}
+				]
+			})
+		);
+
+		expect(bundle.scenes[0].connectors[0].route).toEqual([
+			[0.5, 1],
+			[0.5, 1.5],
+			[4.5, 1.5],
+			[4.5, 3.5],
+			[4, 3.5]
+		]);
+	});
+
 	test('emits browser-loadable asset URLs from assetBaseUrl and path', () => {
 		const baseDocument = createDocument();
 		const bundle = compileScene(

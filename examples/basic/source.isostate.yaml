@@ -206,7 +206,15 @@ scenes:
           start: none
           end: none
         - id: load-balancer-to-apps
-          route: [[8, 5], [9, 5], [9, 4], [10, 4], [10, 6]]
+          from:
+            element: load-balancer
+            side: bottom
+          to:
+            element: app-server-b
+            side: right
+          routing:
+            mode: orthogonal
+            avoid: objects
           style:
             pattern: dotted
             stroke: "#2563eb"

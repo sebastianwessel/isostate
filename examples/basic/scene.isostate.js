@@ -1,5 +1,5 @@
 export default {
-  "_digest": "e0bbb779bc8470318ccdc7423737ff192af9fb6df72a841e6cfdab1ee054eff4",
+  "_digest": "1a9427295a6820ffcbefc7547d2a88dfea36f8b1fefa064adb2bdd34a9b56eb5",
   "_format": "isostate-runtime-bundle",
   "_version": "0.1.0",
   "assets": {
@@ -76,7 +76,7 @@ export default {
     ],
     "size": [
       12,
-      7
+      8
     ],
     "visible": true
   },
@@ -134,8 +134,12 @@ export default {
               6.5
             ],
             [
-              1,
-              5.5
+              1.5,
+              6.5
+            ],
+            [
+              1.5,
+              6
             ]
           ],
           "start": "dot",
@@ -164,8 +168,12 @@ export default {
           "presence": "present",
           "route": [
             [
-              1.5,
-              5
+              2,
+              5.5
+            ],
+            [
+              3.5,
+              5.5
             ],
             [
               3.5,
@@ -261,8 +269,12 @@ export default {
               6.5
             ],
             [
-              1,
-              5.5
+              1.5,
+              6.5
+            ],
+            [
+              1.5,
+              6
             ]
           ],
           "start": "dot",
@@ -291,8 +303,12 @@ export default {
           "presence": "present",
           "route": [
             [
-              1.5,
-              5
+              2,
+              5.5
+            ],
+            [
+              3.5,
+              5.5
             ],
             [
               3.5,
@@ -458,8 +474,12 @@ export default {
               6.5
             ],
             [
-              1,
-              5.5
+              1.5,
+              6.5
+            ],
+            [
+              1.5,
+              6
             ]
           ],
           "start": "dot",
@@ -488,8 +508,12 @@ export default {
           "presence": "present",
           "route": [
             [
-              1.5,
-              5
+              2,
+              5.5
+            ],
+            [
+              3.5,
+              5.5
             ],
             [
               3.5,
@@ -594,24 +618,24 @@ export default {
           "presence": "entering",
           "route": [
             [
-              8,
+              7.5,
               5
             ],
             [
-              9,
-              5
+              7.5,
+              7.5
             ],
             [
-              9,
-              4
+              10.5,
+              7.5
+            ],
+            [
+              10.5,
+              5.5
             ],
             [
               10,
-              4
-            ],
-            [
-              10,
-              6
+              5.5
             ]
           ],
           "start": "none",
@@ -801,8 +825,12 @@ export default {
               6.5
             ],
             [
-              1,
-              5.5
+              1.5,
+              6.5
+            ],
+            [
+              1.5,
+              6
             ]
           ],
           "start": "dot",
@@ -831,8 +859,12 @@ export default {
           "presence": "present",
           "route": [
             [
-              1.5,
-              5
+              2,
+              5.5
+            ],
+            [
+              3.5,
+              5.5
             ],
             [
               3.5,
@@ -937,24 +969,16 @@ export default {
           "presence": "present",
           "route": [
             [
-              8,
+              7.5,
               5
             ],
             [
-              9,
-              5
-            ],
-            [
-              9,
-              4
+              7.5,
+              5.5
             ],
             [
               10,
-              4
-            ],
-            [
-              10,
-              6
+              5.5
             ]
           ],
           "start": "none",

@@ -1,5 +1,5 @@
-import { mountScene } from '../../packages/core/dist/index.js?example=grid-overlay-v3';
-import sceneBundle from './scene.isostate.js?example=grid-overlay-v3';
+import { mountScene } from '../../packages/core/dist/index.js?example=side-port-stubs-v4';
+import sceneBundle from './scene.isostate.js?example=side-port-stubs-v4';
 
 const target = document.querySelector('#scene');
 const progress = document.querySelector('#progress');

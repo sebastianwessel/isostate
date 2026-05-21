@@ -1899,7 +1899,8 @@ function resolveConnectorRoute(
 				start,
 				end,
 				obstacles,
-				routing.mode ?? 'orthogonal'
+				routing.mode ?? 'orthogonal',
+				clearance
 			);
 			const score = routeScore(route, obstacles);
 			if (score < bestScore) {
@@ -1915,6 +1916,7 @@ function resolveConnectorRoute(
 
 interface RouteEndpointCandidate {
 	point: [number, number];
+	normal?: [number, number];
 	sideRank: number;
 }
 
@@ -1938,6 +1940,7 @@ function endpointCandidates(
 			: (['right', 'left', 'bottom', 'top'] as const);
 	return sides.map((side, index) => ({
 		point: portForSide(element, side, endpoint.offset ?? 0),
+		normal: normalForSide(side),
 		sideRank: index
 	}));
 }
@@ -1963,6 +1966,15 @@ function portForSide(
 	if (side === 'right') return [x + size, y + size * (0.5 + offset)];
 	if (side === 'bottom') return [x + size * (0.5 - offset), y + size];
 	return [x, y + size * (0.5 - offset)];
+}
+
+function normalForSide(
+	side: 'top' | 'right' | 'bottom' | 'left'
+): [number, number] {
+	if (side === 'top') return [0, -1];
+	if (side === 'right') return [1, 0];
+	if (side === 'bottom') return [0, 1];
+	return [-1, 0];
 }
 
 function collectObstacles(
@@ -1998,20 +2010,23 @@ function routeBetween(
 	start: RouteEndpointCandidate,
 	end: RouteEndpointCandidate,
 	obstacles: ObstacleRect[],
-	mode: NonNullable<ConnectorRouting['mode']> = 'orthogonal'
+	mode: NonNullable<ConnectorRouting['mode']> = 'orthogonal',
+	clearance = 0.5
 ): [number, number][] {
-	const direct = [start.point, end.point] as [number, number][];
+	const startExit = offsetPort(start, clearance);
+	const endEntry = offsetPort(end, clearance);
+	const direct = [startExit, endEntry] as [number, number][];
 	if (mode === 'straight') return direct;
 	if (isGridAxisRoute(direct) && !routeIntersectsObstacles(direct, obstacles)) {
-		return direct;
+		return withEndpointPorts(start, end, direct);
 	}
 
 	const candidates: [number, number][][] = [
-		[start.point, [end.point[0], start.point[1]], end.point],
-		[start.point, [start.point[0], end.point[1]], end.point]
+		[startExit, [endEntry[0], startExit[1]], endEntry],
+		[startExit, [startExit[0], endEntry[1]], endEntry]
 	];
 	const blocking = obstacles.find((obstacle) =>
-		segmentIntersectsRect(start.point, end.point, obstacle)
+		segmentIntersectsRect(startExit, endEntry, obstacle)
 	);
 	if (blocking) {
 		const leftX = Math.max(0, blocking.minX);
@@ -2019,32 +2034,41 @@ function routeBetween(
 		const topY = Math.max(0, blocking.minY);
 		const bottomY = Math.max(0, blocking.maxY);
 		candidates.push(
-			[start.point, [leftX, start.point[1]], [leftX, end.point[1]], end.point],
-			[
-				start.point,
-				[rightX, start.point[1]],
-				[rightX, end.point[1]],
-				end.point
-			],
-			[start.point, [start.point[0], topY], [end.point[0], topY], end.point],
-			[
-				start.point,
-				[start.point[0], bottomY],
-				[end.point[0], bottomY],
-				end.point
-			]
+			[startExit, [leftX, startExit[1]], [leftX, endEntry[1]], endEntry],
+			[startExit, [rightX, startExit[1]], [rightX, endEntry[1]], endEntry],
+			[startExit, [startExit[0], topY], [endEntry[0], topY], endEntry],
+			[startExit, [startExit[0], bottomY], [endEntry[0], bottomY], endEntry]
 		);
 	}
 
-	return (
+	const route =
 		candidates
 			.map((route) => simplifyRoute(route))
 			.sort(
 				(a, b) =>
 					routeScore(a, obstacles) - routeScore(b, obstacles) ||
 					routeLength(a) - routeLength(b)
-			)[0] ?? direct
-	);
+			)[0] ?? direct;
+	return withEndpointPorts(start, end, route);
+}
+
+function offsetPort(
+	endpoint: RouteEndpointCandidate,
+	clearance: number
+): [number, number] {
+	if (!endpoint.normal || clearance <= 0) return endpoint.point;
+	return [
+		endpoint.point[0] + endpoint.normal[0] * clearance,
+		endpoint.point[1] + endpoint.normal[1] * clearance
+	];
+}
+
+function withEndpointPorts(
+	start: RouteEndpointCandidate,
+	end: RouteEndpointCandidate,
+	route: [number, number][]
+): [number, number][] {
+	return simplifyRoute([start.point, ...route, end.point]);
 }
 
 function routeScore(

@@ -141,6 +141,23 @@ scoring. Ports may be fractional grid coordinates; emitted runtime routes may
 therefore start or end on half-cell positions even though hand-authored manual
 routes use whole grid points.
 
+Endpoint-routed connections must not run along an object edge before entering or
+leaving a side port. For element endpoints, the router inserts a short outside
+stub along the side normal before searching the orthogonal path:
+
+| Side | Outside Stub Direction |
+|---|---|
+| `top` / `back` | negative `y` |
+| `right` | positive `x` |
+| `bottom` / `front` | positive `y` |
+| `left` | negative `x` |
+
+The default stub length equals `routing.clearance` (`0.5` cells by default).
+The final emitted route keeps the real side port as the first or last point so
+arrowheads target the visible side midpoint, while the previous/next route point
+sits outside the footprint. This makes arrowheads point into the side port
+instead of sliding along the object boundary.
+
 ## Obstacle Model
 
 Elements are obstacles on the ground plane by default. A connector may touch its
@@ -185,10 +202,11 @@ The default dev-time router uses an orthogonal grid path:
 
 1. Resolve source and target candidate ports.
 2. Convert element footprints plus clearance into blocked grid cells/segments.
-3. For each source/target port pair, find a path using 4-neighbor grid movement
-   along the authored grid axes. If a selected port is fractional, connect it to
-   the nearest unblocked router grid point with one short axis-aligned stub
-   before path search and include that stub in the emitted route.
+3. For each source/target port pair, create outside stubs along the selected side
+   normals, then find a path between the outside stub points using 4-neighbor
+   grid movement along the authored grid axes. If a selected port is fractional,
+   the outside stub remains fractional on the same side-normal line and is
+   included in the emitted route.
 4. Score paths by:
    - obstacle violations: terminally invalid unless `avoid: none`
    - fewer bends
