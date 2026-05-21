@@ -2,7 +2,7 @@
 
 ## Language & Runtime
 
-- **Language**: TypeScript 5.x
+- **Language**: TypeScript, tracking the current stable major release
 - **Runtime**: Browser (ES2022), Bun (for development/tooling only)
 - **Module format**: ESM primary
 
@@ -75,6 +75,11 @@ For bundling, Rollup should use `external: ['yaml']` or tree-shake to exclude it
 ## Package Manager
 
 **Bun** — chosen for fast installs, built-in test runner, and zero-config TypeScript support.
+
+TypeScript should be kept on the most recent stable major release supported by
+the project toolchain. When upgrading TypeScript, update package manifests,
+lockfiles, generated declarations, and any affected compiler or lint guidance in
+the same change.
 
 ## Package Publishing
 

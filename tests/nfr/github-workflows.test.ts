@@ -5,7 +5,7 @@ import { join } from 'node:path';
 const root = process.cwd();
 
 describe('GitHub workflows', () => {
-	test('pull requests run lint, typecheck, and tests', async () => {
+	test('pull requests run the default verification gates', async () => {
 		const workflow = await readFile(
 			join(root, '.github/workflows/pr.yml'),
 			'utf8'
@@ -14,10 +14,16 @@ describe('GitHub workflows', () => {
 		expect(workflow).toContain('pull_request:');
 		expect(workflow).toContain('branches:');
 		expect(workflow).toContain('- main');
-		expect(workflow).toContain('bun install --frozen-lockfile');
+		expect(workflow).toContain('bun ci');
+		expect(workflow).toContain('bun run format');
+		expect(workflow).toContain('git diff --exit-code');
 		expect(workflow).toContain('bun run lint');
 		expect(workflow).toContain('bun run typecheck');
-		expect(workflow).toContain('bun test');
+		expect(workflow).toContain('bun run test');
+		expect(workflow).toContain('bun run build');
+		expect(workflow).toContain('bun run size');
+		expect(workflow).toContain('bun run publint');
+		expect(workflow).toContain('bun run examples:basic:bundle');
 		expect(workflow).toContain('bun run site:build');
 	});
 
@@ -29,12 +35,17 @@ describe('GitHub workflows', () => {
 
 		expect(workflow).toContain('workflow_dispatch:');
 		expect(workflow).toContain("github.ref == 'refs/heads/main'");
+		expect(workflow).toContain('bun ci');
+		expect(workflow).toContain('bun run format');
+		expect(workflow).toContain('git diff --exit-code');
 		expect(workflow).toContain('bun run lint');
 		expect(workflow).toContain('bun run typecheck');
-		expect(workflow).toContain('bun test');
+		expect(workflow).toContain('bun run test');
 		expect(workflow).toContain('bun run build');
-		expect(workflow).toContain('bun run site:build');
+		expect(workflow).toContain('bun run size');
 		expect(workflow).toContain('bun run publint');
+		expect(workflow).toContain('bun run examples:basic:bundle');
+		expect(workflow).toContain('bun run site:build');
 		expect(workflow).toContain('npm view "@sebastianwessel/isostate@$version"');
 		expect(workflow).toContain('npm view "@sebastianwessel/isostate-cli@$version"');
 		expect(workflow).toContain('npm publish --access public --provenance packages/core');

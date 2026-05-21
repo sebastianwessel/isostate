@@ -1,0 +1,82 @@
+{
+  "format": "isostate-static-bundle",
+  "version": "0.1.0",
+  "generatedAt": "2026-05-21T18:39:54.461Z",
+  "source": {
+    "file": "examples/basic/source.isostate.yaml"
+  },
+  "runtime": {
+    "mode": "copy",
+    "file": "isostate.runtime.js"
+  },
+  "scene": {
+    "file": "scene.isostate.js",
+    "format": "js",
+    "digest": "41325f80a6a5528222abf58ec74788d24c8de32453c347a8f2d3e04caf5493e3"
+  },
+  "assets": [
+    {
+      "id": "aws-app-server",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/application-server.svg",
+      "file": "assets/application-server.svg",
+      "url": "./assets/application-server.svg",
+      "digest": "ad5d6bf8c3786ad616762b5d2f0029eedce2d6c48add363d80d8ebc77c97a543"
+    },
+    {
+      "id": "aws-client",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/client.svg",
+      "file": "assets/client.svg",
+      "url": "./assets/client.svg",
+      "digest": "a7b6712bfae3bb056df60c1fd3e900f68ac0d469082b79e746836a07c89b4a08"
+    },
+    {
+      "id": "aws-end-user",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/end-user.svg",
+      "file": "assets/end-user.svg",
+      "url": "./assets/end-user.svg",
+      "digest": "ae249ede9aafc3feb0437319063624e6f9780b7444423c72f227b159e48f7f25"
+    },
+    {
+      "id": "aws-internet-gateway",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/internet-gateway.svg",
+      "file": "assets/internet-gateway.svg",
+      "url": "./assets/internet-gateway.svg",
+      "digest": "b46ed4d4d685af49ce76e8a6e1cb3b7073395bb5b702d6eb2c879a6d5d48b973"
+    },
+    {
+      "id": "aws-lambda",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/lambda.svg",
+      "file": "assets/lambda.svg",
+      "url": "./assets/lambda.svg",
+      "digest": "e4516396b48b90e40d28a16f010dfc2764987c16df515ad9eef8617842f15c2d"
+    },
+    {
+      "id": "aws-load-balancer",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/elastic-load-balancing.svg",
+      "file": "assets/elastic-load-balancing.svg",
+      "url": "./assets/elastic-load-balancing.svg",
+      "digest": "1ed7dd6fa0371a383d68b8761366490a1c39543099ee42a918f8fc14577c2dc3"
+    },
+    {
+      "id": "aws-rds",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/rds.svg",
+      "file": "assets/rds.svg",
+      "url": "./assets/rds.svg",
+      "digest": "acf23dd763d45082d1ce65f7a17922e1e11fbf0371dad749fad3fb52ae0bdf5c"
+    },
+    {
+      "id": "aws-s3",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/s3-bucket.svg",
+      "file": "assets/s3-bucket.svg",
+      "url": "./assets/s3-bucket.svg",
+      "digest": "4cda9cddf189022a9f0acca338454252da679da4bf5bd039f1ee1df961b176fb"
+    },
+    {
+      "id": "aws-vpc-gateway",
+      "source": "/Users/sebastianwessel/projekte/isometric/assets/aws-3d/vpc-gateway.svg",
+      "file": "assets/vpc-gateway.svg",
+      "url": "./assets/vpc-gateway.svg",
+      "digest": "8bdf19591d6b715167f42a2ee8a15d6d487adb39bf8bdf1081fc675f6bf7122c"
+    }
+  ]
+}

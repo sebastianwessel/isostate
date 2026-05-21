@@ -45,10 +45,15 @@
 Default CI commands:
 
 ```bash
-bun run typecheck
+bun ci
+bun run format
 bun run lint
-bun test
+bun run typecheck
+bun run test
 bun run build
+bun run size
+bun run publint
+bun run examples:basic:bundle
 ```
 
 Default CI must not require:
@@ -75,9 +80,11 @@ Opt-in checks:
 - Release process must verify the runtime entrypoint can be bundled without the `yaml` package installed.
 - Release process must verify `isostate bundle` output imports without
   dev-time dependencies.
-- Pull requests to `main` must run lint, typecheck, tests, and the static
+- Pull requests to `main` must run `bun ci`, format, lint, typecheck, tests,
+  build, size, package lint, basic example bundle generation, and the static
   website build.
 - Manual releases from `main` must verify package versions, reject already
-  published npm versions, run lint/typecheck/tests/build/publint, publish both
-  npm packages, create a `v<version>` git tag, create a GitHub release, and
-  deploy the Astro static documentation site to GitHub Pages.
+  published npm versions, run `bun ci`/format/lint/typecheck/tests/build/size/
+  publint/basic example bundle generation, publish both npm packages, create
+  a `v<version>` git tag, create a GitHub release, and deploy the Astro static
+  documentation site to GitHub Pages.

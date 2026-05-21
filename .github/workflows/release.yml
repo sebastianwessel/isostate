@@ -34,7 +34,13 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        run: bun ci
+
+      - name: Format
+        run: bun run format
+
+      - name: Verify formatting is committed
+        run: git diff --exit-code
 
       - name: Verify package versions
         run: |
@@ -80,18 +86,24 @@ jobs:
         run: bun run typecheck
 
       - name: Test
-        run: bun test
+        run: bun run test
 
       - name: Build
         run: bun run build
+
+      - name: Size
+        run: bun run size
+
+      - name: Package lint
+        run: bun run publint
+
+      - name: Generate basic example bundle
+        run: bun run examples:basic:bundle
 
       - name: Build website
         run: bun run site:build
         env:
           PUBLIC_ISOSTATE_VERSION: ${{ env.version }}
-
-      - name: Package lint
-        run: bun run publint
 
       - name: Publish core package
         run: npm publish --access public --provenance packages/core

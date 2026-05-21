@@ -5,7 +5,7 @@
 ```
 specs/                    ← all implementation details live here
   00-vision.md            product vision, capabilities, success metrics
-  00-stack.md             technology choices: SVG+CSS, Bun, Biome, TypeScript 5.x
+  00-stack.md             technology choices: SVG+CSS, Bun, Biome, current stable TypeScript
   00-conventions.md       naming, layout, error handling, git
   01-domains/             domain entities
   02-capabilities/{dsl,rendering,animation,controller}/  capability specs
@@ -57,7 +57,7 @@ Do not leave code, specs, docs, skills, or examples knowingly out of sync.
 - **SVG + 2D diamond projection**, not Three.js. Target ≤50 objects.
 - **Bun** — package manager, runtime, test runner (`bun:test`).
 - **Biome** — lint + format (no ESLint/Prettier).
-- **ESM only**, TypeScript 5.x. Zero runtime dependencies in browser bundle.
+- **ESM only**, current stable TypeScript. Zero runtime dependencies in browser bundle.
 - Bundle target: <20KB gzipped (core without components).
 - Browser-only library — no server component.
 - **YAML DSL** — scene definitions use YAML format (`.isostate.yaml`).
