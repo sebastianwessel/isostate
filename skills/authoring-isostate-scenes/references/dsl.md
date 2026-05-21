@@ -110,5 +110,42 @@ Rules:
 - Hand-authored examples use whole grid-cell coordinates.
 - `size` defaults to `1`.
 - `layer` defaults to `structures` if present, otherwise first declared layer.
-- `asset` must be declared in `header.assets`, except `asset: text`.
+- `asset` must be declared in `header.assets`, except built-in generated assets:
+  `text`, `rectangle`, `circle`, `polygon`, and `line`.
+- `size` defaults to `1` and must be a positive whole-grid-cell count.
 
+## Generated Built-Ins
+
+Text labels:
+
+```yaml
+- id: api-label
+  asset: text
+  layer: labels
+  at: [2, 1]
+  text:
+    value: |
+      Public
+      API
+```
+
+Primitive underlays and markers:
+
+```yaml
+- id: service-zone
+  asset: rectangle
+  layer: ground
+  at: [1, 1]
+  size: 3
+  primitive:
+    rectangle:
+      fill: "#2563eb"
+      stroke: "#1d4ed8"
+      strokeWidth: 1
+      opacity: 0.16
+```
+
+Primitive ids are `rectangle`, `circle`, `polygon`, and `line`. The
+`primitive` object must contain exactly one child matching the asset id.
+`polygon.points` and `line.points` use normalized local coordinates from `0` to
+`1`.

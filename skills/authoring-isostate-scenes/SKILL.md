@@ -12,7 +12,8 @@ Use this skill when creating or reviewing isostate scene definitions and example
 1. Read the relevant reference file only when needed:
    - DSL shape and scene deltas: `references/dsl.md`
    - Connections, routing, markers, and removal rules: `references/connections.md`
-   - Asset catalogs, anchors, floor, and text labels: `references/assets.md`
+   - Asset catalogs, anchors, floor, text labels, and generated primitives:
+     `references/assets.md`
    - Complete YAML examples: `references/examples.md`
 2. Prefer the current public DSL:
    - first scene: top-level `elements` and optional `connections`
@@ -23,7 +24,10 @@ Use this skill when creating or reviewing isostate scene definitions and example
    - use `from`/`to` instead of fractional manual routes when connecting to element sides
    - omit unchanged objects in later scenes
 4. When changing specs, implementation, docs, or examples, verify the DSL against `specs/03-contracts/scene-schema.md`.
-5. Run available checks after edits:
+5. Keep source YAML and generated bundles together. If an example
+   `.isostate.yaml` changes, regenerate its `.isostate.js`/`.isostate.json`
+   output in the same change.
+6. Run available checks after edits:
    ```bash
    node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
    bun test tests/nfr/docs-paths.test.ts tests/nfr/assets-manifest.test.ts
@@ -34,7 +38,9 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not write old authored `states`, `keyframes`, scene `at`, element `pos`, or top-level `elements` outside the first scene.
 - Do not use `addConnectors`, `updateConnectors`, or `removeConnectors`; use nested `add.connections`, `update.connections`, and `remove.connections`.
 - Do not stretch SVG arrow assets for flows. Use `connections`.
-- Do not declare `asset: text` in `header.assets`; it is built in.
+- Do not declare built-in generated assets in `header.assets`: `text`,
+  `rectangle`, `circle`, `polygon`, or `line`.
+- Do not use fractional `size` values in authored YAML. Use whole grid-cell
+  sizes and accurate anchors, or split composite SVGs into separate elements.
 - Do not auto-remove connections when an endpoint element is removed; remove those connections explicitly in the same scene.
 - Do not put parser, validator, compiler, YAML parsing, or routing packages in browser runtime code.
-

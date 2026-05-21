@@ -58,12 +58,22 @@ header:
 scenes:
   - id: initial
     elements:
+      - id: public-zone
+        asset: rectangle
+        layer: ground
+        at: [2, 3]
+        size: 2
+        primitive:
+          rectangle:
+            fill: "#2563eb"
+            opacity: 0.08
       - id: user
         asset: user
         at: [1, 5]
       - id: gateway
         asset: gateway
-        at: [3, 4]
+        at: [2, 3]
+        size: 2
 
   - id: edge-connected
     add:
@@ -117,4 +127,3 @@ scenes:
           start: none
           end: none
 ```
-

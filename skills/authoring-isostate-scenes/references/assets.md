@@ -1,6 +1,7 @@
 # Isostate Assets Reference
 
-Use this when defining `header.assets`, SVG asset paths, anchors, floors, and labels.
+Use this when defining `header.assets`, SVG asset paths, anchors, floors,
+labels, and generated primitive underlays.
 
 ## Asset Catalog
 
@@ -50,6 +51,34 @@ Text rules:
 - Line breaks are supported.
 - Non-text assets must not include `text`.
 
+## Generated Primitives
+
+`rectangle`, `circle`, `polygon`, and `line` are built-in generated assets and
+must not be declared in `header.assets`.
+
+```yaml
+- id: zone-underlay
+  asset: rectangle
+  layer: ground
+  at: [2, 3]
+  size: 2
+  primitive:
+    rectangle:
+      fill: "#2563eb"
+      stroke: "#2563eb"
+      strokeWidth: 1
+      opacity: 0.08
+```
+
+Primitive rules:
+
+- `primitive` must contain exactly one child matching the asset id.
+- Use primitives for simple ground areas, markers, polygons, and local lines.
+- `polygon.points` and `line.points` are normalized local coordinates from `0`
+  to `1`.
+- Use whole-cell `size` values to scale primitives on the grid.
+- External SVG assets must not include `primitive`.
+
 ## Floor And Fit
 
 ```yaml
@@ -65,3 +94,13 @@ Rules:
 - Authored YAML does not expose `layout.fit`, `layout.align`, `layout.padding`, or `layout.bounds`.
 - Page backgrounds belong in CSS via `header.className`, not YAML gradient config.
 
+## Composite SVG Assets
+
+Some imported SVGs contain a multi-cell visual object or multiple visual
+objects. Do not let those drift against the grid:
+
+- If the SVG is one logical multi-cell object, author it with a whole-cell
+  `size` such as `2` and the correct normalized `anchor`.
+- If the SVG contains independent objects, split it into separate asset files
+  and place each object as its own element.
+- Do not compensate with fractional `at` or fractional `size` values.

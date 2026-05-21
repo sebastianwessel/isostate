@@ -21,19 +21,30 @@ packages/
       dsl/              # YAML parser, validator, compiler (dev-time only)
       rendering/        # SVG rendering layer (element placement, DOM, transforms)
       animation/        # Animation engine (interpolation, scroll binding)
-      components/       # Built-in SVG component library
       types/            # Shared TypeScript types
       utils/            # Shared utilities
       index.ts          # Public API entry point
 specs/                  # All spec documents
   02-capabilities/dsl/compiler.md  # Compiler pipeline architecture
 skills/                 # AI agent skills for workflow guidance
-  dsl-writer/           # Skill for writing YAML scene DSL
-  asset-creator/        # Skill for creating isometric assets
-  converter/            # Skill for writing format converters
+  authoring-isostate-scenes/  # Skill for scene DSL, assets, examples
 docs/                   # End-user documentation
 tests/                  # Shared test fixtures and helpers
 ```
+
+## Synchronization Rule
+
+Implementation changes that affect public authoring or runtime behavior must
+keep source-of-truth specs, TypeScript types, implementation, docs, tests,
+examples, generated bundles, and agent skills synchronized in the same change.
+This applies to DSL fields, runtime bundle fields, renderer semantics, asset
+anchors, generated built-ins, connector behavior, validation errors, and public
+APIs.
+
+Example source files such as `examples/basic/source.isostate.yaml` and compiled
+runtime artifacts such as `examples/basic/scene.isostate.js` must be regenerated
+together. Skill references under `skills/authoring-isostate-scenes/` must be
+updated whenever authoring rules change.
 
 ## Code Size Limits
 

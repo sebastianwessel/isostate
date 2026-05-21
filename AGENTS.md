@@ -25,9 +25,7 @@ packages/
 docs/                     end-user documentation
 tests/                    shared test fixtures and helpers
 skills/                   AI agent skills (workflow guides, not runtime code)
-  dsl-writer/             # Skill: writing YAML scene DSL
-  asset-creator/          # Skill: creating isometric assets
-  converter/              # Skill: building format converters
+  authoring-isostate-scenes/  # Skill: writing/reviewing scene DSL, assets, examples
 ```
 
 ## Spec Hierarchy
@@ -35,6 +33,24 @@ skills/                   AI agent skills (workflow guides, not runtime code)
 Numbered prefixes indicate ordering: read `00-*` before `01-*` before `02-*`.
 
 **All implementation-relevant information is in `specs/`.** This file contains only structural and workflow guidance.
+
+## Required Sync Discipline
+
+Any change to public DSL shape, runtime bundle shape, renderer behavior, asset
+semantics, examples, or generated output must update the complete artifact set
+in the same change:
+
+- `specs/` source-of-truth contracts and capability docs
+- `packages/core/src/types/*` public and runtime types
+- parser, validator, compiler, renderer, animation/controller code as needed
+- focused tests covering parse, validate, compile, render, controller/runtime
+  behavior, and public type contracts
+- `docs/` developer-facing docs and examples
+- `skills/authoring-isostate-scenes/` references when authoring rules change
+- generated demo bundles such as `examples/basic/scene.isostate.js` whenever
+  the source YAML changes
+
+Do not leave code, specs, docs, skills, or examples knowingly out of sync.
 
 ## Key Constraints
 
@@ -90,9 +106,9 @@ Pipeline:
 
 The `skills/` directory contains AI agent workflow guides. These are **not runtime code** — they are instruction sets that help AI agents assist with:
 
-- **`dsl-writer/`** — Writing valid `.isostate.yaml` scene files: element definitions, keyframes, lifecycle, animations, layers, states, backgrounds.
-- **`asset-creator/`** — Creating isometric SVG assets: dimensions, depth shading, CSS variable theming, categories.
-- **`converter/`** — Building format converters (e.g., Mermaid → DSL): mapping diagram concepts to isostate elements.
+- **`authoring-isostate-scenes/`** — Writing and reviewing valid
+  `.isostate.yaml` scene files, asset anchors, generated primitives, text
+  labels, connections, examples, and converter outputs.
 
 ## Gotchas
 
@@ -100,3 +116,9 @@ The `skills/` directory contains AI agent workflow guides. These are **not runti
 - **Never** include `yaml` package or validator/compiler code in the browser bundle — they are dev-time only.
 - `02-capabilities/scroll.md` is superseded by `02-capabilities/controller.md`.
 - Skills in `skills/` directory are AI agent workflow guides, not runtime code.
+- Built-in generated assets (`text`, `rectangle`, `circle`, `polygon`, `line`)
+  are reserved and must not be declared in `header.assets`.
+- Hand-authored element `at`, manual routes, and `size` values use whole grid
+  cells unless a spec explicitly says otherwise. Composite visual assets should
+  be authored with explicit whole-cell `size` and correct `anchor`, or split
+  into separate one-cell assets/elements.
