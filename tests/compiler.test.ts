@@ -100,7 +100,7 @@ describe('compileScene', () => {
 		expect(first).toEqual(second);
 		expect(toJson(first)).toBe(toJson(second));
 		expect(first._format).toBe('isostate-runtime-bundle');
-		expect(first._version).toBe('0.1.0');
+		expect(first._version).toBe('0.1.1');
 		expect(first._digest).toMatch(/^[a-f0-9]{64}$/);
 		expect(first.className).toBe('demo-surface');
 		expect(first.grid).toEqual({ cellSize: 72 });

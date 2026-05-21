@@ -42,7 +42,7 @@ function restoreGlobals(): void {
 function bundle(): RuntimeBundle {
 	return {
 		_format: 'isostate-runtime-bundle',
-		_version: '0.1.0',
+		_version: '0.1.1',
 		_digest: '',
 		grid: { cellSize: 64 },
 		floor: { size: [2, 2], origin: [0, 0], visible: true, layer: 'base' },

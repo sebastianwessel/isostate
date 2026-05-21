@@ -6,6 +6,16 @@ Use isostate in two steps:
 2. Import the compiled `.isostate.js` bundle in browser code and call
    `mountScene`.
 
+If you want an AI assistant to help author scenes, install the project skill
+first:
+
+```bash
+bunx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
+```
+
+See [Install The Authoring Skill](./guides/install-authoring-skill.md) for
+agent-specific setup and verification.
+
 ## Run The Demo
 
 From the repository root:

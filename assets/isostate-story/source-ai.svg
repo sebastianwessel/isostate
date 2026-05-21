@@ -1,0 +1,10 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generated scene draft">
+	<g stroke="#1f2726" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M15 22 32 13l17 9-17 9z" fill="#f4f7fb"/>
+		<path d="M15 22v23l17 10V31z" fill="#ccd9e4"/>
+		<path d="M49 22v23L32 55V31z" fill="#9eb4c7"/>
+		<path d="M32 17.5 36 22l-4 4.5L28 22z" fill="#577f9f"/>
+		<path d="M24 37.5h16M26 43h12" fill="none" stroke="#15584d"/>
+		<path d="M22 25.5c3.5 0 3.5-4 0-4 3.5 0 3.5-4 0-4 3.5 0 3.5 4 0 4 3.5 0 3.5 4 0 4z" fill="#e7b949"/>
+	</g>
+</svg>

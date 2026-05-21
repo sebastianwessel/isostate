@@ -4,8 +4,22 @@ isostate renders compiled isometric scene bundles in the browser. Author YAML at
 build time, compile it into a runtime bundle, then mount that bundle with the
 small browser runtime.
 
+## AI Authoring Skill
+
+Install the isostate authoring skill before asking an AI assistant to write or
+review scene YAML:
+
+```bash
+bunx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
+```
+
+See [Install The Authoring Skill](./guides/install-authoring-skill.md) for
+package-runner variants, agent-specific installation, and verification.
+
 ## Start Here
 
+- [Install The Authoring Skill](./guides/install-authoring-skill.md): give your
+  AI assistant the isostate DSL, asset, connector, and deployment rules.
 - [Getting Started](./getting-started.md): compile the demo and mount it in a
   browser page.
 - [Author Scene Deltas](./guides/author-scene-deltas.md): write the YAML

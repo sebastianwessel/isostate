@@ -1,0 +1,11 @@
+<svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Scroll controller">
+	<g stroke="#1f2726" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M14 24 32 14l18 10-18 10z" fill="#f7f8f3"/>
+		<path d="M14 24v20l18 11V34z" fill="#dce1d7"/>
+		<path d="M50 24v20L32 55V34z" fill="#b8c2b6"/>
+		<path d="M28 22.5 32 20l4 2.5-4 2.5z" fill="#e7b949"/>
+		<path d="M32 27v20" fill="none" stroke="#15584d" stroke-width="2"/>
+		<circle cx="32" cy="37" r="4" fill="#80d8be"/>
+		<path d="M23 42h18" fill="none" stroke="#1f2726"/>
+	</g>
+</svg>

@@ -1,7 +1,8 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import {
 	buildSceneDOM,
-	getResolvedViewBox
+	getResolvedViewBox,
+	updateElementTransforms
 } from '../../packages/core/src/rendering/rendering-engine.ts';
 import type { RuntimeBundle } from '../../packages/core/src/types/index.ts';
 
@@ -611,6 +612,52 @@ describe('rendering engine', () => {
 		).toBe('0 8');
 	});
 
+	test('keeps connector flow class when route updates replace the shaft path', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const flow = connector({
+			id: 'navigation-arrow',
+			route: [
+				[0, 0],
+				[2, 0]
+			],
+			style: {
+				variant: 'line',
+				pattern: 'dashed',
+				stroke: '#2f80ed',
+				strokeWidth: 5,
+				opacity: 1,
+				outlineWidth: 0,
+				lane: 'none'
+			},
+			ambient: [{ name: 'flow' }]
+		});
+		const bundle = createBundle({
+			scenes: [sceneStop([], 0, [flow])]
+		});
+		const svg = buildSceneDOM(container, bundle);
+		const before = svg
+			.querySelector('.iso-connector-navigation-arrow')
+			?.querySelector('.iso-connector-shaft');
+
+		expect(before?.getAttribute('class')).toContain('iso-ambient-flow');
+
+		updateElementTransforms(svg, [], [
+			{
+				...flow,
+				route: [
+					[0, 0],
+					[3, 0]
+				]
+			}
+		]);
+
+		const after = svg
+			.querySelector('.iso-connector-navigation-arrow')
+			?.querySelector('.iso-connector-shaft');
+		expect(after).not.toBe(before);
+		expect(after?.getAttribute('class')).toContain('iso-ambient-flow');
+	});
+
 	test('renders road connector outline body and center lane paths', () => {
 		const container = new MiniElement('div', null) as unknown as HTMLElement;
 		const bundle = createBundle({
@@ -755,7 +802,7 @@ function createBundle(overrides: Record<string, unknown>): RuntimeBundle {
 	const assets = normalizeTestAssets(overrides.assets);
 	return {
 		_format: 'isostate-runtime-bundle',
-		_version: '0.1.0',
+		_version: '0.1.1',
 		_digest: '',
 		grid: { cellSize: 64 },
 		floor: { size: [4, 4], origin: [0, 0], visible: true, layer: 'main' },

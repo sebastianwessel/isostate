@@ -1,6 +1,6 @@
 {
 	"name": "@sebastianwessel/isostate-workspace",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Scroll-driven animated isometric illustrations with a textual DSL",
 	"private": true,
 	"type": "module",
