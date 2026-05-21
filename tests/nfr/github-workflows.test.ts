@@ -48,8 +48,8 @@ describe('GitHub workflows', () => {
 		expect(workflow).toContain('bun run site:build');
 		expect(workflow).toContain('npm view "@sebastianwessel/isostate@$version"');
 		expect(workflow).toContain('npm view "@sebastianwessel/isostate-cli@$version"');
-		expect(workflow).toContain('npm publish --access public --provenance packages/core');
-		expect(workflow).toContain('npm publish --access public --provenance packages/cli');
+		expect(workflow).toContain('npm publish --access public --provenance ./packages/core');
+		expect(workflow).toContain('npm publish --access public --provenance ./packages/cli');
 		expect(workflow).toContain('secrets.NPM_TOKEN');
 		expect(workflow).toContain('git tag -a "$tag"');
 		expect(workflow).toContain('softprops/action-gh-release@v2');

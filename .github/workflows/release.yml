@@ -106,12 +106,12 @@ jobs:
           PUBLIC_ISOSTATE_VERSION: ${{ env.version }}
 
       - name: Publish core package
-        run: npm publish --access public --provenance packages/core
+        run: npm publish --access public --provenance ./packages/core
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish CLI package
-        run: npm publish --access public --provenance packages/cli
+        run: npm publish --access public --provenance ./packages/cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

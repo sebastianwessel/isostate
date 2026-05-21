@@ -22,14 +22,18 @@
 	"files": [
 		"dist"
 	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
 	"sideEffects": false,
 	"scripts": {
 		"clean": "rm -rf dist",
-		"build": "bun run clean && tsx ../../node_modules/rollup/dist/bin/rollup -c ../../rollup.config.ts && tsc -p tsconfig.json --emitDeclarationOnly --noCheck",
+		"build": "cd ../.. && bun run build",
 		"lint": "biome check src/",
 		"format": "biome format --write src/",
 		"test": "bun test",
-		"prepublishOnly": "bun run build && bun run lint"
+		"prepublishOnly": "cd ../.. && bun run build && bun run lint"
 	},
 	"devDependencies": {
 		"typescript": "^6.0.3",

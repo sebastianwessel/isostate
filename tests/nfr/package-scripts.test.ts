@@ -37,7 +37,9 @@ describe('NFR package scripts', () => {
 			files?: string[];
 			license?: string;
 			name?: string;
+			publishConfig?: { access?: string; registry?: string };
 			repository?: { directory?: string; type?: string; url?: string };
+			scripts?: Record<string, string>;
 			version?: string;
 		};
 		const cliPackage = JSON.parse(
@@ -51,7 +53,9 @@ describe('NFR package scripts', () => {
 			license?: string;
 			version?: string;
 			name?: string;
+			publishConfig?: { access?: string; registry?: string };
 			repository?: { directory?: string; type?: string; url?: string };
+			scripts?: Record<string, string>;
 			types?: string;
 		};
 
@@ -75,6 +79,10 @@ describe('NFR package scripts', () => {
 		for (const pkg of [corePackage, cliPackage]) {
 			expect(pkg.author).toBe('Sebastian Wessel');
 			expect(pkg.license).toBe('MIT');
+			expect(pkg.publishConfig).toEqual({
+				access: 'public',
+				registry: 'https://registry.npmjs.org/'
+			});
 			expect(pkg.repository?.type).toBe('git');
 			expect(pkg.repository?.url).toBe(
 				'git+ssh://git@github.com/sebastianwessel/isostate.git'
@@ -82,6 +90,14 @@ describe('NFR package scripts', () => {
 		}
 		expect(corePackage.repository?.directory).toBe('packages/core');
 		expect(cliPackage.repository?.directory).toBe('packages/cli');
+		expect(corePackage.scripts?.build).toBe('cd ../.. && bun run build');
+		expect(corePackage.scripts?.prepublishOnly).toBe(
+			'cd ../.. && bun run build && bun run lint'
+		);
+		expect(cliPackage.scripts?.build).toBe('cd ../.. && bun run build');
+		expect(cliPackage.scripts?.prepublishOnly).toBe(
+			'cd ../.. && bun run build && bun run lint'
+		);
 		expect(cliPackage.bin?.isostate).toBe('./dist/bin.js');
 		expect(cliPackage.exports?.['.']?.import).toBe('./dist/index.js');
 		expect(cliPackage.exports?.['.']?.types).toBe('./dist/index.d.ts');
