@@ -4,8 +4,9 @@
 
 The public API is split into two deployment surfaces:
 
-1. Browser runtime entrypoint: `@isostate/core`
-2. Dev-time DSL entrypoint: `@isostate/core/dsl`
+1. Browser runtime entrypoint: `@sebastianwessel/isostate`
+2. Dev-time DSL entrypoint: `@sebastianwessel/isostate/dsl`
+3. Local process CLI entrypoint: `isostate` from `@sebastianwessel/isostate-cli`
 
 The browser runtime must not import the YAML parser, validator, compiler, `yaml`, `fs`, or any Node/Bun-only module. Dev-time APIs may use Node/Bun and the optional `yaml` peer dependency.
 
@@ -16,7 +17,7 @@ execution_semantics:
   dsl: local_process
   types: data_only
 
-public_builder: `mountScene` is the browser high-level API. `parseScene` + `validateScene` + `compileScene` is the dev-time high-level API. `buildSceneDOM`, `AnimationEngine`, and `AnimationController` are low_level_escape_hatch surfaces.
+public_builder: `mountScene` is the browser high-level API. `parseScene` + `validateScene` + `compileScene` is the dev-time SDK high-level API. `isostate bundle` is the static deployment high-level CLI path. `buildSceneDOM`, `AnimationEngine`, and `AnimationController` are low_level_escape_hatch surfaces.
 
 ## Inventory
 
@@ -31,6 +32,10 @@ public_builder: `mountScene` is the browser high-level API. `parseScene` + `vali
 | `compileScene` | dev-time SDK function | `packages/core/src/dsl/compiler.ts` | Build tools, CLI, tests | experimental | local_process | `03-contracts/runtime-bundle.md` | `docs/examples/compile-yaml.md` | `tests/compiler.test.ts` |
 | `toJs`, `toJson` | serializer functions | `packages/core/src/dsl/compiler.ts` | Build tools, CLI, tests | experimental | local_process | `03-contracts/runtime-bundle.md` | `docs/examples/compile-yaml.md` | `tests/compiler.test.ts` |
 | `fromJs`, `fromJson` | test/dev helpers | `packages/core/src/dsl/compiler.ts` | Tests, diagnostics | internal | local_process | `03-contracts/runtime-bundle.md` | `docs/examples/inspect-bundle.md` | `tests/compiler.test.ts` |
+| `isostate validate` | CLI command | `packages/cli` | App developers, CI | experimental | local_process | `03-contracts/cli.md` | `docs/guides/deploy-static-bundle.md` | `tests/cli/validate.test.ts` |
+| `isostate compile` | CLI command | `packages/cli` | App developers, CI | experimental | local_process | `03-contracts/cli.md` | `docs/examples/compile-yaml.md` | `tests/cli/compile.test.ts` |
+| `isostate bundle` | CLI command | `packages/cli` | Static-site developers | experimental | local_process | `03-contracts/cli.md`, `03-contracts/static-bundle.md` | `docs/guides/deploy-static-bundle.md` | `tests/cli/bundle.test.ts` |
+| `isostate inspect` | CLI command | `packages/cli` | App developers, diagnostics | experimental | local_process | `03-contracts/cli.md`, `03-contracts/runtime-bundle.md` | `docs/examples/inspect-bundle.md` | `tests/cli/inspect.test.ts` |
 | `createAssetRegistry`, `AssetRegistryImpl`, `createDefaultRegistry` | metadata helper | `packages/core/src/types/asset-registry.ts` | Tooling/tests | experimental | data_only | `01-domains/assets.md` | `docs/examples/custom-assets.md` | `tests/runtime/public-helpers.test.ts` |
 | `resolveTheme`, `composeTheme` | SDK function | `packages/core/src/types/asset-registry.ts` | App developers | experimental | in_process | `01-domains/assets.md` | `docs/examples/custom-theme.md` | `tests/runtime/theme.test.ts` |
 | Type exports | schema/types | `packages/core/src/types/` | App and tool developers | experimental | data_only | `03-contracts/scene-schema.md` | `docs/reference/types.md` | `tests/contracts/types.test.ts` |
@@ -42,7 +47,7 @@ public_builder: `mountScene` is the browser high-level API. `parseScene` + `vali
 Minimal browser usage loads precompiled data and uses only runtime APIs:
 
 ```ts
-import { mountScene } from '@isostate/core';
+import { mountScene } from '@sebastianwessel/isostate';
 import sceneData from './scene.isostate.js';
 
 const runtime = mountScene(document.querySelector('#scene'), sceneData, {
@@ -75,7 +80,7 @@ Advanced users may call `buildSceneDOM`, `AnimationEngine`, and `AnimationContro
 Minimal build usage may import the dev-time entrypoint:
 
 ```ts
-import { compileScene, parseScene, toJs, validateScene } from '@isostate/core/dsl';
+import { compileScene, parseScene, toJs, validateScene } from '@sebastianwessel/isostate/dsl';
 
 const document = parseScene(yamlText);
 const report = validateScene(document);
@@ -85,14 +90,28 @@ const bundle = compileScene(document);
 const moduleText = toJs(bundle);
 ```
 
+### Static Deployment Bundle
+
+The primary no-build browser deployment path is the CLI:
+
+```bash
+isostate bundle scene.isostate.yaml --out public/isostate/scene
+```
+
+The generated directory contains browser runtime code, compiled scene data,
+copied external SVG assets, and a manifest. The browser imports only generated
+ESM files and copied assets; it never parses YAML.
+
 ## Public API Rules
 
-- `@isostate/core` may export runtime-safe types and helpers, but its browser bundle must tree-shake away `@isostate/core/dsl`.
-- `@isostate/core/dsl` is dev-time only and may depend on the optional `yaml` peer dependency.
+- `@sebastianwessel/isostate` may export runtime-safe types and helpers, but its browser bundle must tree-shake away `@sebastianwessel/isostate/dsl`.
+- `@sebastianwessel/isostate/dsl` is dev-time only and may depend on the optional `yaml` peer dependency.
 - Root examples must not parse YAML in the browser.
 - Low-level rendering helpers are exported for tests and advanced integrations, but docs must present engine/controller APIs as the primary path.
 - All public functions throw structured errors listed in `03-contracts/errors.md`.
 - Every runtime public API receives plain data objects and DOM objects only; external assets must be present in the compiled bundle as URL references.
+- CLI commands are local-process developer tooling and may use filesystem APIs,
+  but their output must preserve the runtime boundary.
 
 ## Effective Configuration Inspection
 

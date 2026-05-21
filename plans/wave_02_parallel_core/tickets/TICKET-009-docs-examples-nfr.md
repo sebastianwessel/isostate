@@ -2,7 +2,7 @@
 id: TICKET-009
 title: Add docs, examples, and NFR verification
 wave: 2
-status: implementation_ready
+status: done
 parallel_group: docs_nfr
 depends_on: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
 blocked_by: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
@@ -14,7 +14,7 @@ contract_readiness:
   required_contracts: [specs/03-contracts/public-api.md, specs/04-nfr/runtime-ci.md]
   missing_contracts: []
 ticket_readiness:
-  status: implementation_ready
+  status: done
   open_decisions: []
   decision_source: spec
   ambiguous_phrases: []
@@ -75,7 +75,7 @@ Write focused docs for each inventory path and add hermetic NFR tests/scripts. K
 ## Required Behavior
 
 - Add focused examples for every path named in public API inventory.
-- Examples start with `mountScene` for runtime usage and `@isostate/core/dsl` for dev-time compile usage.
+- Examples start with `mountScene` for runtime usage and `@sebastianwessel/isostate/dsl` for dev-time compile usage.
 - Add NFR tests/scripts proving runtime entrypoint does not include `yaml`/DSL modules.
 - Add `size` and `publint` scripts required by NFR.
 - Browser/perf/network tests remain opt-in through documented env vars and are not part of default CI.

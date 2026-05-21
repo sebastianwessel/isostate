@@ -2,7 +2,7 @@
 id: TICKET-004
 title: Implement compliant runtime bundle compiler
 wave: 2
-status: implementation_ready
+status: done
 parallel_group: compiler
 depends_on: [TICKET-001, TICKET-002]
 blocked_by: [TICKET-001, TICKET-002]

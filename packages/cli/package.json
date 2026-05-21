@@ -1,0 +1,39 @@
+{
+	"name": "@sebastianwessel/isostate-cli",
+	"version": "0.1.0",
+	"description": "Command line tools for validating and compiling Isostate scene DSL files.",
+	"type": "module",
+	"bin": {
+		"isostate": "./dist/bin.js"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		}
+	},
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"sideEffects": false,
+	"scripts": {
+		"build": "tsx ../../node_modules/rollup/dist/bin/rollup -c ../../rollup.config.ts && tsc -p tsconfig.json --emitDeclarationOnly --noCheck"
+	},
+	"dependencies": {
+		"@sebastianwessel/isostate": "0.1.0"
+	},
+	"peerDependencies": {
+		"yaml": "^2.9.0"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"author": "Sebastian Wessel",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/sebastianwessel/isostate.git",
+		"directory": "packages/cli"
+	}
+}

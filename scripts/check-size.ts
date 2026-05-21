@@ -5,16 +5,24 @@ import { spawnSync } from 'node:child_process';
 
 const root = process.cwd();
 const maxRuntimeGzipBytes = 20 * 1024;
-const runtimePath = join(root, 'packages/core/dist/runtime/index.js');
+const runtimePath = join(
+	root,
+	'packages/core/dist/browser/isostate.runtime.js'
+);
 const forbiddenRuntimeFragments = [
 	"from 'yaml'",
 	'from "yaml"',
 	"from 'node:crypto'",
 	'from "node:crypto"',
+	"from 'node:fs'",
+	'from "node:fs"',
+	"from 'node:fs/promises'",
+	'from "node:fs/promises"',
 	'./dsl/',
 	'../dsl/',
 	'scene-parser',
 	'scene-validator',
+	'compiler.ts',
 	'compileScene',
 	'parseScene',
 	'validateScene'
@@ -51,7 +59,7 @@ if (forbidden.length > 0) {
 }
 
 console.log(
-	`Runtime entrypoint: ${gzipBytes} bytes gzipped (<${maxRuntimeGzipBytes}).`
+	`Standalone browser runtime: ${gzipBytes} bytes gzipped (<${maxRuntimeGzipBytes}).`
 );
 
 async function readRuntimeGraph(

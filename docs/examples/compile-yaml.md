@@ -1,7 +1,18 @@
 # Compile YAML
 
-Use the dev-time DSL entrypoint from build tooling, tests, or generation
-scripts. This path may use `yaml`; the browser runtime must load only the
+Prefer the CLI for local build scripts and release workflows:
+
+```bash
+bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
+bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.json --format json
+```
+
+The CLI validates before writing and keeps YAML parsing, validation, and
+compilation in development tooling. Browser code should import the emitted JS
+module or fetch the emitted JSON.
+
+Use the dev-time DSL entrypoint when custom build tooling needs in-process
+control. This path may use `yaml`; the browser runtime must load only the
 compiled output.
 
 ```ts
@@ -11,7 +22,7 @@ import {
 	toJs,
 	toJson,
 	validateScene
-} from '@isostate/core/dsl';
+} from '@sebastianwessel/isostate/dsl';
 
 const yamlText = await Bun.file('scene.isostate.yaml').text();
 const document = parseScene(yamlText);

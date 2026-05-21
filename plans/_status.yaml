@@ -1,46 +1,71 @@
 tickets:
   TICKET-001:
-    status: implementation_ready
+    status: done
     wave: wave_01_foundation
     depends_on: []
     blocked_by: []
   TICKET-002:
-    status: implementation_ready
+    status: done
     wave: wave_02_parallel_core
     depends_on: [TICKET-001]
     blocked_by: [TICKET-001]
   TICKET-003:
-    status: implementation_ready
+    status: done
     wave: wave_02_parallel_core
     depends_on: [TICKET-001, TICKET-002]
     blocked_by: [TICKET-001, TICKET-002]
   TICKET-004:
-    status: implementation_ready
+    status: done
     wave: wave_02_parallel_core
     depends_on: [TICKET-001, TICKET-002]
     blocked_by: [TICKET-001, TICKET-002]
   TICKET-005:
-    status: implementation_ready
+    status: done
     wave: wave_02_parallel_core
     depends_on: [TICKET-001, TICKET-002, TICKET-004]
     blocked_by: [TICKET-001, TICKET-002, TICKET-004]
   TICKET-006:
-    status: implementation_ready
+    status: done
     wave: wave_02_parallel_core
     depends_on: [TICKET-001, TICKET-002]
     blocked_by: [TICKET-001, TICKET-002]
   TICKET-007:
-    status: implementation_ready
+    status: done
     wave: wave_02_parallel_core
     depends_on: [TICKET-001, TICKET-002]
     blocked_by: [TICKET-001, TICKET-002]
   TICKET-008:
-    status: implementation_ready
+    status: done
     wave: wave_02_parallel_core
     depends_on: [TICKET-001]
     blocked_by: [TICKET-001]
   TICKET-009:
-    status: implementation_ready
+    status: done
     wave: wave_02_parallel_core
     depends_on: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
     blocked_by: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
+  TICKET-010:
+    status: done
+    wave: wave_03_tooling_packaging
+    depends_on: [TICKET-009]
+    blocked_by: []
+  TICKET-011:
+    status: done
+    wave: wave_03_tooling_packaging
+    depends_on: [TICKET-010]
+    blocked_by: []
+  TICKET-012:
+    status: done
+    wave: wave_03_tooling_packaging
+    depends_on: [TICKET-010]
+    blocked_by: []
+  TICKET-013:
+    status: done
+    wave: wave_03_tooling_packaging
+    depends_on: [TICKET-011, TICKET-012]
+    blocked_by: []
+  TICKET-014:
+    status: done
+    wave: wave_03_tooling_packaging
+    depends_on: [TICKET-013]
+    blocked_by: []

@@ -5,7 +5,7 @@ Compose theme variables with `composeTheme`, then pass those variables to
 bundle digest validation remains intact.
 
 ```ts
-import { composeTheme, mountScene } from '@isostate/core';
+import { composeTheme, mountScene } from '@sebastianwessel/isostate';
 import sceneBundle from './scene.isostate.js';
 
 const theme = composeTheme('light', {

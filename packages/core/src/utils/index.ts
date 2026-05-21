@@ -1,15 +1,15 @@
 export {
+	type EasingFn,
+	type EasingType,
+	easeInCubic,
+	easeInOutCubic,
+	easeOutCubic,
+	linear,
+	resolveEasing,
+} from "./easing.ts";
+export {
+	calculateTransform,
+	calculateVisualSize,
 	DEFAULT_CELL_SIZE,
 	projectToScreen,
-	calculateVisualSize,
-	calculateTransform
-} from './projection.ts';
-export {
-	linear,
-	easeInCubic,
-	easeOutCubic,
-	easeInOutCubic,
-	resolveEasing,
-	type EasingFn,
-	type EasingType
-} from './easing.ts';
+} from "./projection.ts";

@@ -2,19 +2,19 @@
 id: TICKET-008
 title: Complete background renderer compliance
 wave: 2
-status: implementation_ready
+status: done
 parallel_group: background
 depends_on: [TICKET-001]
 blocked_by: [TICKET-001]
-spec_refs: [specs/01-domains/scene-background.md, specs/03-contracts/errors.md]
+spec_refs: [specs/01-domains/scene-surface-styling.md, specs/03-contracts/errors.md]
 write_scope: [packages/core/src/rendering/background-renderer.ts, packages/core/src/types/scene-background.ts, tests/runtime/background-renderer.test.ts]
 read_scope: [packages/core/src/rendering/background-renderer.ts, packages/core/src/types/scene-background.ts, packages/core/src/types/errors.ts]
 contract_readiness:
   status: ready
-  required_contracts: [specs/01-domains/scene-background.md]
+  required_contracts: [specs/01-domains/scene-surface-styling.md]
   missing_contracts: []
 ticket_readiness:
-  status: implementation_ready
+  status: done
   open_decisions: []
   decision_source: spec
   ambiguous_phrases: []
@@ -28,7 +28,7 @@ Implement SVG background rendering for solid, gradient, image, and grid variants
 
 ## Spec Refs
 
-- `specs/01-domains/scene-background.md`
+- `specs/01-domains/scene-surface-styling.md`
 - `specs/03-contracts/errors.md`
 
 ## Context Digest

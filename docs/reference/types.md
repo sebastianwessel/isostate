@@ -1,7 +1,7 @@
 # Types Reference
 
-Public types are exported from `@isostate/core`. Dev-time bundle types are
-exported from `@isostate/core/dsl`.
+Public types are exported from `@sebastianwessel/isostate`. Dev-time bundle types are
+exported from `@sebastianwessel/isostate/dsl`.
 
 ## Runtime Mounting
 
@@ -11,7 +11,7 @@ import type {
 	MountedScene,
 	ResolvedRuntimeConfig,
 	RuntimeBundle
-} from '@isostate/core';
+} from '@sebastianwessel/isostate';
 ```
 
 `MountSceneOptions` accepts controller config, an accessible scene label, and
@@ -45,7 +45,7 @@ interface ResolvedRuntimeConfig {
 ```
 
 `RuntimeBundle` is the compiled browser artifact accepted by `mountScene`.
-Import it from `@isostate/core` in runtime code or from `@isostate/core/dsl` in
+Import it from `@sebastianwessel/isostate` in runtime code or from `@sebastianwessel/isostate/dsl` in
 build tooling.
 
 ## Scene Data
@@ -66,7 +66,7 @@ import type {
 	SceneStep,
 	TextContent,
 	PrimitiveContent
-} from '@isostate/core';
+} from '@sebastianwessel/isostate';
 ```
 
 `SceneDocument` is the parsed authored YAML shape: `header` plus ordered
@@ -112,7 +112,7 @@ import type {
 	AssetCategory,
 	AssetDefinition,
 	Theme
-} from '@isostate/core';
+} from '@sebastianwessel/isostate';
 ```
 
 Authored YAML uses document-local `header.assets[].id` values; those ids must
@@ -131,7 +131,7 @@ import type {
 	AmbientAnimation,
 	EntryAnimation,
 	ExitAnimation
-} from '@isostate/core';
+} from '@sebastianwessel/isostate';
 ```
 
 These types describe entry and exit animations plus ambient animation classes.
@@ -145,7 +145,7 @@ import type {
 	ValidationError,
 	ValidationReport,
 	ValidationWarning
-} from '@isostate/core';
+} from '@sebastianwessel/isostate';
 ```
 
 Validation reports are returned by the dev-time validator and are safe to use in
@@ -154,8 +154,8 @@ build tooling and tests.
 ## Dev-Time Bundles
 
 ```ts
-import type { CompileOptions, RuntimeBundle } from '@isostate/core/dsl';
+import type { CompileOptions, RuntimeBundle } from '@sebastianwessel/isostate/dsl';
 ```
 
 Parser, validator, compiler, serializers, and bundle inspection helpers belong
-to `@isostate/core/dsl` and must stay out of browser runtime bundles.
+to `@sebastianwessel/isostate/dsl` and must stay out of browser runtime bundles.

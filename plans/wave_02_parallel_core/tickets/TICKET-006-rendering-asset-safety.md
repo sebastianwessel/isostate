@@ -2,7 +2,7 @@
 id: TICKET-006
 title: Implement rendering asset safety, depth sorting, and accessibility
 wave: 2
-status: implementation_ready
+status: done
 parallel_group: rendering
 depends_on: [TICKET-001, TICKET-002]
 blocked_by: [TICKET-001, TICKET-002]

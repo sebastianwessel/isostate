@@ -30,3 +30,19 @@ To jump directly to a compiled scene progress for visual checks:
 ```text
 http://localhost:4173/examples/basic/?progress=1
 ```
+
+To generate the static deployment bundle for this example:
+
+```bash
+bun run examples:basic:bundle
+```
+
+The command writes:
+
+```text
+examples/basic/static-bundle/
+  isostate.runtime.js
+  scene.isostate.js
+  manifest.json
+  assets/
+```

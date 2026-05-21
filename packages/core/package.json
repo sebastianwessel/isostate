@@ -1,5 +1,5 @@
 {
-	"name": "@isostate/core",
+	"name": "@sebastianwessel/isostate",
 	"version": "0.1.0",
 	"description": "Isometric scene engine — SVG rendering, animation, and YAML DSL for browser-based isometric scenes.",
 	"type": "module",
@@ -19,7 +19,9 @@
 			"import": "./dist/dsl/index.js"
 		}
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"sideEffects": false,
 	"scripts": {
 		"clean": "rm -rf dist",
@@ -30,11 +32,11 @@
 		"prepublishOnly": "bun run build && bun run lint"
 	},
 	"devDependencies": {
-		"typescript": "^5.4.0",
-		"@biomejs/biome": "^1.9.0",
+		"typescript": "^6.0.3",
+		"@biomejs/biome": "^2.4.15",
 		"yaml": "^2.9.0",
-		"publint": "^0.2.0",
-		"size-limit": "^11.1.0"
+		"publint": "^0.3.21",
+		"size-limit": "^12.1.0"
 	},
 	"peerDependencies": {
 		"yaml": "^2.9.0"
@@ -47,9 +49,11 @@
 	"engines": {
 		"node": ">=18.0.0"
 	},
+	"author": "Sebastian Wessel",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/anomalyco/isometric.git"
+		"url": "git+ssh://git@github.com/sebastianwessel/isostate.git",
+		"directory": "packages/core"
 	}
 }

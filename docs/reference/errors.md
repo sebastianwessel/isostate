@@ -1,6 +1,6 @@
 # Errors
 
-Public APIs throw structured error classes exported from `@isostate/core`.
+Public APIs throw structured error classes exported from `@sebastianwessel/isostate`.
 
 | Class | Where | Examples |
 |---|---|---|

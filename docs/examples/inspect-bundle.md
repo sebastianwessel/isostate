@@ -1,10 +1,21 @@
 # Inspect Bundle
 
-Use `fromJs` and `fromJson` from `@isostate/core/dsl` in tests or diagnostics to
-inspect compiled artifacts without mounting a browser scene.
+Prefer the CLI when checking generated files from a terminal or CI job:
+
+```bash
+bunx --package @sebastianwessel/isostate-cli isostate inspect public/scene.isostate.js
+bunx --package @sebastianwessel/isostate-cli isostate inspect public/scene.isostate.json
+```
+
+Inspection verifies the canonical runtime bundle metadata, including `_format`,
+`_version`, and `_digest`, and reports scene, layer, asset, and floor counts.
+
+Use `fromJs` and `fromJson` from `@sebastianwessel/isostate/dsl` in tests or diagnostics
+that need in-process access to compiled artifacts without mounting a browser
+scene.
 
 ```ts
-import { fromJs, fromJson } from '@isostate/core/dsl';
+import { fromJs, fromJson } from '@sebastianwessel/isostate/dsl';
 
 const jsModuleText = await Bun.file('scene.isostate.js').text();
 const jsBundle = fromJs(jsModuleText);

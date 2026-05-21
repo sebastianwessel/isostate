@@ -4,12 +4,12 @@ human_approval:
   status: approved
   required_for: none
 summary:
-  reason: Specs were corrected from the old state/keyframe authoring model to the intended header plus scene-delta model and the implementation was updated to match the revised DSL, connection, compiler, runtime, rendering, docs, and example contracts.
+  reason: Core specs and implementation now match the header plus scene-delta runtime model. CLI and static deployment bundle specs have been added as the next approved tooling/package wave so implementation can resume without rediscovering packaging decisions.
   foundation: updated
   domains: updated
   contracts: updated
   flows: updated
-  nfrs: unchanged
+  nfrs: updated
 blocking_gaps: []
 resolved_gaps:
   - Authored YAML contract now uses `header` plus ordered `scenes`.
@@ -20,9 +20,11 @@ resolved_gaps:
   - Connector spec now defines generated SVG ground-plane routes, endpoint-based auto-routing with obstacle avoidance, line/road variants, endpoint geometry, fixed dash/dot patterns, and direction-aware CSS flow animation.
   - Connector route ambiguity was closed: hand-authored manual routes are whole-grid only, `from`/`to` ports may compile to fractional runtime route points, endpoint `offset` math is defined, and arrowheads/endcaps are projected ground-plane geometry rather than stretched SVG assets or screen-space markers.
   - Implementation now parses public `connections`, nested `add/update/remove` operation sections, validates endpoint lifecycle, compiles runtime `connectors[]`, renders generated connector SVG, updates connector animation frames, and regenerates the browser example bundle.
+  - `@isostate/cli` is now specified as the local process package for `validate`, `compile`, `bundle`, and `inspect`.
+  - Static deployment bundles are now specified as `isostate.runtime.js`, `scene.isostate.js`, copied `assets/`, and `manifest.json`.
 planning_gate:
   status: passed
-  reason: Implementation proceeded directly from the current approved specs using scoped parallel agents; stale tickets remain historical and were not reused.
+  reason: Core implementation is complete enough for the next tooling/package wave. New CLI/static bundle tickets can be planned from approved contracts.
 gate_simulation:
   status: passed
   reason: Parser, validator, compiler, runtime, rendering, animation, docs, example, and verification slices were executed with disjoint write scopes.
@@ -32,3 +34,4 @@ deterministic_check:
 confidence: high
 risks:
   - Runtime bundle compatibility is intentionally breaking; old generated bundles must be recompiled.
+  - The runtime size budget currently has little headroom, so standalone runtime artifact work must preserve or improve the gzipped size.

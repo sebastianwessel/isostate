@@ -2,7 +2,7 @@
 id: TICKET-007
 title: Implement animation engine and controller semantics
 wave: 2
-status: implementation_ready
+status: done
 parallel_group: animation_controller
 depends_on: [TICKET-001, TICKET-002]
 blocked_by: [TICKET-001, TICKET-002]

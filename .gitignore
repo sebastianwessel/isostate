@@ -35,6 +35,7 @@ Thumbs.db
 .cache/
 .tmp/
 tmp/
+website/.astro/
 .codex/tmp/
 playwright-report/
 test-results/

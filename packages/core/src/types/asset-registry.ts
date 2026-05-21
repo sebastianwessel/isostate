@@ -1,40 +1,35 @@
-import type {
-	AssetCategory,
-	AssetDefinition,
-	AssetRegistry,
-	Theme
-} from './assets.ts';
+import type { AssetCategory, AssetDefinition, AssetRegistry, Theme } from "./assets.ts";
 
 // ── Built-in themes ────────────────────────────────────────────────────────
 
 const BUILTIN_THEMES: Record<string, Record<string, string>> = {
 	light: {
-		'--color-top': '#e2e8f0',
-		'--color-front': '#94a3b8',
-		'--color-side': '#64748b',
-		'--color-back': '#475569',
-		'--color-leaf': '#15803d',
-		'--color-trunk': '#78350f',
-		'--color-accent': '#3b82f6'
+		"--color-top": "#e2e8f0",
+		"--color-front": "#94a3b8",
+		"--color-side": "#64748b",
+		"--color-back": "#475569",
+		"--color-leaf": "#15803d",
+		"--color-trunk": "#78350f",
+		"--color-accent": "#3b82f6",
 	},
 	dark: {
-		'--color-top': '#334155',
-		'--color-front': '#1e293b',
-		'--color-side': '#0f172a',
-		'--color-back': '#020617',
-		'--color-leaf': '#166534',
-		'--color-trunk': '#451a03',
-		'--color-accent': '#60a5fa'
+		"--color-top": "#334155",
+		"--color-front": "#1e293b",
+		"--color-side": "#0f172a",
+		"--color-back": "#020617",
+		"--color-leaf": "#166534",
+		"--color-trunk": "#451a03",
+		"--color-accent": "#60a5fa",
 	},
 	brand: {
-		'--color-top': '#c7d2fe',
-		'--color-front': '#818cf8',
-		'--color-side': '#6366f1',
-		'--color-back': '#4338ca',
-		'--color-leaf': '#22c55e',
-		'--color-trunk': '#854d0e',
-		'--color-accent': '#f59e0b'
-	}
+		"--color-top": "#c7d2fe",
+		"--color-front": "#818cf8",
+		"--color-side": "#6366f1",
+		"--color-back": "#4338ca",
+		"--color-leaf": "#22c55e",
+		"--color-trunk": "#854d0e",
+		"--color-accent": "#f59e0b",
+	},
 };
 
 /**
@@ -48,10 +43,7 @@ export function resolveTheme(name: string): Record<string, string> | undefined {
 /**
  * Compose a new theme by extending an existing one with overrides.
  */
-export function composeTheme(
-	baseName: string,
-	overrides: Record<string, string>
-): Theme {
+export function composeTheme(baseName: string, overrides: Record<string, string>): Theme {
 	const base = BUILTIN_THEMES[baseName];
 	if (!base) {
 		return { name: baseName, vars: { ...overrides } };
@@ -92,9 +84,7 @@ export class AssetRegistryImpl implements AssetRegistry {
 	}
 }
 
-export function createAssetRegistry(
-	assets: AssetDefinition[] = []
-): AssetRegistryImpl {
+export function createAssetRegistry(assets: AssetDefinition[] = []): AssetRegistryImpl {
 	const registry = new AssetRegistryImpl();
 	for (const asset of assets) {
 		registry.register(asset);
@@ -106,24 +96,24 @@ export function createAssetRegistry(
 export function createDefaultRegistry(): AssetRegistryImpl {
 	return createAssetRegistry([
 		{
-			id: 'iso-platform',
-			category: 'infrastructure'
+			id: "iso-platform",
+			category: "infrastructure",
 		},
 		{
-			id: 'iso-server',
-			category: 'equipment'
+			id: "iso-server",
+			category: "equipment",
 		},
 		{
-			id: 'iso-database',
-			category: 'equipment'
+			id: "iso-database",
+			category: "equipment",
 		},
 		{
-			id: 'iso-connector',
-			category: 'decoration'
+			id: "iso-connector",
+			category: "decoration",
 		},
 		{
-			id: 'iso-cloud',
-			category: 'decoration'
-		}
+			id: "iso-cloud",
+			category: "decoration",
+		},
 	]);
 }

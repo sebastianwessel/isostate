@@ -1,0 +1,115 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const version = import.meta.env.PUBLIC_ISOSTATE_VERSION ?? 'local';
+---
+
+<SiteLayout
+	title="Isometric visual storytelling"
+	description="isostate creates compiled isometric SVG scenes for websites, scroll animations, and presentation-style explanations."
+>
+	<article>
+		<p class="eyebrow">isostate {version}</p>
+		<h1>Isometric visual storytelling for websites and docs.</h1>
+		<p class="lead">
+			Author scene progressions in YAML, compile them into browser-ready SVG runtime data, and control them from
+			scroll position, a timeline, or presentation UI.
+		</p>
+
+		<div class="actions">
+			<a href={`${base}/docs/getting-started.md`}>Get started</a>
+			<a href={`${base}/docs/guides/deploy-static-bundle.md`}>Deploy static bundle</a>
+		</div>
+
+		<section class="feature-grid" aria-label="Core workflows">
+			<div>
+				<h2>Author</h2>
+				<p>Write compact `.isostate.yaml` files with ordered scenes, deltas, assets, labels, and visual connections.</p>
+			</div>
+			<div>
+				<h2>Compile</h2>
+				<p>Validate and compile at build time so browsers never load YAML parsing, validation, or compiler code.</p>
+			</div>
+			<div>
+				<h2>Control</h2>
+				<p>Drive scene progress from scroll, sliders, buttons, or custom presentation controls.</p>
+			</div>
+			<div>
+				<h2>Deploy</h2>
+				<p>Bundle runtime, optimized scene data, manifest metadata, and referenced SVG assets for static hosting.</p>
+			</div>
+		</section>
+
+		<h2>Quickstart</h2>
+		<pre><code>bun install
+bun run build
+python3 -m http.server 4173</code></pre>
+		<p>Open <code>http://localhost:4173/examples/basic/</code> to try the browser demo.</p>
+	</article>
+
+	<style>
+		.eyebrow {
+			color: var(--accent-ink);
+			font-size: 0.82rem;
+			font-weight: 700;
+			letter-spacing: 0.08em;
+			margin: 0 0 14px;
+			text-transform: uppercase;
+		}
+
+		.lead {
+			color: var(--muted);
+			font-size: 1.22rem;
+			max-width: 720px;
+		}
+
+		.actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 12px;
+			margin: 28px 0 42px;
+		}
+
+		.actions a {
+			align-items: center;
+			background: var(--accent);
+			border-radius: 6px;
+			color: #fff;
+			display: inline-flex;
+			font-weight: 700;
+			min-height: 42px;
+			padding: 10px 14px;
+			text-decoration: none;
+		}
+
+		.actions a + a {
+			background: #e4eeec;
+			color: var(--accent-ink);
+		}
+
+		.feature-grid {
+			display: grid;
+			gap: 22px;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+			margin: 32px 0 44px;
+		}
+
+		.feature-grid h2 {
+			border: 0;
+			font-size: 1.05rem;
+			margin: 0 0 6px;
+			padding: 0;
+		}
+
+		.feature-grid p {
+			margin: 0;
+		}
+
+		@media (max-width: 720px) {
+			.feature-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</SiteLayout>

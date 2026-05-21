@@ -6,8 +6,8 @@ import type {
 	ElementPlacement,
 	ElementRemoval,
 	RuntimeConnectorState,
-	RuntimeElementState
-} from './node.ts';
+	RuntimeElementState,
+} from "./node.ts";
 
 /** Scene grid configuration */
 export interface GridConfig {
@@ -37,8 +37,8 @@ export interface FloorConfig {
 	asset?: string;
 }
 
-export type LayoutFit = 'contain' | 'none';
-export type LayoutBounds = 'floor' | 'content' | 'union';
+export type LayoutFit = "contain" | "none";
+export type LayoutBounds = "floor" | "content" | "union";
 
 /** Resolved layout emitted to runtime bundles. */
 export interface ResolvedLayoutConfig {

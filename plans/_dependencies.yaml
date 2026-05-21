@@ -34,4 +34,24 @@ tickets:
   TICKET-009:
     depends_on: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
     blocked_by: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
+    unblocks: [TICKET-010]
+  TICKET-010:
+    depends_on: [TICKET-009]
+    blocked_by: []
+    unblocks: [TICKET-011, TICKET-012]
+  TICKET-011:
+    depends_on: [TICKET-010]
+    blocked_by: []
+    unblocks: [TICKET-013]
+  TICKET-012:
+    depends_on: [TICKET-010]
+    blocked_by: []
+    unblocks: [TICKET-013]
+  TICKET-013:
+    depends_on: [TICKET-011, TICKET-012]
+    blocked_by: []
+    unblocks: [TICKET-014]
+  TICKET-014:
+    depends_on: [TICKET-013]
+    blocked_by: []
     unblocks: []

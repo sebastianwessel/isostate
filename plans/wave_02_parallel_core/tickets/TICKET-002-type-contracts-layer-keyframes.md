@@ -2,7 +2,7 @@
 id: TICKET-002
 title: Align public type contracts and layer keyframe schema
 wave: 2
-status: implementation_ready
+status: done
 parallel_group: contracts
 depends_on: [TICKET-001]
 blocked_by: [TICKET-001]

@@ -2,7 +2,7 @@
 id: TICKET-005
 title: Implement mountScene and runtime bundle loading
 wave: 2
-status: implementation_ready
+status: done
 parallel_group: runtime_api
 depends_on: [TICKET-001, TICKET-002, TICKET-004]
 blocked_by: [TICKET-001, TICKET-002, TICKET-004]

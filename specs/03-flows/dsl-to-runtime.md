@@ -13,7 +13,7 @@ Developer creates or updates a `.isostate.yaml` file and runs compile tooling.
 - Bun dependencies are installed.
 - `yaml` is available in the dev environment.
 - `assetBaseUrl` plus each asset `path` or `id` resolves every external SVG asset referenced by scene elements. External asset entries may declare normalized `anchor` metadata. Built-in `asset: text` and generated connectors need no external asset entry.
-- Browser runtime code does not import `@isostate/core/dsl`.
+- Browser runtime code does not import `@sebastianwessel/isostate/dsl`.
 
 ## Happy Path
 

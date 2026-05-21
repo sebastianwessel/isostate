@@ -5,9 +5,11 @@ import { join } from 'node:path';
 const root = process.cwd();
 
 const docs = [
+	'README.md',
 	'docs/README.md',
 	'docs/getting-started.md',
 	'docs/guides/author-scene-deltas.md',
+	'docs/guides/deploy-static-bundle.md',
 	'docs/examples/README.md',
 	'docs/examples/runtime-basic.md',
 	'docs/examples/controller-scroll.md',
@@ -44,7 +46,7 @@ describe('public docs inventory', () => {
 		for (const path of runtimeDocs) {
 			const text = await readFile(join(root, path), 'utf8');
 			expect(text).toContain('mountScene');
-			expect(text).toContain("from '@isostate/core'");
+			expect(text).toContain("from '@sebastianwessel/isostate'");
 		}
 	});
 
@@ -54,8 +56,60 @@ describe('public docs inventory', () => {
 			'docs/examples/inspect-bundle.md'
 		]) {
 			const text = await readFile(join(root, path), 'utf8');
-			expect(text).toContain("from '@isostate/core/dsl'");
+			expect(text).toContain("from '@sebastianwessel/isostate/dsl'");
 		}
+	});
+
+	test('static deployment docs describe public output and runtime boundary', async () => {
+		const rootReadme = await readFile(join(root, 'README.md'), 'utf8');
+		const text = await readFile(
+			join(root, 'docs/guides/deploy-static-bundle.md'),
+			'utf8'
+		);
+		const docsIndex = await readFile(join(root, 'docs/README.md'), 'utf8');
+		const examplesIndex = await readFile(
+			join(root, 'docs/examples/README.md'),
+			'utf8'
+		);
+
+		for (const fragment of [
+			'bunx --package @sebastianwessel/isostate-cli isostate bundle',
+			'bunx --package @sebastianwessel/isostate-cli isostate inspect',
+			'public/isostate/scene/',
+			'isostate.runtime.js',
+			'scene.isostate.js',
+			'manifest.json',
+			'assets/',
+			'YAML parser, validator, compiler, CLI',
+			'--public-asset-base',
+			'--asset-dir'
+		]) {
+			expect(text).toContain(fragment);
+		}
+		expect(text).toMatch(/does not include\s+authored YAML/);
+		expect(rootReadme).toContain('./docs/guides/deploy-static-bundle.md');
+		expect(rootReadme).toContain('bun run examples:basic:bundle');
+		expect(rootReadme).toContain('bunx --package @sebastianwessel/isostate-cli isostate bundle');
+		expect(docsIndex).toContain('./guides/deploy-static-bundle.md');
+		expect(examplesIndex).toContain('../guides/deploy-static-bundle.md');
+	});
+
+	test('authoring skill covers static deployment workflow', async () => {
+		const skill = await readFile(
+			join(root, 'skills/authoring-isostate-scenes/SKILL.md'),
+			'utf8'
+		);
+		const reference = await readFile(
+			join(root, 'skills/authoring-isostate-scenes/references/deployment.md'),
+			'utf8'
+		);
+
+		expect(skill).toContain('references/deployment.md');
+		expect(skill).toContain('isostate bundle');
+		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate bundle');
+		expect(reference).toContain('isostate.runtime.js');
+		expect(reference).toContain('manifest.json');
+		expect(reference).toContain('yaml` package');
 	});
 
 	test('docs do not describe the old authored states/keyframes model', async () => {

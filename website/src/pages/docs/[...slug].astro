@@ -1,0 +1,20 @@
+---
+import { docs } from '../../docs';
+import SiteLayout from '../../layouts/SiteLayout.astro';
+
+export function getStaticPaths() {
+	return docs.map((doc) => ({
+		params: { slug: doc.slug },
+		props: { doc }
+	}));
+}
+
+const { doc } = Astro.props;
+const Content = doc.Content;
+---
+
+<SiteLayout title={doc.title}>
+	<article>
+		<Content />
+	</article>
+</SiteLayout>

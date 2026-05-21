@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test';
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -9,14 +11,35 @@ const forbiddenRuntimeFragments = [
 	'from "yaml"',
 	"from 'node:crypto'",
 	'from "node:crypto"',
+	"from 'node:fs'",
+	'from "node:fs"',
+	"from 'node:fs/promises'",
+	'from "node:fs/promises"',
 	'./dsl/',
 	'../dsl/',
 	'scene-parser',
 	'scene-validator',
+	'compiler.ts',
 	'compileScene',
 	'parseScene',
 	'validateScene'
 ] as const;
+
+function ensureDistBuilt(): void {
+	if (
+		existsSync(join(root, 'packages/core/dist/browser/isostate.runtime.js'))
+	) {
+		return;
+	}
+
+	const result = spawnSync('bun', ['run', 'build'], {
+		cwd: root,
+		encoding: 'utf8'
+	});
+
+	expect(result.stderr).not.toContain('error');
+	expect(result.status).toBe(0);
+}
 
 describe('runtime/dev-time boundary', () => {
 	test('runtime source entrypoint does not export DSL APIs', async () => {
@@ -30,9 +53,11 @@ describe('runtime/dev-time boundary', () => {
 		}
 	});
 
-	test('built runtime entrypoint excludes YAML and DSL modules', async () => {
+	test('standalone browser runtime excludes YAML and DSL modules', async () => {
+		ensureDistBuilt();
+
 		const runtime = await readFile(
-			join(root, 'packages/core/dist/runtime/index.js'),
+			join(root, 'packages/core/dist/browser/isostate.runtime.js'),
 			'utf8'
 		);
 

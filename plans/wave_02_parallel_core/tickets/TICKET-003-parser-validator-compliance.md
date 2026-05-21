@@ -2,7 +2,7 @@
 id: TICKET-003
 title: Make parser and validator schema-compliant
 wave: 2
-status: implementation_ready
+status: done
 parallel_group: dsl_validation
 depends_on: [TICKET-001, TICKET-002]
 blocked_by: [TICKET-001, TICKET-002]

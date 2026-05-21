@@ -1,20 +1,13 @@
-import { AnimationEngine } from '../animation/animation-engine.ts';
-import { AnimationController } from '../animation/controller.ts';
-import type { ControllerConfig } from '../animation/controller.ts';
-import {
-	buildSceneDOM,
-	getResolvedViewBox
-} from '../rendering/rendering-engine.ts';
-import { resolveTheme } from '../types/asset-registry.ts';
-import { RenderError } from '../types/errors.ts';
-import type {
-	CompiledFloor,
-	CompiledLayout,
-	RuntimeBundle
-} from '../types/runtime-bundle.ts';
+import { AnimationEngine } from "../animation/animation-engine.ts";
+import type { ControllerConfig } from "../animation/controller.ts";
+import { AnimationController } from "../animation/controller.ts";
+import { buildSceneDOM, getResolvedViewBox } from "../rendering/rendering-engine.ts";
+import { resolveTheme } from "../types/asset-registry.ts";
+import { RenderError } from "../types/errors.ts";
+import type { CompiledFloor, CompiledLayout, RuntimeBundle } from "../types/runtime-bundle.ts";
 
-const RUNTIME_BUNDLE_FORMAT = 'isostate-runtime-bundle';
-const RUNTIME_VERSION = '0.1.0';
+const RUNTIME_BUNDLE_FORMAT = "isostate-runtime-bundle";
+const RUNTIME_VERSION = "0.1.0";
 const HEX_DIGEST_PATTERN = /^[a-f0-9]{64}$/;
 
 export interface MountSceneOptions {
@@ -53,11 +46,7 @@ export interface MountedScene {
 }
 
 /** Mount a compiled runtime bundle into an HTML element. */
-export function mountScene(
-	target: HTMLElement,
-	bundle: RuntimeBundle,
-	options: MountSceneOptions = {}
-): MountedScene {
+export function mountScene(target: HTMLElement, bundle: RuntimeBundle, options: MountSceneOptions = {}): MountedScene {
 	assertMountTarget(target);
 	validateRuntimeBundle(bundle);
 
@@ -66,7 +55,7 @@ export function mountScene(
 
 	const svg = buildSceneDOM(target, bundle, {
 		label: options.label,
-		themeVars: options.themeVars
+		themeVars: options.themeVars,
 	});
 
 	let controller: AnimationController | undefined;
@@ -77,12 +66,12 @@ export function mountScene(
 			{
 				...options.controller,
 				container: options.controller.container ?? target,
-				sceneElement: svg
+				sceneElement: svg,
 			},
 			{
 				engine,
-				sceneElement: svg
-			}
+				sceneElement: svg,
+			},
 		);
 	}
 
@@ -103,120 +92,89 @@ export function mountScene(
 			} else {
 				svg.parentNode?.removeChild(svg);
 			}
-		}
+		},
 	};
 }
 
 function assertMountTarget(target: HTMLElement): void {
-	if (
-		!target ||
-		typeof target.appendChild !== 'function' ||
-		typeof target.removeChild !== 'function'
-	) {
-		throw new RenderError(
-			'INVALID_MOUNT_TARGET',
-			'mountScene() requires a DOM HTMLElement target'
-		);
+	if (!target || typeof target.appendChild !== "function" || typeof target.removeChild !== "function") {
+		throw new RenderError("INVALID_MOUNT_TARGET", "mountScene() requires a DOM HTMLElement target");
 	}
 }
 
 function validateRuntimeBundle(bundle: RuntimeBundle): void {
-	if (!bundle || typeof bundle !== 'object') {
-		throw new RenderError(
-			'BUNDLE_FORMAT_MISSING',
-			'Runtime bundle must be a plain object'
-		);
+	if (!bundle || typeof bundle !== "object") {
+		throw new RenderError("BUNDLE_FORMAT_MISSING", "Runtime bundle must be a plain object");
 	}
 
 	if (bundle._format !== RUNTIME_BUNDLE_FORMAT) {
-		throw new RenderError(
-			'BUNDLE_FORMAT_MISSING',
-			'Runtime bundle format is missing or unsupported',
-			{ expected: RUNTIME_BUNDLE_FORMAT }
-		);
+		throw new RenderError("BUNDLE_FORMAT_MISSING", "Runtime bundle format is missing or unsupported", {
+			expected: RUNTIME_BUNDLE_FORMAT,
+		});
 	}
 
 	if (!Array.isArray(bundle.scenes) || bundle.scenes.length === 0) {
-		throw new RenderError(
-			'BUNDLE_FORMAT_MISSING',
-			'Runtime bundle must include compiled scenes[]'
-		);
+		throw new RenderError("BUNDLE_FORMAT_MISSING", "Runtime bundle must include compiled scenes[]");
 	}
 
 	if (majorVersion(bundle._version) !== majorVersion(RUNTIME_VERSION)) {
 		throw new RenderError(
-			'BUNDLE_VERSION_MISMATCH',
+			"BUNDLE_VERSION_MISMATCH",
 			`Runtime bundle version ${bundle._version} is not compatible with runtime ${RUNTIME_VERSION}`,
-			{ bundleVersion: bundle._version, runtimeVersion: RUNTIME_VERSION }
+			{ bundleVersion: bundle._version, runtimeVersion: RUNTIME_VERSION },
 		);
 	}
 
 	if (!bundle._digest) {
-		throw new RenderError(
-			'BUNDLE_DIGEST_MISSING',
-			'Runtime bundle digest is missing'
-		);
+		throw new RenderError("BUNDLE_DIGEST_MISSING", "Runtime bundle digest is missing");
 	}
 
-	if (
-		typeof bundle._digest !== 'string' ||
-		!HEX_DIGEST_PATTERN.test(bundle._digest)
-	) {
-		throw new RenderError(
-			'BUNDLE_DIGEST_MISMATCH',
-			'Runtime bundle digest is malformed'
-		);
+	if (typeof bundle._digest !== "string" || !HEX_DIGEST_PATTERN.test(bundle._digest)) {
+		throw new RenderError("BUNDLE_DIGEST_MISMATCH", "Runtime bundle digest is malformed");
 	}
 
 	const { _digest, ...bundleWithoutDigest } = bundle;
 	const actualDigest = sha256(canonicalStringify(bundleWithoutDigest));
 	if (actualDigest !== _digest) {
-		throw new RenderError(
-			'BUNDLE_DIGEST_MISMATCH',
-			'Runtime bundle digest does not match bundle content',
-			{ expected: _digest, actual: actualDigest }
-		);
+		throw new RenderError("BUNDLE_DIGEST_MISMATCH", "Runtime bundle digest does not match bundle content", {
+			expected: _digest,
+			actual: actualDigest,
+		});
 	}
 }
 
-function getResolvedConfig(
-	bundle: RuntimeBundle,
-	options: MountSceneOptions = {}
-): ResolvedRuntimeConfig {
+function getResolvedConfig(bundle: RuntimeBundle, options: MountSceneOptions = {}): ResolvedRuntimeConfig {
 	return {
 		grid: { cellSize: bundle.grid.cellSize },
 		floor: { ...bundle.floor },
 		layout: {
 			...bundle.layout,
 			padding: { ...bundle.layout.padding },
-			align: [...bundle.layout.align]
+			align: [...bundle.layout.align],
 		},
 		viewBox: getResolvedViewBox(bundle),
 		theme: bundle.theme,
 		themeVars: getResolvedThemeVars(bundle, options.themeVars),
 		scenes: bundle.scenes.map((scene) => ({
 			id: scene.id,
-			progress: scene.progress
+			progress: scene.progress,
 		})),
 		layerOrder: bundle.layers
 			.map((layer) => ({ name: layer.name, order: layer.order }))
-			.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name))
+			.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)),
 	};
 }
 
-function getResolvedThemeVars(
-	bundle: RuntimeBundle,
-	overrides: Record<string, string> = {}
-): Record<string, string> {
+function getResolvedThemeVars(bundle: RuntimeBundle, overrides: Record<string, string> = {}): Record<string, string> {
 	return {
 		...(resolveTheme(bundle.theme) ?? {}),
 		...(bundle.themeVars ?? {}),
-		...overrides
+		...overrides,
 	};
 }
 
 function majorVersion(version: string): number {
-	const major = Number.parseInt(String(version).split('.')[0] ?? '', 10);
+	const major = Number.parseInt(String(version).split(".")[0] ?? "", 10);
 	return Number.isFinite(major) ? major : Number.NaN;
 }
 
@@ -229,9 +187,7 @@ function canonicalStringify(value: unknown): string {
 
 function normalizeValue<T>(value: T): T {
 	if (Array.isArray(value)) {
-		return value.map((item) =>
-			item === undefined ? null : normalizeValue(item)
-		) as T;
+		return value.map((item) => (item === undefined ? null : normalizeValue(item))) as T;
 	}
 
 	if (!isPlainObject(value)) return value;
@@ -248,7 +204,7 @@ function normalizeValue<T>(value: T): T {
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
-	return typeof value === 'object' && value !== null && !Array.isArray(value);
+	return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function sha256(input: string): string {
@@ -260,34 +216,23 @@ function sha256(input: string): string {
 		bytes.push(Math.floor(bitLength / 2 ** (i * 8)) & 0xff);
 	}
 
-	const h = [
-		0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c,
-		0x1f83d9ab, 0x5be0cd19
-	];
+	const h = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
 	const k = [
-		0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
-		0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-		0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
-		0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-		0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147,
-		0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-		0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b,
-		0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-		0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
-		0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-		0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+		0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98,
+		0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
+		0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8,
+		0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967, 0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+		0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819,
+		0xd6990624, 0xf40e3585, 0x106aa070, 0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a,
+		0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7,
+		0xc67178f2,
 	];
 
 	const w = new Array<number>(64);
 	for (let offset = 0; offset < bytes.length; offset += 64) {
 		for (let i = 0; i < 16; i++) {
 			const j = offset + i * 4;
-			w[i] =
-				((bytes[j] << 24) |
-					(bytes[j + 1] << 16) |
-					(bytes[j + 2] << 8) |
-					bytes[j + 3]) >>>
-				0;
+			w[i] = ((bytes[j] << 24) | (bytes[j + 1] << 16) | (bytes[j + 2] << 8) | bytes[j + 3]) >>> 0;
 		}
 		for (let i = 16; i < 64; i++) {
 			const s0 = rotr(w[i - 15], 7) ^ rotr(w[i - 15], 18) ^ (w[i - 15] >>> 3);
@@ -323,7 +268,7 @@ function sha256(input: string): string {
 		h[7] = (h[7] + hh) >>> 0;
 	}
 
-	return h.map((value) => value.toString(16).padStart(8, '0')).join('');
+	return h.map((value) => value.toString(16).padStart(8, "0")).join("");
 }
 
 function utf8Bytes(input: string): number[] {

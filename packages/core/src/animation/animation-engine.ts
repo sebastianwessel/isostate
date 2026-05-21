@@ -5,11 +5,11 @@ import type {
 	RuntimeConnectorState,
 	RuntimeConnectorStyle,
 	RuntimeElementState,
-	TextContent
-} from '../types/node.ts';
-import type { RuntimeBundle } from '../types/runtime-bundle.ts';
+	TextContent,
+} from "../types/node.ts";
+import type { RuntimeBundle } from "../types/runtime-bundle.ts";
 
-export type LifecycleKey = 'entering' | 'present' | 'exiting' | 'removed';
+export type LifecycleKey = "entering" | "present" | "exiting" | "removed";
 
 /** Internal state tracked per element across frames. */
 interface ElementFrame {
@@ -33,9 +33,9 @@ interface ConnectorFrame {
 	layer: string;
 	lifecycle: LifecycleStatus;
 	style: RuntimeConnectorStyle;
-	start: RuntimeConnectorState['start'];
-	end: RuntimeConnectorState['end'];
-	direction: RuntimeConnectorState['direction'];
+	start: RuntimeConnectorState["start"];
+	end: RuntimeConnectorState["end"];
+	direction: RuntimeConnectorState["direction"];
 	ambient: AmbientAnimation[];
 	entry?: string;
 	exit?: string;
@@ -63,9 +63,9 @@ export interface ConnectorFrameUpdate {
 	layer: string;
 	lifecycle: LifecycleKey;
 	style: RuntimeConnectorStyle;
-	start: RuntimeConnectorState['start'];
-	end: RuntimeConnectorState['end'];
-	direction: RuntimeConnectorState['direction'];
+	start: RuntimeConnectorState["start"];
+	end: RuntimeConnectorState["end"];
+	direction: RuntimeConnectorState["direction"];
 	ambient: AmbientAnimation[];
 	entry?: string;
 	exit?: string;
@@ -141,27 +141,23 @@ export class AnimationEngine {
 
 		this._prevFrameMap = cloneFrameMap(this._elementFrameMap);
 		this._elementFrameMap = resolveFrameMap(this._bundle, clamped);
-		this._prevConnectorFrameMap = cloneConnectorFrameMap(
-			this._connectorFrameMap
-		);
+		this._prevConnectorFrameMap = cloneConnectorFrameMap(this._connectorFrameMap);
 		this._connectorFrameMap = resolveConnectorFrameMap(this._bundle, clamped);
 	}
 
 	/** Get interpolated FrameUpdate for an element id or runtime element. */
-	getElementUpdate(
-		element: string | Pick<RuntimeElementState, 'id'>
-	): FrameUpdate {
-		const id = typeof element === 'string' ? element : element.id;
+	getElementUpdate(element: string | Pick<RuntimeElementState, "id">): FrameUpdate {
+		const id = typeof element === "string" ? element : element.id;
 		const frame = this._elementFrameMap.get(id);
 		if (!frame) {
 			return {
 				id,
-				asset: '',
-				lifecycle: 'removed',
+				asset: "",
+				lifecycle: "removed",
 				ambient: [],
 				pos: [0, 0],
 				size: 1,
-				layer: ''
+				layer: "",
 			};
 		}
 		return frameToUpdate(frame);
@@ -172,10 +168,8 @@ export class AnimationEngine {
 	}
 
 	/** Get interpolated ConnectorFrameUpdate for a connector id or runtime connector. */
-	getConnectorUpdate(
-		connector: string | Pick<RuntimeConnectorState, 'id'>
-	): ConnectorFrameUpdate {
-		const id = typeof connector === 'string' ? connector : connector.id;
+	getConnectorUpdate(connector: string | Pick<RuntimeConnectorState, "id">): ConnectorFrameUpdate {
+		const id = typeof connector === "string" ? connector : connector.id;
 		const frame = this._connectorFrameMap.get(id);
 		if (!frame) return connectorFrameToUpdate(removedConnectorFrame(id));
 		return connectorFrameToUpdate(frame);
@@ -192,12 +186,12 @@ export class AnimationEngine {
 	} | null {
 		const prev = this._prevFrameMap.get(elId);
 		const current = this._elementFrameMap.get(elId);
-		const from = (prev?.lifecycle ?? 'removed') as LifecycleKey;
-		const to = (current?.lifecycle ?? 'removed') as LifecycleKey;
+		const from = (prev?.lifecycle ?? "removed") as LifecycleKey;
+		const to = (current?.lifecycle ?? "removed") as LifecycleKey;
 		if (from === to) return null;
 		return {
 			from,
-			to
+			to,
 		};
 	}
 
@@ -208,16 +202,16 @@ export class AnimationEngine {
 	} | null {
 		const prev = this._prevConnectorFrameMap.get(connectorId);
 		const current = this._connectorFrameMap.get(connectorId);
-		const from = (prev?.lifecycle ?? 'removed') as LifecycleKey;
-		const to = (current?.lifecycle ?? 'removed') as LifecycleKey;
+		const from = (prev?.lifecycle ?? "removed") as LifecycleKey;
+		const to = (current?.lifecycle ?? "removed") as LifecycleKey;
 		if (from === to) return null;
 		return {
 			from,
-			to
+			to,
 		};
 	}
 
-	getCurrentState(): RuntimeBundle['scenes'][number] | null {
+	getCurrentState(): RuntimeBundle["scenes"][number] | null {
 		const bundle = this._bundle;
 		if (!bundle) return null;
 		const pair = findSurroundingStops(bundle.scenes, this._progress);
@@ -245,10 +239,7 @@ export class AnimationEngine {
 
 // ── Interpolation helpers ──────────────────────────────────────────────────
 
-function resolveFrameMap(
-	bundle: RuntimeBundle,
-	progress: number
-): Map<string, ElementFrame> {
+function resolveFrameMap(bundle: RuntimeBundle, progress: number): Map<string, ElementFrame> {
 	const pair = findSurroundingStops(bundle.scenes, progress);
 	const result = new Map<string, ElementFrame>();
 	if (!pair) return result;
@@ -265,7 +256,7 @@ function resolveFrameMap(
 			interpolateElement(id, pair.prevStop, pair.nextStop, pair.t),
 			bundle.scenes,
 			id,
-			progress
+			progress,
 		);
 		result.set(id, frame);
 	}
@@ -273,10 +264,7 @@ function resolveFrameMap(
 	return result;
 }
 
-function resolveConnectorFrameMap(
-	bundle: RuntimeBundle,
-	progress: number
-): Map<string, ConnectorFrame> {
+function resolveConnectorFrameMap(bundle: RuntimeBundle, progress: number): Map<string, ConnectorFrame> {
 	const pair = findSurroundingStops(bundle.scenes, progress);
 	const result = new Map<string, ConnectorFrame>();
 	if (!pair) return result;
@@ -289,12 +277,7 @@ function resolveConnectorFrameMap(
 	for (const connector of pair.nextStop.connectors ?? []) ids.add(connector.id);
 
 	for (const id of ids) {
-		const frame = interpolateConnector(
-			id,
-			pair.prevStop,
-			pair.nextStop,
-			pair.t
-		);
+		const frame = interpolateConnector(id, pair.prevStop, pair.nextStop, pair.t);
 		result.set(id, frame);
 	}
 
@@ -302,11 +285,11 @@ function resolveConnectorFrameMap(
 }
 
 function findSurroundingStops(
-	stops: RuntimeBundle['scenes'],
-	progress: number
+	stops: RuntimeBundle["scenes"],
+	progress: number,
 ): {
-	prevStop: RuntimeBundle['scenes'][number];
-	nextStop: RuntimeBundle['scenes'][number];
+	prevStop: RuntimeBundle["scenes"][number];
+	nextStop: RuntimeBundle["scenes"][number];
 	t: number;
 	nextIndex: number;
 } | null {
@@ -322,7 +305,7 @@ function findSurroundingStops(
 			prevStop: sorted[lastIndex - 1] ?? sorted[lastIndex],
 			nextStop: sorted[lastIndex],
 			t: 1,
-			nextIndex: lastIndex
+			nextIndex: lastIndex,
 		};
 	}
 
@@ -341,9 +324,9 @@ function findSurroundingStops(
 
 function interpolateElement(
 	id: string,
-	prevStop: RuntimeBundle['scenes'][number],
-	nextStop: RuntimeBundle['scenes'][number],
-	t: number
+	prevStop: RuntimeBundle["scenes"][number],
+	nextStop: RuntimeBundle["scenes"][number],
+	t: number,
 ): ElementFrame {
 	const prev = findElement(prevStop, id);
 	const next = findElement(nextStop, id);
@@ -352,15 +335,12 @@ function interpolateElement(
 		return removedFrame(id);
 	}
 
-	if (!prev || prev.presence === 'removed') {
-		return frameFromElement(
-			source,
-			source.presence === 'removed' || t < 1 ? 'removed' : source.presence
-		);
+	if (!prev || prev.presence === "removed") {
+		return frameFromElement(source, source.presence === "removed" || t < 1 ? "removed" : source.presence);
 	}
 
-	if (!next || next.presence === 'removed') {
-		return frameFromElement(prev, t < 1 ? prev.presence : 'removed');
+	if (!next || next.presence === "removed") {
+		return frameFromElement(prev, t < 1 ? prev.presence : "removed");
 	}
 
 	const lifecycle = t < 1 ? prev.presence : next.presence;
@@ -375,30 +355,27 @@ function interpolateElement(
 		entry: next.enter ?? prev.enter,
 		exit: next.exit ?? prev.exit,
 		text: cloneText(next.text ?? prev.text),
-		primitive: clonePrimitive(next.primitive ?? prev.primitive)
+		primitive: clonePrimitive(next.primitive ?? prev.primitive),
 	};
 }
 
 function interpolateConnector(
 	id: string,
-	prevStop: RuntimeBundle['scenes'][number],
-	nextStop: RuntimeBundle['scenes'][number],
-	t: number
+	prevStop: RuntimeBundle["scenes"][number],
+	nextStop: RuntimeBundle["scenes"][number],
+	t: number,
 ): ConnectorFrame {
 	const prev = findConnector(prevStop, id);
 	const next = findConnector(nextStop, id);
 	const source = next ?? prev;
 	if (!source) return removedConnectorFrame(id);
 
-	if (!prev || prev.presence === 'removed') {
-		return frameFromConnector(
-			source,
-			source.presence === 'removed' || t < 1 ? 'removed' : source.presence
-		);
+	if (!prev || prev.presence === "removed") {
+		return frameFromConnector(source, source.presence === "removed" || t < 1 ? "removed" : source.presence);
 	}
 
-	if (!next || next.presence === 'removed') {
-		return frameFromConnector(prev, t < 1 ? prev.presence : 'removed');
+	if (!next || next.presence === "removed") {
+		return frameFromConnector(prev, t < 1 ? prev.presence : "removed");
 	}
 
 	const lifecycle = t < 1 ? prev.presence : next.presence;
@@ -413,31 +390,25 @@ function interpolateConnector(
 		direction: next.direction,
 		ambient: cloneAmbient(next.ambient),
 		entry: next.enter ?? prev.enter,
-		exit: next.exit ?? prev.exit
+		exit: next.exit ?? prev.exit,
 	};
 }
 
-function findElement(
-	stop: RuntimeBundle['scenes'][number],
-	id: string
-): RuntimeElementState | undefined {
+function findElement(stop: RuntimeBundle["scenes"][number], id: string): RuntimeElementState | undefined {
 	return (stop.elements ?? []).find((element) => element.id === id);
 }
 
-function findConnector(
-	stop: RuntimeBundle['scenes'][number],
-	id: string
-): RuntimeConnectorState | undefined {
+function findConnector(stop: RuntimeBundle["scenes"][number], id: string): RuntimeConnectorState | undefined {
 	return (stop.connectors ?? []).find((connector) => connector.id === id);
 }
 
 function withRemovedElementGeometry(
 	frame: ElementFrame,
-	stops: RuntimeBundle['scenes'],
+	stops: RuntimeBundle["scenes"],
 	id: string,
-	progress: number
+	progress: number,
 ): ElementFrame {
-	if (frame.lifecycle !== 'removed') return frame;
+	if (frame.lifecycle !== "removed") return frame;
 	const reference = findNearestElementGeometry(stops, id, progress);
 	if (!reference) return frame;
 	return {
@@ -450,36 +421,33 @@ function withRemovedElementGeometry(
 		entry: reference.enter,
 		exit: reference.exit,
 		text: cloneText(reference.text),
-		primitive: clonePrimitive(reference.primitive)
+		primitive: clonePrimitive(reference.primitive),
 	};
 }
 
 function findNearestElementGeometry(
-	stops: RuntimeBundle['scenes'],
+	stops: RuntimeBundle["scenes"],
 	id: string,
-	progress: number
+	progress: number,
 ): RuntimeElementState | undefined {
 	const sorted = [...stops].sort((a, b) => a.progress - b.progress);
 	const next = sorted
 		.filter((stop) => stop.progress >= progress)
 		.flatMap((stop) => stop.elements ?? [])
-		.find((element) => element.id === id && element.presence !== 'removed');
+		.find((element) => element.id === id && element.presence !== "removed");
 	if (next) return next;
 
 	for (let index = sorted.length - 1; index >= 0; index -= 1) {
 		if (sorted[index].progress > progress) continue;
 		const previous = (sorted[index].elements ?? []).find(
-			(element) => element.id === id && element.presence !== 'removed'
+			(element) => element.id === id && element.presence !== "removed",
 		);
 		if (previous) return previous;
 	}
 	return undefined;
 }
 
-function frameFromElement(
-	element: RuntimeElementState,
-	lifecycle: LifecycleStatus = element.presence
-): ElementFrame {
+function frameFromElement(element: RuntimeElementState, lifecycle: LifecycleStatus = element.presence): ElementFrame {
 	return {
 		id: element.id,
 		asset: element.asset,
@@ -491,13 +459,13 @@ function frameFromElement(
 		entry: element.enter,
 		exit: element.exit,
 		text: cloneText(element.text),
-		primitive: clonePrimitive(element.primitive)
+		primitive: clonePrimitive(element.primitive),
 	};
 }
 
 function frameFromConnector(
 	connector: RuntimeConnectorState,
-	lifecycle: LifecycleStatus = connector.presence
+	lifecycle: LifecycleStatus = connector.presence,
 ): ConnectorFrame {
 	return {
 		id: connector.id,
@@ -510,19 +478,19 @@ function frameFromConnector(
 		direction: connector.direction,
 		ambient: cloneAmbient(connector.ambient),
 		entry: connector.enter,
-		exit: connector.exit
+		exit: connector.exit,
 	};
 }
 
 function removedFrame(id: string): ElementFrame {
 	return {
 		id,
-		asset: '',
+		asset: "",
 		pos: [0, 0],
 		size: 1,
-		lifecycle: 'removed',
+		lifecycle: "removed",
 		ambient: [],
-		layer: ''
+		layer: "",
 	};
 }
 
@@ -530,37 +498,29 @@ function removedConnectorFrame(id: string): ConnectorFrame {
 	return {
 		id,
 		route: [],
-		layer: '',
-		lifecycle: 'removed',
+		layer: "",
+		lifecycle: "removed",
 		style: {
-			variant: 'line',
-			pattern: 'solid',
-			stroke: '#2563eb',
+			variant: "line",
+			pattern: "solid",
+			stroke: "#2563eb",
 			strokeWidth: 3,
 			opacity: 1,
 			outlineWidth: 0,
-			lane: 'none'
+			lane: "none",
 		},
-		start: 'none',
-		end: 'none',
-		direction: 'route',
-		ambient: []
+		start: "none",
+		end: "none",
+		direction: "route",
+		ambient: [],
 	};
 }
 
-function interpolatePos(
-	prev: [number, number],
-	next: [number, number],
-	t: number
-): [number, number] {
+function interpolatePos(prev: [number, number], next: [number, number], t: number): [number, number] {
 	return [prev[0] + (next[0] - prev[0]) * t, prev[1] + (next[1] - prev[1]) * t];
 }
 
-function interpolateRoute(
-	prev: [number, number][],
-	next: [number, number][],
-	t: number
-): [number, number][] {
+function interpolateRoute(prev: [number, number][], next: [number, number][], t: number): [number, number][] {
 	if (prev.length !== next.length) return cloneRoute(t < 1 ? prev : next);
 	return prev.map((point, index) => interpolatePos(point, next[index], t));
 }
@@ -569,18 +529,14 @@ function cloneRoute(route: [number, number][]): [number, number][] {
 	return route.map((point) => [point[0], point[1]]);
 }
 
-function cloneConnectorStyle(
-	style: RuntimeConnectorStyle
-): RuntimeConnectorStyle {
+function cloneConnectorStyle(style: RuntimeConnectorStyle): RuntimeConnectorStyle {
 	return {
 		...style,
-		...(style.dash ? { dash: [...style.dash] as [number, number] } : {})
+		...(style.dash ? { dash: [...style.dash] as [number, number] } : {}),
 	};
 }
 
-function cloneAmbient(
-	ambient: AmbientAnimation[] | undefined
-): AmbientAnimation[] {
+function cloneAmbient(ambient: AmbientAnimation[] | undefined): AmbientAnimation[] {
 	return (ambient ?? []).map((item) => ({ ...item }));
 }
 
@@ -596,7 +552,7 @@ function frameToUpdate(frame: ElementFrame): FrameUpdate {
 		entry: frame.entry,
 		exit: frame.exit,
 		text: cloneText(frame.text),
-		primitive: clonePrimitive(frame.primitive)
+		primitive: clonePrimitive(frame.primitive),
 	};
 }
 
@@ -612,13 +568,11 @@ function connectorFrameToUpdate(frame: ConnectorFrame): ConnectorFrameUpdate {
 		direction: frame.direction,
 		ambient: cloneAmbient(frame.ambient),
 		entry: frame.entry,
-		exit: frame.exit
+		exit: frame.exit,
 	};
 }
 
-function cloneFrameMap(
-	map: Map<string, ElementFrame>
-): Map<string, ElementFrame> {
+function cloneFrameMap(map: Map<string, ElementFrame>): Map<string, ElementFrame> {
 	const clone = new Map<string, ElementFrame>();
 	for (const [id, frame] of map) {
 		clone.set(id, {
@@ -626,7 +580,7 @@ function cloneFrameMap(
 			pos: [...frame.pos],
 			ambient: cloneAmbient(frame.ambient),
 			text: cloneText(frame.text),
-			primitive: clonePrimitive(frame.primitive)
+			primitive: clonePrimitive(frame.primitive),
 		});
 	}
 	return clone;
@@ -636,25 +590,23 @@ function cloneText(text: TextContent | undefined): TextContent | undefined {
 	return text ? { ...text } : undefined;
 }
 
-function clonePrimitive(
-	primitive: PrimitiveContent | undefined
-): PrimitiveContent | undefined {
+function clonePrimitive(primitive: PrimitiveContent | undefined): PrimitiveContent | undefined {
 	if (!primitive) return undefined;
 	return {
 		...(primitive.rectangle
 			? {
 					rectangle: {
 						...primitive.rectangle,
-						dash: cloneDash(primitive.rectangle.dash)
-					}
+						dash: cloneDash(primitive.rectangle.dash),
+					},
 				}
 			: {}),
 		...(primitive.circle
 			? {
 					circle: {
 						...primitive.circle,
-						dash: cloneDash(primitive.circle.dash)
-					}
+						dash: cloneDash(primitive.circle.dash),
+					},
 				}
 			: {}),
 		...(primitive.polygon
@@ -662,8 +614,8 @@ function clonePrimitive(
 					polygon: {
 						...primitive.polygon,
 						dash: cloneDash(primitive.polygon.dash),
-						points: cloneRoute(primitive.polygon.points)
-					}
+						points: cloneRoute(primitive.polygon.points),
+					},
 				}
 			: {}),
 		...(primitive.line
@@ -671,29 +623,25 @@ function clonePrimitive(
 					line: {
 						...primitive.line,
 						dash: cloneDash(primitive.line.dash),
-						points: cloneRoute(primitive.line.points)
-					}
+						points: cloneRoute(primitive.line.points),
+					},
 				}
-			: {})
+			: {}),
 	};
 }
 
-function cloneDash(
-	dash: [number, number] | undefined
-): [number, number] | undefined {
+function cloneDash(dash: [number, number] | undefined): [number, number] | undefined {
 	return dash ? [dash[0], dash[1]] : undefined;
 }
 
-function cloneConnectorFrameMap(
-	map: Map<string, ConnectorFrame>
-): Map<string, ConnectorFrame> {
+function cloneConnectorFrameMap(map: Map<string, ConnectorFrame>): Map<string, ConnectorFrame> {
 	const clone = new Map<string, ConnectorFrame>();
 	for (const [id, frame] of map) {
 		clone.set(id, {
 			...frame,
 			route: cloneRoute(frame.route),
 			style: cloneConnectorStyle(frame.style),
-			ambient: cloneAmbient(frame.ambient)
+			ambient: cloneAmbient(frame.ambient),
 		});
 	}
 	return clone;

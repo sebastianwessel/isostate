@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 describe('package export contract', () => {
-	test('@isostate/core publishes only runtime and DSL entrypoints', async () => {
+	test('@sebastianwessel/isostate publishes only runtime and DSL entrypoints', async () => {
 		const pkg = JSON.parse(
 			await readFile(join(process.cwd(), 'packages/core/package.json'), 'utf8')
 		) as {

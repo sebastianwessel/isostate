@@ -1,5 +1,5 @@
-import type { AssetCategory } from './assets.ts';
-import type { RuntimeSceneStop } from './scene.ts';
+import type { AssetCategory } from "./assets.ts";
+import type { RuntimeSceneStop } from "./scene.ts";
 
 export interface CompiledAsset {
 	url?: string;
@@ -21,14 +21,14 @@ export interface CompiledLayer {
 }
 
 export interface CompiledLayout {
-	fit: 'contain' | 'none';
+	fit: "contain" | "none";
 	align: [number, number];
 	padding: { x: number; y: number };
-	bounds: 'floor' | 'content' | 'union';
+	bounds: "floor" | "content" | "union";
 }
 
 export interface RuntimeBundle {
-	_format: 'isostate-runtime-bundle';
+	_format: "isostate-runtime-bundle";
 	_version: string;
 	_digest: string;
 	grid: { cellSize: number };

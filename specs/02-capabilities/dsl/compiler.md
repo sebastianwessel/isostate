@@ -7,7 +7,7 @@ The compiler transforms authored `.isostate.yaml` scene documents into browser r
 ```text
 Dev Time                                  Browser Runtime
 ────────                                  ───────────────
-.isostate.yaml                            @isostate/core + RuntimeBundle
+.isostate.yaml                            @sebastianwessel/isostate + RuntimeBundle
   header + scenes/deltas       ─────▶     no YAML parser, no validator
 
 YAML → parse SceneDocument → validate → expand deltas → compile RuntimeBundle

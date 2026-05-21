@@ -4,11 +4,11 @@ isostate has two public entrypoints:
 
 | Entrypoint | Use In | Purpose |
 |---|---|---|
-| `@isostate/core` | browser/runtime code | Mount compiled bundles, control progress, provide assets and themes. |
-| `@isostate/core/runtime` | browser/runtime code | Minimal runtime-only entrypoint for applications that want the smallest import surface. |
-| `@isostate/core/dsl` | build scripts, tests, CI | Parse, validate, compile, and serialize YAML scene documents. |
+| `@sebastianwessel/isostate` | browser/runtime code | Mount compiled bundles, control progress, provide assets and themes. |
+| `@sebastianwessel/isostate/runtime` | browser/runtime code | Minimal runtime-only entrypoint for applications that want the smallest import surface. |
+| `@sebastianwessel/isostate/dsl` | build scripts, tests, CI | Parse, validate, compile, and serialize YAML scene documents. |
 
-Do not import `@isostate/core/dsl` from browser code.
+Do not import `@sebastianwessel/isostate/dsl` from browser code.
 
 ## Browser Runtime
 
@@ -20,7 +20,7 @@ import {
 	type MountSceneOptions,
 	type ResolvedRuntimeConfig,
 	type RuntimeBundle
-} from '@isostate/core';
+} from '@sebastianwessel/isostate';
 ```
 
 `mountScene(target, bundle, options)` is the primary browser API. It validates
@@ -87,7 +87,7 @@ import {
 	validateScene,
 	type CompileOptions,
 	type RuntimeBundle
-} from '@isostate/core/dsl';
+} from '@sebastianwessel/isostate/dsl';
 ```
 
 The standard compile pipeline is:

@@ -14,13 +14,7 @@ export interface AssetDefinition {
 }
 
 /** Asset categories for filtering and authoring tooling. */
-export type AssetCategory =
-	| 'building'
-	| 'nature'
-	| 'infrastructure'
-	| 'equipment'
-	| 'decoration'
-	| 'custom';
+export type AssetCategory = "building" | "nature" | "infrastructure" | "equipment" | "decoration" | "custom";
 
 /** Mutable metadata registry used by authoring tooling, not browser rendering. */
 export interface AssetRegistry {

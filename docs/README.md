@@ -10,6 +10,8 @@ small browser runtime.
   browser page.
 - [Author Scene Deltas](./guides/author-scene-deltas.md): write the YAML
   timeline model.
+- [Deploy Static Bundle](./guides/deploy-static-bundle.md): generate
+  public-folder output with the CLI.
 - [Public API](./reference/public-api.md): runtime and dev-time imports.
 - [Runtime Bundle](./reference/runtime-bundle.md): compiled artifact shape.
 - [Errors](./reference/errors.md): structured error classes and common fixes.

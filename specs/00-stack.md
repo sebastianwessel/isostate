@@ -16,9 +16,9 @@
 
 | Tool | Version | Purpose |
 |---|---|---|
-| `tsc` | ^5.5.0 | TypeScript compiler |
-| `rollup` | ^4.24.0 | Bundle generation (ESM) |
-| `tsx` | ^4.19.0 | Run TypeScript files directly (scripts) |
+| `tsc` | ^6.0.3 | TypeScript compiler |
+| `rollup` | ^4.60.4 | Bundle generation (ESM) |
+| `tsx` | ^4.22.3 | Run TypeScript files directly (scripts) |
 | `bun` | ^1.1.0 | Development runtime, package manager, and test runner |
 | `yaml` | ^2.9.0 | YAML parsing (dev-time only, not shipped to browser) |
 
@@ -29,7 +29,7 @@ These packages are used only in the build/dev pipeline and **never shipped to th
 | Package | Purpose |
 |---|---|
 | `yaml` | Parse `.isostate.yaml` files into typed `SceneDocument` objects |
-| `@isostate/cli` (planned) | CLI for validate, compile, bundle commands |
+| `@sebastianwessel/isostate-cli` (approved next wave) | CLI for validate, compile, bundle, inspect commands |
 | `mermaid2dsl` (planned) | Convert Mermaid diagrams to `.isostate.yaml` DSL |
 
 ## Runtime Packages
@@ -70,7 +70,7 @@ For bundling, Rollup should use `external: ['yaml']` or tree-shake to exclude it
 
 | Tool | Version | Purpose |
 |---|---|---|
-| `@biomejs/biome` | ^1.9.0 | Linting and code formatting (replaces ESLint + Prettier) |
+| `@biomejs/biome` | ^2.4.15 | Linting and code formatting (replaces ESLint + Prettier) |
 
 ## Package Manager
 
@@ -80,8 +80,19 @@ For bundling, Rollup should use `external: ['yaml']` or tree-shake to exclude it
 
 | Tool | Version | Purpose |
 |---|---|---|
-| `publint` | ^0.2.0 | Validate package.json for npm publishing |
-| `size-limit` | ^11.1.0 | Monitor bundle size |
+| `publint` | ^0.3.21 | Validate package.json for npm publishing |
+| `size-limit` | ^12.1.0 | Monitor bundle size |
+
+Published packages:
+
+| Package | Published | Purpose |
+|---|---|---|
+| `@sebastianwessel/isostate` | yes | Browser runtime and dev-time DSL entrypoint |
+| `@sebastianwessel/isostate-cli` | approved next wave | Local process CLI for validation, compilation, static bundling, and inspection |
+
+The repository root remains private. Browser runtime artifacts must continue to
+exclude `@sebastianwessel/isostate-cli`, `yaml`, parser, validator, compiler, and filesystem
+code.
 
 ## Architecture Decision: SVG + CSS over Three.js
 

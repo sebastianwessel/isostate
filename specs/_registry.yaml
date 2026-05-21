@@ -21,3 +21,9 @@ artifacts:
     layer: contract
   - path: 03-contracts/runtime-bundle.md
     layer: contract
+  - path: 03-contracts/cli.md
+    layer: contract
+  - path: 03-contracts/static-bundle.md
+    layer: contract
+  - path: 03-flows/static-deploy.md
+    layer: flow

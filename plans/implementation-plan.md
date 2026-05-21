@@ -2,16 +2,21 @@
 
 ## Status
 
-Current implementation is not spec-compliant and default verification is red. The first foundation wave repairs shared gates and package boundaries. Parallel implementation starts only after the foundation wave passes.
+Core runtime, DSL, rendering, animation, docs, and example work are implemented
+against the current specs. The remaining work is the tooling and packaging wave:
+turn the working compiler/runtime into a public CLI and static deployment
+bundle workflow.
 
 ## Verification Baseline
 
-Observed on 2026-05-20:
+Observed on 2026-05-21:
 
-- `bun test`: fails 3 DSL tests.
-- `bun run typecheck`: fails on syntax errors in `packages/core/src/animation/animation-engine.ts`.
-- `bun run lint`: fails on formatting plus the same parse error.
-- `bun run build`: blocked by Rollup config/package boundary issues.
+- `bun run typecheck`: passes.
+- `bun run lint`: passes.
+- `bun run build`: passes.
+- `bun run size`: passes with runtime entrypoint at `19641` bytes gzipped.
+- `bun test`: passes from a clean checkout; dist-dependent tests build the
+  required runtime artifact when it is absent.
 
 ## Waves
 
@@ -19,10 +24,20 @@ Observed on 2026-05-20:
 |---|---|---|
 | `wave_01_foundation` | Restore default gates and enforce runtime/dev-time package boundary. | Sequential. All later tickets depend on this. |
 | `wave_02_parallel_core` | Implement spec-compliant DSL/compiler/runtime/documentation/NFR slices. | Parallel after the foundation wave. |
+| `wave_03_tooling_packaging` | Add CLI, standalone static bundle output, package publishing checks, and deployment docs. | Sequential foundation ticket, then package/runtime/bundle/docs slices. |
 
 ## Deferred Scope
 
-`@isostate/cli` remains deferred. Specs mention it as planned, but no CLI command contract exists. No implementation ticket may add CLI commands until a CLI contract is added.
+`@sebastianwessel/isostate-cli` is no longer deferred. It is specified in
+`specs/03-contracts/cli.md`, with static deployment output specified in
+`specs/03-contracts/static-bundle.md`.
+
+Still deferred:
+
+- Mermaid converter implementation.
+- Visual drag-and-drop editor.
+- Server-side rendering.
+- Three.js or CSS 3D transforms.
 
 ## Agent Execution Rules
 

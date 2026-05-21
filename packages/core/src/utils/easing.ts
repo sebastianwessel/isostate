@@ -2,11 +2,7 @@
 export type EasingFn = (t: number) => number;
 
 /** Easing configuration type */
-export type EasingType =
-	| 'linear'
-	| 'easeInCubic'
-	| 'easeInOutCubic'
-	| 'easeOutCubic';
+export type EasingType = "linear" | "easeInCubic" | "easeInOutCubic" | "easeOutCubic";
 
 /**
  * Linear easing (no interpolation).
@@ -41,13 +37,13 @@ export function easeInOutCubic(t: number): number {
  */
 export function resolveEasing(type: EasingType): EasingFn {
 	switch (type) {
-		case 'linear':
+		case "linear":
 			return linear;
-		case 'easeInCubic':
+		case "easeInCubic":
 			return easeInCubic;
-		case 'easeOutCubic':
+		case "easeOutCubic":
 			return easeOutCubic;
-		case 'easeInOutCubic':
+		case "easeInOutCubic":
 			return easeInOutCubic;
 	}
 }

@@ -2,7 +2,7 @@
 id: TICKET-001
 title: Restore gates and split runtime/dev-time package boundary
 wave: 1
-status: implementation_ready
+status: done
 parallel_group: foundation
 depends_on: []
 blocked_by: []
@@ -35,13 +35,13 @@ Restore default verification and make the root runtime entrypoint separate from 
 
 ## Context Digest
 
-Default verification is red. `animation-engine.ts` has malformed braces. Root `@isostate/core` exports DSL parser/validator/compiler, violating the runtime/dev-time split. Root and package manifests both publish as `@isostate/core`, and build output paths do not line up with package exports.
+Default verification is red. `animation-engine.ts` has malformed braces. Root `@sebastianwessel/isostate` exports DSL parser/validator/compiler, violating the runtime/dev-time split. Root and package manifests both publish as `@sebastianwessel/isostate`, and build output paths do not line up with package exports.
 
 execution_semantics: `in_process` for runtime exports and `local_process` for DSL exports.
 
 ## Implementation Approach
 
-Repair the syntax break first, then align manifests and Rollup outputs so `@isostate/core` exposes runtime-only exports and `@isostate/core/dsl` exposes parser, validator, compiler, and serializers.
+Repair the syntax break first, then align manifests and Rollup outputs so `@sebastianwessel/isostate` exposes runtime-only exports and `@sebastianwessel/isostate/dsl` exposes parser, validator, compiler, and serializers.
 
 ## Tasks
 
@@ -123,8 +123,8 @@ missing_contracts: []
 
 | Surface | Spec | Owner Files |
 |---|---|---|
-| `@isostate/core` runtime exports | `03-contracts/public-api.md` | `packages/core/src/index.ts`, manifests |
-| `@isostate/core/dsl` exports | `03-contracts/public-api.md` | `packages/core/src/dsl/index.ts`, manifests |
+| `@sebastianwessel/isostate` runtime exports | `03-contracts/public-api.md` | `packages/core/src/index.ts`, manifests |
+| `@sebastianwessel/isostate/dsl` exports | `03-contracts/public-api.md` | `packages/core/src/dsl/index.ts`, manifests |
 | default CI gates | `04-nfr/runtime-ci.md` | root package scripts, build config |
 
 ## Acceptance Test Matrix

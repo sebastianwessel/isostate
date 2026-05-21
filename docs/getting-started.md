@@ -27,7 +27,7 @@ The browser loads `examples/basic/scene.isostate.js`. It does not parse YAML.
 ## Runtime Usage
 
 ```ts
-import { mountScene, type RuntimeBundle } from '@isostate/core';
+import { mountScene, type RuntimeBundle } from '@sebastianwessel/isostate';
 import sceneBundle from './scene.isostate.js';
 
 const target = document.querySelector<HTMLElement>('#scene');
@@ -49,7 +49,7 @@ import {
 	parseScene,
 	toJs,
 	validateScene
-} from '@isostate/core/dsl';
+} from '@sebastianwessel/isostate/dsl';
 
 const document = parseScene(yamlText);
 const report = validateScene(document);

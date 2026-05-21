@@ -4,6 +4,7 @@
 		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"types": ["bun", "node"],
 		"declaration": true,
 		"declarationMap": true,
 		"sourceMap": true,
@@ -16,8 +17,10 @@
 		"skipLibCheck": true,
 		"resolveJsonModule": true,
 		"baseUrl": ".",
+		"ignoreDeprecations": "6.0",
 		"paths": {
-			"@isostate/core/*": ["packages/core/src/*"]
+			"@sebastianwessel/isostate": ["packages/core/src/index.ts"],
+			"@sebastianwessel/isostate/*": ["packages/core/src/*"]
 		},
 		"allowImportingTsExtensions": true,
 		"outDir": "dist",

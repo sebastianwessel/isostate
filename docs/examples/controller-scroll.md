@@ -4,7 +4,7 @@ Start with `mountScene` and opt into the runtime controller when the scene shoul
 follow a scroll container.
 
 ```ts
-import { mountScene } from '@isostate/core';
+import { mountScene } from '@sebastianwessel/isostate';
 import sceneBundle from './scene.isostate.js';
 
 const target = document.querySelector<HTMLElement>('#scene');

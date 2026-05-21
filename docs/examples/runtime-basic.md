@@ -4,7 +4,7 @@ Use the browser runtime with a precompiled `.isostate.js` bundle. Do not parse
 YAML in the browser path.
 
 ```ts
-import { mountScene } from '@isostate/core';
+import { mountScene } from '@sebastianwessel/isostate';
 import sceneBundle from './scene.isostate.js';
 
 const target = document.querySelector<HTMLElement>('#scene');

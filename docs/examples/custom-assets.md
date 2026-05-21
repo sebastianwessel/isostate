@@ -25,7 +25,7 @@ Runtime integration is unchanged: import the compiled bundle and pass it to
 `mountScene`. Asset loading is fully described by the compiled bundle URLs.
 
 ```ts
-import { mountScene } from '@isostate/core';
+import { mountScene } from '@sebastianwessel/isostate';
 import scene from './scene.isostate.js';
 
 mountScene(document.querySelector('#scene'), scene);

@@ -14,6 +14,8 @@
 - Browser runtime has zero external runtime dependencies.
 - `yaml` is a dev-time optional peer dependency and must not appear in runtime chunks.
 - Parser, validator, compiler, CLI, and converter code are excluded from runtime browser bundles.
+- Static deployment bundles copy only the standalone browser runtime artifact,
+  compiled scene data, copied external SVG assets, and manifest metadata.
 - Animation CSS is first-party library code. Asset SVG files are loaded by URL and are not parsed or injected by the runtime.
 
 ## Security
@@ -63,10 +65,19 @@ Opt-in checks:
 |---|---|---|
 | Browser visual/perf tests | `ISOSTATE_BROWSER_TESTS=1` | skipped when unset |
 | Bundle size budget | `ISOSTATE_SIZE_TESTS=1` or release CI | skipped in local default if tooling unavailable |
+| Static bundle browser smoke | `ISOSTATE_BROWSER_TESTS=1` | skipped when unset |
 
 ## Supply Chain
 
 - Publish only `dist` files declared in package `files`.
-- Run `publint` before release.
-- Lock runtime exports so `@isostate/core` and `@isostate/core/dsl` remain separate entrypoints.
+- Run `publint` before release for `@sebastianwessel/isostate` and `@sebastianwessel/isostate-cli`.
+- Lock runtime exports so `@sebastianwessel/isostate` and `@sebastianwessel/isostate/dsl` remain separate entrypoints.
 - Release process must verify the runtime entrypoint can be bundled without the `yaml` package installed.
+- Release process must verify `isostate bundle` output imports without
+  dev-time dependencies.
+- Pull requests to `main` must run lint, typecheck, tests, and the static
+  website build.
+- Manual releases from `main` must verify package versions, reject already
+  published npm versions, run lint/typecheck/tests/build/publint, publish both
+  npm packages, create a `v<version>` git tag, create a GitHub release, and
+  deploy the Astro static documentation site to GitHub Pages.

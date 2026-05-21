@@ -1,3 +1,5 @@
+import { builtinModules } from 'node:module';
+import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { defineConfig } from 'rollup';
 import type { Plugin } from 'rollup';
 import ts from 'typescript';
@@ -25,20 +27,62 @@ function typescriptPlugin(): Plugin {
 	};
 }
 
-export default defineConfig({
-	input: {
-		index: 'packages/core/src/index.ts',
-		'runtime/index': 'packages/core/src/runtime/index.ts',
-		'dsl/index': 'packages/core/src/dsl/index.ts'
+const nodeBuiltins = new Set([
+	...builtinModules,
+	...builtinModules.map((moduleName) => `node:${moduleName}`)
+]);
+
+function cliExternal(id: string): boolean {
+	return id === '@sebastianwessel/isostate/dsl' || id === '@sebastianwessel/isostate' || nodeBuiltins.has(id);
+}
+
+export default defineConfig([
+	{
+		input: {
+			index: 'packages/core/src/index.ts',
+			'runtime/index': 'packages/core/src/runtime/index.ts',
+			'dsl/index': 'packages/core/src/dsl/index.ts'
+		},
+		output: {
+			dir: 'packages/core/dist',
+			format: 'es',
+			entryFileNames: '[name].js',
+			chunkFileNames: 'chunks/[name]-[hash].js',
+			sourcemap: true
+		},
+		// yaml is dev-time only and must stay out of runtime browser bundles.
+		external: ['yaml'],
+		plugins: [nodeResolve({ extensions: ['.ts', '.js'] }), typescriptPlugin()]
 	},
-	output: {
-		dir: 'packages/core/dist',
-		format: 'es',
-		entryFileNames: '[name].js',
-		chunkFileNames: 'chunks/[name]-[hash].js',
-		sourcemap: true
+	{
+		input: 'packages/core/src/index.ts',
+		output: {
+			file: 'packages/core/dist/browser/isostate.runtime.js',
+			format: 'es',
+			sourcemap: true
+		},
+		// yaml is dev-time only and must stay out of runtime browser bundles.
+		external: ['yaml'],
+		plugins: [nodeResolve({ extensions: ['.ts', '.js'] }), typescriptPlugin()]
 	},
-	// yaml is dev-time only and must stay out of runtime browser bundles.
-	external: ['yaml'],
-	plugins: [typescriptPlugin()]
-});
+	{
+		input: 'packages/cli/src/bin.ts',
+		output: {
+			file: 'packages/cli/dist/bin.js',
+			format: 'es',
+			sourcemap: true
+		},
+		external: cliExternal,
+		plugins: [nodeResolve({ extensions: ['.ts', '.js'] }), typescriptPlugin()]
+	},
+	{
+		input: 'packages/cli/src/index.ts',
+		output: {
+			file: 'packages/cli/dist/index.js',
+			format: 'es',
+			sourcemap: true
+		},
+		external: cliExternal,
+		plugins: [nodeResolve({ extensions: ['.ts', '.js'] }), typescriptPlugin()]
+	}
+]);

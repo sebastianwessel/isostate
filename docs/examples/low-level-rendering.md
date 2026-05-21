@@ -5,7 +5,7 @@ build the SVG DOM directly when they need to own the animation engine and
 controller lifecycle.
 
 ```ts
-import { AnimationEngine, buildSceneDOM } from '@isostate/core';
+import { AnimationEngine, buildSceneDOM } from '@sebastianwessel/isostate';
 import sceneBundle from './scene.isostate.js';
 
 const target = document.querySelector<HTMLElement>('#scene');

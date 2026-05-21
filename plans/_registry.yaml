@@ -3,62 +3,97 @@ tickets:
     title: Restore gates and split runtime/dev-time package boundary
     wave: 1
     file: plans/wave_01_foundation/tickets/TICKET-001-foundation-gates-package-boundary.md
-    status: implementation_ready
+    status: done
     depends_on: []
     blocked_by: []
   TICKET-002:
     title: Align public type contracts and layer keyframe schema
     wave: 2
     file: plans/wave_02_parallel_core/tickets/TICKET-002-type-contracts-layer-keyframes.md
-    status: implementation_ready
+    status: done
     depends_on: [TICKET-001]
     blocked_by: [TICKET-001]
   TICKET-003:
     title: Make parser and validator schema-compliant
     wave: 2
     file: plans/wave_02_parallel_core/tickets/TICKET-003-parser-validator-compliance.md
-    status: implementation_ready
+    status: done
     depends_on: [TICKET-001, TICKET-002]
     blocked_by: [TICKET-001, TICKET-002]
   TICKET-004:
     title: Implement compliant runtime bundle compiler
     wave: 2
     file: plans/wave_02_parallel_core/tickets/TICKET-004-runtime-bundle-compiler.md
-    status: implementation_ready
+    status: done
     depends_on: [TICKET-001, TICKET-002]
     blocked_by: [TICKET-001, TICKET-002]
   TICKET-005:
     title: Implement mountScene and runtime bundle loading
     wave: 2
     file: plans/wave_02_parallel_core/tickets/TICKET-005-mount-scene-runtime-api.md
-    status: implementation_ready
+    status: done
     depends_on: [TICKET-001, TICKET-002, TICKET-004]
     blocked_by: [TICKET-001, TICKET-002, TICKET-004]
   TICKET-006:
     title: Implement rendering asset safety, depth sorting, and accessibility
     wave: 2
     file: plans/wave_02_parallel_core/tickets/TICKET-006-rendering-asset-safety.md
-    status: implementation_ready
+    status: done
     depends_on: [TICKET-001, TICKET-002]
     blocked_by: [TICKET-001, TICKET-002]
   TICKET-007:
     title: Implement animation engine and controller semantics
     wave: 2
     file: plans/wave_02_parallel_core/tickets/TICKET-007-animation-controller-semantics.md
-    status: implementation_ready
+    status: done
     depends_on: [TICKET-001, TICKET-002]
     blocked_by: [TICKET-001, TICKET-002]
   TICKET-008:
     title: Complete background renderer compliance
     wave: 2
     file: plans/wave_02_parallel_core/tickets/TICKET-008-background-renderer-compliance.md
-    status: implementation_ready
+    status: done
     depends_on: [TICKET-001]
     blocked_by: [TICKET-001]
   TICKET-009:
     title: Add docs, examples, and NFR verification
     wave: 2
     file: plans/wave_02_parallel_core/tickets/TICKET-009-docs-examples-nfr.md
-    status: implementation_ready
+    status: done
     depends_on: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
     blocked_by: [TICKET-001, TICKET-005, TICKET-006, TICKET-007, TICKET-008]
+  TICKET-010:
+    title: Repair clean-checkout verification and refresh status docs
+    wave: 3
+    file: plans/wave_03_tooling_packaging/tickets/TICKET-010-verification-status-refresh.md
+    status: done
+    depends_on: [TICKET-009]
+    blocked_by: []
+  TICKET-011:
+    title: Add @sebastianwessel/isostate-cli package with validate and compile
+    wave: 3
+    file: plans/wave_03_tooling_packaging/tickets/TICKET-011-cli-validate-compile.md
+    status: done
+    depends_on: [TICKET-010]
+    blocked_by: []
+  TICKET-012:
+    title: Add standalone browser runtime artifact
+    wave: 3
+    file: plans/wave_03_tooling_packaging/tickets/TICKET-012-standalone-runtime-artifact.md
+    status: done
+    depends_on: [TICKET-010]
+    blocked_by: []
+  TICKET-013:
+    title: Implement static bundle command and manifest
+    wave: 3
+    file: plans/wave_03_tooling_packaging/tickets/TICKET-013-static-bundle-command.md
+    status: done
+    depends_on: [TICKET-011, TICKET-012]
+    blocked_by: []
+  TICKET-014:
+    title: Add deployment docs, example output, and release checks
+    wave: 3
+    file: plans/wave_03_tooling_packaging/tickets/TICKET-014-deploy-docs-release-checks.md
+    status: done
+    depends_on: [TICKET-013]
+    blocked_by: []
