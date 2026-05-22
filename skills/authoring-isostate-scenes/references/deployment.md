@@ -1,15 +1,26 @@
-# Static Deployment
+# CLI And Static Deployment
 
-Use this when reviewing examples or docs that need deployable browser assets.
+Use this when reviewing examples, docs, or CI scripts that validate authored
+YAML, compile runtime bundles, inspect generated metadata, or need deployable
+browser assets.
 
-## CLI Commands
+## CLI Command Surface
 
 ```bash
 bunx --package @sebastianwessel/isostate-cli isostate validate scene.isostate.yaml
 bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
+bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.json --format json
 bunx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml --out public/isostate/scene
 bunx --package @sebastianwessel/isostate-cli isostate inspect public/isostate/scene/scene.isostate.js
 ```
+
+- `validate` checks the authored YAML and semantic references.
+- `compile` produces one compiled runtime bundle as `.isostate.js` or
+  `.isostate.json`.
+- `bundle` produces static website output with runtime, scene bundle, copied
+  assets, and manifest.
+- `inspect` reads compiled JS or JSON bundles and reports format, version,
+  digest, scene count, layers, assets, and floor size.
 
 For local workspace checks, use:
 
@@ -38,6 +49,13 @@ public/isostate/scene/
 
 ## Review Rules
 
+- Prefer documenting `bunx --package @sebastianwessel/isostate-cli isostate ...`
+  for one-off usage and `isostate ...` after users install the CLI as a dev
+  dependency.
+- Use `validate` before `compile` or `bundle` in CI examples unless the command
+  being documented already validates internally.
+- Use `inspect` when docs describe troubleshooting, cache checks, or generated
+  artifact verification.
 - Static output must not include authored YAML, parser, validator, compiler,
   CLI, or the `yaml` package.
 - Built-in generated assets (`text`, `rectangle`, `circle`, `polygon`, `line`)

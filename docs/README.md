@@ -24,6 +24,8 @@ package-runner variants, agent-specific installation, and verification.
   browser page.
 - [Author Scene Deltas](./guides/author-scene-deltas.md): write the YAML
   timeline model.
+- [Use The CLI](./guides/use-the-cli.md): validate, compile, bundle, and inspect
+  scene files from CI or local scripts.
 - [Deploy Static Bundle](./guides/deploy-static-bundle.md): generate
   public-folder output with the CLI.
 - [Public API](./reference/public-api.md): runtime and dev-time imports.

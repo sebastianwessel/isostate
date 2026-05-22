@@ -15,7 +15,8 @@ Use this skill when creating or reviewing isostate scene definitions and example
    - Asset catalogs, anchors, floor, text labels, and generated primitives:
      `references/assets.md`
    - Complete YAML examples: `references/examples.md`
-   - Static deploy and CLI bundle workflow: `references/deployment.md`
+   - CLI validation, compile, bundle, inspect, and static deploy workflow:
+     `references/deployment.md`
 2. Prefer the current public DSL:
    - first scene: top-level `elements` and optional `connections`
    - later scenes: `add`, `update`, `remove` sections with nested `elements` and/or `connections`
@@ -25,11 +26,16 @@ Use this skill when creating or reviewing isostate scene definitions and example
    - use `from`/`to` instead of fractional manual routes when connecting to element sides
    - omit unchanged objects in later scenes
 4. When changing specs, implementation, docs, or examples, verify the DSL against `specs/03-contracts/scene-schema.md`.
-5. Keep source YAML and generated bundles together. If an example
+5. Use the CLI for build-time verification:
+   - `isostate validate` before treating authored YAML as valid
+   - `isostate compile` when generating `.isostate.js` or `.isostate.json`
+   - `isostate bundle` when generating static website output
+   - `isostate inspect` when checking generated metadata or stale artifacts
+6. Keep source YAML and generated bundles together. If an example
    `.isostate.yaml` changes, regenerate its `.isostate.js`/`.isostate.json`
    output in the same change. If the example is meant for static website
    deployment, verify `isostate bundle` output as well.
-6. Run available checks after edits:
+7. Run available checks after edits:
    ```bash
    node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
    bun test tests/nfr/docs-paths.test.ts tests/nfr/assets-manifest.test.ts

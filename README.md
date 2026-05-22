@@ -18,6 +18,7 @@ only loads the runtime, compiled scene data, and referenced SVG assets.
   - [Getting Started](./docs/getting-started.md)
   - Guides
     - [Author Scene Deltas](./docs/guides/author-scene-deltas.md)
+    - [Use The CLI](./docs/guides/use-the-cli.md)
     - [Deploy Static Bundle](./docs/guides/deploy-static-bundle.md)
   - Examples
     - [Runtime Basic](./docs/examples/runtime-basic.md)

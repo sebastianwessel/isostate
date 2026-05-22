@@ -34,6 +34,18 @@ http://localhost:4173/examples/basic/
 
 The browser loads `examples/basic/scene.isostate.js`. It does not parse YAML.
 
+## CLI Usage
+
+Use the CLI when you want repeatable validation and generated browser assets:
+
+```bash
+bunx --package @sebastianwessel/isostate-cli isostate validate scene.isostate.yaml
+bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
+```
+
+See [Use The CLI](./guides/use-the-cli.md) for all commands, including
+`bundle` and `inspect`.
+
 ## Runtime Usage
 
 ```ts
