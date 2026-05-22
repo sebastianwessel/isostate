@@ -226,4 +226,30 @@ describe('public docs inventory', () => {
 		expect(main).not.toContain('scrollProgress');
 		expect(main).not.toContain('sceneBundle.elements');
 	});
+
+	test('basic example uses CSS variables with a shadcn-compatible dark class', async () => {
+		const source = await readFile(
+			join(root, 'examples/basic/source.isostate.yaml'),
+			'utf8'
+		);
+		const bundle = await readFile(
+			join(root, 'examples/basic/scene.isostate.js'),
+			'utf8'
+		);
+		const styles = await readFile(
+			join(root, 'examples/basic/styles.css'),
+			'utf8'
+		);
+
+		expect(source).toContain('fill: var(--iso-label)');
+		expect(source).toContain('stroke: var(--iso-flow)');
+		expect(source).not.toMatch(/(?:fill|stroke|outline): "#/);
+		expect(bundle).not.toMatch(/"#[0-9a-fA-F]{6}"/);
+
+		expect(styles).toContain(':root {');
+		expect(styles).toContain('.dark {');
+		expect(styles).toContain('--iso-label:');
+		expect(styles).toContain('--iso-flow:');
+		expect(styles).not.toContain('[data-theme="dark"]');
+	});
 });

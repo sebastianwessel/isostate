@@ -48,6 +48,11 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not stretch SVG arrow assets for flows. Use `connections`.
 - Do not declare built-in generated assets in `header.assets`: `text`,
   `rectangle`, `circle`, `polygon`, or `line`.
+- For theme-aware colors, use semantic CSS variables such as
+  `var(--iso-label)` or `var(--iso-flow)` in YAML and define their values in
+  host CSS. Prefer the shadcn-compatible `.dark` root class for dark mode. Do
+  not create separate light/dark scene branches or hard-code both palettes into
+  the DSL.
 - For `asset: text`, always include the `text.value` field on placements. Empty
   `value: ""` is allowed only when an invisible or deferred label is
   intentional; otherwise write visible text. Treat `EMPTY_TEXT_CONTENT` as a

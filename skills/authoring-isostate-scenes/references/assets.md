@@ -100,6 +100,11 @@ Rules:
 - The compiler derives floor size from resolved scene footprints when omitted.
 - Authored YAML does not expose `layout.fit`, `layout.align`, `layout.padding`, or `layout.bounds`.
 - Page backgrounds belong in CSS via `header.className`, not YAML gradient config.
+- Theme-aware text, primitive, and connector colors should use semantic CSS
+  variables in YAML, for example `fill: var(--iso-label)` or
+  `stroke: var(--iso-flow)`.
+- Define light values in host CSS defaults and dark values under the
+  shadcn-compatible `.dark` root class. Do not duplicate scene YAML for themes.
 
 ## Composite SVG Assets
 

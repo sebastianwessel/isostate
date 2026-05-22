@@ -157,6 +157,10 @@ The renderer does not own page backgrounds. `header.className`, when present, is
 added to the root SVG so applications can style the scene surface with normal
 CSS, for example gradients, transparent backgrounds, or shadows.
 
+For light/dark mode, applications should use the standard shadcn-compatible
+root `.dark` class and CSS variables. Scene definitions may reference semantic
+tokens such as `var(--iso-label)`; the host CSS owns the light and dark values.
+
 ## Theme
 
 The active theme is resolved against built-in and user theme definitions to CSS variables applied at the root SVG/layer/element level. If omitted, `theme` defaults to `light`.

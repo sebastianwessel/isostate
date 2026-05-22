@@ -59,6 +59,12 @@ Unknown top-level fields produce `UNKNOWN_FIELD`.
 
 Unknown header fields produce `UNKNOWN_FIELD`.
 
+`className` is the primary styling hook for the root SVG. Light/dark switching
+is host CSS behavior, not scene duplication. The recommended convention matches
+shadcn/ui: define default CSS variables under `:root`, dark overrides under
+`.dark`, and reference semantic tokens such as `var(--iso-label)` from text,
+primitive, and connector color fields.
+
 ## Asset Catalog
 
 ```ts

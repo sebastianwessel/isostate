@@ -185,6 +185,13 @@ const customTheme = composeTheme('dark', {
 });
 ```
 
+Scene YAML should reference semantic CSS variables such as `var(--iso-label)`
+or `var(--iso-flow)` for generated text, primitives, and connectors when colors
+need to react to light/dark mode. The recommended host-page convention is
+shadcn-compatible: define default variables under `:root` and dark overrides
+under `.dark`. The DSL should not duplicate one set of scene objects for light
+mode and another for dark mode.
+
 ## Depth Shading
 
 Isometric assets use CSS `color-mix()` to create depth shading from a single color variable. Each face of a 3D shape maps to one or more CSS classes:
