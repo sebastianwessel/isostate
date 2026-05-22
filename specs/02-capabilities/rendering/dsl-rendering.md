@@ -8,7 +8,11 @@ The DSL is intentionally organized for authors:
 
 - `header` declares the document catalog and global settings.
 - `header.assets` lists the asset ids this document is allowed to use.
-- `header.floor`, `header.grid`, `header.layers`, `header.theme`, and optional `header.className` define required render settings.
+- `header.floor`, `header.grid`, and `header.layers` define required render
+  settings.
+- `header.theme` and `header.className` are optional compatibility/styling
+  hooks. Do not add `theme: light` or `className` just for light/dark mode;
+  prefer host CSS variables and the built-in `.iso-scene` root class.
 - `scenes` declares the timeline.
 - The first scene is a complete placement snapshot.
 - Every later scene is a delta from the previous scene.
@@ -23,7 +27,6 @@ Per-element authored `keyframes` are not allowed in `.isostate.yaml`. The compil
 header:
   version: "0.1"
   name: basic-infrastructure
-  theme: light
   assetBaseUrl: ./assets
   assets:
     - id: platform
@@ -40,7 +43,6 @@ header:
     visible: true
     layer: ground
     asset: iso-platform
-  className: demo-surface
   layers:
     - name: ground
     - name: structures

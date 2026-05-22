@@ -2,12 +2,13 @@
 
 Use semantic CSS variables in scene YAML, then define their values in page CSS.
 This keeps light/dark mode outside the scene definition. The recommended
-dark-mode hook is the same root `.dark` class used by shadcn/ui.
+dark-mode hook is the same root `.dark` class used by shadcn/ui. Authored scene
+YAML does not need `header.theme` or `header.className` for this.
 
 ```yaml
 header:
-  className: demo-surface
-  theme: light
+  assetBaseUrl: ./assets
+  assets: []
 
 scenes:
   - id: initial
@@ -29,6 +30,10 @@ scenes:
 .dark {
   --iso-label: #f8fafc;
   --iso-flow: #60a5fa;
+}
+
+#scene .iso-scene {
+  color: var(--iso-label);
 }
 ```
 

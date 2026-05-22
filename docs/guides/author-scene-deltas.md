@@ -10,15 +10,14 @@ SVG with an embedded head across long distances.
 
 ## Header
 
-The header declares assets, floor, theme, layers, and an optional root SVG
-`className` for page-owned CSS styling. Prefer semantic CSS variables in text,
-primitive, and connector color fields. Let the host page switch light/dark mode
-with the shadcn-compatible `.dark` class on a root element; do not duplicate
-light and dark color values in scene YAML.
+The header declares assets, floor, grid, and layers. Prefer semantic CSS
+variables in text, primitive, and connector color fields. Let the host page
+switch light/dark mode with the shadcn-compatible `.dark` class on a root
+element; do not duplicate light and dark color values in scene YAML and do not
+add `theme: light` or `className` just for theming.
 
 ```yaml
 header:
-  theme: light
   assetBaseUrl: ./assets
   assets:
     - id: iso-server

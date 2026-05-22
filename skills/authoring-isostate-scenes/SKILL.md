@@ -67,3 +67,7 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not treat static bundle output as source. Author YAML first, then generate
   `scene.isostate.js`, copied assets, `isostate.runtime.js`, and
   `manifest.json` with the CLI.
+- Do not add `theme: light` or `header.className` only for light/dark mode.
+  Use semantic CSS variables in YAML and let host CSS define defaults plus
+  shadcn-compatible `.dark` overrides; target the built-in `.iso-scene` class
+  unless a document-specific SVG hook is required.

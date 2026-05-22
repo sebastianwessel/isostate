@@ -1,8 +1,6 @@
 header:
   version: "0.1"
   name: aws-network-3d-flow
-  className: demo-surface
-  theme: light
   assetBaseUrl: ../../assets/aws-3d
   assets:
     - id: aws-end-user

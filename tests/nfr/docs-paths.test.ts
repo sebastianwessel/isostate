@@ -243,13 +243,18 @@ describe('public docs inventory', () => {
 
 		expect(source).toContain('fill: var(--iso-label)');
 		expect(source).toContain('stroke: var(--iso-flow)');
+		expect(source).not.toContain('theme: light');
+		expect(source).not.toContain('className:');
 		expect(source).not.toMatch(/(?:fill|stroke|outline): "#/);
 		expect(bundle).not.toMatch(/"#[0-9a-fA-F]{6}"/);
+		expect(bundle).not.toContain('"className":');
 
 		expect(styles).toContain(':root {');
 		expect(styles).toContain('.dark {');
+		expect(styles).toContain('.stage .iso-scene');
 		expect(styles).toContain('--iso-label:');
 		expect(styles).toContain('--iso-flow:');
+		expect(styles).not.toContain('demo-surface');
 		expect(styles).not.toContain('[data-theme="dark"]');
 	});
 });

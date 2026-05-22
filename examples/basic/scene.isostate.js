@@ -1,5 +1,5 @@
 export default {
-  "_digest": "9551fc2557e90232340c4e9a6ff6bd518d1eb46ad820819a45136e716037b3e6",
+  "_digest": "5ae2443352e90d3c3cf62d5131efaac62d036e003d75e649b195bf01ddfe9463",
   "_format": "isostate-runtime-bundle",
   "_version": "0.3.0",
   "assets": {
@@ -67,7 +67,6 @@ export default {
       "url": "../../assets/aws-3d/vpc-gateway.svg"
     }
   },
-  "className": "demo-surface",
   "floor": {
     "layer": "ground",
     "origin": [
