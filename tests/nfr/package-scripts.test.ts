@@ -8,7 +8,10 @@ describe('NFR package scripts', () => {
 	test('size and publint scripts are exposed', async () => {
 		const packageJson = JSON.parse(
 			await readFile(join(process.cwd(), 'package.json'), 'utf8')
-		) as { scripts?: Record<string, string> };
+		) as {
+			devDependencies?: Record<string, string>;
+			scripts?: Record<string, string>;
+		};
 
 		expect(packageJson.scripts?.size).toBe('tsx scripts/check-size.ts');
 		expect(packageJson.scripts?.publint).toBe(
@@ -18,6 +21,9 @@ describe('NFR package scripts', () => {
 			'astro build --root website'
 		);
 		expect(packageJson.scripts?.coverage).toContain('bun test --coverage');
+		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.2');
+		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.11.1');
+		expect(packageJson.devDependencies?.['canvaskit-wasm']).toBe('^0.41.1');
 	});
 
 	test('publishable packages declare dist-only artifacts', async () => {
