@@ -11,6 +11,7 @@ import type {
 	ElementPlacement,
 	ElementRemoval,
 	PrimitiveContent,
+	PrimitiveContentPatch,
 	RuntimeCameraFocus,
 	RuntimeConnectorState,
 	RuntimeConnectorStyle,
@@ -381,9 +382,9 @@ function validatePatch(
 	sceneId: string,
 	currentAsset?: string,
 ): void {
-	validateElementCommon(patch, document, errors, sceneId);
+	validateElementCommon(patch, document, errors, sceneId, true);
 	if (currentAsset !== undefined) {
-		validateGeneratedContentForAsset(patch, currentAsset, errors, sceneId);
+		validateGeneratedContentForAsset(patch, currentAsset, errors, sceneId, true);
 	}
 	if (patch.at !== undefined && !isValidPosition(patch.at)) {
 		errors.push(
@@ -400,6 +401,7 @@ function validateElementCommon(
 	document: SceneDocument,
 	errors: ValidationError[],
 	sceneId: string,
+	allowZeroSize = false,
 ): void {
 	if (!isValidIdentifier(element.id)) {
 		errors.push(
@@ -409,17 +411,22 @@ function validateElementCommon(
 			}),
 		);
 	}
-	if (element.size !== undefined && !isValidPositiveNumber(element.size)) {
+	const minSize = allowZeroSize ? 0 : 1;
+	if (element.size !== undefined && (!Number.isFinite(element.size) || element.size < minSize)) {
 		errors.push(
-			issue("INVALID_SIZE", "Element size must be greater than zero", {
-				sceneId,
-				elementId: element.id,
-			}),
+			issue(
+				"INVALID_SIZE",
+				allowZeroSize ? "Element size must be zero or greater" : "Element size must be greater than zero",
+				{
+					sceneId,
+					elementId: element.id,
+				},
+			),
 		);
 	}
-	if (element.size !== undefined && (!Number.isInteger(element.size) || element.size < 1)) {
+	if (element.size !== undefined && (!Number.isInteger(element.size) || element.size < minSize)) {
 		errors.push(
-			issue("INVALID_SIZE", "Element size must be a positive whole grid cell count", {
+			issue("INVALID_SIZE", "Element size must be a whole grid cell count", {
 				sceneId,
 				elementId: element.id,
 			}),
@@ -458,13 +465,14 @@ function validateGeneratedContentForAsset(
 	assetId: string,
 	errors: ValidationError[],
 	sceneId: string,
+	allowSparse = false,
 ): void {
 	if (isBuiltInAsset(assetId)) {
 		if (assetId === BUILT_IN_TEXT_ASSET_ID) {
-			validateTextForAsset(element, errors, sceneId);
+			validateTextForAsset(element, errors, sceneId, allowSparse);
 			return;
 		}
-		validatePrimitiveForAsset(element, assetId, errors, sceneId);
+		validatePrimitiveForAsset(element, assetId, errors, sceneId, allowSparse);
 		return;
 	}
 
@@ -492,8 +500,10 @@ function validateTextForAsset(
 	element: ElementPlacement | ElementPatch,
 	errors: ValidationError[],
 	sceneId: string,
+	allowSparse: boolean,
 ): void {
 	if (!element.text) {
+		if (allowSparse) return;
 		errors.push(
 			issue("TEXT_CONTENT_REQUIRED", "Built-in text elements require text content", { sceneId, elementId: element.id }),
 		);
@@ -507,7 +517,7 @@ function validateTextForAsset(
 			}),
 		);
 	}
-	validateTextContent(element.text, errors, sceneId, element.id);
+	validateTextContent(element.text as TextContent, errors, sceneId, element.id, allowSparse);
 }
 
 function validatePrimitiveForAsset(
@@ -515,6 +525,7 @@ function validatePrimitiveForAsset(
 	assetId: string,
 	errors: ValidationError[],
 	sceneId: string,
+	allowSparse: boolean,
 ): void {
 	if (!isPrimitiveAsset(assetId)) return;
 	if (element.text !== undefined) {
@@ -527,6 +538,7 @@ function validatePrimitiveForAsset(
 	}
 	const primitive = element.primitive;
 	if (!primitive) {
+		if (allowSparse) return;
 		errors.push(
 			issue("PRIMITIVE_CONTENT_REQUIRED", "Built-in primitive elements require primitive content", {
 				sceneId,
@@ -564,11 +576,13 @@ function validatePrimitiveForAsset(
 			);
 		}
 	}
-	if (assetId === "polygon") {
+	if (assetId === "polygon" && (!allowSparse || primitive.polygon?.points !== undefined)) {
 		validatePrimitivePoints(primitive.polygon?.points, 3, errors, sceneId, element.id);
 	}
 	if (assetId === "line") {
-		validatePrimitivePoints(primitive.line?.points, 2, errors, sceneId, element.id);
+		if (!allowSparse || primitive.line?.points !== undefined) {
+			validatePrimitivePoints(primitive.line?.points, 2, errors, sceneId, element.id);
+		}
 		if (primitive.line?.lineCap !== undefined && !VALID_LINE_CAPS.has(primitive.line.lineCap)) {
 			errors.push(
 				issue("INVALID_PRIMITIVE_STYLE", "Line cap is invalid", {
@@ -656,22 +670,39 @@ function validatePrimitivePoints(
 	}
 }
 
-function validateTextContent(text: TextContent, errors: ValidationError[], sceneId: string, elementId: string): void {
-	const value = normalizeTextValue(text.value);
-	const lines = value.split("\n");
-	if (
-		value.length === 0 ||
-		value.length > MAX_TEXT_CHARACTERS ||
-		lines.length > MAX_TEXT_LINES ||
-		lines.every((line) => line.trim().length === 0)
-	) {
-		errors.push(
-			issue(
-				"INVALID_TEXT_CONTENT",
-				`Text content must be non-empty, at most ${MAX_TEXT_CHARACTERS} characters, and at most ${MAX_TEXT_LINES} lines`,
-				{ sceneId, elementId },
-			),
-		);
+function validateTextContent(
+	text: Partial<TextContent>,
+	errors: ValidationError[],
+	sceneId: string,
+	elementId: string,
+	allowSparse = false,
+): void {
+	if (text.value === undefined) {
+		if (!allowSparse) {
+			errors.push(
+				issue("INVALID_TEXT_CONTENT", "Text content must define a value", {
+					sceneId,
+					elementId,
+				}),
+			);
+		}
+	} else {
+		const value = normalizeTextValue(text.value);
+		const lines = value.split("\n");
+		if (
+			value.length === 0 ||
+			value.length > MAX_TEXT_CHARACTERS ||
+			lines.length > MAX_TEXT_LINES ||
+			lines.every((line) => line.trim().length === 0)
+		) {
+			errors.push(
+				issue(
+					"INVALID_TEXT_CONTENT",
+					`Text content must be non-empty, at most ${MAX_TEXT_CHARACTERS} characters, and at most ${MAX_TEXT_LINES} lines`,
+					{ sceneId, elementId },
+				),
+			);
+		}
 	}
 
 	if (text.align !== undefined && !VALID_TEXT_ALIGN.has(text.align)) {
@@ -889,7 +920,7 @@ function validateSceneObjectDeltas(document: SceneDocument, errors: ValidationEr
 		for (const update of scene.update?.elements ?? []) {
 			const existing = elementsForConnections.get(update.id);
 			if (existing) {
-				elementsForConnections.set(update.id, { ...existing, ...update });
+				elementsForConnections.set(update.id, mergeElementPatch(existing, update));
 			}
 		}
 		for (const add of scene.add?.elements ?? []) {
@@ -964,7 +995,7 @@ function validateSceneObjectDeltas(document: SceneDocument, errors: ValidationEr
 		for (const update of scene.update?.elements ?? []) {
 			const existing = elements.get(update.id);
 			if (existing) {
-				elements.set(update.id, { ...existing, ...update });
+				elements.set(update.id, mergeElementPatch(existing, update));
 			}
 		}
 		for (const add of scene.add?.elements ?? []) {
@@ -1433,6 +1464,35 @@ function mergeStyle(base: ConnectorStyle | undefined, patch: ConnectorStyle | un
 	return { ...base, ...patch };
 }
 
+function mergeText(base: TextContent | undefined, patch: Partial<TextContent> | undefined): TextContent | undefined {
+	if (base === undefined) return patch as TextContent | undefined;
+	if (patch === undefined) return base;
+	return { ...base, ...patch };
+}
+
+function mergePrimitive(
+	base: PrimitiveContent | undefined,
+	patch: PrimitiveContentPatch | undefined,
+): PrimitiveContent | undefined {
+	if (base === undefined) return patch as PrimitiveContent | undefined;
+	if (patch === undefined) return base;
+	const merged: PrimitiveContent = {};
+	if (base.rectangle || patch.rectangle) merged.rectangle = { ...(base.rectangle ?? {}), ...(patch.rectangle ?? {}) };
+	if (base.circle || patch.circle) merged.circle = { ...(base.circle ?? {}), ...(patch.circle ?? {}) };
+	if (base.polygon || patch.polygon) merged.polygon = { ...(base.polygon ?? {}), ...(patch.polygon ?? {}) } as never;
+	if (base.line || patch.line) merged.line = { ...(base.line ?? {}), ...(patch.line ?? {}) } as never;
+	return merged;
+}
+
+function mergeElementPatch(existing: ResolvedElementRecord, patch: ElementPatch): ResolvedElementRecord {
+	return {
+		...existing,
+		...patch,
+		text: mergeText(existing.text, patch.text),
+		primitive: mergePrimitive(existing.primitive, patch.primitive),
+	};
+}
+
 function validateWarnings(document: SceneDocument, warnings: ValidationWarning[]): void {
 	const usedAssets = new Set<string>();
 	const usedLayers = new Set<string>();
@@ -1538,7 +1598,7 @@ export function resolveSceneSnapshots(document: SceneDocument): ResolvedSceneSna
 			for (const patch of scene.update?.elements ?? []) {
 				const existing = currentElements.get(patch.id);
 				if (existing) {
-					currentElements.set(patch.id, { ...existing, ...patch });
+					currentElements.set(patch.id, mergeElementPatch(existing, patch));
 				}
 			}
 

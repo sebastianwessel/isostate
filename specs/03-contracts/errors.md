@@ -67,7 +67,7 @@ Validation reports use the same `code` strings but return plain objects instead 
 | `CONNECTION_ENDPOINT_REMOVED` | A present connection references an element removed by the same scene and was not removed explicitly. | Add the connection id to `remove.connections` in the same scene, or remove/update the connection earlier. |
 | `CONNECTOR_ROUTE_BLOCKED` | Auto routing cannot find an allowed path around required obstacles. | Move objects, reduce clearance, use `avoid: none`, or author a manual route. |
 | `INVALID_POSITION` | Position tuple is malformed or negative. | Fix `at`. |
-| `INVALID_SIZE` | Size is missing/invalid where required. | Use a positive number. |
+| `INVALID_SIZE` | Size is missing/invalid where required. | Use a positive whole-cell number for placements; update patches may use `0` to scale an existing element to zero. |
 | `INVALID_CONNECTOR_ROUTE` | Connector route has fewer than two points, invalid coordinates, fractional manual coordinates, or manual segments that change both grid axes. | Provide at least two finite non-negative whole-grid route points with one-axis segments, or use `from`/`to` routing for side ports. |
 | `INVALID_CONNECTOR_STYLE` | Connector style field is unsupported, unsafe, or out of range. | Use supported style values. |
 | `INVALID_CONNECTOR_ENDPOINT` | Connector start/end endpoint is unsupported. | Use `none`, `arrow`, `dot`, `circle`, `diamond`, or `bar`. |

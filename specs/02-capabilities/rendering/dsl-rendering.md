@@ -421,6 +421,17 @@ fails with `CONNECTION_ENDPOINT_REMOVED`.
   size: 2
 ```
 
+Element update patches are sparse at every supported level:
+
+- omitted top-level fields retain the previous resolved element value;
+- `text` patches merge field-by-field, so changing only `text.fill` preserves
+  `text.value`, alignment, font size, and other text style fields;
+- `primitive.<kind>` patches merge field-by-field, so changing only
+  `primitive.rectangle.opacity` preserves fill, stroke, and stroke width;
+- `size: 0` is valid only in `update.elements[]` and scales the present element
+  to zero. Initial placements and `add.elements[]` still require positive
+  whole-cell `size` values.
+
 ### Remove
 
 `remove.elements[]` identifies elements leaving the resolved scene:

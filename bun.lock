@@ -28,7 +28,7 @@
     },
     "packages/cli": {
       "name": "@sebastianwessel/isostate-cli",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "bin": {
         "isostate": "./dist/bin.js",
       },
@@ -41,7 +41,7 @@
     },
     "packages/core": {
       "name": "@sebastianwessel/isostate",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "devDependencies": {
         "@biomejs/biome": "^2.4.15",
         "publint": "^0.3.21",

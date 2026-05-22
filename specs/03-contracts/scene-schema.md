@@ -252,8 +252,8 @@ interface ElementPatch {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
-  text?: TextContent;
-  primitive?: PrimitiveContent;
+  text?: TextContentPatch;
+  primitive?: PrimitiveContentPatch;
 }
 
 interface ElementRemoval {
@@ -270,6 +270,8 @@ interface TextContent {
   fill?: string;
 }
 
+type TextContentPatch = Partial<TextContent>;
+
 type PrimitiveAssetId = 'rectangle' | 'circle' | 'polygon' | 'line';
 
 interface PrimitiveContent {
@@ -281,6 +283,17 @@ interface PrimitiveContent {
     lineCap?: 'butt' | 'round' | 'square';
     lineJoin?: 'miter' | 'round' | 'bevel';
   };
+}
+
+interface PrimitiveContentPatch {
+  rectangle?: Partial<PrimitiveStyle & { rx?: number }>;
+  circle?: Partial<PrimitiveStyle>;
+  polygon?: Partial<PrimitiveStyle & { points: [number, number][] }>;
+  line?: Partial<Omit<PrimitiveStyle, 'fill'> & {
+    points: [number, number][];
+    lineCap?: 'butt' | 'round' | 'square';
+    lineJoin?: 'miter' | 'round' | 'bevel';
+  }>;
 }
 
 interface PrimitiveStyle {
@@ -303,11 +316,20 @@ Validation rules:
 - `asset` must be declared in `header.assets[]` and resolve through
   `assetBaseUrl`, except reserved built-in generated assets: `text`,
   `rectangle`, `circle`, `polygon`, and `line`.
-- Built-in primitive assets require `primitive` with exactly one matching
+- Built-in primitive placements require `primitive` with exactly one matching
   payload and must not use `text`.
-- `size` must be a positive whole-grid-cell count.
+- `update.elements[].text` is a sparse nested patch. It merges with the
+  previous resolved text payload; omitted nested fields retain their previous
+  values. `text.value` is required for placements but optional in updates.
+- `update.elements[].primitive` is a sparse nested patch. It must use the child
+  key matching the element's existing primitive asset id and merges with the
+  previous resolved primitive payload. `polygon.points` and `line.points` are
+  required for placements but optional in updates that only change style.
+- Placement `size` must be a positive whole-grid-cell count.
+- Patch `size` must be a whole-grid-cell count `>= 0`; `0` keeps the element
+  present and scales it to zero.
 - `layer` defaults to `structures` when that layer exists, otherwise the first declared layer.
-- `size` defaults to `1` and must be a positive finite number. Human-authored examples use whole-cell values.
+- `size` defaults to `1`. Human-authored examples use whole-cell values.
 - `at` coordinates must be finite numbers, each `>= 0`. Human-authored examples use whole-cell values.
 - Converter internals may calculate sub-cell geometry, but public `.isostate.yaml` examples and hand-authored files use full grid cells only.
 
@@ -451,7 +473,8 @@ Runtime rendering rules:
 Authoring rules:
 
 - A placement with `asset: text` must include `text.value`.
-- A patch for an existing text element may include `text` to replace the previous text payload.
+- A patch for an existing text element may include sparse `text` fields; omitted
+  nested text fields keep their previous resolved values.
 - A non-text asset must not include `text`.
 - `text.value` may be a YAML quoted string with `\n` escapes or a YAML block scalar. The parser preserves line breaks; the runtime normalizes `\r\n` and `\r` to `\n`.
 - `text.value` must be non-empty, contain at least one non-whitespace line, be at most `1000` characters, and be at most `20` lines.
@@ -510,7 +533,7 @@ The compiled `RuntimeBundle` exposes resolved `scenes[]` snapshots only. It does
 | `header.layers` | at least one item | `NO_LAYERS` |
 | `scenes` | at least one item | `NO_SCENES` |
 | `at` | tuple of two finite numbers, each `>= 0` | `INVALID_POSITION` |
-| `size` | finite number, `> 0` | `INVALID_SIZE` |
+| `size` | placement: whole-cell number `> 0`; patch: whole-cell number `>= 0` | `INVALID_SIZE` |
 | `ambient[].iterations` | positive integer when `infinite` is false | `INVALID_AMBIENT_ITERATIONS` |
 
 ## Unknown Fields

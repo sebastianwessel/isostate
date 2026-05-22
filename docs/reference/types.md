@@ -132,6 +132,10 @@ Text elements do not need `header.assets` or `assetBaseUrl`.
 The runtime renders them as SVG `<text>/<tspan>` nodes and supports line breaks
 in `value`.
 
+`ElementPatch.text` is sparse: an update may provide only changed text fields,
+such as `text.fill`, and omitted fields inherit from the previous resolved
+scene. `text.value` is required for placements but optional for updates.
+
 `PrimitiveContent` is used by reserved built-in primitive assets:
 
 ```ts
@@ -141,6 +145,12 @@ type PrimitiveAssetId = 'rectangle' | 'circle' | 'polygon' | 'line';
 Use `asset: rectangle`, `circle`, `polygon`, or `line` with a matching
 `primitive` payload. Primitive points use normalized local grid coordinates from
 `0` to `1`; primitive elements do not need `header.assets` or `assetBaseUrl`.
+
+`ElementPatch.primitive` is also sparse. Updating only
+`primitive.rectangle.opacity` preserves the previous rectangle fill, stroke, and
+other primitive fields. `update.elements[].size` may be `0` to scale an existing
+element to zero; initial and added placements still require positive whole-cell
+sizes.
 
 ## Assets and Themes
 

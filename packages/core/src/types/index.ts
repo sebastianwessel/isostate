@@ -39,6 +39,7 @@ export type {
 	PolygonPrimitive,
 	PrimitiveAssetId,
 	PrimitiveContent,
+	PrimitiveContentPatch,
 	PrimitiveStyle,
 	RectanglePrimitive,
 	RuntimeCameraFocus,
@@ -48,6 +49,7 @@ export type {
 	RuntimeElementState,
 	TextAlign,
 	TextContent,
+	TextContentPatch,
 } from "./node.ts";
 export {
 	guardEntryAnimation,

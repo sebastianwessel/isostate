@@ -98,6 +98,11 @@ interface RuntimeConnectorState {
 }
 ```
 
+`RuntimeElementState.size` is a resolved number and may be `0` when authored by
+an update patch. A zero-size runtime element remains present in the scene
+snapshot and is rendered as a zero-scale element; it is not equivalent to
+`presence: 'removed'`.
+
 Runtime bundles use `scenes` as the only compiled timeline. Compatibility fields such as top-level `states`, top-level `elements`, or per-element `keyframes` are not emitted or accepted by the runtime contract.
 
 `connectors` is always present on each runtime scene stop. It may be an empty
@@ -285,7 +290,7 @@ JSON output:
 ```json
 {
   "_format": "isostate-runtime-bundle",
-  "_version": "0.2.0",
+  "_version": "0.3.0",
   "_digest": "...",
   "grid": { "cellSize": 64 },
   "floor": { "size": [5, 4], "origin": [0, 0], "visible": true, "layer": "ground" },

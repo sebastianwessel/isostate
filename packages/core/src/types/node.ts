@@ -113,6 +113,9 @@ export interface TextContent {
 	fill?: string;
 }
 
+/** Sparse update payload for built-in text content. */
+export type TextContentPatch = Partial<TextContent>;
+
 /** Built-in generated primitive asset ids. These are not declared in header assets. */
 export type PrimitiveAssetId = "rectangle" | "circle" | "polygon" | "line";
 
@@ -163,6 +166,14 @@ export interface PrimitiveContent {
 	line?: LinePrimitive;
 }
 
+/** Sparse update payload for built-in primitive content. */
+export interface PrimitiveContentPatch {
+	rectangle?: Partial<RectanglePrimitive>;
+	circle?: Partial<CirclePrimitive>;
+	polygon?: Partial<PolygonPrimitive>;
+	line?: Partial<LinePrimitive>;
+}
+
 /** Element placement used in first-scene elements and later add operations. */
 export interface ElementPlacement {
 	id: string;
@@ -186,8 +197,8 @@ export interface ElementPatch {
 	enter?: EntryAnimation;
 	exit?: ExitAnimation;
 	ambient?: AmbientAnimation[];
-	text?: TextContent;
-	primitive?: PrimitiveContent;
+	text?: TextContentPatch;
+	primitive?: PrimitiveContentPatch;
 }
 
 /** Element removal used by scene remove operations. */

@@ -136,15 +136,18 @@ plain text.
     fill: "#111111"
 ```
 
-`text.value` supports line breaks. Updates replace the whole text payload:
+`text.value` supports line breaks. Updates may change only the nested text
+fields that differ; omitted text fields keep their previous resolved values:
 
 ```yaml
 update:
   elements:
     - id: auth-gateway-label
       text:
-        value: "Auth\nGateway"
+        fill: "#eeeeee"
 ```
+
+Use `text.value` in an update only when the label text itself changes.
 
 ## Primitive Underlays And Markers
 
@@ -168,6 +171,10 @@ declared in `header.assets`.
 Available primitive asset ids are `rectangle`, `circle`, `polygon`, and `line`.
 `polygon.points` and `line.points` use normalized local coordinates from `0` to
 `1`. Use whole-cell `size` values to scale primitives over the grid.
+
+Primitive updates are also nested sparse patches. Changing only
+`primitive.rectangle.opacity` preserves the rectangle's previous fill, stroke,
+stroke width, and other fields.
 
 ## Later Scenes
 
@@ -206,6 +213,11 @@ Every later scene is a delta from the previous resolved scene.
 - `update.elements` and `update.connections` change existing objects.
 - `remove.elements` and `remove.connections` exit existing objects.
 - Omitted elements and connections persist unchanged.
+- Omitted fields inside `update.elements[].text`,
+  `update.elements[].primitive.<kind>`, and `update.connections[].style` also
+  persist unchanged.
+- `update.elements[].size` may be `0` to scale an existing element down without
+  removing it. New placements still require positive whole-cell `size` values.
 - Added elements/connections default to `enter: fade-in`; removed
   elements/connections default to
   `exit: fade-out`. Use `none` to disable either animation.

@@ -110,7 +110,7 @@ describe('compileScene', () => {
 		expect(first).toEqual(second);
 		expect(toJson(first)).toBe(toJson(second));
 		expect(first._format).toBe('isostate-runtime-bundle');
-		expect(first._version).toBe('0.2.0');
+		expect(first._version).toBe('0.3.0');
 		expect(first._digest).toMatch(/^[a-f0-9]{64}$/);
 		expect(first.className).toBe('demo-surface');
 		expect(first.grid).toEqual({ cellSize: 72 });
@@ -501,6 +501,63 @@ describe('compileScene', () => {
 				asset: 'rectangle',
 				primitive: {
 					rectangle: expect.objectContaining({ fill: '#2563eb' })
+				}
+			})
+		);
+	});
+
+	test('compiles sparse nested update deltas and zero-size patches', () => {
+		const baseDocument = createDocument();
+		const bundle = compileScene(
+			createDocument({
+				header: {
+					...baseDocument.header,
+					assets: [],
+					floor: { visible: true },
+					layers: [{ name: 'labels' }]
+				},
+				scenes: [
+					{
+						id: 'initial',
+						elements: [
+							{
+								id: 'label-1',
+								asset: 'text',
+								at: [1, 1],
+								layer: 'labels',
+								text: {
+									value: 'Checkout',
+									align: 'middle',
+									fill: '#111111'
+								}
+							}
+						]
+					},
+					{
+						id: 'updated',
+						update: {
+							elements: [
+								{
+									id: 'label-1',
+									at: [2, 1],
+									size: 0,
+									text: { fill: '#eeeeee' }
+								}
+							]
+						}
+					}
+				]
+			})
+		);
+
+		expect(bundle.scenes[1].elements[0]).toEqual(
+			expect.objectContaining({
+				pos: [2, 1],
+				size: 0,
+				text: {
+					value: 'Checkout',
+					align: 'middle',
+					fill: '#eeeeee'
 				}
 			})
 		);

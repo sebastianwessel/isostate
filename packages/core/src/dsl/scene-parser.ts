@@ -18,6 +18,7 @@ import type {
 	LayerDefinition,
 	LinePrimitive,
 	PrimitiveContent,
+	PrimitiveContentPatch,
 	SceneDocument,
 	SceneHeader,
 	SceneStep,
@@ -218,12 +219,13 @@ function parsePointArray(raw: unknown, context: string): [number, number][] {
 	return requireArray(raw, context).map((point, index) => parseTuple2(point, `${context}[${index}]`));
 }
 
-function parseTextContent(raw: unknown, context: string): TextContent {
+function parseTextContent(raw: unknown, context: string, requireValue = true): TextContent {
 	const text = requireObject(raw, context);
 	assertKnownFields(text, new Set(["value", "align", "fontSize", "fontWeight", "lineHeight", "fill"]), context);
-	const parsed: TextContent = {
-		value: requireString(text.value, `${context}.value`),
-	};
+	const parsed: Partial<TextContent> = {};
+	if (requireValue || text.value !== undefined) {
+		parsed.value = requireString(text.value, `${context}.value`);
+	}
 	if (text.align !== undefined) {
 		parsed.align = requireString(text.align, `${context}.align`) as never;
 	}
@@ -243,7 +245,7 @@ function parseTextContent(raw: unknown, context: string): TextContent {
 	if (text.fill !== undefined) {
 		parsed.fill = requireString(text.fill, `${context}.fill`);
 	}
-	return parsed;
+	return parsed as TextContent;
 }
 
 function parsePrimitiveStyle(
@@ -265,10 +267,10 @@ function parsePrimitiveStyle(
 	return parsed;
 }
 
-function parsePrimitiveContent(raw: unknown, context: string): PrimitiveContent {
+function parsePrimitiveContent(raw: unknown, context: string, requireGeometry = true): PrimitiveContent {
 	const primitive = requireObject(raw, context);
 	assertKnownFields(primitive, new Set(["rectangle", "circle", "polygon", "line"]), context);
-	const parsed: PrimitiveContent = {};
+	const parsed: PrimitiveContentPatch = {};
 	if (primitive.rectangle !== undefined) {
 		const rectangle = requireObject(primitive.rectangle, `${context}.rectangle`);
 		parsed.rectangle = parsePrimitiveStyle(rectangle, `${context}.rectangle`, [
@@ -303,12 +305,14 @@ function parsePrimitiveContent(raw: unknown, context: string): PrimitiveContent 
 				"opacity",
 				"dash",
 			]),
-			points: parsePointArray(polygon.points, `${context}.polygon.points`),
 		};
+		if (requireGeometry || polygon.points !== undefined) {
+			parsed.polygon.points = parsePointArray(polygon.points, `${context}.polygon.points`);
+		}
 	}
 	if (primitive.line !== undefined) {
 		const line = requireObject(primitive.line, `${context}.line`);
-		const parsedLine: LinePrimitive = {
+		const parsedLine: Partial<LinePrimitive> = {
 			...parsePrimitiveStyle(line, `${context}.line`, [
 				"points",
 				"stroke",
@@ -318,17 +322,19 @@ function parsePrimitiveContent(raw: unknown, context: string): PrimitiveContent 
 				"lineCap",
 				"lineJoin",
 			]),
-			points: parsePointArray(line.points, `${context}.line.points`),
 		};
+		if (requireGeometry || line.points !== undefined) {
+			parsedLine.points = parsePointArray(line.points, `${context}.line.points`);
+		}
 		if (line.lineCap !== undefined) {
 			parsedLine.lineCap = requireString(line.lineCap, `${context}.line.lineCap`) as never;
 		}
 		if (line.lineJoin !== undefined) {
 			parsedLine.lineJoin = requireString(line.lineJoin, `${context}.line.lineJoin`) as never;
 		}
-		parsed.line = parsedLine;
+		parsed.line = parsedLine as LinePrimitive;
 	}
-	return parsed;
+	return parsed as PrimitiveContent;
 }
 
 function parsePlacement(raw: unknown, context: string): ElementPlacement {
@@ -396,10 +402,10 @@ function parsePatch(raw: unknown, context: string): ElementPatch {
 		parsed.ambient = parseAmbient(patch.ambient, `${context}.ambient`);
 	}
 	if (patch.text !== undefined) {
-		parsed.text = parseTextContent(patch.text, `${context}.text`);
+		parsed.text = parseTextContent(patch.text, `${context}.text`, false);
 	}
 	if (patch.primitive !== undefined) {
-		parsed.primitive = parsePrimitiveContent(patch.primitive, `${context}.primitive`);
+		parsed.primitive = parsePrimitiveContent(patch.primitive, `${context}.primitive`, false);
 	}
 	return parsed;
 }

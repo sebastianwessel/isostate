@@ -47,7 +47,9 @@ Rules:
 
 Text rules:
 
-- `text.value` is required for `asset: text`.
+- `text.value` is required when placing or adding `asset: text`.
+- Text updates are sparse; changing `text.fill` keeps the previous
+  `text.value` and other text style fields.
 - Line breaks are supported.
 - Non-text assets must not include `text`.
 
@@ -76,6 +78,8 @@ Primitive rules:
 - Use primitives for simple ground areas, markers, polygons, and local lines.
 - `polygon.points` and `line.points` are normalized local coordinates from `0`
   to `1`.
+- Primitive updates are sparse; changing one nested style field keeps omitted
+  primitive fields unchanged.
 - Use whole-cell `size` values to scale primitives on the grid.
 - External SVG assets must not include `primitive`.
 

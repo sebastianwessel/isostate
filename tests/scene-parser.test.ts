@@ -189,6 +189,39 @@ scenes:
 		});
 	});
 
+	test('parses sparse nested update deltas and zero-size patches', () => {
+		const scene = parseScene(`
+header:
+  assets: []
+  layers:
+    - name: labels
+scenes:
+  - id: start
+    elements:
+      - id: title
+        asset: text
+        at: [1, 1]
+        text:
+          value: Checkout
+          fill: "#111111"
+  - id: move-title
+    update:
+      elements:
+        - id: title
+          at: [2, 1]
+          size: 0
+          text:
+            fill: "#eeeeee"
+`);
+
+		expect(scene.scenes[1].update?.elements?.[0]).toEqual({
+			id: 'title',
+			at: [2, 1],
+			size: 0,
+			text: { fill: '#eeeeee' }
+		});
+	});
+
 	test('rejects old top-level states and elements fields', () => {
 		expectParseErrorCode(
 			`

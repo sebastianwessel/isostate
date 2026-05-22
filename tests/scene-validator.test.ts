@@ -555,6 +555,55 @@ scenes:
 		expect(snapshots[1].elements[0].text?.value).toBe('Auth\nGateway');
 	});
 
+	test('resolves sparse nested text update deltas and zero-size patches', () => {
+		const document = parseScene(`
+header:
+  assets: []
+  floor:
+    size: [4, 4]
+  layers:
+    - name: labels
+scenes:
+  - id: initial
+    elements:
+      - id: label-1
+        asset: text
+        at: [1, 1]
+        layer: labels
+        text:
+          value: Checkout
+          align: middle
+          fontSize: 12
+          fill: "#111111"
+  - id: moved
+    update:
+      elements:
+        - id: label-1
+          at: [2, 1]
+          size: 0
+          text:
+            fill: "#eeeeee"
+`);
+
+		const report = validateScene(document);
+		const snapshots = resolveSceneSnapshots(document);
+
+		expect(report.isValid).toBe(true);
+		expect(report.errors).toEqual([]);
+		expect(snapshots[1].elements[0]).toEqual(
+			expect.objectContaining({
+				pos: [2, 1],
+				size: 0,
+				text: {
+					value: 'Checkout',
+					align: 'middle',
+					fontSize: 12,
+					fill: '#eeeeee'
+				}
+			})
+		);
+	});
+
 	test('validates built-in primitive elements without requiring external assets', () => {
 		const document = parseScene(`
 header:
@@ -601,6 +650,52 @@ scenes:
 				}
 			})
 		);
+	});
+
+	test('resolves sparse nested primitive update deltas', () => {
+		const document = parseScene(`
+header:
+  assets: []
+  floor:
+    size: [4, 4]
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements:
+      - id: service-zone
+        asset: rectangle
+        at: [1, 1]
+        size: 2
+        layer: ground
+        primitive:
+          rectangle:
+            fill: "#2563eb"
+            stroke: "#1d4ed8"
+            strokeWidth: 1
+            opacity: 0.16
+  - id: dimmed
+    update:
+      elements:
+        - id: service-zone
+          primitive:
+            rectangle:
+              opacity: 0.4
+`);
+
+		const report = validateScene(document);
+		const snapshots = resolveSceneSnapshots(document);
+
+		expect(report.isValid).toBe(true);
+		expect(report.errors).toEqual([]);
+		expect(snapshots[1].elements[0].primitive).toEqual({
+			rectangle: {
+				fill: '#2563eb',
+				stroke: '#1d4ed8',
+				strokeWidth: 1,
+				opacity: 0.4
+			}
+		});
 	});
 
 	test('rejects invalid text asset authoring', () => {
