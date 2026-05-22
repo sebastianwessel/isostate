@@ -12,11 +12,14 @@ Note: `source.isostate.yaml` uses the approved header + scenes/deltas authoring
 shape. `scene.isostate.js` shows the generated runtime shape consumed by the
 browser: compiled floor/layout metadata plus ordered scene snapshots.
 
+Do not open `index.html` through `file://`. Browsers restrict local ES module
+imports and linked SVG assets in that mode, so the example must be served over
+HTTP.
+
 Run from the repository root:
 
 ```bash
-bun run build
-python3 -m http.server 4173
+bun run examples:basic:serve
 ```
 
 Then open:
@@ -24,6 +27,17 @@ Then open:
 ```text
 http://localhost:4173/examples/basic/
 ```
+
+If port `4173` is already in use, run the two steps manually with another port:
+
+```bash
+bun run build
+python3 -m http.server 4174
+```
+
+Then open `http://localhost:4174/examples/basic/`. The server must be started
+from the repository root, not from `examples/basic`, because the demo imports the
+built runtime from `packages/core/dist` and loads shared assets from `assets/`.
 
 To jump directly to a compiled scene progress for visual checks:
 

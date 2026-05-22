@@ -90,6 +90,61 @@ function bundle(): RuntimeBundle {
 	};
 }
 
+function cameraBundle(): RuntimeBundle {
+	const base = bundle();
+	return {
+		...base,
+		floor: { size: [4, 4], origin: [0, 0], visible: true, layer: 'base' },
+		layout: {
+			fit: 'contain',
+			align: [0.5, 0.5],
+			padding: { x: 16, y: 16 },
+			bounds: 'union'
+		},
+		scenes: [
+			{
+				...base.scenes[0],
+				id: 'overview',
+				progress: 0,
+				camera: { target: { type: 'reset' } }
+			},
+			{
+				...base.scenes[0],
+				id: 'focus',
+				progress: 0.5,
+				camera: {
+					target: { type: 'area', at: [0, 0], size: [2, 2] },
+					padding: 0,
+					easing: 'linear'
+				}
+			},
+			{
+				...base.scenes[1],
+				id: 'hold-focus',
+				progress: 1
+			}
+		]
+	};
+}
+
+function fakeSvg(): SVGSVGElement {
+	const attributes = new Map<string, string>();
+	return {
+		setAttribute(name: string, value: string): void {
+			attributes.set(name, value);
+		},
+		getAttribute(name: string): string | null {
+			return attributes.get(name) ?? null;
+		},
+		querySelector(): Element | null {
+			return null;
+		},
+		querySelectorAll(): Element[] {
+			return [];
+		}
+	} as unknown as SVGSVGElement;
+}
+
 function errorCode(error: unknown): string | undefined {
 	return (error as ControllerError | undefined)?.code;
 }
@@ -193,6 +248,60 @@ describe('AnimationController', () => {
 		controller.prevScene();
 		expect(controller.getSceneIndex()).toBe(1);
 		expect(controller.getProgress()).toBe(1);
+	});
+
+	test('interpolates authored camera timeline with progress in both directions', () => {
+		installRaf();
+		const controller = new AnimationController();
+		const svg = fakeSvg();
+		const cameraEvents: string[] = [];
+		controller.init(
+			cameraBundle(),
+			{ transitionDuration: 0, sceneElement: svg },
+			{ sceneElement: svg }
+		);
+		controller.on('camera-change', (state) => {
+			cameraEvents.push(
+				`${state.viewBox.minX} ${state.viewBox.minY} ${state.viewBox.width} ${state.viewBox.height}`
+			);
+		});
+
+		controller.setProgress(0.25);
+		flushRaf();
+		const forward = svg.getAttribute('viewBox');
+
+		controller.setProgress(0.75);
+		flushRaf();
+		const held = svg.getAttribute('viewBox');
+
+		controller.setProgress(0.25);
+		flushRaf();
+
+		expect(forward).toBe('40 24 208 128');
+		expect(held).toBe('80 48 128 64');
+		expect(svg.getAttribute('viewBox')).toBe(forward);
+		expect(cameraEvents).toContain('40 24 208 128');
+	});
+
+	test('resetZoom is a temporary override until progress rejoins authored camera timeline', () => {
+		installRaf();
+		const controller = new AnimationController();
+		const svg = fakeSvg();
+		controller.init(
+			cameraBundle(),
+			{ transitionDuration: 0, sceneElement: svg },
+			{ sceneElement: svg }
+		);
+		controller.setProgress(0.5);
+		flushRaf();
+		expect(svg.getAttribute('viewBox')).toBe('80 48 128 64');
+
+		controller.resetZoom({ duration: 0 });
+		expect(svg.getAttribute('viewBox')).toBe('0 0 288 192');
+
+		controller.setProgress(0.5);
+		flushRaf();
+		expect(svg.getAttribute('viewBox')).toBe('80 48 128 64');
 	});
 
 	test('destroy cancels pending frames, clears subscribers, and rejects later calls', () => {

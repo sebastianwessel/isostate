@@ -7,6 +7,7 @@ import { Content as DeployStaticBundle } from '../../docs/guides/deploy-static-b
 import { Content as ExamplesReadme } from '../../docs/examples/README.md';
 import { Content as RuntimeBasic } from '../../docs/examples/runtime-basic.md';
 import { Content as ControllerScroll } from '../../docs/examples/controller-scroll.md';
+import { Content as CameraFocus } from '../../docs/examples/camera-focus.md';
 import { Content as CompileYaml } from '../../docs/examples/compile-yaml.md';
 import { Content as CustomAssets } from '../../docs/examples/custom-assets.md';
 import { Content as CustomTheme } from '../../docs/examples/custom-theme.md';
@@ -61,6 +62,7 @@ export const docs: DocEntry[] = [
 		group: 'Examples',
 		Content: ControllerScroll
 	},
+	{ slug: 'examples/camera-focus.md', title: 'Camera Focus', group: 'Examples', Content: CameraFocus },
 	{ slug: 'examples/compile-yaml.md', title: 'Compile YAML', group: 'Examples', Content: CompileYaml },
 	{ slug: 'examples/custom-assets.md', title: 'Custom Assets', group: 'Examples', Content: CustomAssets },
 	{ slug: 'examples/custom-theme.md', title: 'Custom Theme', group: 'Examples', Content: CustomTheme },

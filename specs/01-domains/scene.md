@@ -112,6 +112,7 @@ interface SceneStep {
   add?: SceneAddDelta;
   update?: SceneUpdateDelta;
   remove?: SceneRemoveDelta;
+  camera?: CameraFocus;
 }
 
 interface SceneAddDelta {
@@ -144,6 +145,11 @@ Omitted elements and connections persist unchanged from the previous resolved
 scene.
 The compiler assigns runtime progress from scene order: the first scene is `0`,
 the last scene is `1`, and intermediate scenes are evenly spaced.
+
+`camera`, when present, is scene-stop metadata for presentation focus. It is not
+a delta and does not persist. It can target one visible element or one explicit
+grid area. The controller consumes compiled camera metadata by changing the root
+SVG viewBox.
 
 ## Surface Styling
 

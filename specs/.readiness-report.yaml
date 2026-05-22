@@ -1,10 +1,10 @@
-status: approved
-generated_at: 2026-05-21
+status: needs_human_review
+generated_at: 2026-05-22
 human_approval:
-  status: approved
-  required_for: none
+  status: pending
+  required_for: implementation planning and parallel agent execution
 summary:
-  reason: Core specs and implementation now match the header plus scene-delta runtime model. CLI and static deployment bundle specs have been added as the next approved tooling/package wave so implementation can resume without rediscovering packaging decisions.
+  reason: Issue #5 camera focus has been integrated into the spec stack with authored DSL, runtime bundle, renderer bounds, controller API, flow, errors, docs, examples, and authoring skill guidance. The spec is internally ready for review; implementation planning should wait for explicit human approval.
   foundation: updated
   domains: updated
   contracts: updated
@@ -12,26 +12,25 @@ summary:
   nfrs: updated
 blocking_gaps: []
 resolved_gaps:
-  - Authored YAML contract now uses `header` plus ordered `scenes`.
-  - First scene is a full placement snapshot; following scenes are deltas.
-  - Authored `keyframes`, top-level `states`, top-level `elements`, `pos`, and `lifecycle.status` are explicitly rejected.
-  - Runtime layout contract now requires tight projected bounds, contain fitting, explicit centering, and no hard-coded `800x600` whitespace.
-  - Runtime bundle contract now carries `floor`, `layout`, and compiled `scenes[]` snapshots.
-  - Connector spec now defines generated SVG ground-plane routes, endpoint-based auto-routing with obstacle avoidance, line/road variants, endpoint geometry, fixed dash/dot patterns, and direction-aware CSS flow animation.
-  - Connector route ambiguity was closed: hand-authored manual routes are whole-grid only, `from`/`to` ports may compile to fractional runtime route points, endpoint `offset` math is defined, and arrowheads/endcaps are projected ground-plane geometry rather than stretched SVG assets or screen-space markers.
-  - Implementation now parses public `connections`, nested `add/update/remove` operation sections, validates endpoint lifecycle, compiles runtime `connectors[]`, renders generated connector SVG, updates connector animation frames, and regenerates the browser example bundle.
-  - `@isostate/cli` is now specified as the local process package for `validate`, `compile`, `bundle`, and `inspect`.
-  - Static deployment bundles are now specified as `isostate.runtime.js`, `scene.isostate.js`, copied `assets/`, and `manifest.json`.
+  - Added `02-capabilities/camera.md` as the canonical feature spec for scene camera metadata and runtime zoom methods.
+  - Defined authored `scenes[].camera` with exact target, padding, duration, easing, validation, and non-persistence rules.
+  - Defined normalized runtime `RuntimeCameraFocus` metadata and digest participation.
+  - Defined controller methods `zoomToElement`, `zoomToArea`, `resetZoom`, `getCameraState`, camera events, cancellation, pause interaction, and error behavior.
+  - Defined effective camera timeline inheritance and symmetric progress-based interpolation so scroll down/up and forward/backward playback use one camera path.
+  - Defined renderer-owned camera bounds helpers and exact element/area projection math.
+  - Updated DSL-to-runtime and controller-runtime flows so validation, compilation, automatic scene camera application, direct zoom APIs, and cleanup are specified.
+  - Updated public API, runtime bundle, error, type, docs example, and authoring skill guidance so implementers have one vocabulary and no hidden behavior choices.
 planning_gate:
-  status: passed
-  reason: Core implementation is complete enough for the next tooling/package wave. New CLI/static bundle tickets can be planned from approved contracts.
+  status: passed_internal_simulation
+  reason: Parser, validator, compiler, runtime bundle, renderer, controller, docs, examples, skill guidance, and verification work can be split into disjoint implementation tickets from the updated specs.
 gate_simulation:
-  status: passed
-  reason: Parser, validator, compiler, runtime, rendering, animation, docs, example, and verification slices were executed with disjoint write scopes.
+  status: passed_internal_simulation
+  reason: Each camera implementation slice has explicit public inputs/outputs, error codes, target math, defaults, tests, and artifact ownership.
 deterministic_check:
   command: node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
   status: passed
 confidence: high
 risks:
-  - Runtime bundle compatibility is intentionally breaking; old generated bundles must be recompiled.
-  - The runtime size budget currently has little headroom, so standalone runtime artifact work must preserve or improve the gzipped size.
+  - This change specifies new public DSL/runtime/API behavior but does not implement code or regenerate demo bundles.
+  - Runtime bundle compatibility changes once implementation emits `scene.camera`; generated bundles using camera metadata must be compiled with the matching runtime.
+  - The runtime size budget has little headroom, so implementation should keep camera logic compact and avoid browser dependencies.

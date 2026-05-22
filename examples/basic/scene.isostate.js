@@ -1,7 +1,7 @@
 export default {
-  "_digest": "23232a6215013b7a6d864f2b1dc4f01621a9d5a4eee62d7467d71dd7475ecc6d",
+  "_digest": "88568656afbc2745d84c2ce6496a0caa255106226a93c315a97ddd80d491e2c4",
   "_format": "isostate-runtime-bundle",
-  "_version": "0.1.2",
+  "_version": "0.2.0",
   "assets": {
     "aws-app-server": {
       "anchor": [
@@ -517,6 +517,21 @@ export default {
       "progress": 0.3333333333333333
     },
     {
+      "camera": {
+        "easing": "ease-in-out",
+        "padding": 48,
+        "target": {
+          "at": [
+            7,
+            2
+          ],
+          "size": [
+            5,
+            5
+          ],
+          "type": "area"
+        }
+      },
       "connectors": [
         {
           "direction": "route",
@@ -906,6 +921,13 @@ export default {
       "progress": 0.6666666666666666
     },
     {
+      "camera": {
+        "duration": 500,
+        "easing": "ease-out",
+        "target": {
+          "type": "reset"
+        }
+      },
       "connectors": [
         {
           "direction": "route",

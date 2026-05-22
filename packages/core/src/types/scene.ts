@@ -1,10 +1,12 @@
 import type {
+	CameraFocus,
 	ConnectionPatch,
 	ConnectionPlacement,
 	ConnectionRemoval,
 	ElementPatch,
 	ElementPlacement,
 	ElementRemoval,
+	RuntimeCameraFocus,
 	RuntimeConnectorState,
 	RuntimeElementState,
 } from "./node.ts";
@@ -95,6 +97,7 @@ export interface SceneStep {
 	add?: SceneAddDelta;
 	update?: SceneUpdateDelta;
 	remove?: SceneRemoveDelta;
+	camera?: CameraFocus;
 }
 
 /** Full authored scene document parsed from YAML. */
@@ -109,4 +112,5 @@ export interface RuntimeSceneStop {
 	progress: number;
 	elements: RuntimeElementState[];
 	connectors: RuntimeConnectorState[];
+	camera?: RuntimeCameraFocus;
 }

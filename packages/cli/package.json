@@ -1,6 +1,6 @@
 {
 	"name": "@sebastianwessel/isostate-cli",
-	"version": "0.1.2",
+	"version": "0.2.0",
 	"description": "Command line tools for validating and compiling Isostate scene DSL files.",
 	"keywords": [
 		"isostate",
@@ -33,7 +33,7 @@
 		"prepublishOnly": "cd ../.. && bun run build && bun run lint"
 	},
 	"dependencies": {
-		"@sebastianwessel/isostate": "0.1.2"
+		"@sebastianwessel/isostate": "0.2.0"
 	},
 	"peerDependencies": {
 		"yaml": "^2.9.0"

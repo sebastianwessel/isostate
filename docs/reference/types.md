@@ -37,6 +37,7 @@ interface ResolvedRuntimeConfig {
 		bounds: 'floor' | 'content' | 'union';
 	};
 	viewBox: { minX: number; minY: number; width: number; height: number };
+	camera: CameraState;
 	theme: string;
 	themeVars: Record<string, string>;
 	scenes: Array<{ id: string; progress: number }>;
@@ -77,6 +78,42 @@ call `mountScene`; YAML parsing stays in dev-time tooling.
 `ConnectionPlacement`, `ConnectionPatch`, and `ConnectionRemoval` describe
 generated visual routes. They are used by first-scene `connections` and later
 `add.connections`, `update.connections`, and `remove.connections` operations.
+
+Scene steps may declare camera focus metadata:
+
+```ts
+interface CameraFocus {
+	target: { element: string } | { area: CameraGridArea } | { reset: true };
+	padding?: number;
+	duration?: number;
+	easing?: 'linear' | 'ease-in-out' | 'ease-out';
+}
+
+interface CameraGridArea {
+	at: [number, number];
+	size: [number, number];
+}
+```
+
+Runtime controllers expose the same camera area type plus zoom options and
+camera state:
+
+```ts
+interface CameraZoomOptions {
+	padding?: number;
+	duration?: number;
+	easing?: 'linear' | 'ease-in-out' | 'ease-out';
+}
+
+interface CameraState {
+	viewBox: { minX: number; minY: number; width: number; height: number };
+	target?:
+		| { type: 'element'; id: string }
+		| { type: 'area'; at: [number, number]; size: [number, number] }
+		| { type: 'reset' };
+	isZoomed: boolean;
+}
+```
 
 `TextContent` is used by the reserved built-in `asset: text`:
 

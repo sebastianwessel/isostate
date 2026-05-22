@@ -1,13 +1,26 @@
 import {
 	animateElement,
+	applySceneViewBox,
 	getConnectorState,
+	getCurrentElementBounds,
 	getElementState,
+	getGridAreaBounds,
+	getResolvedViewBox,
 	hideElementAfterExit,
 	unhideElementOnReadd,
 	updateElementTransforms,
+	type ViewBoxRect,
 } from "../rendering/rendering-engine.ts";
 import { ControllerError } from "../types/errors.ts";
-import type { EntryAnimation, ExitAnimation, RuntimeConnectorState, RuntimeElementState } from "../types/node.ts";
+import type {
+	CameraGridArea,
+	CameraZoomOptions,
+	EntryAnimation,
+	ExitAnimation,
+	RuntimeCameraTarget,
+	RuntimeConnectorState,
+	RuntimeElementState,
+} from "../types/node.ts";
 import type { RuntimeBundle } from "../types/runtime-bundle.ts";
 import { type EasingType, resolveEasing } from "../utils/easing.ts";
 import { AnimationEngine } from "./animation-engine.ts";
@@ -17,6 +30,7 @@ import { AnimationEngine } from "./animation-engine.ts";
 export interface ControllerEvents {
 	"progress-change": (progress: number) => void;
 	"scene-change": (index: number) => void;
+	"camera-change": (state: CameraState) => void;
 	paused: () => void;
 	resumed: () => void;
 }
@@ -26,6 +40,12 @@ type AnyEventListener = (...args: unknown[]) => void;
 type LifecycleTransition = {
 	from: RuntimeElementState["presence"];
 	to: RuntimeElementState["presence"];
+};
+type RequiredCameraFocus = {
+	target: RuntimeCameraTarget;
+	padding?: number;
+	duration?: number;
+	easing?: "linear" | "ease-in-out" | "ease-out";
 };
 
 // ── Controller config ──────────────────────────────────────────────────────
@@ -49,6 +69,14 @@ export interface ControllerConfig {
 	scrollSensitivity?: number;
 	transitionDuration?: number;
 	transitionEasing?: "linear" | "ease-in-out" | "ease-out";
+}
+
+export type { CameraGridArea, CameraZoomOptions };
+
+export interface CameraState {
+	viewBox: ViewBoxRect;
+	target?: RuntimeCameraTarget;
+	isZoomed: boolean;
 }
 
 type ResolvedControllerConfig = Required<Omit<ControllerConfig, "container" | "sceneElement">> & {
@@ -93,6 +121,8 @@ export class AnimationController {
 	private _pendingProgress: number | null = null;
 	private _destroyed = false;
 	private _listeners: Map<EventKey, Set<AnyEventListener>> = new Map();
+	private _cameraAnim: ReturnType<typeof requestAnimationFrame> | null = null;
+	private _cameraState: CameraState | null = null;
 
 	// Scroll tracking state
 	private _minScroll = 0;
@@ -156,6 +186,11 @@ export class AnimationController {
 		this._paused = false;
 		this._config = { ...DEFAULT_CONFIG, ...config };
 		this._sceneElement = runtime.sceneElement ?? config.sceneElement ?? null;
+		this._cameraState = {
+			viewBox: getResolvedViewBox(bundle),
+			target: { type: "reset" },
+			isZoomed: false,
+		};
 
 		this._engine.init(bundle);
 		this._bindScroll();
@@ -176,6 +211,7 @@ export class AnimationController {
 		}
 
 		this._progress = clamped;
+		this._cancelCameraAnimation();
 		if (this._paused) return;
 		this._scheduleProgressForward(clamped);
 	}
@@ -250,6 +286,59 @@ export class AnimationController {
 		return this._paused;
 	}
 
+	zoomToElement(id: string, options: CameraZoomOptions = {}): void {
+		this._assertNotDestroyed();
+		const svg = this._getSceneSvg();
+		if (!this._bundle || !svg) {
+			throw new ControllerError("CAMERA_NOT_INITIALIZED", "zoomToElement() requires an initialized scene SVG");
+		}
+		const elementBounds = getCurrentElementBounds(svg, id);
+		if (!elementBounds) {
+			throw new ControllerError("CAMERA_TARGET_NOT_FOUND", `Camera target element "${id}" was not found`, {
+				elementId: id,
+			});
+		}
+		this._applyCameraDestination(
+			expandViewBox(elementBounds, this._resolveCameraPadding(options)),
+			{ type: "element", id },
+			options,
+		);
+	}
+
+	zoomToArea(area: CameraGridArea, options: CameraZoomOptions = {}): void {
+		this._assertNotDestroyed();
+		if (!this._bundle || !this._getSceneSvg()) {
+			throw new ControllerError("CAMERA_NOT_INITIALIZED", "zoomToArea() requires an initialized scene SVG");
+		}
+		this._assertValidCameraArea(area);
+		const bounds = getGridAreaBounds(this._bundle, area);
+		this._applyCameraDestination(
+			expandViewBox(bounds, this._resolveCameraPadding(options)),
+			{
+				type: "area",
+				at: [...area.at],
+				size: [...area.size],
+			},
+			options,
+		);
+	}
+
+	resetZoom(options: CameraZoomOptions = {}): void {
+		this._assertNotDestroyed();
+		if (!this._bundle || !this._getSceneSvg()) {
+			throw new ControllerError("CAMERA_NOT_INITIALIZED", "resetZoom() requires an initialized scene SVG");
+		}
+		this._applyCameraDestination(getResolvedViewBox(this._bundle), { type: "reset" }, options);
+	}
+
+	getCameraState(): CameraState {
+		this._assertNotDestroyed();
+		if (!this._cameraState) {
+			throw new ControllerError("CAMERA_NOT_INITIALIZED", "Camera state is not initialized");
+		}
+		return copyCameraState(this._cameraState);
+	}
+
 	/**
 	 * Destroy controller and clean up all listeners and resources.
 	 */
@@ -258,11 +347,13 @@ export class AnimationController {
 		this._unbindScroll();
 		this._cancelFrame();
 		this._cancelTransition();
+		this._cancelCameraAnimation();
 		if (this._ownsEngine) this._engine.destroy();
 		this._listeners.clear();
 		this._bundle = null;
 		this._container = null;
 		this._pendingProgress = null;
+		this._cameraState = null;
 		this._destroyed = true;
 	}
 
@@ -362,6 +453,132 @@ export class AnimationController {
 		updateElementTransforms(svg, updates, connectors);
 		this._applyLifecycleChanges(updates);
 		this._applyConnectorLifecycleChanges(connectors);
+		this._applyCameraForProgress(this._progress);
+	}
+
+	private _applyCameraForProgress(progress: number): void {
+		const svg = this._getSceneSvg();
+		if (!this._bundle || !svg) return;
+		const sceneStops = this.scenes;
+		if (sceneStops.length === 0) return;
+		const { previous, next } = surroundingStops(sceneStops, progress);
+		const previousCamera = this._effectiveCameraAt(previous.index);
+		const nextCamera = this._effectiveCameraAt(next.index);
+		const previousViewBox = this._resolveCameraViewBox(previousCamera);
+		const nextViewBox = this._resolveCameraViewBox(nextCamera);
+		const range = next.scene.progress - previous.scene.progress;
+		const rawT = range <= 0 ? 0 : (progress - previous.scene.progress) / range;
+		const t = resolveCameraEasing(nextCamera.easing)(Math.max(0, Math.min(1, rawT)));
+		const viewBox = lerpViewBox(previousViewBox, nextViewBox, t);
+		const target = t < 1 ? previousCamera.target : nextCamera.target;
+		this._setCameraViewBox(svg, viewBox, target);
+	}
+
+	private _effectiveCameraAt(index: number): RequiredCameraFocus {
+		for (let i = index; i >= 0; i--) {
+			const camera = this.scenes[i]?.camera;
+			if (camera) {
+				return {
+					target: camera.target,
+					padding: camera.padding,
+					duration: camera.duration,
+					easing: camera.easing,
+				};
+			}
+		}
+		return { target: { type: "reset" } };
+	}
+
+	private _resolveCameraViewBox(camera: RequiredCameraFocus): ViewBoxRect {
+		if (!this._bundle) throw new ControllerError("CAMERA_NOT_INITIALIZED", "Camera requires an initialized bundle");
+		if (camera.target.type === "reset") return getResolvedViewBox(this._bundle);
+		if (camera.target.type === "area") {
+			return expandViewBox(
+				getGridAreaBounds(this._bundle, { at: camera.target.at, size: camera.target.size }),
+				camera.padding ?? 32,
+			);
+		}
+		const svg = this._getSceneSvg();
+		if (!svg) throw new ControllerError("CAMERA_NOT_INITIALIZED", "Camera requires an initialized scene SVG");
+		const bounds = getCurrentElementBounds(svg, camera.target.id);
+		if (!bounds) {
+			throw new ControllerError(
+				"CAMERA_TARGET_NOT_FOUND",
+				`Camera target element "${camera.target.id}" was not found`,
+				{
+					elementId: camera.target.id,
+				},
+			);
+		}
+		return expandViewBox(bounds, camera.padding ?? 32);
+	}
+
+	private _applyCameraDestination(viewBox: ViewBoxRect, target: RuntimeCameraTarget, options: CameraZoomOptions): void {
+		const svg = this._getSceneSvg();
+		if (!svg) throw new ControllerError("CAMERA_NOT_INITIALIZED", "Camera requires an initialized scene SVG");
+		this._cancelCameraAnimation();
+		const duration = this._resolveCameraDuration(options);
+		if (duration === 0) {
+			this._setCameraViewBox(svg, viewBox, target);
+			return;
+		}
+		const from = currentSvgViewBox(svg) ?? this._cameraState?.viewBox ?? viewBox;
+		const easing = resolveCameraEasing(options.easing ?? this._config.transitionEasing);
+		const start = performance.now();
+		const step = (now: number) => {
+			const t = Math.min((now - start) / duration, 1);
+			this._setCameraViewBox(svg, lerpViewBox(from, viewBox, easing(t)), target);
+			if (t < 1) {
+				this._cameraAnim = requestAnimationFrame(step);
+			} else {
+				this._cameraAnim = null;
+			}
+		};
+		this._cameraAnim = requestAnimationFrame(step);
+	}
+
+	private _setCameraViewBox(svg: SVGSVGElement, viewBox: ViewBoxRect, target?: RuntimeCameraTarget): void {
+		applySceneViewBox(svg, viewBox);
+		const full = this._bundle ? getResolvedViewBox(this._bundle) : viewBox;
+		this._cameraState = {
+			viewBox,
+			target,
+			isZoomed: !sameViewBox(viewBox, full),
+		};
+		this._emit("camera-change", this.getCameraState());
+	}
+
+	private _getSceneSvg(): SVGSVGElement | null {
+		return (this._sceneElement ?? this._container?.querySelector("svg") ?? null) as SVGSVGElement | null;
+	}
+
+	private _resolveCameraPadding(options: CameraZoomOptions): number {
+		const padding = options.padding ?? 32;
+		if (!Number.isFinite(padding) || padding < 0 || padding > 2048) {
+			throw new ControllerError("INVALID_CAMERA_OPTIONS", "Camera padding must be between 0 and 2048");
+		}
+		return padding;
+	}
+
+	private _resolveCameraDuration(options: CameraZoomOptions): number {
+		const duration = options.duration ?? this._config.transitionDuration;
+		if (!Number.isInteger(duration) || duration < 0 || duration > 10000) {
+			throw new ControllerError("INVALID_CAMERA_OPTIONS", "Camera duration must be an integer from 0 to 10000");
+		}
+		return duration;
+	}
+
+	private _assertValidCameraArea(area: CameraGridArea): void {
+		if (
+			!Array.isArray(area.at) ||
+			area.at.length !== 2 ||
+			!area.at.every((value) => Number.isFinite(value) && value >= 0) ||
+			!Array.isArray(area.size) ||
+			area.size.length !== 2 ||
+			!area.size.every((value) => Number.isFinite(value) && value > 0)
+		) {
+			throw new ControllerError("INVALID_CAMERA_OPTIONS", "Camera area must use non-negative at and positive size");
+		}
 	}
 
 	private _applyLifecycleChanges(elements: RuntimeElementState[]): void {
@@ -602,6 +819,13 @@ export class AnimationController {
 		}
 	}
 
+	private _cancelCameraAnimation(): void {
+		if (this._cameraAnim !== null) {
+			cancelAnimationFrame(this._cameraAnim);
+			this._cameraAnim = null;
+		}
+	}
+
 	// ── Scroll binding ─────────────────────────────────────────────────────
 
 	private _bindScroll(): void {
@@ -807,4 +1031,77 @@ function oppositeEntryAnimation(exit: ExitAnimation): EntryAnimation {
 		case "none":
 			return "none";
 	}
+}
+
+function surroundingStops(
+	scenes: RuntimeBundle["scenes"],
+	progress: number,
+): {
+	previous: { scene: RuntimeBundle["scenes"][number]; index: number };
+	next: { scene: RuntimeBundle["scenes"][number]; index: number };
+} {
+	let previousIndex = 0;
+	let nextIndex = scenes.length - 1;
+	for (let i = 0; i < scenes.length; i++) {
+		if (scenes[i].progress <= progress) previousIndex = i;
+		if (scenes[i].progress >= progress) {
+			nextIndex = i;
+			break;
+		}
+	}
+	return {
+		previous: { scene: scenes[previousIndex], index: previousIndex },
+		next: { scene: scenes[nextIndex], index: nextIndex },
+	};
+}
+
+function expandViewBox(viewBox: ViewBoxRect, padding: number): ViewBoxRect {
+	return {
+		minX: roundCameraNumber(viewBox.minX - padding),
+		minY: roundCameraNumber(viewBox.minY - padding),
+		width: roundCameraNumber(Math.max(1, viewBox.width + padding * 2)),
+		height: roundCameraNumber(Math.max(1, viewBox.height + padding * 2)),
+	};
+}
+
+function lerpViewBox(from: ViewBoxRect, to: ViewBoxRect, t: number): ViewBoxRect {
+	return {
+		minX: roundCameraNumber(from.minX + (to.minX - from.minX) * t),
+		minY: roundCameraNumber(from.minY + (to.minY - from.minY) * t),
+		width: roundCameraNumber(from.width + (to.width - from.width) * t),
+		height: roundCameraNumber(from.height + (to.height - from.height) * t),
+	};
+}
+
+function sameViewBox(a: ViewBoxRect, b: ViewBoxRect): boolean {
+	return a.minX === b.minX && a.minY === b.minY && a.width === b.width && a.height === b.height;
+}
+
+function currentSvgViewBox(svg: SVGSVGElement): ViewBoxRect | undefined {
+	const raw = svg.getAttribute("viewBox");
+	if (!raw) return undefined;
+	const parts = raw.trim().split(/\s+/).map(Number);
+	if (parts.length !== 4 || parts.some((part) => !Number.isFinite(part))) return undefined;
+	return { minX: parts[0], minY: parts[1], width: parts[2], height: parts[3] };
+}
+
+function resolveCameraEasing(easing: "linear" | "ease-in-out" | "ease-out" | undefined): (t: number) => number {
+	return resolveEasing(easing === "ease-in-out" ? "easeInOutCubic" : easing === "ease-out" ? "easeOutCubic" : "linear");
+}
+
+function copyCameraState(state: CameraState): CameraState {
+	return {
+		viewBox: { ...state.viewBox },
+		target:
+			state.target?.type === "area"
+				? { type: "area", at: [...state.target.at], size: [...state.target.size] }
+				: state.target
+					? { ...state.target }
+					: undefined,
+		isZoomed: state.isZoomed,
+	};
+}
+
+function roundCameraNumber(value: number): number {
+	return Math.round(value * 1000) / 1000;
 }

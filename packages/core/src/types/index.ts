@@ -13,6 +13,11 @@ export {
 } from "./errors.ts";
 export type {
 	AmbientAnimation,
+	CameraEasing,
+	CameraFocus,
+	CameraGridArea,
+	CameraTarget,
+	CameraZoomOptions,
 	CirclePrimitive,
 	ConnectionPatch,
 	ConnectionPlacement,
@@ -36,6 +41,8 @@ export type {
 	PrimitiveContent,
 	PrimitiveStyle,
 	RectanglePrimitive,
+	RuntimeCameraFocus,
+	RuntimeCameraTarget,
 	RuntimeConnectorState,
 	RuntimeConnectorStyle,
 	RuntimeElementState,

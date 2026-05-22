@@ -60,6 +60,40 @@ export interface AmbientAnimation {
 	iterations?: number;
 }
 
+export type CameraEasing = "linear" | "ease-in-out" | "ease-out";
+
+export interface CameraGridArea {
+	at: [number, number];
+	size: [number, number];
+}
+
+export type CameraTarget = { element: string } | { area: CameraGridArea } | { reset: true };
+
+export interface CameraFocus {
+	target: CameraTarget;
+	padding?: number;
+	duration?: number;
+	easing?: CameraEasing;
+}
+
+export interface CameraZoomOptions {
+	padding?: number;
+	duration?: number;
+	easing?: CameraEasing;
+}
+
+export type RuntimeCameraTarget =
+	| { type: "element"; id: string }
+	| { type: "area"; at: [number, number]; size: [number, number] }
+	| { type: "reset" };
+
+export interface RuntimeCameraFocus {
+	target: RuntimeCameraTarget;
+	padding?: number;
+	duration?: number;
+	easing?: CameraEasing;
+}
+
 /** Horizontal anchor used by built-in text elements. */
 export type TextAlign = "start" | "middle" | "end";
 

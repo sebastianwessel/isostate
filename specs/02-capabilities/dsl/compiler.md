@@ -44,6 +44,8 @@ Validator responsibilities:
 - validate asset, layer, animation, ambient, size, and position references
 - validate connector routes, style, endpoints, direction, animations, and
   connector-specific ambient classes such as `flow`
+- validate `scenes[].camera` target shape, target element presence, grid area,
+  padding, duration, and easing according to `02-capabilities/camera.md`
 - resolve endpoint-routed connectors (`from`/`to`) into concrete route points
   using the dev-time connector router
 - validate built-in generated elements: `asset: text` requires `text.value`;
@@ -61,6 +63,7 @@ interface ResolvedSceneSnapshot {
   progress: number;
   elements: ResolvedElementState[];
   connectors: ResolvedConnectorState[];
+  camera?: ResolvedCameraFocus;
 }
 ```
 
@@ -84,6 +87,8 @@ Expansion rules:
 - `text` and `primitive` payloads are carried forward like other element
   properties; `update.elements[].text` or `update.elements[].primitive`
   replaces the previous payload
+- `camera` is copied only to the resolved snapshot for the authored scene stop;
+  it does not carry forward to later snapshots
 - runtime progress values are deterministically derived from ordered scene steps
 
 Connector style defaults are materialized during expansion/compilation so the
@@ -100,6 +105,7 @@ runtime.
 - resolved `grid`, `floor`, `layout`, theme, root `className`, layers
 - compiled `scenes[]` snapshots
 - compiled connector snapshots under every scene's `connectors[]`
+- optional normalized camera metadata under scene stops that authored `camera`
 - compiled URL asset references for every external asset
 
 The compiler must not emit generated compatibility `states`, top-level `elements`, or per-element `keyframes`. `scenes[]` snapshots are the only runtime timeline.
@@ -147,6 +153,37 @@ They compile to route/style data under each runtime scene stop.
 
 Connector routing logic and any routing dependency are dev-time only. They must
 not be imported by the browser runtime entrypoint.
+
+## Camera Compilation
+
+Camera metadata is dev-time validated and runtime-normalized, but target bounds
+are resolved by the browser runtime. The compiler must not precompute viewBox
+rectangles because runtime API zoom and authored scene camera must use the same
+renderer-owned bounds helpers.
+
+Compilation rules:
+
+- Authored `{ target: { element: '<id>' } }` emits
+  `{ target: { type: 'element', id: '<id>' }, padding }`.
+- Authored `{ target: { area: { at, size } } }` emits
+  `{ target: { type: 'area', at, size }, padding }`.
+- Authored `{ target: { reset: true } }` emits
+  `{ target: { type: 'reset' } }`.
+- `padding` is defaulted to `32` and emitted for element and area targets.
+- `padding` is invalid and omitted for reset targets.
+- `duration` and `easing` are emitted only when authored.
+- Camera metadata is included in canonical JSON and digest input.
+- Camera metadata must not import or reference DOM APIs, CSS selectors, callback
+  names, or browser-only objects.
+
+The compiler validates element targets against the resolved snapshot for the
+same scene stop after deltas have been applied. A target element removed in that
+same scene is invalid unless the resolved snapshot still marks it as `exiting`
+for the scene stop.
+
+The compiler emits only authored camera metadata. Effective camera inheritance is
+a browser runtime/controller responsibility so scroll, direct progress updates,
+and presentation navigation use one camera timeline implementation.
 
 ## Determinism
 

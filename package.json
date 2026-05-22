@@ -1,6 +1,6 @@
 {
 	"name": "@sebastianwessel/isostate-workspace",
-	"version": "0.1.2",
+	"version": "0.2.0",
 	"description": "Scroll-driven animated isometric illustrations with a textual DSL",
 	"private": true,
 	"type": "module",
@@ -18,7 +18,7 @@
 	"workspaces": ["packages/*"],
 	"scripts": {
 		"clean": "rm -rf packages/core/dist packages/cli/dist",
-		"build": "bun run clean && tsx node_modules/rollup/dist/bin/rollup -c rollup.config.ts && tsc -p packages/core/tsconfig.json --emitDeclarationOnly --noCheck && tsc -p packages/cli/tsconfig.json --emitDeclarationOnly --noCheck",
+		"build": "bun run clean && tsx node_modules/rollup/dist/bin/rollup -c rollup.config.ts && bun scripts/build-browser-runtime.ts && tsc -p packages/core/tsconfig.json --emitDeclarationOnly --noCheck && tsc -p packages/cli/tsconfig.json --emitDeclarationOnly --noCheck",
 		"lint": "biome check packages/",
 		"format": "biome format --write packages/",
 		"test": "bun test",
@@ -31,6 +31,7 @@
 		"compile": "tsx scripts/compile.ts",
 		"validate": "tsx scripts/validate.ts",
 		"isostate": "bun packages/cli/src/bin.ts",
+		"examples:basic:serve": "bun run build && python3 -m http.server 4173",
 		"examples:basic:bundle": "bun examples/basic/generate-static-bundle.ts"
 	},
 	"peerDependencies": {

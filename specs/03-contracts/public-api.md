@@ -26,6 +26,7 @@ public_builder: `mountScene` is the browser high-level API. `parseScene` + `vali
 | `mountScene` | SDK function | `packages/core/src/index.ts` | App developers | experimental | in_process | `03-contracts/public-api.md` | `docs/examples/runtime-basic.md` | `tests/runtime/mount-scene.test.ts` |
 | `AnimationEngine` | SDK class | `packages/core/src/animation/animation-engine.ts` | App developers | experimental | in_process | `03-contracts/public-api.md` | `docs/examples/runtime-basic.md` | `tests/runtime/animation-engine.test.ts` |
 | `AnimationController` | SDK class | `packages/core/src/animation/controller.ts` | App developers | experimental | in_process | `03-contracts/public-api.md` | `docs/examples/controller-scroll.md` | `tests/runtime/controller.test.ts` |
+| `CameraZoomOptions`, `CameraGridArea`, `CameraState` | schema/types | `packages/core/src/animation/controller.ts` | App developers | experimental | data_only | `02-capabilities/camera.md` | `docs/examples/camera-focus.md` | `tests/contracts/types.test.ts` |
 | `buildSceneDOM` | low-level helper | `packages/core/src/rendering/rendering-engine.ts` | Advanced users/tests | internal | in_process | `03-contracts/public-api.md` | `docs/examples/low-level-rendering.md` | `tests/runtime/rendering-engine.test.ts` |
 | `parseScene` | dev-time SDK function | `packages/core/src/dsl/scene-parser.ts` | Build tools, CLI, tests | experimental | local_process | `03-contracts/public-api.md` | `docs/examples/compile-yaml.md` | `tests/scene-parser.test.ts` |
 | `validateScene` | dev-time SDK function | `packages/core/src/dsl/scene-validator.ts` | Build tools, CLI, tests | experimental | local_process | `03-contracts/public-api.md` | `docs/examples/compile-yaml.md` | `tests/scene-validator.test.ts` |
@@ -74,6 +75,50 @@ interface MountedScene {
 ```
 
 Advanced users may call `buildSceneDOM`, `AnimationEngine`, and `AnimationController` directly, but examples and docs must start with `mountScene`.
+
+### Camera Focus
+
+The primary runtime camera path is the mounted controller:
+
+```ts
+const mounted = mountScene(target, sceneBundle, {
+  controller: { transitionDuration: 600, transitionEasing: 'ease-in-out' }
+});
+
+mounted.controller?.zoomToElement('api-gateway', { padding: 48 });
+mounted.controller?.zoomToArea({ at: [0, 0], size: [4, 3] });
+mounted.controller?.resetZoom();
+```
+
+Public controller camera surface:
+
+```ts
+type CameraEasing = 'linear' | 'ease-in-out' | 'ease-out';
+
+interface CameraZoomOptions {
+  padding?: number;
+  duration?: number;
+  easing?: CameraEasing;
+}
+
+interface CameraGridArea {
+  at: [number, number];
+  size: [number, number];
+}
+
+interface CameraState {
+  viewBox: { minX: number; minY: number; width: number; height: number };
+  target?:
+    | { type: 'element'; id: string }
+    | { type: 'area'; at: [number, number]; size: [number, number] }
+    | { type: 'reset' };
+  isZoomed: boolean;
+}
+```
+
+`zoomToElement`, `zoomToArea`, and `resetZoom` are in-process browser runtime
+APIs. They accept only plain data and DOM-backed controller state. They must not
+parse YAML or import dev-time DSL modules.
 
 ### Dev-Time Compile
 
@@ -137,6 +182,7 @@ interface ResolvedRuntimeConfig {
   theme: string;
   themeVars: Record<string, string>;
   scenes: Array<{ id: string; progress: number }>;
+  camera: CameraState;
   layerOrder: Array<{ name: string; order: number }>;
 }
 ```

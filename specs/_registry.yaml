@@ -17,6 +17,8 @@ artifacts:
     layer: domain
   - path: 02-capabilities/rendering/connector-routing.md
     layer: capability
+  - path: 02-capabilities/camera.md
+    layer: capability
   - path: 03-contracts/scene-schema.md
     layer: contract
   - path: 03-contracts/runtime-bundle.md

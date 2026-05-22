@@ -1,7 +1,7 @@
 export default {
-  "_digest": "ed2948216094886980f7f137cf36f8f1d854a3888d028e39d6112cee1db29ac5",
+  "_digest": "36a4b0487ea64927f70c73339ac9d1d940f29bb0361a6d992d29052cb2e83f45",
   "_format": "isostate-runtime-bundle",
-  "_version": "0.1.2",
+  "_version": "0.2.0",
   "assets": {
     "route-building-1": {
       "anchor": [

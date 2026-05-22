@@ -1,6 +1,6 @@
 import { resolveTheme } from "../types/asset-registry.ts";
 import { RenderError } from "../types/errors.ts";
-import type { ConnectorEndpoint, RuntimeConnectorState, RuntimeElementState } from "../types/node.ts";
+import type { CameraGridArea, ConnectorEndpoint, RuntimeConnectorState, RuntimeElementState } from "../types/node.ts";
 import type { RuntimeBundle } from "../types/runtime-bundle.ts";
 import type { LayerDefinition } from "../types/scene.ts";
 import { calculateVisualSize, projectToRaw, projectToScreen } from "../utils/projection.ts";
@@ -40,10 +40,19 @@ interface ResolvedLayoutState {
 /** Internal state tracked per element node. */
 interface ElementState {
 	node: SVGGElement;
+	current: RuntimeElementState;
+	anchor: [number, number];
 	isHidden: boolean;
 	entryKey?: string;
 	exitKey?: string;
 	ambient: Set<string>;
+}
+
+export interface ViewBoxRect {
+	minX: number;
+	minY: number;
+	width: number;
+	height: number;
 }
 
 /** Internal state tracked per connector node. */
@@ -136,6 +145,7 @@ export function buildSceneDOM(container: HTMLElement, bundle: RuntimeBundle, con
 			presence: "removed",
 		};
 		const instance = createElementInstance(initial, layout, assetResolver);
+		instance.anchor = assetAnchorForBounds(bundle, initial);
 		instance.node.classList.add(`iso-layer-${def.layer}`);
 		instance.node.setAttribute("data-layer", def.layer);
 		if (initial.presence === "removed") {
@@ -173,6 +183,7 @@ export function updateElementTransforms(
 		for (const def of elements) {
 			const state = map.get(def.id) as ElementState | undefined;
 			if (!state) continue;
+			state.current = def;
 			updateGeneratedElementContent(state.node, def, layout);
 			applyElementTransform(state.node, def, layout);
 			applyAmbientClasses(state, def.ambient ?? []);
@@ -213,6 +224,45 @@ export function getResolvedViewBox(bundle: RuntimeBundle): {
 	height: number;
 } {
 	return resolveSceneLayout(bundle).viewBox;
+}
+
+export function getCurrentElementBounds(
+	svg: SVGSVGElement & { _elementMap?: Map<string, ElementState | unknown>; _layout?: ResolvedLayoutState },
+	id: string,
+): ViewBoxRect | undefined {
+	const layout = svg._layout;
+	const state = svg._elementMap?.get(id) as ElementState | undefined;
+	if (!layout || !state || state.current.presence === "removed") return undefined;
+	return boundsToViewBox(calculateElementBounds(state.current, layout, state.anchor));
+}
+
+export function getGridAreaBounds(bundle: RuntimeBundle, area: CameraGridArea): ViewBoxRect {
+	const layout = resolveSceneLayout(bundle);
+	const [x, y] = area.at;
+	const [width, height] = area.size;
+	let bounds = emptyBounds();
+	for (const point of [
+		[x, y],
+		[x + width, y],
+		[x, y + height],
+		[x + width, y + height],
+	] as Array<[number, number]>) {
+		const screen = projectToScreen(
+			point[0],
+			point[1],
+			layout.cellSize,
+			layout.selectedBounds.minX,
+			layout.selectedBounds.minY,
+			layout.padding.x,
+			layout.padding.y,
+		);
+		bounds = includePoint(bounds, screen.screenX, screen.screenY);
+	}
+	return boundsToViewBox(bounds);
+}
+
+export function applySceneViewBox(svg: SVGSVGElement, viewBox: ViewBoxRect): void {
+	svg.setAttribute("viewBox", `${viewBox.minX} ${viewBox.minY} ${viewBox.width} ${viewBox.height}`);
 }
 
 // ── Lifecycle helpers ─────────────────────────────────────────────────────
@@ -281,15 +331,7 @@ function calculateContentBounds(bundle: RuntimeBundle, cellSize: number): Bounds
 	for (const stop of bundle.scenes) {
 		for (const element of stop.elements ?? []) {
 			if (element.presence === "removed") continue;
-			const { rawX, rawY } = projectToRaw(element.pos[0] + element.size, element.pos[1] + element.size, cellSize);
-			const visualSize = calculateVisualSize(element.size, cellSize);
-			const [anchorX, anchorY] = assetAnchorForBounds(bundle, element);
-			bounds = includeBounds(bounds, {
-				minX: rawX - visualSize * anchorX,
-				minY: rawY - visualSize * anchorY,
-				maxX: rawX + visualSize * (1 - anchorX),
-				maxY: rawY + visualSize * (1 - anchorY),
-			});
+			bounds = includeBounds(bounds, calculateRawElementBounds(bundle, element, cellSize));
 		}
 		for (const connector of stop.connectors ?? []) {
 			if (connector.presence === "removed") continue;
@@ -297,6 +339,41 @@ function calculateContentBounds(bundle: RuntimeBundle, cellSize: number): Bounds
 		}
 	}
 	return normalizeBounds(bounds, cellSize);
+}
+
+function calculateRawElementBounds(bundle: RuntimeBundle, element: RuntimeElementState, cellSize: number): Bounds {
+	const { rawX, rawY } = projectToRaw(element.pos[0] + element.size, element.pos[1] + element.size, cellSize);
+	const visualSize = calculateVisualSize(element.size, cellSize);
+	const [anchorX, anchorY] = assetAnchorForBounds(bundle, element);
+	return {
+		minX: rawX - visualSize * anchorX,
+		minY: rawY - visualSize * anchorY,
+		maxX: rawX + visualSize * (1 - anchorX),
+		maxY: rawY + visualSize * (1 - anchorY),
+	};
+}
+
+function calculateElementBounds(
+	element: RuntimeElementState,
+	layout: ResolvedLayoutState,
+	anchor: [number, number],
+): Bounds {
+	const screen = projectToScreen(
+		element.pos[0] + element.size,
+		element.pos[1] + element.size,
+		layout.cellSize,
+		layout.selectedBounds.minX,
+		layout.selectedBounds.minY,
+		layout.padding.x,
+		layout.padding.y,
+	);
+	const visualSize = calculateVisualSize(element.size, layout.cellSize);
+	return {
+		minX: screen.screenX - visualSize * anchor[0],
+		minY: screen.screenY - visualSize * anchor[1],
+		maxX: screen.screenX + visualSize * (1 - anchor[0]),
+		maxY: screen.screenY + visualSize * (1 - anchor[1]),
+	};
 }
 
 function assetAnchorForBounds(bundle: RuntimeBundle, element: RuntimeElementState): [number, number] {
@@ -355,6 +432,19 @@ function emptyBounds(): Bounds {
 function normalizeBounds(bounds: Bounds, cellSize: number): Bounds {
 	if (Number.isFinite(bounds.minX)) return bounds;
 	return { minX: 0, minY: 0, maxX: cellSize, maxY: cellSize };
+}
+
+function boundsToViewBox(bounds: Bounds): ViewBoxRect {
+	const centerX = (bounds.minX + bounds.maxX) / 2;
+	const centerY = (bounds.minY + bounds.maxY) / 2;
+	const width = Math.max(1, bounds.maxX - bounds.minX);
+	const height = Math.max(1, bounds.maxY - bounds.minY);
+	return {
+		minX: roundDimension(centerX - width / 2),
+		minY: roundDimension(centerY - height / 2),
+		width: roundDimension(width),
+		height: roundDimension(height),
+	};
 }
 
 function includePoint(bounds: Bounds, x: number, y: number): Bounds {
@@ -569,10 +659,10 @@ function createElementInstance(
 			},
 			{ once: true },
 		);
-		return { node, isHidden: false, entryKey: entryAnim, ambient: new Set() };
+		return { node, current: def, anchor: [0.5, 1], isHidden: false, entryKey: entryAnim, ambient: new Set() };
 	}
 
-	return { node, isHidden: false, ambient: new Set() };
+	return { node, current: def, anchor: [0.5, 1], isHidden: false, ambient: new Set() };
 }
 
 function isTextAsset(assetId: string): boolean {

@@ -59,6 +59,12 @@ function createDocument(overrides: Partial<SceneDocument> = {}): SceneDocument {
 			},
 			{
 				id: 'expanded',
+				camera: {
+					target: { element: 'tree-1' },
+					padding: 48,
+					duration: 600,
+					easing: 'ease-in-out'
+				},
 				update: { elements: [{ id: 'office-1', at: [3, 2], size: 3 }] },
 				add: {
 					elements: [
@@ -82,6 +88,10 @@ function createDocument(overrides: Partial<SceneDocument> = {}): SceneDocument {
 			},
 			{
 				id: 'removed',
+				camera: {
+					target: { reset: true },
+					duration: 300
+				},
 				remove: {
 					elements: [{ id: 'tree-1', exit: 'fade-out' }],
 					connections: [{ id: 'tree-flow', exit: 'fade-out' }]
@@ -100,7 +110,7 @@ describe('compileScene', () => {
 		expect(first).toEqual(second);
 		expect(toJson(first)).toBe(toJson(second));
 		expect(first._format).toBe('isostate-runtime-bundle');
-		expect(first._version).toBe('0.1.2');
+		expect(first._version).toBe('0.2.0');
 		expect(first._digest).toMatch(/^[a-f0-9]{64}$/);
 		expect(first.className).toBe('demo-surface');
 		expect(first.grid).toEqual({ cellSize: 72 });
@@ -176,6 +186,16 @@ describe('compileScene', () => {
 		expect(first.scenes[1].connectors[1]).not.toHaveProperty('from');
 		expect(first.scenes[1].connectors[1]).not.toHaveProperty('to');
 		expect(first.scenes[1].connectors[1]).not.toHaveProperty('routing');
+		expect(first.scenes[1].camera).toEqual({
+			target: { type: 'element', id: 'tree-1' },
+			padding: 48,
+			duration: 600,
+			easing: 'ease-in-out'
+		});
+		expect(first.scenes[2].camera).toEqual({
+			target: { type: 'reset' },
+			duration: 300
+		});
 		expect(
 			first.scenes[2].elements.find((element) => element.id === 'tree-1')
 		).toEqual(

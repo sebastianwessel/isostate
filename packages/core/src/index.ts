@@ -4,6 +4,9 @@ export {
 	type LifecycleKey,
 } from "./animation/animation-engine.ts";
 export type {
+	CameraGridArea,
+	CameraState,
+	CameraZoomOptions,
 	ControllerConfig,
 	ControllerEvents,
 } from "./animation/controller.ts";
@@ -41,6 +44,9 @@ export type {
 	AssetCategory,
 	AssetDefinition,
 	AssetRegistry,
+	CameraEasing,
+	CameraFocus,
+	CameraTarget,
 	CompiledAsset,
 	CompiledFloor,
 	CompiledLayer,

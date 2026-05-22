@@ -6,6 +6,7 @@ Each example focuses on one public workflow.
 |---|---|
 | [Runtime Basic](./runtime-basic.md) | Mount a precompiled bundle in browser code. |
 | [Controller Scroll](./controller-scroll.md) | Drive scene progress from scroll. |
+| [Camera Focus](./camera-focus.md) | Focus the runtime camera on an element or grid area. |
 | [Compile YAML](./compile-yaml.md) | Parse, validate, compile, and serialize YAML. |
 | [Use The CLI](../guides/use-the-cli.md) | Validate, compile, bundle, and inspect scene files from scripts. |
 | [Deploy Static Bundle](../guides/deploy-static-bundle.md) | Generate public assets for a static website. |

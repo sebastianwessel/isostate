@@ -1,6 +1,9 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import {
+	applySceneViewBox,
 	buildSceneDOM,
+	getCurrentElementBounds,
+	getGridAreaBounds,
 	getResolvedViewBox,
 	updateElementTransforms
 } from '../../packages/core/src/rendering/rendering-engine.ts';
@@ -732,6 +735,47 @@ describe('rendering engine', () => {
 		});
 
 		expect(getResolvedViewBox(bundle).width).toBeGreaterThan(260);
+	});
+
+	test('resolves camera bounds and applies scene viewBox', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const bundle = createBundle({
+			grid: { cellSize: 64 },
+			layout: {
+				fit: 'contain',
+				align: [0.5, 0.5],
+				padding: { x: 16, y: 16 },
+				bounds: 'union'
+			},
+			assets: {
+				block: { url: './assets/block.svg', anchor: [0.5, 1] }
+			},
+			scenes: [
+				sceneStop([
+					{ id: 'block-a', asset: 'block', pos: [1, 1], size: 1 }
+				])
+			]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const elementBounds = getCurrentElementBounds(svg, 'block-a');
+		const areaBounds = getGridAreaBounds(bundle, { at: [0, 0], size: [2, 2] });
+
+		expect(elementBounds).toEqual({
+			minX: 112,
+			minY: 16,
+			width: 64,
+			height: 64
+		});
+		expect(areaBounds).toEqual({
+			minX: 80,
+			minY: 16,
+			width: 128,
+			height: 64
+		});
+
+		applySceneViewBox(svg, areaBounds);
+		expect(svg.getAttribute('viewBox')).toBe('80 16 128 64');
 	});
 });
 

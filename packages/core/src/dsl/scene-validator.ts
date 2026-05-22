@@ -1,5 +1,6 @@
 import type {
 	AmbientAnimation,
+	CameraFocus,
 	ConnectionPatch,
 	ConnectionPlacement,
 	ConnectionRemoval,
@@ -10,6 +11,7 @@ import type {
 	ElementPlacement,
 	ElementRemoval,
 	PrimitiveContent,
+	RuntimeCameraFocus,
 	RuntimeConnectorState,
 	RuntimeConnectorStyle,
 	RuntimeElementState,
@@ -68,6 +70,7 @@ const VALID_CONNECTOR_SIDES: ReadonlySet<string> = new Set(["auto", "top", "righ
 const VALID_CONNECTOR_ROUTING_MODES: ReadonlySet<string> = new Set(["straight", "orthogonal", "manual"]);
 const VALID_CONNECTOR_ROUTING_PREFERENCES: ReadonlySet<string> = new Set(["direct", "fewest-bends", "shortest"]);
 const VALID_CONNECTOR_LANES: ReadonlySet<string> = new Set(["none", "center-dashed"]);
+const VALID_CAMERA_EASINGS: ReadonlySet<string> = new Set(["linear", "ease-in-out", "ease-out"]);
 
 const VALID_TEXT_ALIGN: ReadonlySet<string> = new Set(["start", "middle", "end"]);
 const VALID_TEXT_WEIGHT: ReadonlySet<string> = new Set(["normal", "bold"]);
@@ -92,6 +95,7 @@ export interface ResolvedSceneSnapshot {
 	progress: number;
 	elements: RuntimeElementState[];
 	connectors: RuntimeConnectorState[];
+	camera?: RuntimeCameraFocus;
 }
 
 interface ResolvedConnectorRecord {
@@ -831,6 +835,8 @@ function validateSceneObjectDeltas(document: SceneDocument, errors: ValidationEr
 		connectors.set(connection.id, normalizeConnectionPlacement(document, connection));
 	}
 
+	validateCamera(first.camera, first.id, elements, connectors, errors);
+
 	for (const scene of document.scenes.slice(1)) {
 		const updateIds = new Set<string>();
 		for (const update of scene.update?.elements ?? []) {
@@ -953,6 +959,8 @@ function validateSceneObjectDeltas(document: SceneDocument, errors: ValidationEr
 			}
 		}
 
+		validateCamera(scene.camera, scene.id, elementsForConnections, connectors, errors);
+
 		for (const update of scene.update?.elements ?? []) {
 			const existing = elements.get(update.id);
 			if (existing) {
@@ -991,6 +999,65 @@ function collectDocumentElementIds(document: SceneDocument): Set<string> {
 		for (const element of scene.add?.elements ?? []) ids.add(element.id);
 	}
 	return ids;
+}
+
+function validateCamera(
+	camera: CameraFocus | undefined,
+	sceneId: string,
+	elements: Map<string, ResolvedElementRecord>,
+	connectors: Map<string, ResolvedConnectorRecord>,
+	errors: ValidationError[],
+): void {
+	if (!camera) return;
+	const target = camera.target;
+	const hasElement = "element" in target && target.element !== undefined;
+	const hasArea = "area" in target && target.area !== undefined;
+	const hasReset = "reset" in target && target.reset !== undefined;
+	const targetCount = Number(hasElement) + Number(hasArea) + Number(hasReset);
+	if (targetCount !== 1) {
+		errors.push(issue("INVALID_CAMERA_TARGET", "Camera target must use exactly one target kind", { sceneId }));
+	}
+	if (hasElement) {
+		if (!isValidIdentifier(target.element)) {
+			errors.push(issue("INVALID_CAMERA_TARGET", "Camera element target must be kebab-case", { sceneId }));
+		} else if (connectors.has(target.element)) {
+			errors.push(issue("INVALID_CAMERA_TARGET", "Camera element target cannot reference a connector", { sceneId }));
+		} else if (!elements.has(target.element)) {
+			errors.push(
+				issue("CAMERA_TARGET_NOT_FOUND", `Camera target "${target.element}" was not found`, {
+					sceneId,
+					elementId: target.element,
+				}),
+			);
+		}
+	}
+	if (hasArea) {
+		if (!isValidPosition(target.area.at) || !isValidPositiveTuple(target.area.size)) {
+			errors.push(
+				issue("INVALID_CAMERA_OPTIONS", "Camera area must use non-negative at and positive size", { sceneId }),
+			);
+		}
+	}
+	if (hasReset && target.reset !== true) {
+		errors.push(issue("INVALID_CAMERA_TARGET", "Camera reset target must be true", { sceneId }));
+	}
+	if (camera.padding !== undefined) {
+		if (hasReset) {
+			errors.push(issue("INVALID_CAMERA_OPTIONS", "Camera reset must not define padding", { sceneId }));
+		}
+		if (!Number.isFinite(camera.padding) || camera.padding < 0 || camera.padding > 2048) {
+			errors.push(issue("INVALID_CAMERA_OPTIONS", "Camera padding is invalid", { sceneId }));
+		}
+	}
+	if (
+		camera.duration !== undefined &&
+		(!Number.isInteger(camera.duration) || camera.duration < 0 || camera.duration > 10000)
+	) {
+		errors.push(issue("INVALID_CAMERA_OPTIONS", "Camera duration is invalid", { sceneId }));
+	}
+	if (camera.easing !== undefined && !VALID_CAMERA_EASINGS.has(camera.easing)) {
+		errors.push(issue("INVALID_CAMERA_OPTIONS", "Camera easing is invalid", { sceneId }));
+	}
 }
 
 function validateEndpointRemovalRule(
@@ -1544,6 +1611,7 @@ export function resolveSceneSnapshots(document: SceneDocument): ResolvedSceneSna
 			progress: progress[index],
 			elements: snapshotElements,
 			connectors: snapshotConnectors,
+			...(scene.camera ? { camera: normalizeCamera(scene.camera) } : {}),
 		});
 
 		for (const removal of scene.remove?.connections ?? []) {
@@ -1555,6 +1623,26 @@ export function resolveSceneSnapshots(document: SceneDocument): ResolvedSceneSna
 	}
 
 	return snapshots;
+}
+
+function normalizeCamera(camera: CameraFocus): RuntimeCameraFocus {
+	const normalized: RuntimeCameraFocus =
+		"element" in camera.target && camera.target.element !== undefined
+			? {
+					target: { type: "element", id: camera.target.element },
+					padding: camera.padding ?? 32,
+				}
+			: "area" in camera.target && camera.target.area !== undefined
+				? {
+						target: { type: "area", at: camera.target.area.at, size: camera.target.area.size },
+						padding: camera.padding ?? 32,
+					}
+				: {
+						target: { type: "reset" },
+					};
+	if (camera.duration !== undefined) normalized.duration = camera.duration;
+	if (camera.easing !== undefined) normalized.easing = camera.easing;
+	return normalized;
 }
 
 export function deriveProgresses(scenes: SceneStep[]): number[] {

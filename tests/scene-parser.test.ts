@@ -138,6 +138,57 @@ scenes:
 		});
 	});
 
+	test('parses scene camera targets', () => {
+		const scene = parseScene(`
+header:
+  assets:
+    - id: gateway
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements:
+      - id: api-gateway
+        asset: gateway
+        at: [1, 1]
+    camera:
+      target:
+        area:
+          at: [0, 0]
+          size: [4, 3]
+  - id: focus-api
+    update:
+      elements:
+        - id: api-gateway
+          at: [2, 1]
+    camera:
+      target:
+        element: api-gateway
+      padding: 48
+      duration: 600
+      easing: ease-in-out
+  - id: overview
+    camera:
+      target:
+        reset: true
+      duration: 300
+`);
+
+		expect(scene.scenes[0].camera).toEqual({
+			target: { area: { at: [0, 0], size: [4, 3] } }
+		});
+		expect(scene.scenes[1].camera).toEqual({
+			target: { element: 'api-gateway' },
+			padding: 48,
+			duration: 600,
+			easing: 'ease-in-out'
+		});
+		expect(scene.scenes[2].camera).toEqual({
+			target: { reset: true },
+			duration: 300
+		});
+	});
+
 	test('rejects old top-level states and elements fields', () => {
 		expectParseErrorCode(
 			`

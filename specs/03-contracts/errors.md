@@ -79,6 +79,10 @@ Validation reports use the same `code` strings but return plain objects instead 
 | `INVALID_TEXT_STYLE` | A text style field has an invalid or unsafe value. | Use supported text style values. |
 | `UNKNOWN_ANIMATION` | Entry/exit animation is unknown. | Use a built-in value or `none`. |
 | `UNKNOWN_AMBIENT_ANIMATION` | Ambient name is unknown and no custom CSS is registered. | Define CSS or fix name. |
+| `INVALID_CAMERA_TARGET` | Scene camera target is missing, contains multiple target kinds, references a non-element id, uses invalid reset value, or has malformed shape. | Use exactly one valid `target.element`, `target.area`, or `target.reset: true`. |
+| `CAMERA_TARGET_NOT_FOUND` | Scene camera element target cannot be resolved in the relevant scene snapshot. | Fix the element id or move the camera to a scene where the element exists. |
+| `CAMERA_TARGET_NOT_VISIBLE` | Scene camera element target resolves to an element whose presence is `removed`. | Focus an element visible in that scene or use an explicit area target. |
+| `INVALID_CAMERA_OPTIONS` | Camera padding, duration, easing, or area dimensions are invalid, or padding is used with reset. | Use supported easing, finite non-negative padding for element/area targets, finite positive area size, and a bounded duration. |
 
 ### Compiler and Runtime Bundle
 
@@ -102,6 +106,11 @@ Validation reports use the same `code` strings but return plain objects instead 
 | `CONTROLLER_NO_SCENES` | Controller initialized with empty scene list. | Pass at least one scene. |
 | `CONTROLLER_SCENE_INDEX_OUT_OF_RANGE` | Scene index is invalid. | Use an existing index. |
 | `CONTROLLER_PROGRESS_OUT_OF_RANGE` | Strict progress API received value outside `[0, 1]`. | Clamp before calling or use clamping API. |
+| `CONTROLLER_DESTROYED` | Controller API called after `destroy()`. | Create and initialize a new controller. |
+| `CAMERA_NOT_INITIALIZED` | Controller camera API was called before init or without an SVG scene. | Initialize through `mountScene(..., { controller })` or pass `sceneElement` to `AnimationController.init()`. |
+| `CAMERA_TARGET_NOT_FOUND` | Runtime `zoomToElement()` cannot resolve the id. | Pass an existing element id. |
+| `CAMERA_TARGET_NOT_VISIBLE` | Runtime `zoomToElement()` targets a currently removed element. | Navigate to a scene where it is visible or zoom to an area. |
+| `INVALID_CAMERA_OPTIONS` | Runtime camera area or options are invalid. | Fix area, padding, duration, or easing. |
 
 ## Warning Codes
 

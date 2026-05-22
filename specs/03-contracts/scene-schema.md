@@ -141,6 +141,7 @@ interface SceneStep {
   add?: SceneAddDelta;
   update?: SceneUpdateDelta;
   remove?: SceneRemoveDelta;
+  camera?: CameraFocus;
 }
 
 interface SceneAddDelta {
@@ -168,10 +169,64 @@ Rules:
 - Scenes after the first may use `add`, `update`, and `remove`. They may not use top-level `elements` or `connections`.
 - `add`, `update`, and `remove` are operation sections. Each section may contain `elements` and/or `connections`.
 - A later scene omits unchanged elements and connections entirely; omitted objects retain their previously resolved properties.
+- `camera`, when present, declares the camera focus for that scene stop. It is
+  metadata, not a scene delta: it does not persist to later scene stops and it
+  does not change element or connector state.
 - Connections with `from.element` or `to.element` cannot outlive either endpoint
   element. If `remove.elements` removes an endpoint element, the same scene must
   also remove every still-present connection that references that element.
 - The compiler expands deltas into resolved snapshots for every scene before producing the runtime bundle.
+
+## Camera Focus
+
+Scene camera metadata directs the runtime controller to change the SVG viewBox
+when presentation navigation lands on a scene. It can also be used by tooling to
+preview the intended focus target.
+
+```ts
+interface CameraFocus {
+  target: CameraTarget;
+  padding?: number;
+  duration?: number;
+  easing?: 'linear' | 'ease-in-out' | 'ease-out';
+}
+
+type CameraTarget =
+  | { element: string }
+  | { area: CameraGridArea }
+  | { reset: true };
+
+interface CameraGridArea {
+  at: [number, number];
+  size: [number, number];
+}
+```
+
+Rules:
+
+- A scene may contain at most one `camera` object.
+- `camera.target` is required and must contain exactly one of `element`,
+  `area`, or `reset`.
+- `camera.target.element` must be a kebab-case element id that resolves to an
+  element whose presence in the same resolved scene snapshot is `present`,
+  `entering`, or `exiting`. It must not reference a connector id or an element
+  whose resolved presence is `removed`.
+- `camera.target.area.at` uses the same grid coordinate convention as element
+  `at`.
+- `camera.target.area.size` is `[columns, rows]` in grid cells and each value
+  must be positive.
+- Hand-authored camera area coordinates and sizes use whole grid cells.
+- `camera.target.reset` must be the boolean literal `true` and returns the
+  runtime camera to the compiled full scene viewBox.
+- `camera.padding` is SVG user units after projection; it defaults to `32`, and
+  must be finite, `>= 0`, and `<= 2048`.
+- `camera.padding` must be omitted when `camera.target.reset: true`; reset uses
+  the exact compiled full scene viewBox.
+- `camera.duration` is milliseconds; when omitted, runtime navigation uses the
+  active controller transition duration. When authored, it must be an integer
+  `>= 0` and `<= 10000`.
+- `camera.easing`, when omitted, uses the active controller transition easing.
+- Camera focus does not affect compiler-derived `progress` values.
 
 ## Element Placement And Delta Patches
 

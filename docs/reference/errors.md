@@ -52,4 +52,9 @@ Common fixes:
 | `CONNECTOR_ROUTE_BLOCKED` | Move objects, reduce clearance, use `avoid: none`, or author a manual route. |
 | `CONNECTOR_NOT_PRESENT` | Add the connector before updating or removing it. |
 | `CONNECTOR_ALREADY_PRESENT` | Update the connector instead of adding it again. |
+| `INVALID_CAMERA_TARGET` | Use exactly one camera target: an existing element, a valid grid area, or `reset: true`. |
+| `CAMERA_TARGET_NOT_FOUND` | Fix the element id or move the camera focus to a scene where the element exists. |
+| `CAMERA_TARGET_NOT_VISIBLE` | Focus an element visible in the active frame or use `zoomToArea()`. |
+| `INVALID_CAMERA_OPTIONS` | Use supported easing, finite non-negative padding for element/area targets, finite positive area size, and a bounded duration. Omit padding for reset. |
+| `CAMERA_NOT_INITIALIZED` | Initialize a controller with a scene SVG before calling camera methods. |
 | `TEXT_CONTENT_MISSING` | Recompile the bundle from validated YAML. |
