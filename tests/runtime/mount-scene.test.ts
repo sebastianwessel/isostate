@@ -44,6 +44,10 @@ describe('mountScene', () => {
 				bounds: 'union'
 			},
 			viewBox: { minX: 0, minY: 0, width: 216, height: 132 },
+			camera: {
+				viewBox: { minX: 0, minY: 0, width: 216, height: 132 },
+				isZoomed: false
+			},
 			theme: 'light',
 			themeVars: config.themeVars,
 			scenes: [

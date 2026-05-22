@@ -1,6 +1,6 @@
 # Public API
 
-isostate has two public entrypoints:
+isostate has three public entrypoints:
 
 | Entrypoint | Use In | Purpose |
 |---|---|---|
@@ -36,9 +36,30 @@ const mounted = mountScene(target, sceneBundle as RuntimeBundle, {
 ```
 
 Use `mounted.getResolvedConfig()` to inspect effective grid, floor, layout,
-theme, viewBox, scene stops, and layer order.
+theme, viewBox, camera state, scene stops, and layer order.
 
 Use `mounted.destroy()` when removing the host page or component.
+
+## Camera Focus
+
+When a mounted scene has a controller, applications can focus the SVG camera on
+an element or grid area:
+
+```ts
+mounted.controller?.zoomToElement('api-gateway', { padding: 48 });
+mounted.controller?.zoomToArea({ at: [1, 1], size: [3, 2] }, { duration: 400 });
+mounted.controller?.resetZoom();
+```
+
+Scene YAML may also declare `camera` metadata on scene stops. Presentation
+navigation applies that camera focus automatically when the destination scene
+has camera metadata. Scene stops without camera metadata leave the current
+camera viewBox unchanged. Use `camera.target.reset: true` in DSL to return to
+the compiled full scene view.
+
+Scroll-driven scenes use the same authored camera timeline: omitted camera stops
+inherit the previous camera focus, and scrolling backward interpolates the same
+viewBox path in reverse.
 
 ## Assets
 

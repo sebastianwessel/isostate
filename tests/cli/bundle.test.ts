@@ -123,7 +123,7 @@ describe('isostate bundle', () => {
 		expect(scene.assets?.text).toBeUndefined();
 		expect(scene.assets?.rectangle).toBeUndefined();
 		expect(manifest.format).toBe('isostate-static-bundle');
-		expect(manifest.version).toBe('0.1.2');
+		expect(manifest.version).toBe('0.2.0');
 		expect(manifest.runtime).toEqual({
 			mode: 'copy',
 			file: 'isostate.runtime.js'

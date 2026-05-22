@@ -28,6 +28,11 @@ RuntimeBundle
 mountScene(container, bundle)
 ```
 
+Scene camera focus follows the same boundary: authored YAML may declare
+`scenes[].camera`, dev-time tooling validates and normalizes it into the
+runtime bundle, and the browser controller applies it by changing the SVG
+`viewBox`. The browser runtime must not parse or validate authored camera YAML.
+
 ## Public Builder
 
 The high_level_api is `mountScene` for browser use and `parseScene` + `validateScene` + `compileScene` for build-time use. Low-level rendering and controller classes are low_level_escape_hatch surfaces for tests and advanced integrations.

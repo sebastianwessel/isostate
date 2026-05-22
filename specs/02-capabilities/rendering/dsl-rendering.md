@@ -12,6 +12,8 @@ The DSL is intentionally organized for authors:
 - `scenes` declares the timeline.
 - The first scene is a complete placement snapshot.
 - Every later scene is a delta from the previous scene.
+- Optional `scenes[].camera` declares presentation camera focus for that scene
+  stop.
 
 Per-element authored `keyframes` are not allowed in `.isostate.yaml`. The compiler owns any expansion into keyframes or snapshots needed by the runtime.
 
@@ -82,6 +84,10 @@ scenes:
       connections:
         - id: request-flow
           route: [[2, 3], [3, 3], [3, 2], [5, 2]]
+    camera:
+      target:
+        element: app-server
+      padding: 48
 
   - id: scaled
     add:
@@ -235,6 +241,53 @@ sections but remain separated by object kind.
 Connectors can be manual or routed. Manual connectors author `route` directly.
 Routed connectors author `from` and `to`; dev-time routing resolves the concrete
 route before the runtime bundle is emitted.
+
+## Camera Focus
+
+Camera focus is authored on scene stops and consumed by the runtime controller
+during presentation navigation. It changes only the SVG camera viewBox; it does
+not modify elements, connectors, layers, or progress.
+
+Element focus:
+
+```yaml
+camera:
+  target:
+    element: app-server
+  padding: 48
+  duration: 600
+  easing: ease-in-out
+```
+
+Area focus:
+
+```yaml
+camera:
+  target:
+    area:
+      at: [0, 0]
+      size: [6, 4]
+```
+
+Reset to the full compiled scene view:
+
+```yaml
+camera:
+  target:
+    reset: true
+  duration: 500
+  easing: ease-out
+```
+
+Rules:
+
+- Use exactly one target kind: `element`, `area`, or `reset`.
+- Element targets must be visible in the resolved scene stop.
+- Area targets use whole grid cells in hand-authored YAML.
+- Reset targets return to the compiled full scene viewBox and must not include
+  `padding`.
+- `padding` defaults to `32`; `duration` and `easing` default to controller
+  transition settings.
 
 Manual `route` points in hand-written YAML use whole grid coordinates. To attach
 to an element side midpoint, use `from`/`to`; the compiler resolves those ports

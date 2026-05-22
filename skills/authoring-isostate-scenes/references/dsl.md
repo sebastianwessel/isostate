@@ -33,6 +33,8 @@ Rules:
 - Scene progress is derived from order. Do not author `at`, `progress`, or timestamps.
 - First scene is the full initial placement snapshot.
 - Later scenes are deltas only.
+- Any scene may include optional `camera` metadata to focus presentation
+  navigation on one element or one grid area.
 
 ## Scene Deltas
 
@@ -89,6 +91,78 @@ Operation rules:
 - `remove.elements` and `remove.connections` remove present ids.
 - The same id cannot be both updated and removed for the same object kind in one scene.
 - Omitted objects persist unchanged from the previous resolved scene.
+
+## Camera Focus
+
+Use `camera` when a scene step should focus attention during presentation
+navigation. Camera metadata does not change scene geometry and does not persist
+to later scenes.
+
+Focus an element:
+
+```yaml
+- id: focus-api
+  update:
+    elements:
+      - id: api
+        ambient:
+          - name: pulse
+  camera:
+    target:
+      element: api
+    padding: 48
+    duration: 600
+    easing: ease-in-out
+```
+
+Focus a grid area:
+
+```yaml
+- id: overview
+  elements:
+    - id: api
+      asset: service
+      at: [2, 2]
+  camera:
+    target:
+      area:
+        at: [0, 0]
+        size: [5, 4]
+```
+
+Reset to the full compiled scene view:
+
+```yaml
+- id: zoom-out
+  update:
+    elements:
+      - id: api
+        ambient: []
+  camera:
+    target:
+      reset: true
+    duration: 500
+    easing: ease-out
+```
+
+Rules:
+
+- Use exactly one target kind: `target.element`, `target.area`, or
+  `target.reset`.
+- `target.element` must reference an element visible in the same resolved scene
+  stop.
+- `target.area.at` and `target.area.size` use grid cells.
+- `target.reset: true` returns to the compiled full scene view and must not use
+  `padding`.
+- `padding` defaults to `32` SVG user units.
+- `duration` defaults to the controller transition duration.
+- `easing` defaults to the controller transition easing and may be `linear`,
+  `ease-in-out`, or `ease-out`.
+- Scenes without `camera` inherit the previous camera focus. This lets a scene
+  zoom in, keep that focus across later scenes, and then zoom out with
+  `target.reset: true`.
+- Scroll playback interpolates camera viewBoxes between adjacent scene stops.
+  Scrolling backward uses the same path in reverse.
 
 ## Elements
 

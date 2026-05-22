@@ -73,6 +73,8 @@ The default renderer behavior is optimized for embedding in normal web layouts:
 - root SVG viewBox is tight to projected scene bounds plus configured padding
 - content is centered by default
 - unavoidable whitespace comes only from aspect-ratio mismatch between the viewBox and mount target
+- camera focus changes use the same SVG coordinate system as the initial
+  viewBox and must be applied by updating the root SVG `viewBox`
 
 The renderer must not hard-code a minimum `800×600` viewBox or use large fixed whitespace. A small scene should appear centered and usable in the container without page-specific CSS hacks.
 
@@ -94,6 +96,55 @@ Bounds include all element positions and sizes that can be visible in any compil
 Bounds also include every connector route point, expanded by the connector's
 maximum stroke width, outline width, and endpoint size. When route interpolation
 uses equal point counts, endpoints are sufficient for linear interpolation.
+
+## Camera Bounds Helpers
+
+The renderer owns the canonical helpers for camera bounds. Controller code must
+call these helpers instead of duplicating projection math.
+
+```ts
+interface ViewBoxRect {
+  minX: number;
+  minY: number;
+  width: number;
+  height: number;
+}
+
+function getResolvedViewBox(bundle: RuntimeBundle): ViewBoxRect;
+function getCurrentElementBounds(svg: SVGSVGElement, id: string): ViewBoxRect | undefined;
+function getGridAreaBounds(bundle: RuntimeBundle, area: CameraGridArea): ViewBoxRect;
+function applySceneViewBox(svg: SVGSVGElement, viewBox: ViewBoxRect): void;
+```
+
+Rules:
+
+- `getResolvedViewBox()` returns the full scene viewBox computed from layout.
+- `getCurrentElementBounds()` uses the element's current rendered frame state,
+  including interpolated `pos` and `size`, and returns `undefined` if the element
+  id is unknown or currently `removed`.
+- `getGridAreaBounds()` projects the four corners of `area` with the same
+  projection, selected bounds, and padding used by floor grid rendering.
+- `applySceneViewBox()` writes the root SVG `viewBox` attribute in
+  `minX minY width height` order and updates any internal camera state needed
+  for future animation starts.
+- Helper outputs use SVG user units, not CSS pixels.
+- Helper outputs must have `width >= 1` and `height >= 1`; collapsed targets are
+  expanded symmetrically around their center.
+- The helpers do not clamp target viewBoxes to the full scene viewBox.
+
+Element camera bounds use the same formula as content bounds:
+
+```text
+anchorRaw = projectRaw(pos.x + size, pos.y + size)
+screenX = anchorRaw.x - selectedBounds.minX + padding.x
+screenY = anchorRaw.y - selectedBounds.minY + padding.y
+visualSize = cellSize * size
+anchor = bundle.assets[element.asset].anchor ?? [0.5, 1]
+minX = screenX - visualSize * anchor.x
+minY = screenY - visualSize * anchor.y
+maxX = screenX + visualSize * (1 - anchor.x)
+maxY = screenY + visualSize * (1 - anchor.y)
+```
 
 ## Isometric Grid Projection
 

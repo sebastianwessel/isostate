@@ -178,6 +178,13 @@ scenes:
             fill: "#111111"
 
   - id: compute-tier
+    camera:
+      target:
+        area:
+          at: [7, 2]
+          size: [5, 5]
+      padding: 48
+      easing: ease-in-out
     add:
       elements:
         - id: load-balancer
@@ -245,6 +252,11 @@ scenes:
           ambient:
             - name: flow
   - id: data-services
+    camera:
+      target:
+        reset: true
+      duration: 500
+      easing: ease-out
     add:
       elements:
         - id: database

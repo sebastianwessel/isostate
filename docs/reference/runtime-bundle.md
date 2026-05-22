@@ -82,6 +82,42 @@ Connectors keep generated geometry inputs on the connector snapshot:
 }
 ```
 
+Scene stops may include camera focus metadata:
+
+```json
+{
+	"id": "focus-api",
+	"progress": 0.5,
+	"elements": [],
+	"connectors": [],
+	"camera": {
+		"target": { "type": "element", "id": "api-gateway" },
+		"padding": 32,
+		"duration": 600,
+		"easing": "ease-in-out"
+	}
+}
+```
+
+Camera metadata is non-persistent. If a scene stop omits `camera`, navigating to
+that stop leaves the current runtime camera viewBox unchanged. A reset target
+returns to the compiled full scene viewBox:
+
+```json
+{
+	"camera": {
+		"target": { "type": "reset" },
+		"duration": 500
+	}
+}
+```
+
+At runtime the controller builds an effective camera timeline by inheriting the
+previous camera target across scene stops that omit `camera`, starting from an
+implicit full-scene reset. Scroll and direct progress updates interpolate
+between adjacent effective camera viewBoxes, so backward playback follows the
+same path in reverse.
+
 ## Digest
 
 `_digest` is a SHA-256 digest over canonical bundle content excluding

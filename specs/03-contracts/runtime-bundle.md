@@ -29,7 +29,22 @@ interface RuntimeSceneStop {
   progress: number;
   elements: RuntimeElementState[];
   connectors: RuntimeConnectorState[];
+  camera?: RuntimeCameraFocus;
 }
+
+interface RuntimeCameraFocus {
+  target: RuntimeCameraTarget;
+  padding?: number;
+  duration?: number;
+  easing?: CameraEasing;
+}
+
+type RuntimeCameraTarget =
+  | { type: 'element'; id: string }
+  | { type: 'area'; at: [number, number]; size: [number, number] }
+  | { type: 'reset' };
+
+type CameraEasing = 'linear' | 'ease-in-out' | 'ease-out';
 
 interface RuntimeElementState {
   id: string;
@@ -89,6 +104,10 @@ Runtime bundles use `scenes` as the only compiled timeline. Compatibility fields
 array. Connector style values are fully defaulted by the compiler so the browser
 runtime does not need authored-style fallback logic.
 
+`camera` is optional on each runtime scene stop. It is non-persistent metadata:
+omitting `camera` from a scene stop means navigation to that stop leaves the
+current runtime camera viewBox unchanged.
+
 ## Identity and Digest
 
 | Field | Rule |
@@ -105,6 +124,8 @@ Canonicalization rules:
 - Runtime connectors preserve resolved declaration/addition order. The renderer
   may sort connector DOM groups only by fixed render bucket, never by route
   length.
+- Optional scene camera metadata preserves authored scene order and participates
+  in canonical digest generation with lexicographically sorted object keys.
 - Asset URL strings are preserved exactly after compiler URL resolution.
 
 ## Compatibility
@@ -168,6 +189,89 @@ Missing asset behavior:
 | runtime load without emitted URL | `ASSET_NOT_FOUND` |
 | runtime load with unsafe URL scheme | `INVALID_ASSET_URL` |
 
+## Camera Compilation
+
+The compiler emits normalized camera metadata on each runtime scene stop that
+authored `scenes[].camera`.
+
+Authored element focus:
+
+```yaml
+camera:
+  target:
+    element: api
+  padding: 32
+```
+
+Runtime output:
+
+```json
+{
+  "camera": {
+    "target": { "type": "element", "id": "api" },
+    "padding": 32
+  }
+}
+```
+
+Authored area focus:
+
+```yaml
+camera:
+  target:
+    area:
+      at: [1, 1]
+      size: [3, 2]
+  duration: 450
+  easing: ease-out
+```
+
+Runtime output:
+
+```json
+{
+  "camera": {
+    "target": { "type": "area", "at": [1, 1], "size": [3, 2] },
+    "padding": 32,
+    "duration": 450,
+    "easing": "ease-out"
+  }
+}
+```
+
+Authored reset focus:
+
+```yaml
+camera:
+  target:
+    reset: true
+  duration: 500
+```
+
+Runtime output:
+
+```json
+{
+  "camera": {
+    "target": { "type": "reset" },
+    "duration": 500
+  }
+}
+```
+
+Rules:
+
+- `padding` is emitted with the authored value or default `32` for element and
+  area targets.
+- `padding` is omitted for reset targets.
+- `duration` and `easing` are emitted only when authored.
+- Runtime camera targets remain in element/grid terms. They must not contain
+  preprojected pixel values, DOM selectors, functions, or style hooks.
+- Browser runtime resolves camera target bounds with the same projection and
+  layout math used by rendering.
+- Reset targets resolve to the compiled full scene viewBox used by
+  `resetZoom()`.
+
 ## Serialization
 
 JS module output:
@@ -181,7 +285,7 @@ JSON output:
 ```json
 {
   "_format": "isostate-runtime-bundle",
-  "_version": "0.1.2",
+  "_version": "0.2.0",
   "_digest": "...",
   "grid": { "cellSize": 64 },
   "floor": { "size": [5, 4], "origin": [0, 0], "visible": true, "layer": "ground" },
@@ -207,7 +311,11 @@ JSON output:
           "presence": "present"
         }
       ],
-      "connectors": []
+      "connectors": [],
+      "camera": {
+        "target": { "type": "element", "id": "app-server" },
+        "padding": 32
+      }
     }
   ]
 }

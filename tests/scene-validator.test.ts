@@ -443,6 +443,69 @@ scenes:
 		expectErrorCode(invalidAmbientIterations, 'INVALID_AMBIENT_ITERATIONS');
 	});
 
+	test('validates and resolves camera metadata', () => {
+		const document = validDocument();
+		document.scenes[0].camera = {
+			target: { area: { at: [0, 0], size: [5, 4] } }
+		};
+		document.scenes[1].camera = {
+			target: { element: 'tree-1' },
+			padding: 48,
+			duration: 600,
+			easing: 'ease-in-out'
+		};
+		document.scenes[2].camera = {
+			target: { reset: true },
+			duration: 300,
+			easing: 'ease-out'
+		};
+
+		const report = validateScene(document);
+		const snapshots = resolveSceneSnapshots(document);
+
+		expect(report.isValid).toBe(true);
+		expect(snapshots[0].camera).toEqual({
+			target: { type: 'area', at: [0, 0], size: [5, 4] },
+			padding: 32
+		});
+		expect(snapshots[1].camera).toEqual({
+			target: { type: 'element', id: 'tree-1' },
+			padding: 48,
+			duration: 600,
+			easing: 'ease-in-out'
+		});
+		expect(snapshots[2].camera).toEqual({
+			target: { type: 'reset' },
+			duration: 300,
+			easing: 'ease-out'
+		});
+	});
+
+	test('rejects invalid camera metadata', () => {
+		const missing = validDocument();
+		missing.scenes[1].camera = { target: { element: 'missing' } };
+		expectErrorCode(missing, 'CAMERA_TARGET_NOT_FOUND');
+
+		const badArea = validDocument();
+		badArea.scenes[1].camera = {
+			target: { area: { at: [0, 0], size: [0, 1] } }
+		};
+		expectErrorCode(badArea, 'INVALID_CAMERA_OPTIONS');
+
+		const badReset = validDocument();
+		badReset.scenes[1].camera = {
+			target: { reset: true },
+			padding: 12
+		};
+		expectErrorCode(badReset, 'INVALID_CAMERA_OPTIONS');
+
+		const badTarget = validDocument();
+		badTarget.scenes[1].camera = {
+			target: { element: 'office-1', reset: true } as never
+		};
+		expectErrorCode(badTarget, 'INVALID_CAMERA_TARGET');
+	});
+
 	test('validates built-in text elements without requiring external assets', () => {
 		const document = parseScene(`
 header:

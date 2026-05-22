@@ -3,6 +3,7 @@ import { ParseError } from "../types/errors.ts";
 import type {
 	AmbientAnimation,
 	AssetCatalogEntry,
+	CameraFocus,
 	ConnectionPatch,
 	ConnectionPlacement,
 	ConnectionRemoval,
@@ -590,10 +591,48 @@ function parseConnectionRemoval(raw: unknown, context: string): ConnectionRemova
 	return parsed;
 }
 
+function parseCamera(raw: unknown, context: string): CameraFocus {
+	const camera = requireObject(raw, context);
+	assertKnownFields(camera, new Set(["target", "padding", "duration", "easing"]), context);
+	const target = requireObject(camera.target, `${context}.target`);
+	assertKnownFields(target, new Set(["element", "area", "reset"]), `${context}.target`);
+	const parsed: CameraFocus = { target: {} as CameraFocus["target"] };
+	if (target.element !== undefined) {
+		parsed.target = { element: requireIdentifier(target.element, `${context}.target.element`) };
+	}
+	if (target.area !== undefined) {
+		const area = requireObject(target.area, `${context}.target.area`);
+		assertKnownFields(area, new Set(["at", "size"]), `${context}.target.area`);
+		parsed.target = {
+			area: {
+				at: parseTuple2(area.at, `${context}.target.area.at`),
+				size: parseTuple2(area.size, `${context}.target.area.size`),
+			},
+		};
+	}
+	if (target.reset !== undefined) {
+		parsed.target = { reset: requireBoolean(target.reset, `${context}.target.reset`) as true };
+	}
+	if (camera.padding !== undefined) {
+		parsed.padding = requireNumber(camera.padding, `${context}.padding`);
+	}
+	if (camera.duration !== undefined) {
+		parsed.duration = requireNumber(camera.duration, `${context}.duration`);
+	}
+	if (camera.easing !== undefined) {
+		parsed.easing = requireString(camera.easing, `${context}.easing`) as never;
+	}
+	return parsed;
+}
+
 function parseScenes(raw: unknown): SceneStep[] {
 	return requireArray(raw, "scenes").map((item, index) => {
 		const scene = requireObject(item, `scenes[${index}]`);
-		assertKnownFields(scene, new Set(["id", "elements", "connections", "add", "update", "remove"]), `scenes[${index}]`);
+		assertKnownFields(
+			scene,
+			new Set(["id", "elements", "connections", "add", "update", "remove", "camera"]),
+			`scenes[${index}]`,
+		);
 		const parsed: SceneStep = {
 			id: requireIdentifier(scene.id, `scenes[${index}].id`),
 		};
@@ -654,6 +693,9 @@ function parseScenes(raw: unknown): SceneStep[] {
 						parseConnectionRemoval(removal, `scenes[${index}].remove.connections[${removalIndex}]`),
 				);
 			}
+		}
+		if (scene.camera !== undefined) {
+			parsed.camera = parseCamera(scene.camera, `scenes[${index}].camera`);
 		}
 		return parsed;
 	});

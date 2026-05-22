@@ -7,7 +7,7 @@ import { RenderError } from "../types/errors.ts";
 import type { CompiledFloor, CompiledLayout, RuntimeBundle } from "../types/runtime-bundle.ts";
 
 const RUNTIME_BUNDLE_FORMAT = "isostate-runtime-bundle";
-const RUNTIME_VERSION = "0.1.2";
+const RUNTIME_VERSION = "0.2.0";
 const HEX_DIGEST_PATTERN = /^[a-f0-9]{64}$/;
 
 export interface MountSceneOptions {
@@ -25,6 +25,7 @@ export interface ResolvedRuntimeConfig {
 	floor: CompiledFloor;
 	layout: CompiledLayout;
 	viewBox: { minX: number; minY: number; width: number; height: number };
+	camera: { viewBox: { minX: number; minY: number; width: number; height: number }; isZoomed: boolean };
 	theme: string;
 	themeVars: Record<string, string>;
 	scenes: Array<{ id: string; progress: number }>;
@@ -153,6 +154,10 @@ function getResolvedConfig(bundle: RuntimeBundle, options: MountSceneOptions = {
 			align: [...bundle.layout.align],
 		},
 		viewBox: getResolvedViewBox(bundle),
+		camera: {
+			viewBox: getResolvedViewBox(bundle),
+			isZoomed: false,
+		},
 		theme: bundle.theme,
 		themeVars: getResolvedThemeVars(bundle, options.themeVars),
 		scenes: bundle.scenes.map((scene) => ({

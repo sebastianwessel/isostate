@@ -24,8 +24,11 @@ The controller sits between external triggers and the animation engine:
 
 The controller:
 - Maintains the current `progress` (0–1) and `currentScene` index.
+- Maintains the current camera viewBox for zoom/focus operations.
 - Accepts passive state updates from any trigger source.
 - Interpolates between scene states based on scroll progress.
+- Applies scene camera focus during presentation navigation when a destination
+  scene carries `camera` metadata.
 - Emits state change events for debugging and integration.
 
 The animation engine:
@@ -57,6 +60,18 @@ interface AnimationController {
 
   /** Set scene index directly */
   setSceneIndex(index: number): void;
+
+  /** Focus the camera on the current frame bounds of one element */
+  zoomToElement(id: string, options?: CameraZoomOptions): void;
+
+  /** Focus the camera on a grid-area rectangle */
+  zoomToArea(area: CameraGridArea, options?: CameraZoomOptions): void;
+
+  /** Restore the camera to the full scene viewBox */
+  resetZoom(options?: CameraZoomOptions): void;
+
+  /** Inspect current camera state */
+  getCameraState(): CameraState;
 
   /** Pause all animations (freezes current frame) */
   pause(): void;
@@ -104,6 +119,29 @@ interface ControllerConfig {
   /** Easing for next/prev scene transitions */
   transitionEasing?: 'linear' | 'ease-in-out' | 'ease-out';
 }
+
+interface CameraZoomOptions {
+  /** SVG user-unit padding around the target; default: 32 */
+  padding?: number;
+  /** Transition duration in ms; default: ControllerConfig.transitionDuration */
+  duration?: number;
+  /** Transition easing; default: ControllerConfig.transitionEasing */
+  easing?: 'linear' | 'ease-in-out' | 'ease-out';
+}
+
+interface CameraGridArea {
+  at: [number, number];
+  size: [number, number];
+}
+
+interface CameraState {
+  viewBox: { minX: number; minY: number; width: number; height: number };
+  target?:
+    | { type: 'element'; id: string }
+    | { type: 'area'; at: [number, number]; size: [number, number] }
+    | { type: 'reset' };
+  isZoomed: boolean;
+}
 ```
 
 ## Scroll Integration
@@ -137,6 +175,84 @@ When navigating scenes (not via scroll), the controller can animate the progress
 
 If `transitionDuration` is `0`, the transition is instant.
 
+### Scene Camera
+
+The controller resolves camera from progress for scroll, direct `setProgress()`,
+and presentation navigation. Every scene stop has an effective camera: authored
+`camera` replaces the current camera, omitted `camera` inherits the previous
+effective camera, and the implicit initial camera is full-scene reset.
+
+For progress between adjacent scene stops, the controller interpolates the
+previous and next effective camera viewBoxes. This interpolation is symmetric:
+scrolling upward or playing backward through the same progress range must
+produce the same camera path in reverse.
+
+If the next scene stop authored `camera.easing`, that easing applies to the
+segment ending at that stop. Otherwise scroll and direct `setProgress()` camera
+interpolation is linear. Authored `camera.duration` is ignored during scroll and
+direct `setProgress()` because progress is controlled externally.
+
+Presentation navigation derives camera viewBox from each animated progress frame
+so forward/backward buttons follow the same path as scroll. Authored
+`camera.duration` may override camera timing only for a destination stop that
+authored camera metadata; any scroll event, `setProgress()` call, or opposite
+navigation command cancels that standalone timing and rejoins the
+progress-derived camera timeline.
+
+If the destination scene has no `camera`, scene navigation does not reset or
+change the current effective camera target. This rule is intentional so authors
+can keep focus across multiple scene stops. To return to the full scene from
+authored DSL, use `camera.target.reset: true`; to return from application code,
+call `resetZoom()`.
+
+## Camera / Zoom
+
+Camera focus is implemented only by changing the root SVG `viewBox`.
+Implementations must not scale per-element groups, change scene progress, or
+rebuild the SVG DOM to zoom.
+
+`zoomToElement(id, options)`:
+
+- resolves `id` against the current rendered frame;
+- throws `CAMERA_TARGET_NOT_FOUND` when the id is unknown;
+- throws `CAMERA_TARGET_NOT_VISIBLE` when the current frame marks the element as
+  `removed`;
+- focuses the element canvas bounds computed from `pos`, `size`, and asset
+  `anchor`.
+
+`zoomToArea(area, options)`:
+
+- validates `area.at` as finite non-negative grid coordinates;
+- validates `area.size` as finite positive grid-cell dimensions;
+- focuses the projected bounds of the four grid-area corners.
+
+`resetZoom(options)` restores the full scene viewBox from the bundle layout.
+All camera operations cancel any in-flight camera animation and start from the
+current SVG viewBox. `duration: 0` applies synchronously.
+
+Compiled scene camera metadata with `target: { type: 'reset' }` must call the
+same internal path as `resetZoom()` and must ignore target padding because reset
+uses the exact full scene viewBox.
+
+Direct camera API calls are temporary camera overrides outside the authored
+timeline. The next scroll event, `setProgress()`, `nextScene()`, `prevScene()`,
+or `setSceneIndex()` call must cancel the override and apply the
+progress-derived effective camera for the resulting progress.
+
+Camera option defaults:
+
+| Option | Default |
+|---|---|
+| `padding` | `32` |
+| `duration` | `ControllerConfig.transitionDuration` |
+| `easing` | `ControllerConfig.transitionEasing` |
+
+Camera option validation:
+
+- `padding`: finite number `>= 0` and `<= 2048`
+- `duration`: finite integer ms `>= 0` and `<= 10000`
+- `easing`: `linear`, `ease-in-out`, or `ease-out`
+
 ## Pause / Resume
 
 ### pause()
@@ -168,6 +284,9 @@ interface ControllerEvents {
 
   /** Fired when controller is resumed */
   'resumed': () => void;
+
+  /** Fired when camera viewBox changes */
+  'camera-change': (state: CameraState) => void;
 }
 ```
 
@@ -237,5 +356,13 @@ The controller throws:
 - **`ControllerError`** with `CONTROLLER_SCENE_INDEX_OUT_OF_RANGE` when scene index is out of bounds for `setSceneIndex()`.
 - **`ControllerError`** with `CONTROLLER_NO_SCENES` when `init()` is called without any scenes defined.
 - **`ControllerError`** with `CONTROLLER_DESTROYED` when methods are called after `destroy()`.
+- **`ControllerError`** with `CAMERA_NOT_INITIALIZED` when zoom methods are
+  called before `init()` or without a scene SVG.
+- **`ControllerError`** with `CAMERA_TARGET_NOT_FOUND` when `zoomToElement()`
+  references an unknown element id.
+- **`ControllerError`** with `CAMERA_TARGET_NOT_VISIBLE` when
+  `zoomToElement()` references a currently removed element.
+- **`ControllerError`** with `INVALID_CAMERA_OPTIONS` when runtime camera
+  options or grid area values are invalid.
 
 `setProgress()` clamps finite numbers to [0.0, 1.0]. Non-finite values throw `CONTROLLER_PROGRESS_OUT_OF_RANGE`.

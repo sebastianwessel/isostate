@@ -55,17 +55,6 @@ export default defineConfig([
 		plugins: [nodeResolve({ extensions: ['.ts', '.js'] }), typescriptPlugin()]
 	},
 	{
-		input: 'packages/core/src/index.ts',
-		output: {
-			file: 'packages/core/dist/browser/isostate.runtime.js',
-			format: 'es',
-			sourcemap: true
-		},
-		// yaml is dev-time only and must stay out of runtime browser bundles.
-		external: ['yaml'],
-		plugins: [nodeResolve({ extensions: ['.ts', '.js'] }), typescriptPlugin()]
-	},
-	{
 		input: 'packages/cli/src/bin.ts',
 		output: {
 			file: 'packages/cli/dist/bin.js',
