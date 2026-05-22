@@ -48,6 +48,10 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not stretch SVG arrow assets for flows. Use `connections`.
 - Do not declare built-in generated assets in `header.assets`: `text`,
   `rectangle`, `circle`, `polygon`, or `line`.
+- For `asset: text`, always include the `text.value` field on placements. Empty
+  `value: ""` is allowed only when an invisible or deferred label is
+  intentional; otherwise write visible text. Treat `EMPTY_TEXT_CONTENT` as a
+  warning to review, not as a blocker.
 - Do not use fractional `size` values in authored YAML. New placements require
   positive whole-cell `size` values; `update.elements[].size: 0` is allowed only
   to scale an existing element to zero. Do not enlarge imported composite SVGs

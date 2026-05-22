@@ -246,6 +246,7 @@ Common validation failures:
 | `ASSET_URL_REQUIRED` | Add `assetBaseUrl` or fix the asset `path`. |
 | `ASSET_NOT_FOUND` | Recompile so every external asset has a URL entry. |
 | `TEXT_CONTENT_REQUIRED` | Add `text.value` to an `asset: text` element. |
+| `EMPTY_TEXT_CONTENT` | Empty text is allowed but invisible; keep it only when intentional. |
 | `INVALID_TEXT_STYLE` | Use supported text style values. |
 | `INVALID_CONNECTOR_ROUTE` | Provide at least two valid route points. |
 | `INVALID_CONNECTOR_STYLE` | Use supported connector style values. |

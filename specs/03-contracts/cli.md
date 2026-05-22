@@ -35,7 +35,8 @@ Behavior:
 - reads one `.isostate.yaml` input file;
 - parses and validates it through `@sebastianwessel/isostate/dsl`;
 - prints a compact success summary for valid input;
-- prints validation errors and warnings with stable error codes;
+- prints validation errors and warnings with stable error codes and available
+  context such as `scene=...`, `element=...`, `field=...`, and `value=...`;
 - exits `0` when validation has no errors;
 - exits `1` when parsing, validation, or file access fails.
 

@@ -6,6 +6,13 @@ export interface StructuredError extends Error {
 interface ValidationIssue {
 	code: string;
 	message: string;
+	sceneId?: string;
+	elementId?: string;
+	connectionId?: string;
+	assetName?: string;
+	layerName?: string;
+	field?: string;
+	value?: unknown;
 	location?: {
 		file?: string;
 		line?: number;
@@ -35,7 +42,30 @@ export function formatThrownError(error: unknown): string {
 
 function formatIssue(level: 'ERROR' | 'WARN', issue: ValidationIssue): string {
 	const location = issue.location ? ` ${formatLocation(issue.location)}` : '';
-	return `${level} ${issue.code}${location} ${issue.message}`;
+	const context = formatIssueContext(issue);
+	return `${level} ${issue.code}${location}${context} ${issue.message}`;
+}
+
+function formatIssueContext(issue: ValidationIssue): string {
+	const parts = [
+		['scene', issue.sceneId],
+		['element', issue.elementId],
+		['connection', issue.connectionId],
+		['asset', issue.assetName],
+		['layer', issue.layerName],
+		['field', issue.field],
+		['value', issue.value === undefined ? undefined : formatValue(issue.value)]
+	].flatMap(([name, value]) =>
+		value === undefined ? [] : [`${name}=${value}`]
+	);
+
+	return parts.length === 0 ? '' : ` ${parts.join(' ')}`;
+}
+
+function formatValue(value: unknown): string {
+	const formatted = JSON.stringify(value);
+	if (formatted === undefined) return String(value);
+	return formatted.length > 80 ? `${formatted.slice(0, 77)}...` : formatted;
 }
 
 function formatLocation(location: NonNullable<ValidationIssue['location']>) {

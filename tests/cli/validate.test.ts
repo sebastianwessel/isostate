@@ -59,6 +59,41 @@ describe('isostate validate', () => {
 		expect(result.stdout).toBe('');
 	});
 
+	test('prints scene object field and value context for validation findings', async () => {
+		const dir = await makeTempDir();
+		const input = join(dir, 'scene.isostate.yaml');
+		await writeFile(
+			input,
+			`header:
+  assets: []
+  layers:
+    - name: labels
+scenes:
+  - id: initial
+    elements:
+      - id: title
+        asset: text
+        at: [0, 0]
+        layer: labels
+        text:
+          value: ""
+          fontSize: 0
+`,
+			'utf8'
+		);
+
+		const result = await runCli(['validate', input]);
+
+		expect(result.exitCode).toBe(1);
+		expect(result.stderr).toContain(
+			'WARN EMPTY_TEXT_CONTENT scene=initial element=title field=text.value value=""'
+		);
+		expect(result.stderr).toContain(
+			'ERROR INVALID_TEXT_STYLE scene=initial element=title field=text.fontSize value=0'
+		);
+		expect(result.stdout).toBe('');
+	});
+
 	test('exits 1 when input is missing', async () => {
 		const result = await runCli(['validate']);
 

@@ -477,7 +477,10 @@ Authoring rules:
   nested text fields keep their previous resolved values.
 - A non-text asset must not include `text`.
 - `text.value` may be a YAML quoted string with `\n` escapes or a YAML block scalar. The parser preserves line breaks; the runtime normalizes `\r\n` and `\r` to `\n`.
-- `text.value` must be non-empty, contain at least one non-whitespace line, be at most `1000` characters, and be at most `20` lines.
+- `text.value` is required for placements. Empty or whitespace-only values are
+  allowed and emit `EMPTY_TEXT_CONTENT`; this supports intentionally hidden or
+  deferred labels. Values longer than `1000` characters or `20` lines emit
+  `INVALID_TEXT_CONTENT`.
 - `text.align` defaults to `middle`; valid values are `start`, `middle`, and `end`.
 - `text.fontSize` defaults to `12` and must be a positive finite number.
 - `text.fontWeight` defaults to `700`; valid values are `normal`, `bold`, or a positive finite number.

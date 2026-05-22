@@ -352,16 +352,19 @@ function validatePlacement(
 	placement: ElementPlacement,
 	document: SceneDocument,
 	errors: ValidationError[],
+	warnings: ValidationWarning[],
 	sceneId: string,
 ): void {
 	validateElementCommon(placement, document, errors, sceneId);
-	validateGeneratedContentForAsset(placement, placement.asset, errors, sceneId);
+	validateGeneratedContentForAsset(placement, placement.asset, errors, warnings, sceneId);
 	if (!isBuiltInAsset(placement.asset) && !declaredAssetNames(document).has(placement.asset)) {
 		errors.push(
 			issue("ASSET_NOT_DECLARED", `Asset "${placement.asset}" is not declared`, {
 				sceneId,
 				elementId: placement.id,
 				assetName: placement.asset,
+				field: "asset",
+				value: placement.asset,
 			}),
 		);
 	}
@@ -370,6 +373,8 @@ function validatePlacement(
 			issue("INVALID_POSITION", "Element at must be finite and non-negative", {
 				sceneId,
 				elementId: placement.id,
+				field: "at",
+				value: placement.at,
 			}),
 		);
 	}
@@ -379,18 +384,21 @@ function validatePatch(
 	patch: ElementPatch,
 	document: SceneDocument,
 	errors: ValidationError[],
+	warnings: ValidationWarning[],
 	sceneId: string,
 	currentAsset?: string,
 ): void {
 	validateElementCommon(patch, document, errors, sceneId, true);
 	if (currentAsset !== undefined) {
-		validateGeneratedContentForAsset(patch, currentAsset, errors, sceneId, true);
+		validateGeneratedContentForAsset(patch, currentAsset, errors, warnings, sceneId, true);
 	}
 	if (patch.at !== undefined && !isValidPosition(patch.at)) {
 		errors.push(
 			issue("INVALID_POSITION", "Element at must be finite and non-negative", {
 				sceneId,
 				elementId: patch.id,
+				field: "at",
+				value: patch.at,
 			}),
 		);
 	}
@@ -420,6 +428,8 @@ function validateElementCommon(
 				{
 					sceneId,
 					elementId: element.id,
+					field: "size",
+					value: element.size,
 				},
 			),
 		);
@@ -429,6 +439,8 @@ function validateElementCommon(
 			issue("INVALID_SIZE", "Element size must be a whole grid cell count", {
 				sceneId,
 				elementId: element.id,
+				field: "size",
+				value: element.size,
 			}),
 		);
 	}
@@ -438,6 +450,8 @@ function validateElementCommon(
 				sceneId,
 				elementId: element.id,
 				layerName: element.layer,
+				field: "layer",
+				value: element.layer,
 			}),
 		);
 	}
@@ -446,6 +460,8 @@ function validateElementCommon(
 			issue("UNKNOWN_ANIMATION", `Unknown entry animation "${element.enter}"`, {
 				sceneId,
 				elementId: element.id,
+				field: "enter",
+				value: element.enter,
 			}),
 		);
 	}
@@ -454,6 +470,8 @@ function validateElementCommon(
 			issue("UNKNOWN_ANIMATION", `Unknown exit animation "${element.exit}"`, {
 				sceneId,
 				elementId: element.id,
+				field: "exit",
+				value: element.exit,
 			}),
 		);
 	}
@@ -464,12 +482,13 @@ function validateGeneratedContentForAsset(
 	element: ElementPlacement | ElementPatch,
 	assetId: string,
 	errors: ValidationError[],
+	warnings: ValidationWarning[],
 	sceneId: string,
 	allowSparse = false,
 ): void {
 	if (isBuiltInAsset(assetId)) {
 		if (assetId === BUILT_IN_TEXT_ASSET_ID) {
-			validateTextForAsset(element, errors, sceneId, allowSparse);
+			validateTextForAsset(element, errors, warnings, sceneId, allowSparse);
 			return;
 		}
 		validatePrimitiveForAsset(element, assetId, errors, sceneId, allowSparse);
@@ -482,6 +501,7 @@ function validateGeneratedContentForAsset(
 				sceneId,
 				elementId: element.id,
 				assetName: assetId,
+				field: "text",
 			}),
 		);
 	}
@@ -491,6 +511,7 @@ function validateGeneratedContentForAsset(
 				sceneId,
 				elementId: element.id,
 				assetName: assetId,
+				field: "primitive",
 			}),
 		);
 	}
@@ -499,13 +520,18 @@ function validateGeneratedContentForAsset(
 function validateTextForAsset(
 	element: ElementPlacement | ElementPatch,
 	errors: ValidationError[],
+	warnings: ValidationWarning[],
 	sceneId: string,
 	allowSparse: boolean,
 ): void {
 	if (!element.text) {
 		if (allowSparse) return;
 		errors.push(
-			issue("TEXT_CONTENT_REQUIRED", "Built-in text elements require text content", { sceneId, elementId: element.id }),
+			issue("TEXT_CONTENT_REQUIRED", "Built-in text elements require text content", {
+				sceneId,
+				elementId: element.id,
+				field: "text",
+			}),
 		);
 		return;
 	}
@@ -514,10 +540,11 @@ function validateTextForAsset(
 			issue("PRIMITIVE_CONTENT_FOR_TEXT_ASSET", "Built-in text elements may not define primitive content", {
 				sceneId,
 				elementId: element.id,
+				field: "primitive",
 			}),
 		);
 	}
-	validateTextContent(element.text as TextContent, errors, sceneId, element.id, allowSparse);
+	validateTextContent(element.text as TextContent, errors, warnings, sceneId, element.id, allowSparse);
 }
 
 function validatePrimitiveForAsset(
@@ -533,6 +560,7 @@ function validatePrimitiveForAsset(
 			issue("TEXT_CONTENT_FOR_PRIMITIVE_ASSET", "Primitive elements may not define text content", {
 				sceneId,
 				elementId: element.id,
+				field: "text",
 			}),
 		);
 	}
@@ -544,6 +572,7 @@ function validatePrimitiveForAsset(
 				sceneId,
 				elementId: element.id,
 				assetName: assetId,
+				field: "primitive",
 			}),
 		);
 		return;
@@ -558,13 +587,15 @@ function validatePrimitiveForAsset(
 				sceneId,
 				elementId: element.id,
 				assetName: assetId,
+				field: "primitive",
+				value: activeKeys,
 			}),
 		);
 		return;
 	}
 
 	const payload = primitive[assetId as keyof PrimitiveContent];
-	validatePrimitiveStyle(payload, errors, sceneId, element.id);
+	validatePrimitiveStyle(payload, errors, sceneId, element.id, `primitive.${assetId}`);
 	if (assetId === "rectangle") {
 		const rx = primitive.rectangle?.rx;
 		if (rx !== undefined && (!Number.isFinite(rx) || rx < 0 || rx > 0.5)) {
@@ -572,6 +603,8 @@ function validatePrimitiveForAsset(
 				issue("INVALID_PRIMITIVE_STYLE", "Rectangle rx must be from 0 to 0.5", {
 					sceneId,
 					elementId: element.id,
+					field: "primitive.rectangle.rx",
+					value: rx,
 				}),
 			);
 		}
@@ -588,6 +621,8 @@ function validatePrimitiveForAsset(
 				issue("INVALID_PRIMITIVE_STYLE", "Line cap is invalid", {
 					sceneId,
 					elementId: element.id,
+					field: "primitive.line.lineCap",
+					value: primitive.line.lineCap,
 				}),
 			);
 		}
@@ -596,6 +631,8 @@ function validatePrimitiveForAsset(
 				issue("INVALID_PRIMITIVE_STYLE", "Line join is invalid", {
 					sceneId,
 					elementId: element.id,
+					field: "primitive.line.lineJoin",
+					value: primitive.line.lineJoin,
 				}),
 			);
 		}
@@ -607,14 +644,21 @@ function validatePrimitiveStyle(
 	errors: ValidationError[],
 	sceneId: string,
 	elementId: string,
+	fieldPrefix: string,
 ): void {
 	if (!style) return;
-	for (const token of [style.stroke, "fill" in style ? style.fill : undefined]) {
+	const colorFields = [
+		["stroke", style.stroke],
+		["fill", "fill" in style ? style.fill : undefined],
+	] as const;
+	for (const [name, token] of colorFields) {
 		if (token !== undefined && !isSafeTextStyleToken(token)) {
 			errors.push(
 				issue("INVALID_PRIMITIVE_STYLE", "Primitive color token is unsafe", {
 					sceneId,
 					elementId,
+					field: `${fieldPrefix}.${name}`,
+					value: token,
 				}),
 			);
 		}
@@ -624,6 +668,8 @@ function validatePrimitiveStyle(
 			issue("INVALID_PRIMITIVE_STYLE", "Primitive strokeWidth is invalid", {
 				sceneId,
 				elementId,
+				field: `${fieldPrefix}.strokeWidth`,
+				value: style.strokeWidth,
 			}),
 		);
 	}
@@ -632,6 +678,8 @@ function validatePrimitiveStyle(
 			issue("INVALID_PRIMITIVE_STYLE", "Primitive opacity must be 0..1", {
 				sceneId,
 				elementId,
+				field: `${fieldPrefix}.opacity`,
+				value: style.opacity,
 			}),
 		);
 	}
@@ -643,6 +691,8 @@ function validatePrimitiveStyle(
 			issue("INVALID_PRIMITIVE_STYLE", "Primitive dash is invalid", {
 				sceneId,
 				elementId,
+				field: `${fieldPrefix}.dash`,
+				value: style.dash,
 			}),
 		);
 	}
@@ -665,6 +715,8 @@ function validatePrimitivePoints(
 			issue("INVALID_PRIMITIVE_POINTS", "Primitive points must use normalized coordinates from 0 to 1", {
 				sceneId,
 				elementId,
+				field: "primitive.points",
+				value: points,
 			}),
 		);
 	}
@@ -673,6 +725,7 @@ function validatePrimitivePoints(
 function validateTextContent(
 	text: Partial<TextContent>,
 	errors: ValidationError[],
+	warnings: ValidationWarning[],
 	sceneId: string,
 	elementId: string,
 	allowSparse = false,
@@ -683,23 +736,29 @@ function validateTextContent(
 				issue("INVALID_TEXT_CONTENT", "Text content must define a value", {
 					sceneId,
 					elementId,
+					field: "text.value",
 				}),
 			);
 		}
 	} else {
 		const value = normalizeTextValue(text.value);
 		const lines = value.split("\n");
-		if (
-			value.length === 0 ||
-			value.length > MAX_TEXT_CHARACTERS ||
-			lines.length > MAX_TEXT_LINES ||
-			lines.every((line) => line.trim().length === 0)
-		) {
+		if (value.length === 0 || lines.every((line) => line.trim().length === 0)) {
+			warnings.push(
+				issue("EMPTY_TEXT_CONTENT", "Text value is empty and will render no visible label", {
+					sceneId,
+					elementId,
+					field: "text.value",
+					value: text.value,
+				}),
+			);
+		}
+		if (value.length > MAX_TEXT_CHARACTERS || lines.length > MAX_TEXT_LINES) {
 			errors.push(
 				issue(
 					"INVALID_TEXT_CONTENT",
-					`Text content must be non-empty, at most ${MAX_TEXT_CHARACTERS} characters, and at most ${MAX_TEXT_LINES} lines`,
-					{ sceneId, elementId },
+					`Text content must be at most ${MAX_TEXT_CHARACTERS} characters and at most ${MAX_TEXT_LINES} lines`,
+					{ sceneId, elementId, field: "text.value" },
 				),
 			);
 		}
@@ -710,6 +769,8 @@ function validateTextContent(
 			issue("INVALID_TEXT_STYLE", "Text align must be start, middle, or end", {
 				sceneId,
 				elementId,
+				field: "text.align",
+				value: text.align,
 			}),
 		);
 	}
@@ -718,6 +779,8 @@ function validateTextContent(
 			issue("INVALID_TEXT_STYLE", "Text fontSize must be greater than zero", {
 				sceneId,
 				elementId,
+				field: "text.fontSize",
+				value: text.fontSize,
 			}),
 		);
 	}
@@ -726,6 +789,8 @@ function validateTextContent(
 			issue("INVALID_TEXT_STYLE", "Text lineHeight must be greater than zero", {
 				sceneId,
 				elementId,
+				field: "text.lineHeight",
+				value: text.lineHeight,
 			}),
 		);
 	}
@@ -734,6 +799,8 @@ function validateTextContent(
 			issue("INVALID_TEXT_STYLE", "Text fontWeight must be normal, bold, or a positive finite number", {
 				sceneId,
 				elementId,
+				field: "text.fontWeight",
+				value: text.fontWeight,
 			}),
 		);
 	}
@@ -742,6 +809,8 @@ function validateTextContent(
 			issue("INVALID_TEXT_STYLE", "Text fill contains unsafe CSS syntax", {
 				sceneId,
 				elementId,
+				field: "text.fill",
+				value: text.fill,
 			}),
 		);
 	}
@@ -833,7 +902,11 @@ function validateAmbientWithSet(
 	}
 }
 
-function validateSceneObjectDeltas(document: SceneDocument, errors: ValidationError[]): void {
+function validateSceneObjectDeltas(
+	document: SceneDocument,
+	errors: ValidationError[],
+	warnings: ValidationWarning[],
+): void {
 	const elements = new Map<string, ResolvedElementRecord>();
 	const connectors = new Map<string, ResolvedConnectorRecord>();
 	const documentElementIds = collectDocumentElementIds(document);
@@ -841,7 +914,7 @@ function validateSceneObjectDeltas(document: SceneDocument, errors: ValidationEr
 	if (!first?.elements) return;
 
 	for (const element of first.elements) {
-		validatePlacement(element, document, errors, first.id);
+		validatePlacement(element, document, errors, warnings, first.id);
 		if (elements.has(element.id)) {
 			errors.push(
 				issue("DUPLICATE_ELEMENT_ID", `Duplicate element "${element.id}"`, {
@@ -872,7 +945,7 @@ function validateSceneObjectDeltas(document: SceneDocument, errors: ValidationEr
 		const updateIds = new Set<string>();
 		for (const update of scene.update?.elements ?? []) {
 			const existing = elements.get(update.id)?.asset;
-			validatePatch(update, document, errors, scene.id, existing);
+			validatePatch(update, document, errors, warnings, scene.id, existing);
 			updateIds.add(update.id);
 			if (!elements.has(update.id)) {
 				errors.push(
@@ -905,7 +978,7 @@ function validateSceneObjectDeltas(document: SceneDocument, errors: ValidationEr
 		}
 
 		for (const add of scene.add?.elements ?? []) {
-			validatePlacement(add, document, errors, scene.id);
+			validatePlacement(add, document, errors, warnings, scene.id);
 			if (elements.has(add.id)) {
 				errors.push(
 					issue("ELEMENT_ALREADY_PRESENT", `Element "${add.id}" is already present`, {
@@ -1564,7 +1637,7 @@ export function validateScene(document: SceneDocument): ValidationReport {
 
 	validateHeader(document, errors);
 	validateTimelineShape(document, errors);
-	validateSceneObjectDeltas(document, errors);
+	validateSceneObjectDeltas(document, errors, warnings);
 
 	if (errors.length === 0) {
 		validateWarnings(document, warnings);

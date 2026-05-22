@@ -91,7 +91,9 @@ patches may omit `points` when only style changes.
 
 Validation constraints:
 
-- `value`: non-empty, at most `1000` characters, at most `20` lines, and at least one non-whitespace line.
+- `value`: required for placements. Empty or whitespace-only values are valid
+  but emit `EMPTY_TEXT_CONTENT` because they render no visible label. Values
+  over `1000` characters or `20` lines emit `INVALID_TEXT_CONTENT`.
 - `align`: `start`, `middle`, or `end`; default `middle`.
 - `fontSize`: positive finite number; default `12`.
 - `fontWeight`: `normal`, `bold`, or a positive finite number; default `700`.

@@ -49,7 +49,7 @@ The validator walks scenes in order and maintains a resolved presence map.
 | Remove id is present | `remove.elements[].id` is currently present | `ELEMENT_NOT_PRESENT` |
 | Update/remove conflict | Same id is not both updated and removed in one scene | `ELEMENT_DELTA_CONFLICT` |
 | Declared asset | Placement `asset` exists in `header.assets` | `ASSET_NOT_DECLARED` |
-| Built-in text payload | Text placements define valid `text.value`; text updates may provide sparse nested text fields; non-text assets do not define `text` | `TEXT_CONTENT_REQUIRED`, `TEXT_CONTENT_FOR_NON_TEXT_ASSET`, `INVALID_TEXT_CONTENT`, `INVALID_TEXT_STYLE` |
+| Built-in text payload | Text placements define a `text.value`; empty values warn, oversized values error; text updates may provide sparse nested text fields; non-text assets do not define `text` | `TEXT_CONTENT_REQUIRED`, `TEXT_CONTENT_FOR_NON_TEXT_ASSET`, `EMPTY_TEXT_CONTENT`, `INVALID_TEXT_CONTENT`, `INVALID_TEXT_STYLE` |
 | Built-in primitive payload | Primitive placements define exactly one matching `primitive` payload; primitive updates may provide sparse nested primitive fields; external assets do not define `primitive` | `PRIMITIVE_CONTENT_REQUIRED`, `PRIMITIVE_CONTENT_MISMATCH`, `INVALID_PRIMITIVE_POINTS`, `INVALID_PRIMITIVE_STYLE`, `GENERATED_CONTENT_FOR_EXTERNAL_ASSET` |
 | Declared layer | Placement/patch `layer` exists in `header.layers` | `LAYER_NOT_FOUND` |
 | Valid position | `at` tuple contains finite non-negative numbers | `INVALID_POSITION` |
@@ -104,6 +104,7 @@ map independently from elements.
 | Unused declared asset | Asset declared but never used by any placement | `UNREFERENCED_ASSET` warning |
 | Unused layer | Layer has no element in any resolved scene | `UNREFERENCED_LAYER` warning |
 | Floor/content outside bounds | Element or connector route lies outside `floor.size` when `layout.bounds` is `floor` | `ELEMENT_OUTSIDE_FLOOR` or `CONNECTOR_OUTSIDE_FLOOR` warning |
+| Empty text value | `asset: text` has `text.value` that is empty or whitespace-only | `EMPTY_TEXT_CONTENT` warning |
 
 ## Validation Report
 
@@ -119,8 +120,11 @@ interface ValidationIssue {
   message: string;
   sceneId?: string;
   elementId?: string;
+  connectionId?: string;
   assetName?: string;
   layerName?: string;
+  field?: string;
+  value?: unknown;
   location?: {
     file?: string;
     line?: number;

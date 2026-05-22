@@ -196,7 +196,10 @@ import type {
 ```
 
 Validation reports are returned by the dev-time validator and are safe to use in
-build tooling and tests.
+build tooling and tests. Findings include stable `code` and `message` fields,
+plus contextual fields such as `sceneId`, `elementId`, `connectionId`,
+`assetName`, `layerName`, `field`, and `value` when the validator can determine
+the exact source of the issue.
 
 ## Dev-Time Bundles
 

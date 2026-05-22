@@ -13,7 +13,11 @@ interface IsostateErrorShape {
 }
 ```
 
-Validation reports use the same `code` strings but return plain objects instead of throwing.
+Validation reports use the same `code` strings but return plain objects instead
+of throwing. Validator findings should include contextual fields whenever the
+validator can determine them: `sceneId`, `elementId`, `connectionId`,
+`assetName`, `layerName`, `field`, and a safe `value` sample. CLI diagnostics
+print these as compact key/value pairs before the message.
 
 ## Error Classes
 
@@ -73,9 +77,9 @@ Validation reports use the same `code` strings but return plain objects instead 
 | `INVALID_CONNECTOR_ENDPOINT` | Connector start/end endpoint is unsupported. | Use `none`, `arrow`, `dot`, `circle`, `diamond`, or `bar`. |
 | `INVALID_CONNECTOR_DIRECTION` | Connector direction is unsupported. | Use `route` or `reverse`. |
 | `INVALID_CONNECTOR_ROUTING` | Connector routing config is malformed or unsupported. | Fix `routing` fields or use manual `route`. |
-| `TEXT_CONTENT_REQUIRED` | `asset: text` is missing `text.value`. | Add a `text` object with a non-empty `value`. |
+| `TEXT_CONTENT_REQUIRED` | `asset: text` is missing `text.value`. | Add a `text` object with a `value` field. Use `value: ""` only when the invisible label is intentional. |
 | `TEXT_CONTENT_FOR_NON_TEXT_ASSET` | A non-text asset defines `text`. | Remove `text` or change `asset` to `text`. |
-| `INVALID_TEXT_CONTENT` | Text is empty, too long, or has too many lines. | Keep text non-empty, ≤1000 characters, and ≤20 lines. |
+| `INVALID_TEXT_CONTENT` | Text is too long or has too many lines. | Keep text ≤1000 characters and ≤20 lines. Empty text is a warning, not an error. |
 | `INVALID_TEXT_STYLE` | A text style field has an invalid or unsafe value. | Use supported text style values. |
 | `UNKNOWN_ANIMATION` | Entry/exit animation is unknown. | Use a built-in value or `none`. |
 | `UNKNOWN_AMBIENT_ANIMATION` | Ambient name is unknown and no custom CSS is registered. | Define CSS or fix name. |
@@ -121,6 +125,7 @@ successfully when no errors are present.
 |---|---|
 | `UNREFERENCED_LAYER` | Layer has no elements. |
 | `UNREFERENCED_ASSET` | Asset is declared but never used. |
+| `EMPTY_TEXT_CONTENT` | Text value is empty or whitespace-only and will render no visible label. |
 | `ELEMENT_OUTSIDE_FLOOR` | Element lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_OUTSIDE_FLOOR` | Connector route lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_INTERSECTS_OBJECT` | Manual connector route crosses an unrelated visible object. |

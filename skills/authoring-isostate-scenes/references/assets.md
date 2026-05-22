@@ -48,6 +48,9 @@ Rules:
 Text rules:
 
 - `text.value` is required when placing or adding `asset: text`.
+- `text.value: ""` and whitespace-only values are allowed but emit
+  `EMPTY_TEXT_CONTENT`; use them only for intentionally invisible labels.
+- Text over `1000` characters or `20` lines is invalid.
 - Text updates are sparse; changing `text.fill` keeps the previous
   `text.value` and other text style fields.
 - Line breaks are supported.

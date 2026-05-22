@@ -707,11 +707,6 @@ scenes:
 		firstInitialElement(textOnSvgAsset).text = { value: 'Label' };
 		expectErrorCode(textOnSvgAsset, 'TEXT_CONTENT_FOR_NON_TEXT_ASSET');
 
-		const emptyText = validDocument();
-		firstInitialElement(emptyText).asset = 'text';
-		firstInitialElement(emptyText).text = { value: '' };
-		expectErrorCode(emptyText, 'INVALID_TEXT_CONTENT');
-
 		const unsafeFill = validDocument();
 		firstInitialElement(unsafeFill).asset = 'text';
 		firstInitialElement(unsafeFill).text = {
@@ -719,6 +714,45 @@ scenes:
 			fill: 'url(javascript:alert(1))'
 		};
 		expectErrorCode(unsafeFill, 'INVALID_TEXT_STYLE');
+	});
+
+	test('reports text validation context and warns for intentionally empty labels', () => {
+		const invalidStyle = validDocument();
+		firstInitialElement(invalidStyle).asset = 'text';
+		firstInitialElement(invalidStyle).text = {
+			value: 'Label',
+			fontSize: 0
+		};
+
+		const invalidReport = validateScene(invalidStyle);
+
+		expect(invalidReport.errors).toContainEqual(
+			expect.objectContaining({
+				code: 'INVALID_TEXT_STYLE',
+				sceneId: 'initial',
+				elementId: 'office-1',
+				field: 'text.fontSize',
+				value: 0
+			})
+		);
+
+		const emptyText = validDocument();
+		firstInitialElement(emptyText).asset = 'text';
+		firstInitialElement(emptyText).text = { value: '' };
+
+		const emptyReport = validateScene(emptyText);
+
+		expect(emptyReport.isValid).toBe(true);
+		expect(emptyReport.errors).toEqual([]);
+		expect(emptyReport.warnings).toContainEqual(
+			expect.objectContaining({
+				code: 'EMPTY_TEXT_CONTENT',
+				sceneId: 'initial',
+				elementId: 'office-1',
+				field: 'text.value',
+				value: ''
+			})
+		);
 	});
 
 	test('warns for unused declarations and floor-bound content', () => {

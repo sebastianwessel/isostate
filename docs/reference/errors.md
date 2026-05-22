@@ -10,8 +10,14 @@ Public APIs throw structured error classes exported from `@sebastianwessel/isost
 | `AnimationError` | `AnimationEngine` | invalid progress or uninitialized engine |
 | `ControllerError` | `AnimationController` | missing scenes, invalid navigation |
 
-Every structured error has a `code` and `message`; many include contextual
-fields such as `elementId`, `sceneId`, `assetName`, or `layerName`.
+Every structured error has a `code` and `message`; validation findings also
+include contextual fields when available, such as `sceneId`, `elementId`,
+`connectionId`, `assetName`, `layerName`, `field`, and `value`. The CLI prints
+those fields before the message:
+
+```text
+ERROR INVALID_TEXT_STYLE scene=initial element=title field=text.fontSize value=0 Text fontSize must be greater than zero
+```
 
 ```ts
 try {
@@ -34,9 +40,9 @@ Common fixes:
 | `ASSET_URL_REQUIRED` | Add `header.assetBaseUrl` or an asset `path` so the compiler can emit a URL. |
 | `ASSET_NOT_FOUND` | Recompile the bundle so every external asset has a URL entry. |
 | `INVALID_ASSET_URL` | Use a non-empty relative or HTTP(S) asset URL, not `javascript:`. |
-| `TEXT_CONTENT_REQUIRED` | Add a non-empty `text.value` to an `asset: text` element. |
+| `TEXT_CONTENT_REQUIRED` | Add a `text.value` field to an `asset: text` element. |
 | `TEXT_CONTENT_FOR_NON_TEXT_ASSET` | Remove `text` from non-text assets. |
-| `INVALID_TEXT_CONTENT` | Keep text non-empty, ≤1000 characters, and ≤20 lines. |
+| `INVALID_TEXT_CONTENT` | Keep text ≤1000 characters and ≤20 lines. Empty text is allowed but emits `EMPTY_TEXT_CONTENT`. |
 | `INVALID_TEXT_STYLE` | Use supported text style values and safe fill colors. |
 | `PRIMITIVE_CONTENT_REQUIRED` | Add the matching `primitive` payload to built-in primitive assets. |
 | `PRIMITIVE_CONTENT_MISMATCH` | Keep exactly one primitive payload and match it to the asset id. |

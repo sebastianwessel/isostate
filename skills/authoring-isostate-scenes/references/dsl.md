@@ -94,6 +94,9 @@ Operation rules:
 - Omitted fields inside `update.elements[].text`,
   `update.elements[].primitive.<kind>`, and `update.connections[].style`
   persist unchanged too; nested patches are merged field-by-field.
+- Validator diagnostics identify the scene/object/field when possible. Use
+  `scene=...`, `element=...` or `connection=...`, `field=...`, and `value=...`
+  in CLI output to fix the exact authored field rather than guessing.
 
 ## Camera Focus
 
