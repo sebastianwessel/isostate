@@ -65,6 +65,7 @@ describe('Astro website', () => {
 		expect(docs).toContain(
 			"from '../../docs/guides/install-authoring-skill.md'"
 		);
+		expect(docs).toContain("from '../../docs/guides/use-the-cli.md'");
 		expect(docs).toContain("from '../../docs/guides/deploy-static-bundle.md'");
 		expect(docs).toContain("from '../../docs/reference/public-api.md'");
 		expect(index).toContain('Isometric 3D scenes from YAML');
@@ -98,6 +99,8 @@ describe('Astro website', () => {
 		expect(relativeFiles).toContain(
 			'docs/guides/install-authoring-skill.md/index.html'
 		);
+		expect(relativeFiles).toContain('docs/guides/use-the-cli.md/index.html');
+		expect(relativeFiles).toContain('og/docs/guides/use-the-cli.png');
 		expect(relativeFiles).toContain(
 			'docs/guides/deploy-static-bundle.md/index.html'
 		);

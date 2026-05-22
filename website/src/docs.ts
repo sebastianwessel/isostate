@@ -2,6 +2,7 @@ import { Content as DocsReadme } from '../../docs/README.md';
 import { Content as GettingStarted } from '../../docs/getting-started.md';
 import { Content as InstallAuthoringSkill } from '../../docs/guides/install-authoring-skill.md';
 import { Content as AuthorSceneDeltas } from '../../docs/guides/author-scene-deltas.md';
+import { Content as UseTheCli } from '../../docs/guides/use-the-cli.md';
 import { Content as DeployStaticBundle } from '../../docs/guides/deploy-static-bundle.md';
 import { Content as ExamplesReadme } from '../../docs/examples/README.md';
 import { Content as RuntimeBasic } from '../../docs/examples/runtime-basic.md';
@@ -39,6 +40,12 @@ export const docs: DocEntry[] = [
 		title: 'Author Scene Deltas',
 		group: 'Guides',
 		Content: AuthorSceneDeltas
+	},
+	{
+		slug: 'guides/use-the-cli.md',
+		title: 'Use The CLI',
+		group: 'Guides',
+		Content: UseTheCli
 	},
 	{
 		slug: 'guides/deploy-static-bundle.md',
