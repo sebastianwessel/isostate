@@ -11,9 +11,10 @@ export function getStaticPaths() {
 
 const { doc } = Astro.props;
 const Content = doc.Content;
+const ogImage = `/og/docs/${doc.slug.replace(/\.[^.]+$/, '.png')}`;
 ---
 
-<SiteLayout title={doc.title} docsShell>
+<SiteLayout title={doc.title} docsShell ogImage={ogImage}>
 	<article>
 		<Content />
 	</article>

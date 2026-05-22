@@ -52,11 +52,15 @@ describe('Astro website', () => {
 		);
 
 		expect(packageJson.devDependencies?.astro).toBe('6.3.7');
+		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.2');
+		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.11.1');
 		expect(packageJson.scripts?.['site:build']).toBe(
 			'astro build --root website'
 		);
 		expect(config).toContain("output: 'static'");
 		expect(config).toContain("base: '/isostate'");
+		expect(config).toContain("import sitemap from '@astrojs/sitemap'");
+		expect(config).toContain('integrations: [sitemap()]');
 		expect(docs).toContain("from '../../docs/getting-started.md'");
 		expect(docs).toContain(
 			"from '../../docs/guides/install-authoring-skill.md'"
@@ -72,6 +76,7 @@ describe('Astro website', () => {
 		expect(index).toContain('Scroll to watch a route come to life');
 		expect(index).not.toContain('PUBLIC_ISOSTATE_VERSION');
 		expect(route).toContain('getStaticPaths');
+		expect(route).toContain('ogImage');
 		expect(route).toContain('<Content />');
 	});
 
@@ -85,6 +90,10 @@ describe('Astro website', () => {
 		const relativeFiles = files.map((file) => file.slice(dist.length + 1));
 
 		expect(relativeFiles).toContain('index.html');
+		expect(relativeFiles).toContain('sitemap-index.xml');
+		expect(relativeFiles).toContain('sitemap-0.xml');
+		expect(relativeFiles).toContain('og/index.png');
+		expect(relativeFiles).toContain('og/docs/getting-started.png');
 		expect(relativeFiles).toContain('docs/getting-started.md/index.html');
 		expect(relativeFiles).toContain(
 			'docs/guides/install-authoring-skill.md/index.html'
@@ -93,5 +102,12 @@ describe('Astro website', () => {
 			'docs/guides/deploy-static-bundle.md/index.html'
 		);
 		expect(relativeFiles).toContain('docs/reference/public-api.md/index.html');
+
+		const home = await readFile(join(dist, 'index.html'), 'utf8');
+		expect(home).toContain('property="og:image"');
+		expect(home).toContain(
+			'https://sebastianwessel.github.io/isostate/og/index.png'
+		);
+		expect(home).toContain('name="twitter:card" content="summary_large_image"');
 	}, websiteBuildTimeoutMs);
 });

@@ -68,4 +68,24 @@ describe('GitHub workflows', () => {
 		expect(workflow).toContain('github-pages');
 		expect(workflow).toContain('pages: write');
 	});
+
+	test('manual website deploy builds and publishes Pages without npm release', async () => {
+		const workflow = await readFile(
+			join(root, '.github/workflows/deploy-website.yml'),
+			'utf8'
+		);
+
+		expect(workflow).toContain('workflow_dispatch:');
+		expect(workflow).toContain('contents: read');
+		expect(workflow).toContain('pages: write');
+		expect(workflow).toContain('id-token: write');
+		expect(workflow).toContain('actions/checkout@v6');
+		expect(workflow).toContain('withastro/action@v6');
+		expect(workflow).toContain('node-version: 24');
+		expect(workflow).toContain('package-manager: bun@latest');
+		expect(workflow).toContain('build-cmd: bun run site:build');
+		expect(workflow).toContain('out-dir: website/dist');
+		expect(workflow).toContain('actions/deploy-pages@v5');
+		expect(workflow).not.toContain('npm publish');
+	});
 });

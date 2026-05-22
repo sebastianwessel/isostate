@@ -1,0 +1,38 @@
+name: Deploy Website
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+jobs:
+  build:
+    name: Build website
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Build and upload website artifact
+        uses: withastro/action@v6
+        with:
+          path: .
+          node-version: 24
+          package-manager: bun@latest
+          build-cmd: bun run site:build
+          out-dir: website/dist
+
+  deploy:
+    name: Deploy website to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy website
+        id: deployment
+        uses: actions/deploy-pages@v5
