@@ -2,6 +2,7 @@ import { mountScene, resolveTheme } from '@sebastianwessel/isostate';
 import { compileScene } from '@sebastianwessel/isostate/dsl/browser';
 import type { EditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
 import { createEditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
+import type { ElementPlacement } from '@sebastianwessel/isostate/types';
 import { Grid2X2, Minus, Plus, RotateCcw } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -38,6 +39,86 @@ const EDITOR_MIN_FLOOR_SIZE: [number, number] = [20, 20];
 
 function escapeCssAttribute(value: string): string {
 	return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+function createPlacedElement(
+	assetId: string,
+	at: [number, number],
+	layer: string
+): ElementPlacement {
+	const base: ElementPlacement = {
+		id: `el-${Math.random().toString(36).slice(2, 7)}`,
+		asset: assetId,
+		at,
+		layer,
+		size: 1
+	};
+	switch (assetId) {
+		case 'text':
+			return {
+				...base,
+				text: {
+					value: 'Text',
+					align: 'middle',
+					fontSize: 12
+				}
+			};
+		case 'rectangle':
+			return {
+				...base,
+				primitive: {
+					rectangle: {
+						fill: 'var(--color-top)',
+						stroke: 'var(--color-back)',
+						strokeWidth: 1
+					}
+				}
+			};
+		case 'circle':
+			return {
+				...base,
+				primitive: {
+					circle: {
+						fill: 'var(--color-top)',
+						stroke: 'var(--color-back)',
+						strokeWidth: 1
+					}
+				}
+			};
+		case 'polygon':
+			return {
+				...base,
+				primitive: {
+					polygon: {
+						points: [
+							[0.5, 0],
+							[1, 0.5],
+							[0.5, 1],
+							[0, 0.5]
+						],
+						fill: 'var(--color-top)',
+						stroke: 'var(--color-back)',
+						strokeWidth: 1
+					}
+				}
+			};
+		case 'line':
+			return {
+				...base,
+				primitive: {
+					line: {
+						points: [
+							[0, 0],
+							[1, 1]
+						],
+						stroke: 'var(--color-back)',
+						strokeWidth: 1
+					}
+				}
+			};
+		default:
+			return base;
+	}
 }
 
 function createEditorPreviewDocument(
@@ -375,14 +456,11 @@ export function CanvasView({
 						onClearDragPayload?.();
 						return;
 					}
-					const element: import('@sebastianwessel/isostate/types').ElementPlacement =
-						{
-							id: `el-${Math.random().toString(36).slice(2, 7)}`,
-							asset: assetId,
-							at: snapped,
-							layer: workspace.document?.header.layers[0]?.name ?? 'default',
-							size: 1
-						};
+					const element = createPlacedElement(
+						assetId,
+						snapped,
+						workspace.document?.header.layers[0]?.name ?? 'default'
+					);
 					onCommand(createObjectAddCommand(sceneId, element));
 					onClearDragPayload?.();
 				} catch {

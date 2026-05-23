@@ -465,6 +465,48 @@ describe('CanvasView', () => {
 		container.remove();
 	});
 
+	test('drop with built-in asset dataTransfer creates renderable element payload', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeWorkspace();
+		const root = createRoot(container);
+		let result: EditorCommandResult | null = null;
+		root.render(
+			createElement(CanvasView, {
+				workspace,
+				onCommand: (cmd) => {
+					result = applyEditorCommand(workspace, cmd);
+				},
+				theme: 'light'
+			})
+		);
+		await waitForCanvasRender();
+		const pt = getGridPoint(workspace, [2, 2]);
+		const canvas = container.querySelector(
+			'.isostate-editor-canvas-view'
+		) as HTMLDivElement;
+		const event = new DragEvent('drop', { bubbles: true, cancelable: true });
+		Object.defineProperties(event, {
+			dataTransfer: {
+				value: createDataTransfer({
+					'application/x-isostate-asset': 'text'
+				})
+			}
+		});
+		setEventClientPoint(event, pt);
+		canvas.dispatchEvent(event);
+
+		expect(result?.changed).toBe(true);
+		const element = result?.workspace.document?.scenes[0].elements?.find(
+			(candidate) => candidate.asset === 'text' && candidate.id !== 'e1'
+		);
+		expect(element?.text?.value).toBe('Text');
+		expect(() => compileScene(result?.workspace.document!)).not.toThrow();
+
+		root.unmount();
+		container.remove();
+	});
+
 	test('drop with manifest asset dataTransfer dispatches asset.place command', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);

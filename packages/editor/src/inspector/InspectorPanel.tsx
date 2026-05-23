@@ -12,7 +12,6 @@ import {
 	createConnectionAddCommand,
 	createConnectionRemoveCommand,
 	createConnectionUpdateCommand,
-	createObjectAddCommand,
 	createObjectRemoveCommand,
 	createObjectUpdateCommand
 } from '../commands.ts';
@@ -325,42 +324,6 @@ export function InspectorPanel({
 						</span>
 					</FormRow>
 					<div className="isostate-inspector-actions">
-						<Button
-							type="button"
-							size="sm"
-							onClick={() => {
-								if (!workspace.activeSceneId) return;
-								onCommand(
-									createObjectAddCommand(workspace.activeSceneId, {
-										id: `text-${Math.random().toString(36).slice(2, 6)}`,
-										asset: 'text',
-										at: [1, 1],
-										layer: layerNames[0] ?? 'default',
-										size: 1
-									})
-								);
-							}}
-						>
-							+ Text
-						</Button>
-						<Button
-							type="button"
-							size="sm"
-							onClick={() => {
-								if (!workspace.activeSceneId) return;
-								onCommand(
-									createObjectAddCommand(workspace.activeSceneId, {
-										id: `rect-${Math.random().toString(36).slice(2, 6)}`,
-										asset: 'rectangle',
-										at: [1, 1],
-										layer: layerNames[0] ?? 'default',
-										size: 1
-									})
-								);
-							}}
-						>
-							+ Rectangle
-						</Button>
 						<Button type="button" size="sm" onClick={handleConnectionAdd}>
 							+ Connection
 						</Button>
