@@ -290,4 +290,31 @@ describe('SceneTreePanel', () => {
 		root.unmount();
 		container.remove();
 	});
+
+	test('layer visibility toggle marks layer hidden', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const defaultLayer = Array.from(
+			container.querySelectorAll('.isostate-tree-layer')
+		).find((layer) => layer.textContent?.includes('default')) as HTMLElement;
+		const toggle = defaultLayer.querySelector(
+			'button[aria-label="Hide layer"]'
+		) as HTMLButtonElement;
+		toggle.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(defaultLayer.classList.contains('isostate-tree-layer--hidden')).toBe(
+			true
+		);
+		expect(
+			defaultLayer.querySelector('button[aria-label="Show layer"]')
+		).toBeTruthy();
+
+		root.unmount();
+		container.remove();
+	});
 });

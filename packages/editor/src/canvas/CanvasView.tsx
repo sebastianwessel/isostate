@@ -36,6 +36,10 @@ interface CanvasViewProps {
 
 const EDITOR_MIN_FLOOR_SIZE: [number, number] = [20, 20];
 
+function escapeCssAttribute(value: string): string {
+	return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
 function createEditorPreviewDocument(
 	document: EditorWorkspace['document'],
 	showGrid: boolean
@@ -199,6 +203,21 @@ export function CanvasView({
 		if (!adapter?.mounted.svg || !viewBoxStr) return;
 		adapter.mounted.svg.setAttribute('viewBox', viewBoxStr);
 	}, [adapter, viewBoxStr]);
+
+	useEffect(() => {
+		const svg = adapter?.mounted.svg;
+		if (!svg) return;
+		for (const node of svg.querySelectorAll<SVGElement>('[data-layer]')) {
+			node.style.display = '';
+		}
+		for (const layerName of workspace.uiState.hiddenLayers ?? []) {
+			for (const node of svg.querySelectorAll<SVGElement>(
+				`[data-layer="${escapeCssAttribute(layerName)}"]`
+			)) {
+				node.style.display = 'none';
+			}
+		}
+	}, [adapter, workspace.uiState.hiddenLayers]);
 
 	const updateViewport = useCallback(
 		(patch: Partial<EditorWorkspace['viewport']>) => {

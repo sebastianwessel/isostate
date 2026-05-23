@@ -1,22 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
-import {
-	filterAssetsByGroup,
-	filterAssetsByTag,
-	getMissingAssets,
-	getUnusedAssets,
-	searchAssets
-} from '../assets.ts';
+import { getMissingAssets, getUnusedAssets, searchAssets } from '../assets.ts';
 import type { EditorAssetCatalog, EditorWorkspace } from '../types.ts';
 import { Badge } from '../ui/badge.tsx';
 import { Input } from '../ui/input.tsx';
 import { ScrollArea } from '../ui/scroll-area.tsx';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue
-} from '../ui/select.tsx';
 
 interface AssetPanelProps {
 	workspace: EditorWorkspace;
@@ -67,10 +54,6 @@ export function AssetPanel({
 
 	const browserState = workspace.uiState.assetBrowser;
 	const [searchQuery, setSearchQuery] = useState(browserState.searchQuery);
-	const [selectedGroup, setSelectedGroup] = useState(
-		browserState.selectedGroup
-	);
-	const [selectedTag, setSelectedTag] = useState(browserState.selectedTag);
 
 	// Load manifest if URL is provided
 	useEffect(() => {
@@ -104,21 +87,6 @@ export function AssetPanel({
 
 	const allAssets = catalog?.assets ?? [];
 
-	const groups = useMemo(() => {
-		const set = new Set(allAssets.map((a) => a.group));
-		return Array.from(set).sort();
-	}, [allAssets]);
-
-	const tags = useMemo(() => {
-		const set = new Set<string>();
-		for (const asset of allAssets) {
-			for (const tag of asset.tags ?? []) {
-				set.add(tag);
-			}
-		}
-		return Array.from(set).sort();
-	}, [allAssets]);
-
 	const filteredAssets = useMemo(() => {
 		let result = allAssets;
 		if (searchQuery) {
@@ -127,20 +95,8 @@ export function AssetPanel({
 				searchQuery
 			);
 		}
-		if (selectedGroup) {
-			result = filterAssetsByGroup(
-				catalog ?? { assetBaseUrl: '', assets: result },
-				selectedGroup
-			);
-		}
-		if (selectedTag) {
-			result = filterAssetsByTag(
-				catalog ?? { assetBaseUrl: '', assets: result },
-				selectedTag
-			);
-		}
 		return result;
-	}, [allAssets, searchQuery, selectedGroup, selectedTag, catalog]);
+	}, [allAssets, searchQuery, catalog]);
 
 	const groupedAssets = useMemo(() => {
 		const map = new Map<string, typeof filteredAssets>();
@@ -199,42 +155,6 @@ export function AssetPanel({
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
 				/>
-				<Select
-					value={selectedGroup ?? 'all'}
-					onValueChange={(value) =>
-						setSelectedGroup(value === 'all' ? undefined : value)
-					}
-				>
-					<SelectTrigger>
-						<SelectValue placeholder="All groups" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All groups</SelectItem>
-						{groups.map((g) => (
-							<SelectItem key={g} value={g}>
-								{g}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
-				<Select
-					value={selectedTag ?? 'all'}
-					onValueChange={(value) =>
-						setSelectedTag(value === 'all' ? undefined : value)
-					}
-				>
-					<SelectTrigger>
-						<SelectValue placeholder="All tags" />
-					</SelectTrigger>
-					<SelectContent>
-						<SelectItem value="all">All tags</SelectItem>
-						{tags.map((t) => (
-							<SelectItem key={t} value={t}>
-								{t}
-							</SelectItem>
-						))}
-					</SelectContent>
-				</Select>
 			</div>
 
 			{missingAssets.length > 0 && (

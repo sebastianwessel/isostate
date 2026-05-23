@@ -611,6 +611,34 @@ describe('CanvasView', () => {
 		container.remove();
 	});
 
+	test('hidden layer toggle hides rendered layer nodes', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeWorkspace();
+		const root = createRoot(container);
+		root.render(
+			createElement(CanvasView, {
+				workspace: {
+					...workspace,
+					uiState: { ...workspace.uiState, hiddenLayers: ['default'] }
+				},
+				onCommand: () => {},
+				theme: 'light'
+			})
+		);
+		await waitForCanvasRender();
+
+		const layerNodes = container.querySelectorAll<SVGElement>(
+			'[data-layer="default"]'
+		);
+		expect(layerNodes.length).toBeGreaterThan(0);
+		expect(Array.from(layerNodes).every((node) => node.style.display === 'none'))
+			.toBe(true);
+
+		root.unmount();
+		container.remove();
+	});
+
 	test('remount after command restores selection', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);

@@ -360,7 +360,7 @@ export function SceneTreePanel({
 										return (
 											<div
 												key={`${scene.id}-${layer.name}`}
-												className="isostate-tree-layer"
+												className={`isostate-tree-layer ${isHidden ? 'isostate-tree-layer--hidden' : ''}`}
 												role="treeitem"
 												tabIndex={0}
 												draggable

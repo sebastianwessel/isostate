@@ -25,6 +25,7 @@ import {
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue
@@ -169,6 +170,10 @@ export function IsostateEditor(props: IsostateEditorProps) {
 			onWorkspaceChange?.(next);
 			return next;
 		});
+	};
+
+	const toggleTheme = () => {
+		setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 	};
 
 	const setSidebarTab = (tab: EditorWorkspace['uiState']['sidebarTab']) => {
@@ -316,13 +321,28 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		/>
 	);
 	const yamlContent = (
-		<YamlEditor
-			value={workspace.sourceYaml}
-			onChange={handleYamlChange}
-			theme={resolvedTheme}
-			readOnly={readonly}
-			diagnostics={workspace.diagnostics}
-		/>
+		<>
+			<div className="isostate-editor-yaml-body">
+				<YamlEditor
+					value={workspace.sourceYaml}
+					onChange={handleYamlChange}
+					theme={resolvedTheme}
+					readOnly={readonly}
+					diagnostics={workspace.diagnostics}
+				/>
+			</div>
+			<div className="isostate-editor-footer">
+				<Button
+					type="button"
+					variant="secondary"
+					size="sm"
+					onClick={handleFormat}
+				>
+					<Paintbrush data-icon="inline-start" />
+					Format
+				</Button>
+			</div>
+		</>
 	);
 
 	return (
@@ -341,12 +361,14 @@ export function IsostateEditor(props: IsostateEditorProps) {
 						<SelectTrigger size="sm" className="isostate-scene-select">
 							<SelectValue placeholder="Scene" />
 						</SelectTrigger>
-						<SelectContent>
-							{sceneOptions.map((s) => (
-								<SelectItem key={s.id} value={s.id}>
-									{s.id}
-								</SelectItem>
-							))}
+						<SelectContent position="popper">
+							<SelectGroup>
+								{sceneOptions.map((s) => (
+									<SelectItem key={s.id} value={s.id}>
+										{s.id}
+									</SelectItem>
+								))}
+							</SelectGroup>
 						</SelectContent>
 					</Select>
 					<Button
@@ -362,28 +384,16 @@ export function IsostateEditor(props: IsostateEditorProps) {
 						type="button"
 						variant="secondary"
 						size="sm"
-						onClick={handleFormat}
+						onClick={toggleTheme}
+						aria-label={`Preview ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
+						aria-pressed={resolvedTheme === 'dark'}
 					>
-						<Paintbrush data-icon="inline-start" />
-						Format
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={() => setTheme('light')}
-						aria-label="Preview light mode"
-					>
-						<Sun aria-hidden="true" />
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={() => setTheme('dark')}
-						aria-label="Preview dark mode"
-					>
-						<Moon aria-hidden="true" />
+						{resolvedTheme === 'dark' ? (
+							<Moon data-icon="inline-start" />
+						) : (
+							<Sun data-icon="inline-start" />
+						)}
+						{resolvedTheme === 'dark' ? 'Dark' : 'Light'}
 					</Button>
 				</div>
 			</div>

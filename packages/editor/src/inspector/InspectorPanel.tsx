@@ -26,6 +26,7 @@ import { Input } from '../ui/input.tsx';
 import {
 	Select,
 	SelectContent,
+	SelectGroup,
 	SelectItem,
 	SelectTrigger,
 	SelectValue
@@ -99,12 +100,14 @@ function InspectorSelect({
 			<SelectTrigger className="isostate-select">
 				<SelectValue placeholder={placeholder} />
 			</SelectTrigger>
-			<SelectContent>
-				{options.map((option) => (
-					<SelectItem key={option.value} value={option.value}>
-						{option.label}
-					</SelectItem>
-				))}
+			<SelectContent position="popper">
+				<SelectGroup>
+					{options.map((option) => (
+						<SelectItem key={option.value} value={option.value}>
+							{option.label}
+						</SelectItem>
+					))}
+				</SelectGroup>
 			</SelectContent>
 		</Select>
 	);

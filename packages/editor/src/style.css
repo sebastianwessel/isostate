@@ -29,6 +29,25 @@
 	--radius-xl: calc(var(--radius) + 4px);
 }
 
+:root {
+	--background: #ffffff;
+	--foreground: #0a0a0a;
+	--border: #e4e4e7;
+	--ring: #18181b;
+	--primary: #18181b;
+	--primary-foreground: #fafafa;
+	--secondary: #f4f4f5;
+	--secondary-foreground: #18181b;
+	--muted: #f4f4f5;
+	--muted-foreground: #71717a;
+	--accent: #f4f4f5;
+	--accent-foreground: #18181b;
+	--radius: 0.375rem;
+	--error: #ef4444;
+	--warning: #f59e0b;
+	--success: #22c55e;
+}
+
 .isostate-editor {
 	--background: #ffffff;
 	--foreground: #0a0a0a;
@@ -126,6 +145,16 @@
 .isostate-editor-toolbar button:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+[data-slot="select-trigger"] {
+	background: var(--background);
+}
+
+[data-slot="select-content"] {
+	background: var(--background);
+	color: var(--foreground);
+	border-color: var(--border);
 }
 
 .isostate-icon {
@@ -293,11 +322,29 @@
 .isostate-editor-yaml {
 	flex: 1 1 auto;
 	display: flex;
+	flex-direction: column;
 	align-items: stretch;
 	justify-content: stretch;
 	min-width: 240px;
 	min-height: 0;
 	overflow: hidden;
+	background: var(--background);
+}
+
+.isostate-editor-yaml-body {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.isostate-editor-footer {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	padding: 0.5rem;
+	border-top: 1px solid var(--border);
 	background: var(--background);
 }
 
@@ -693,6 +740,10 @@
 
 .isostate-tree-layer {
 	border-top: 1px solid var(--border);
+}
+
+.isostate-tree-layer--hidden .isostate-tree-elements {
+	opacity: 0.45;
 }
 
 .isostate-tree-layer-header {
