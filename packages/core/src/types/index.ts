@@ -2,7 +2,10 @@ export type {
 	AssetCategory,
 	AssetDefinition,
 	AssetRegistry,
+	SpriteDefinition as AssetSpriteDefinition,
+	SpriteSheetAssetDefinition,
 	Theme,
+	UrlAssetDefinition,
 } from "./assets.ts";
 export {
 	AnimationError,
@@ -61,6 +64,7 @@ export type {
 	CompiledFloor,
 	CompiledLayer,
 	CompiledLayout,
+	CompiledSprite,
 	RuntimeBundle,
 } from "./runtime-bundle.ts";
 export type {
@@ -78,6 +82,9 @@ export type {
 	SceneRemoveDelta,
 	SceneStep,
 	SceneUpdateDelta,
+	SpriteDefinition as SceneSpriteDefinition,
+	SpriteSheetAssetCatalogEntry,
+	UrlAssetCatalogEntry,
 } from "./scene.ts";
 export type {
 	ValidationError,

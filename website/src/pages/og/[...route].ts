@@ -1,4 +1,5 @@
 import { OGImageRoute } from 'astro-og-canvas';
+import { existsSync } from 'node:fs';
 import { docs } from '../../docs';
 
 type OgPage = {
@@ -25,6 +26,15 @@ const pages: Record<string, OgPage> = {
 	)
 };
 
+const localFontCandidates = [
+	'/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+	'/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf',
+	'/System/Library/Fonts/Supplemental/Arial.ttf',
+	'/System/Library/Fonts/SFNS.ttf'
+];
+
+const localFont = localFontCandidates.find((fontPath) => existsSync(fontPath));
+
 export const { getStaticPaths, GET } = await OGImageRoute({
 	param: 'route',
 	pages,
@@ -48,13 +58,14 @@ export const { getStaticPaths, GET } = await OGImageRoute({
 			title: {
 				color: [255, 253, 245],
 				size: 82,
-				weight: 'bold'
+				weight: 'normal'
 			},
 			description: {
 				color: [236, 230, 215],
 				size: 36
 			}
 		},
+		fonts: localFont ? [localFont] : undefined,
 		padding: 72
 	})
 });

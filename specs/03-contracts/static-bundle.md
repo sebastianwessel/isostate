@@ -4,7 +4,7 @@
 
 A static deployment bundle is a directory generated from one authored
 `.isostate.yaml` file. It contains the browser-visible runtime, optimized scene
-settings, copied external SVG assets, and a manifest for diagnostics.
+settings, copied external asset source files, and a manifest for diagnostics.
 
 The bundle is designed to be copied into a website `public/` directory or
 served from a CDN without a build-time YAML parser in the browser.
@@ -19,12 +19,13 @@ served from a CDN without a build-time YAML parser in the browser.
   assets/
     service.svg
     gateway.svg
+    app-icons.png
 ```
 
 `scene.isostate.js` is the compiled runtime bundle emitted by `toJs()`.
 `isostate.runtime.js` is a standalone browser ESM artifact that exports the
 runtime public API needed to mount the scene. `assets/` contains only referenced
-external assets.
+external asset source files: standalone SVG assets and sprite sheet image files.
 
 ## Manifest Shape
 
@@ -69,8 +70,11 @@ Manifest rules:
 
 The bundle command resolves assets from authored `header.assets` entries:
 
-- `path` is relative to `--asset-dir` unless absolute;
-- missing `.svg` extensions are appended during resolution;
+- normal URL asset `path` is relative to `--asset-dir` unless absolute;
+- missing `.svg` extensions are appended during normal URL asset resolution;
+- sprite sheet `path` is relative to `--asset-dir` unless absolute, must include
+  its explicit image extension, and is resolved once for all referenced sprites
+  in that sheet;
 - copied filenames preserve the source basename unless a collision occurs;
 - filename collisions are resolved by prefixing the asset id;
 - compiled bundle URLs are rewritten to

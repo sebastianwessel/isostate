@@ -42,6 +42,7 @@ header:
     - id: app-icons
       type: sprite-sheet
       path: app-icons.png
+      sheetSize: [512, 256]
       tileSize: [64, 64]
       sprites:
         server: [0, 0]
@@ -72,6 +73,7 @@ header:
     - id: app-icons
       type: sprite-sheet
       path: app-icons.webp
+      sheetSize: [512, 256]
       tileSize: [64, 64]
       anchor: [0.5, 1]
       sprites:
@@ -111,6 +113,7 @@ interface SpriteSheetAssetCatalogEntry {
   id: string;
   type: "sprite-sheet";
   path: string;
+  sheetSize: [number, number];
   tileSize?: [number, number];
   anchor?: [number, number];
   sprites: Record<string, SpriteDefinition>;
@@ -125,8 +128,10 @@ type SpriteDefinition =
     };
 ```
 
-For v1, `tileSize` is required when any sprite uses the compact tuple form or
-the verbose `at` form. `rect` is pixel-based and does not require `tileSize`.
+For v1, `sheetSize` is required for every sprite sheet because the runtime does
+not inspect image dimensions. `tileSize` is required when any sprite uses the
+compact tuple form or the verbose `at` form. `rect` is pixel-based and does not
+require `tileSize`.
 
 ## Validation
 
@@ -145,8 +150,10 @@ elements:
 - `.gif` is rejected in v1 because animated sprite playback is out of scope.
 - Standalone current SVG behavior remains unchanged: omitted extensions still
   compile to `.svg`.
+- `sheetSize` is a required positive whole-pixel `[width, height]` tuple.
 - Sprite tuple values are non-negative integer column and row indices.
 - `rect` values are positive whole-pixel rectangles `[x, y, width, height]`.
+- Authored and tile-derived rectangles must fit inside `sheetSize`.
 - Anchors use the existing normalized inclusive `0..1` validation.
 
 ## Compiler
@@ -159,12 +166,12 @@ from one sheet share the same resolved image URL:
   "assets": {
     "server": {
       "url": "./assets/app-icons.png",
-      "sprite": { "rect": [0, 0, 64, 64] },
+      "sprite": { "sheetSize": [512, 256], "rect": [0, 0, 64, 64] },
       "anchor": [0.5, 1]
     },
     "database": {
       "url": "./assets/app-icons.png",
-      "sprite": { "rect": [64, 0, 64, 64] },
+      "sprite": { "sheetSize": [512, 256], "rect": [64, 0, 64, 64] },
       "anchor": [0.5, 0.92]
     }
   }
@@ -182,25 +189,23 @@ bundle.
 The renderer keeps the existing whole-asset path for runtime assets without a
 `sprite` field.
 
-For sprite assets, the renderer creates a clipped SVG image:
+For sprite assets, the renderer creates a nested SVG viewport:
 
-- Create a unique `<clipPath>` for the sprite rectangle.
-- Add an SVG `<image>` using the shared URL.
-- Offset the image by `-rect.x` and `-rect.y` inside a local viewport.
-- Clip the local viewport to `rect.width` and `rect.height`.
-- Scale the clipped group into the current square cell viewport using the same
-  anchor placement model as standalone assets.
+- Create a nested `<svg>` with `viewBox` equal to the sprite rectangle.
+- Set the nested viewport to the same square cell allocation as standalone
+  assets using the same anchor placement formula.
+- Add a child SVG `<image>` using the shared URL with `x="0"`, `y="0"`,
+  `width` equal to `sheetSize[0]`, and `height` equal to `sheetSize[1]`.
 
-The renderer does not inspect image dimensions and does not verify that sprite
-rectangles fit inside the source image. Bad rectangles render as browser image
-clipping behavior.
+The renderer does not inspect image dimensions. The validator guarantees sprite
+rectangles fit inside the authored `sheetSize`.
 
 ## Asset Manifest
 
-Asset manifest support can follow the same logical model:
+Asset manifest support uses the same logical model:
 
-- A manifest entry may represent a sprite sheet.
-- Editor tooling should expose each nested sprite as a draggable logical asset.
+- A manifest entry with `type: sprite-sheet` represents a sprite sheet.
+- Editor tooling exposes each nested sprite as a draggable logical asset.
 - When a sprite is dragged into a scene, the editor writes or reuses the
   containing sprite-sheet declaration and places the logical sprite id on the
   element.
@@ -229,7 +234,8 @@ Focused tests should cover:
 
 - Parser and validator accept compact and verbose sprite declarations.
 - Validator rejects duplicate sprite ids, invalid anchors, invalid paths, sheet
-  ids used as element assets, and missing `tileSize` when `at` is used.
+  ids used as element assets, missing `sheetSize`, missing `tileSize` when `at`
+  is used, and rectangles outside `sheetSize`.
 - Compiler emits flat runtime assets with shared URLs and pixel sprite rects.
 - Renderer creates a clipped image node for sprite assets and preserves existing
   standalone asset behavior.

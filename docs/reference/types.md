@@ -162,12 +162,15 @@ import type {
 } from '@sebastianwessel/isostate';
 ```
 
-Authored YAML uses document-local `header.assets[].id` values; those ids must
-resolve to browser-loaded SVG files through `header.assetBaseUrl`. Built-in
-generated assets (`text`, `rectangle`, `circle`, `polygon`, `line`) are reserved
-exceptions and are never registered or URL-loaded.
+Authored YAML uses document-local `header.assets[]` values. Normal asset ids
+resolve to browser-loaded SVG files through `header.assetBaseUrl`. Sprite sheet
+entries expose nested sprite ids as placeable asset ids while sharing one image
+URL. Built-in generated assets (`text`, `rectangle`, `circle`, `polygon`,
+`line`) are reserved exceptions and are never registered or URL-loaded.
 External asset definitions may declare `anchor: [x, y]` with normalized viewport
-coordinates so imported SVGs align their real ground contact point to the grid.
+coordinates so imported visuals align their real ground contact point to the
+grid. Sprite sheets require `sheetSize`; tuple and `at` sprites also require
+`tileSize`.
 Theme variables are `Record<string, string>` values whose keys must start with
 `--`.
 

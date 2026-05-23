@@ -226,6 +226,19 @@ export function getResolvedViewBox(bundle: RuntimeBundle): {
 	return resolveSceneLayout(bundle).viewBox;
 }
 
+export function getResolvedProjectionLayout(bundle: RuntimeBundle): {
+	cellSize: number;
+	padding: { x: number; y: number };
+	selectedBounds: { minX: number; minY: number; maxX: number; maxY: number };
+} {
+	const layout = resolveSceneLayout(bundle);
+	return {
+		cellSize: layout.cellSize,
+		padding: layout.padding,
+		selectedBounds: layout.selectedBounds,
+	};
+}
+
 export function getCurrentElementBounds(
 	svg: SVGSVGElement & { _elementMap?: Map<string, ElementState | unknown>; _layout?: ResolvedLayoutState },
 	id: string,

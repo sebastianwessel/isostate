@@ -19,7 +19,8 @@
 | Header | Document section containing assets, grid, floor, layout, theme, root CSS class, and layers. | globals |
 | Element | Placed asset instance with grid coordinate, size, layer, and animation metadata. | node |
 | Connector | Generated SVG ground-plane route with style, endpoints, direction, lifecycle, and animation metadata. | arrow, flow, road |
-| Asset | Reusable SVG source registered by name and cloned into elements. | component, sprite |
+| Asset | Reusable visual source registered by name and placed by elements; either a standalone SVG URL asset, a logical sprite from a sprite sheet, or a generated built-in. | component |
+| Sprite sheet | External image asset that exposes nested logical sprite ids from pixel rectangles in one shared image file. | atlas |
 | Layer | Ordered SVG group used for render order, grouping, and inherited CSS variables/classes. | group |
 | Delta | Scene operation that adds, updates, or removes elements relative to the previous scene. | patch |
 | Runtime snapshot | Compiler-generated complete scene stop used by the runtime. | keyframe |

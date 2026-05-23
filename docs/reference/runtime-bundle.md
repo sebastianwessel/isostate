@@ -136,6 +136,21 @@ Compiled external assets contain browser-loadable URLs produced from
 }
 ```
 
+Compiled sprite assets are also flat asset entries. They share the sheet URL and
+include source-image metadata for runtime cropping:
+
+```json
+{
+	"assets": {
+		"server": {
+			"url": "./assets/app-icons.png",
+			"sprite": { "sheetSize": [512, 256], "rect": [0, 0, 64, 64] },
+			"anchor": [0.5, 1]
+		}
+	}
+}
+```
+
 Built-in generated assets and connectors are not emitted under `assets` and never need an
 external asset URL.
 

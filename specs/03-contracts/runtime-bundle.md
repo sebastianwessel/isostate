@@ -64,6 +64,12 @@ interface CompiledAsset {
   url?: string;
   category?: AssetCategory;
   anchor?: [number, number];
+  sprite?: CompiledSprite;
+}
+
+interface CompiledSprite {
+  sheetSize: [number, number];
+  rect: [number, number, number, number];
 }
 
 type ConnectorPattern = 'solid' | 'dashed' | 'dotted';
@@ -145,14 +151,80 @@ Runtime compatibility uses semver:
 
 ## Asset URL Compilation
 
-The compiler emits one `CompiledAsset` entry for every external SVG asset referenced by resolved scene elements or the floor asset. Each entry must contain a browser-loadable `url` resolved from `header.assetBaseUrl` plus the asset `path` or `id`, with `.svg` appended when the path omits an extension. If the authored asset declares `anchor`, the compiler preserves it so the browser runtime can align the asset's real ground contact point to the projected footprint anchor.
+The compiler emits one `CompiledAsset` entry for every external asset
+referenced by resolved scene elements or the floor asset.
+
+For normal URL assets, each entry must contain a browser-loadable `url`
+resolved from `header.assetBaseUrl` plus the asset `path` or `id`, with `.svg`
+appended when the path omits an extension. If the authored asset declares
+`anchor`, the compiler preserves it so the browser runtime can align the
+asset's real ground contact point to the projected footprint anchor.
+
+For sprite sheets, the compiler emits one flat `CompiledAsset` entry per
+referenced logical sprite id, not per sheet. Every sprite from the same sheet
+uses the same resolved `url`. Sprite sheet paths must include an explicit image
+extension and the compiler must not append `.svg` to them.
+
+Authored sprite tuple and `at` definitions compile through `tileSize`:
+
+```text
+rect.x = column * tileSize[0]
+rect.y = row * tileSize[1]
+rect.width = tileSize[0]
+rect.height = tileSize[1]
+```
+
+Authored `rect` definitions compile without conversion. Compiled sprite rects
+and sheet sizes are whole source-image pixels.
+
+Example compiled sprite assets:
+
+```json
+{
+  "assets": {
+    "server": {
+      "url": "./assets/app-icons.png",
+      "sprite": { "sheetSize": [512, 256], "rect": [0, 0, 64, 64] },
+      "anchor": [0.5, 1]
+    },
+    "database": {
+      "url": "./assets/app-icons.png",
+      "sprite": { "sheetSize": [512, 256], "rect": [64, 0, 64, 64] },
+      "anchor": [0.5, 0.92]
+    }
+  }
+}
+```
 
 Built-in generated assets (`text`, `rectangle`, `circle`, `polygon`, and
 `line`) are not embeddable assets. They never appear under
 `RuntimeBundle.assets`; their content remains on `RuntimeElementState.text` or
 `RuntimeElementState.primitive`.
 
-The runtime loads external assets through SVG `<image href="...">`. It never receives raw SVG strings, parses asset SVG markup, or injects per-asset CSS.
+The runtime loads external assets through SVG `<image href="...">`. It never
+receives raw SVG strings, parses asset SVG markup, inspects image dimensions, or
+injects per-asset CSS.
+
+For a compiled sprite asset, the renderer must create a nested SVG image
+viewport equivalent to:
+
+```svg
+<svg
+  x="{assetX}"
+  y="{assetY}"
+  width="{cellSize}"
+  height="{cellSize}"
+  viewBox="{rectX} {rectY} {rectWidth} {rectHeight}"
+  preserveAspectRatio="xMidYMax meet"
+>
+  <image href="{url}" x="0" y="0" width="{sheetWidth}" height="{sheetHeight}" />
+</svg>
+```
+
+The nested SVG's `x` and `y` use the same normalized anchor placement as normal
+URL assets: `x = -cellSize * anchor[0]`, `y = -cellSize * anchor[1]`. Element
+`size` scaling continues to happen on the containing element group exactly as it
+does for normal URL assets.
 
 ## Connector Compilation
 
@@ -190,6 +262,7 @@ Missing asset behavior:
 | Stage | Error |
 |---|---|
 | validate declared external asset without URL source | `ASSET_URL_REQUIRED` |
+| validate invalid sprite sheet contract | one of the sprite validation errors in `specs/03-contracts/errors.md` |
 | compile referenced external asset without emitted URL | `ASSET_URL_REQUIRED` |
 | runtime load without emitted URL | `ASSET_NOT_FOUND` |
 | runtime load with unsafe URL scheme | `INVALID_ASSET_URL` |

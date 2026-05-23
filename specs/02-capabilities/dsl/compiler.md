@@ -145,7 +145,18 @@ interface CompileOptions {
 
 ## Asset URL Compilation
 
-The compiler emits one URL asset entry for every external asset referenced by resolved scene elements and the visible floor asset. URLs are derived from `header.assetBaseUrl` plus each asset `path` or `id`, with `.svg` appended when missing.
+The compiler emits one URL asset entry for every external asset referenced by
+resolved scene elements and the visible floor asset.
+
+For normal URL assets, URLs are derived from `header.assetBaseUrl` plus each
+asset `path` or `id`, with `.svg` appended when missing.
+
+For sprite sheets, the compiler treats nested sprite ids as the referenced
+external asset ids. It emits one flat `CompiledAsset` entry per referenced
+sprite id. Each sprite entry uses the containing sheet URL, the compiled
+`sprite.sheetSize`, the compiled pixel `sprite.rect`, and the inherited or
+overridden anchor. Sprite sheet `path` values must include an explicit
+extension; the compiler must not append `.svg` to sprite sheet paths.
 
 If an external asset cannot resolve to a URL, compilation fails with `ASSET_URL_REQUIRED`.
 

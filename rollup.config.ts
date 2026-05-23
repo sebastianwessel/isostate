@@ -8,13 +8,14 @@ function typescriptPlugin(): Plugin {
 	return {
 		name: 'isostate-typescript',
 		transform(code, id) {
-			if (!id.endsWith('.ts')) return null;
+			if (!id.endsWith('.ts') && !id.endsWith('.tsx')) return null;
 
 			const result = ts.transpileModule(code, {
 				compilerOptions: {
 					target: ts.ScriptTarget.ES2022,
 					module: ts.ModuleKind.ESNext,
-					sourceMap: true
+					sourceMap: true,
+					jsx: ts.JsxEmit.ReactJSX
 				},
 				fileName: id
 			});
@@ -41,7 +42,9 @@ export default defineConfig([
 		input: {
 			index: 'packages/core/src/index.ts',
 			'runtime/index': 'packages/core/src/runtime/index.ts',
-			'dsl/index': 'packages/core/src/dsl/index.ts'
+			'dsl/index': 'packages/core/src/dsl/index.ts',
+			'dsl/browser': 'packages/core/src/dsl/browser.ts',
+			'editor-support/index': 'packages/core/src/editor-support/index.ts'
 		},
 		output: {
 			dir: 'packages/core/dist',
@@ -53,6 +56,20 @@ export default defineConfig([
 		// yaml is dev-time only and must stay out of runtime browser bundles.
 		external: ['yaml'],
 		plugins: [nodeResolve({ extensions: ['.ts', '.js'] }), typescriptPlugin()]
+	},
+	{
+		input: {
+			index: 'packages/editor/src/index.ts',
+			react: 'packages/editor/src/react.ts'
+		},
+		output: {
+			dir: 'packages/editor/dist',
+			format: 'es',
+			entryFileNames: '[name].js',
+			sourcemap: true
+		},
+		external: (id) => id === 'react' || id === 'react/jsx-runtime' || id === 'react-dom' || id === 'react-dom/client' || id.startsWith('@sebastianwessel/isostate'),
+		plugins: [nodeResolve({ extensions: ['.ts', '.tsx', '.js'] }), typescriptPlugin()]
 	},
 	{
 		input: 'packages/cli/src/bin.ts',

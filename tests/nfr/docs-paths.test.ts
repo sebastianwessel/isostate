@@ -14,6 +14,7 @@ const docs = [
 	'docs/guides/author-scene-deltas.md',
 	'docs/guides/use-the-cli.md',
 	'docs/guides/deploy-static-bundle.md',
+	'docs/guides/use-editor-in-astro.md',
 	'docs/examples/README.md',
 	'docs/examples/runtime-basic.md',
 	'docs/examples/controller-scroll.md',
@@ -22,10 +23,15 @@ const docs = [
 	'docs/examples/custom-assets.md',
 	'docs/examples/custom-theme.md',
 	'docs/examples/inspect-bundle.md',
+	'docs/examples/editor-basic.md',
+	'docs/examples/editor-react.md',
+	'docs/examples/editor-export.md',
+	'docs/examples/asset-manifest.md',
 	'docs/reference/public-api.md',
 	'docs/reference/runtime-bundle.md',
 	'docs/reference/errors.md',
-	'docs/reference/types.md'
+	'docs/reference/types.md',
+	'docs/reference/editor.md'
 ] as const;
 
 describe('public docs inventory', () => {

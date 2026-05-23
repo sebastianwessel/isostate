@@ -30,9 +30,10 @@ header:
     - name: structures
 ```
 
-`header.assets` is the catalog of local ids the document may reference. When
-`assetBaseUrl` is set, `path` is combined with that base URL and `.svg` is added
-when omitted.
+`header.assets` is the catalog of local ids the document may reference. Normal
+URL assets combine `assetBaseUrl` with `path` and add `.svg` when omitted.
+Sprite sheets expose nested sprite ids from one explicitly extensioned image
+path.
 
 `asset: text` is reserved for generated labels and is not listed in
 `header.assets`.

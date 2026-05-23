@@ -12,7 +12,11 @@ Developer creates or updates a `.isostate.yaml` file and runs compile tooling.
 
 - Bun dependencies are installed.
 - `yaml` is available in the dev environment.
-- `assetBaseUrl` plus each asset `path` or `id` resolves every external SVG asset referenced by scene elements. External asset entries may declare normalized `anchor` metadata. Built-in `asset: text` and generated connectors need no external asset entry.
+- `assetBaseUrl` plus each normal URL asset `path` or `id` resolves every
+  referenced standalone SVG asset. Sprite sheet entries resolve through their
+  explicit image `path` and expose nested sprite ids as placeable assets.
+  External asset entries may declare normalized `anchor` metadata. Built-in
+  generated assets and connectors need no external asset entry.
 - Browser runtime code does not import `@sebastianwessel/isostate/dsl`.
 
 ## Happy Path
@@ -30,7 +34,9 @@ Developer creates or updates a `.isostate.yaml` file and runs compile tooling.
 5. Serializer writes `.isostate.js` or `.isostate.json`.
 6. Browser imports/fetches the compiled bundle.
 7. Engine checks `_format`, `_version`, and `_digest`.
-8. Engine resolves theme and external assets; external SVG image viewports use compiled asset anchors, connectors become generated SVG paths, and built-in text elements become SVG text nodes directly.
+8. Engine resolves theme and external assets; standalone image viewports and
+   sprite viewports use compiled asset anchors, connectors become generated SVG
+   paths, and built-in text elements become SVG text nodes directly.
 9. Engine computes tight layout bounds/viewBox and builds SVG DOM with floor, connector routes, layers, current scene elements, and the configured root CSS class.
 10. Controller sends progress updates to the engine and applies compiled scene
     camera focus by updating the root SVG viewBox from the effective camera

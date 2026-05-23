@@ -44,7 +44,7 @@ rules for:
 
 - writing the current `.isostate.yaml` scene-delta model
 - using generated text and primitive assets correctly
-- declaring external SVG assets with checked anchors
+- declaring external SVG assets and sprite sheets with checked anchors
 - using first-class connections instead of stretched arrow SVGs
 - keeping source YAML and generated `.isostate.js` bundles in sync
 - preserving the browser runtime boundary so parser, validator, compiler, and

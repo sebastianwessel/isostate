@@ -50,7 +50,7 @@ Unknown top-level fields produce `UNKNOWN_FIELD`.
 | `version` | no | Authored DSL version. Defaults to current compiler major/minor. |
 | `name` | no | Human-readable document id/name. |
 | `className` | no | CSS class string added to the root SVG for page-owned surface styling. |
-| `assetBaseUrl` | no | Base URL/path for browser-loadable SVG assets. |
+| `assetBaseUrl` | no | Base URL/path for browser-loadable external asset files. |
 | `assets` | yes | Catalog of local asset ids available to this scene document. |
 | `grid` | no | Authoring grid unit. Defaults to `{ cellSize: 64 }`. |
 | `floor` | no | Logical ground plane overrides. If omitted or missing `size`, compiler derives compiled floor size from scene element footprints. |
@@ -70,26 +70,105 @@ fields.
 ## Asset Catalog
 
 ```ts
-interface AssetCatalogEntry {
+type AssetCatalogEntry = UrlAssetCatalogEntry | SpriteSheetAssetCatalogEntry;
+
+interface UrlAssetCatalogEntry {
   id: string;
   path?: string;
   anchor?: [number, number];
 }
+
+interface SpriteSheetAssetCatalogEntry {
+  id: string;
+  type: 'sprite-sheet';
+  path: string;
+  sheetSize: [number, number];
+  tileSize?: [number, number];
+  anchor?: [number, number];
+  sprites: Record<string, SpriteDefinition>;
+}
+
+type SpriteDefinition =
+  | [number, number]
+  | {
+      at?: [number, number];
+      rect?: [number, number, number, number];
+      anchor?: [number, number];
+    };
 ```
 
-`header.assets[]` is a document-local catalog of external SVG asset ids the YAML is allowed to reference. The compiler combines `assetBaseUrl` with `path` or `id` and appends `.svg` when missing.
+`header.assets[]` is a document-local catalog of external asset ids the YAML is
+allowed to reference. A normal URL asset exposes its own `id` as an element
+`asset` value. A sprite sheet exposes each key under `sprites` as an element
+`asset` value; the sheet `id` is a namespace only and must not be used by scene
+elements or `header.floor.asset`.
 
-`anchor` is the normalized point inside the asset viewport that sits on the element's projected footprint anchor. It defaults to bottom-center `[0.5, 1]`. Use it when an imported asset's real ground contact is not centered in its SVG viewBox.
+For normal URL assets, the compiler combines `assetBaseUrl` with `path` or `id`
+and appends `.svg` when the path omits an extension. Normal URL assets remain
+the existing SVG-first contract.
+
+For sprite sheets, `path` is required and must include an explicit image
+extension. Supported sprite sheet extensions are `.png`, `.webp`, `.jpg`,
+`.jpeg`, and `.svg`; `.gif` is rejected. Sprite sheet paths never receive an
+implicit `.svg` extension.
+
+`sheetSize` is `[width, height]` in source-image pixels. The runtime does not
+inspect image dimensions, so `sheetSize` is required for every sprite sheet.
+`tileSize` is `[width, height]` in source-image pixels and is required when any
+sprite uses the compact tuple form or verbose `at` form.
+
+The compact sprite form maps a column and row to a rectangle:
+
+```yaml
+assets:
+  - id: app-icons
+    type: sprite-sheet
+    path: app-icons.png
+    sheetSize: [512, 256]
+    tileSize: [64, 64]
+    sprites:
+      server: [0, 0]
+      database: [1, 0]
+```
+
+The verbose form supports either `at` or `rect`, but never both:
+
+```yaml
+sprites:
+  server:
+    at: [0, 0]
+  wide-service:
+    rect: [128, 0, 96, 64]
+    anchor: [0.5, 1]
+```
+
+`rect` is `[x, y, width, height]` in source-image pixels. `x` and `y` must be
+whole numbers greater than or equal to `0`; `width` and `height` must be whole
+numbers greater than `0`. The validator checks that `x + width <= sheetSize[0]`
+and `y + height <= sheetSize[1]`.
+
+`anchor` is the normalized point inside the runtime asset viewport that sits on
+the element's projected footprint anchor. It defaults to bottom-center
+`[0.5, 1]`. Sprite anchors inherit from the sheet-level `anchor` when present;
+otherwise they use `[0.5, 1]`. A per-sprite `anchor` overrides both.
 
 The id `text` is reserved for the built-in generic text asset. It must not be declared in `header.assets[]`, does not resolve through `assetBaseUrl`, and is rendered by the browser runtime from the element's `text` payload.
 
 Validation rules:
 
-- `id` is kebab-case and unique.
+- `id` is kebab-case and unique across normal URL asset ids and sprite sheet
+  namespace ids.
 - `path`, when supplied, is a relative path-like id and may omit `.svg`.
 - `anchor`, when supplied, is a two-number tuple where both values are in the inclusive range `0..1`.
 - Each declared external asset must resolve through `assetBaseUrl`.
-- Elements may reference only ids declared in `assets[]`, except `asset: text`.
+- Elements may reference only normal URL asset ids, sprite ids, or reserved
+  built-in generated ids.
+- Sprite ids are kebab-case and must be unique across all normal URL asset ids,
+  sprite sheet namespace ids, sprite ids, and built-in generated ids.
+- Sprite sheet namespace ids are not placeable asset ids.
+- `sprites` must contain at least one sprite.
+- Verbose sprite definitions must contain exactly one of `at` or `rect`.
+- Unknown fields in asset and sprite definitions produce `UNKNOWN_FIELD`.
 - Asset declaration order is stable and has no render-order meaning.
 
 ## Grid And Floor
@@ -321,9 +400,10 @@ Validation rules:
 - `add.elements[].id` must not already be present in the previous scene.
 - `update.elements[].id` and `remove.elements[].id` must be present in the previous scene.
 - `remove.elements[].id` may not also appear in the same scene's `update.elements`.
-- `asset` must be declared in `header.assets[]` and resolve through
-  `assetBaseUrl`, except reserved built-in generated assets: `text`,
-  `rectangle`, `circle`, `polygon`, and `line`.
+- `asset` must be a placeable normal URL asset id or sprite id that resolves
+  through `assetBaseUrl`, except reserved built-in generated assets: `text`,
+  `rectangle`, `circle`, `polygon`, and `line`. Sprite sheet namespace ids are
+  not placeable.
 - Built-in primitive placements require `primitive` with exactly one matching
   payload and must not use `text`.
 - `update.elements[].text` is a sparse nested patch. It merges with the

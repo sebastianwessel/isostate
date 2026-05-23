@@ -9,6 +9,16 @@ isostate has two execution boundaries:
 
 The browser runtime must not import YAML parsing, validation, compiler code, `fs`, or other Node-only modules.
 
+A third package boundary is planned for authoring:
+
+- Browser editor loads a React authoring UI, parses and validates YAML in the
+  editor package, previews with the runtime renderer, and exports YAML or
+  compiled bundles.
+
+The editor package is intentionally outside the core runtime graph. Its YAML,
+React, Radix/component, and code-editor dependencies must never become imports
+of the runtime entrypoint or static deployment runtime.
+
 ## Data Flow
 
 ```text
@@ -35,4 +45,7 @@ runtime bundle, and the browser controller applies it by changing the SVG
 
 ## Public Builder
 
-The high_level_api is `mountScene` for browser use and `parseScene` + `validateScene` + `compileScene` for build-time use. Low-level rendering and controller classes are low_level_escape_hatch surfaces for tests and advanced integrations.
+The high_level_api is `mountScene` for browser runtime use,
+`parseScene` + `validateScene` + `compileScene` for build-time use, and
+`mountEditor` for browser authoring use. Low-level rendering and controller
+classes are low_level_escape_hatch surfaces for tests and advanced integrations.

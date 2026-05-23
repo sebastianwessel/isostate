@@ -5,6 +5,12 @@ export interface CompiledAsset {
 	url?: string;
 	category?: AssetCategory;
 	anchor?: [number, number];
+	sprite?: CompiledSprite;
+}
+
+export interface CompiledSprite {
+	sheetSize: [number, number];
+	rect: [number, number, number, number];
 }
 
 export interface CompiledFloor {

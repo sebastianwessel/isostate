@@ -50,6 +50,7 @@ function isActive(path: string): boolean {
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImageUrl} />
 		<title>{pageTitle}</title>
+		<link rel="icon" type="image/svg+xml" href={href('/favicon.svg')} />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -121,9 +122,9 @@ function isActive(path: string): boolean {
 				position: sticky;
 				top: 0;
 				z-index: 50;
-				display: grid;
-				grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr);
+				display: flex;
 				align-items: center;
+				gap: 16px;
 				min-height: 64px;
 				padding: 10px clamp(20px, 4vw, 56px);
 				border-bottom: 1px solid rgba(16, 20, 21, 0.1);
@@ -162,6 +163,7 @@ function isActive(path: string): boolean {
 				align-items: center;
 				justify-content: center;
 				gap: 2px;
+				margin: 0 auto;
 				padding: 3px;
 				border: 1px solid rgba(16, 20, 21, 0.12);
 				background: rgba(255, 253, 245, 0.9);
@@ -198,12 +200,15 @@ function isActive(path: string): boolean {
 				justify-self: end;
 				display: inline-flex;
 				align-items: center;
-				height: 34px;
-				padding: 0 16px;
-				border: none;
+				justify-content: center;
+				flex-shrink: 0;
+				width: 36px;
+				height: 36px;
+				padding: 0;
+				border: 1px solid rgba(16, 20, 21, 0.12);
 				border-radius: 8px;
-				background: var(--green);
-				color: #fffdf5;
+				background: rgba(255, 253, 245, 0.9);
+				color: var(--ink);
 				font-size: 0.85rem;
 				font-weight: 600;
 				letter-spacing: 0.01em;
@@ -212,8 +217,14 @@ function isActive(path: string): boolean {
 			}
 
 			.topbar-meta:hover {
-				background: var(--green-dark);
+				background: var(--ink);
+				color: #fffdf5;
 				transform: translateY(-1px);
+			}
+
+			.topbar-meta svg {
+				width: 18px;
+				height: 18px;
 			}
 
 			main {
@@ -455,17 +466,19 @@ function isActive(path: string): boolean {
 
 			@media (max-width: 900px) {
 				.site-topbar {
-					grid-template-columns: 1fr;
+					flex-wrap: wrap;
 					gap: 10px;
 				}
 
 				.nav-links {
+					order: 3;
+					width: 100%;
 					justify-content: flex-start;
 					overflow-x: auto;
 				}
 
 				.topbar-meta {
-					display: none;
+					margin-left: auto;
 				}
 
 				.docs-shell {
@@ -500,9 +513,13 @@ function isActive(path: string): boolean {
 				<a href={href('/')} aria-current={currentPath === base || currentPath === `${base}/` ? 'page' : undefined}>Overview</a>
 				<a href={href('/#story')}>Demo</a>
 				<a href={href('/docs/getting-started.md')} aria-current={isActive('/docs') ? 'page' : undefined}>Docs</a>
-				<a href="https://github.com/sebastianwessel/isostate">GitHub</a>
+				<a href={href('/editor')} aria-current={isActive('/editor') ? 'page' : undefined}>Editor</a>
 			</nav>
-			<a class="topbar-meta" href={href('/docs/getting-started.md')}>Get started →</a>
+			<a class="topbar-meta" href="https://github.com/sebastianwessel/isostate" aria-label="Open GitHub repository" title="GitHub">
+				<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+					<path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 .1 1.7 1.5 3.4 1.1.1-.8.4-1.3.7-1.6-2.8-.3-5.8-1.4-5.8-6.1 0-1.3.5-2.4 1.2-3.3-.1-.3-.5-1.6.1-3.3 0 0 1-.3 3.4 1.2a11.8 11.8 0 0 1 6.2 0c2.4-1.6 3.4-1.2 3.4-1.2.6 1.7.2 3 .1 3.3.8.9 1.2 2 1.2 3.3 0 4.7-2.9 5.8-5.7 6.1.5.4.9 1.1.9 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/>
+				</svg>
+			</a>
 		</header>
 
 		<main class={docsShell ? 'docs-shell' : 'page-shell'}>

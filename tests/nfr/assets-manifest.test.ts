@@ -22,4 +22,20 @@ describe('asset manifests', () => {
 			expect(y, `${asset.id} anchor y`).toBeLessThanOrEqual(1);
 		}
 	});
+
+	test('website aws 3d manifest groups assets for editor browsing', async () => {
+		const manifest = JSON.parse(
+			await readFile('website/public/assets/aws-3d.manifest.json', 'utf8')
+		) as {
+			assetBaseUrl: string;
+			assets: Array<{ id: string; group?: unknown; anchor?: unknown }>;
+		};
+
+		expect(manifest.assetBaseUrl).toBe('./aws-3d');
+		expect(manifest.assets.length).toBeGreaterThan(0);
+		for (const asset of manifest.assets) {
+			expect(asset.group, asset.id).toBe('AWS 3D');
+			expect(asset.anchor, asset.id).toEqual([0.5, 0.75]);
+		}
+	});
 });

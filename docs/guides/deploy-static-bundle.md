@@ -50,9 +50,11 @@ root.
 
 ## Asset Paths
 
-By default, copied SVG assets are referenced as `./assets/<file>.svg` from the
-compiled scene bundle. Use `--public-asset-base` when the website serves assets
-from a different relative path or CDN prefix.
+By default, copied external asset source files are referenced as
+`./assets/<file>` from the compiled scene bundle. Normal SVG assets still append
+`.svg` during resolution when omitted; sprite sheet paths keep their explicit
+image extension. Use `--public-asset-base` when the website serves assets from a
+different relative path or CDN prefix.
 
 ```bash
 bunx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml \

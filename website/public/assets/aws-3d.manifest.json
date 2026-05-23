@@ -1,0 +1,679 @@
+{
+  "format": "isostate.asset-manifest",
+  "version": 1,
+  "generatedAt": "2026-05-23T00:57:19.193Z",
+  "assetBaseUrl": "./aws-3d",
+  "assets": [
+    {
+      "id": "ami",
+      "path": "ami.svg",
+      "group": "AWS 3D",
+      "name": "ami",
+      "digest": "sha256:f96ac85e6fc2f2cfcd4fd8709c10e4a4962ba7cc2ae23c06410645ade32669a8",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "ami2",
+      "path": "ami2.svg",
+      "group": "AWS 3D",
+      "name": "ami2",
+      "digest": "sha256:434296fe46fc3b6118b57b6e4224586585a2ebcb57fdb3180a56806d423d8e6a",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "application",
+      "path": "application.svg",
+      "group": "AWS 3D",
+      "name": "application",
+      "digest": "sha256:fab1ae85bb20d5dac8fc78e9241c2f630167cb83991d1abaa405574b92277983",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "application-server",
+      "path": "application-server.svg",
+      "group": "AWS 3D",
+      "name": "application-server",
+      "digest": "sha256:ad5d6bf8c3786ad616762b5d2f0029eedce2d6c48add363d80d8ebc77c97a543",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "application2",
+      "path": "application2.svg",
+      "group": "AWS 3D",
+      "name": "application2",
+      "digest": "sha256:930f6e0cf54ec26931cb683ea221e33236b79ff3818ade2000fe5e735dff0ec5",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "arrow-ne",
+      "path": "arrow-ne.svg",
+      "group": "AWS 3D",
+      "name": "arrow-ne",
+      "digest": "sha256:73997a531c75a403e03bc151d48e3757bf7053c56cb6679109c990df3f85359f",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "arrow-nw",
+      "path": "arrow-nw.svg",
+      "group": "AWS 3D",
+      "name": "arrow-nw",
+      "digest": "sha256:5555f795c8b0c3c9f993bfd185848e2e12483a6a7be1aef9ffd1b2d0cc039a86",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "arrow-se",
+      "path": "arrow-se.svg",
+      "group": "AWS 3D",
+      "name": "arrow-se",
+      "digest": "sha256:1d4e4f728f09bcd64e8074c75c02f38733a58162010ec7ed165fe4d0b6aa5380",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "arrow-sw",
+      "path": "arrow-sw.svg",
+      "group": "AWS 3D",
+      "name": "arrow-sw",
+      "digest": "sha256:63ede1da7557cabcfd6aa744675ab4e2b503d3883bcb228188d81b401e5da0ec",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "arrowhead2",
+      "path": "arrowhead2.svg",
+      "group": "AWS 3D",
+      "name": "arrowhead2",
+      "digest": "sha256:a5fb9d67cb112f381e7e7bcdcdb0a16887cded04723ead1b1cbf6b1306441582",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "arrowless-ne",
+      "path": "arrowless-ne.svg",
+      "group": "AWS 3D",
+      "name": "arrowless-ne",
+      "digest": "sha256:ec41306c0204865da941138fdaf7ec677d417a7262924b93ccddacd2246a434f",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "client",
+      "path": "client.svg",
+      "group": "AWS 3D",
+      "name": "client",
+      "digest": "sha256:a7b6712bfae3bb056df60c1fd3e900f68ac0d469082b79e746836a07c89b4a08",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "cloudfront",
+      "path": "cloudfront.svg",
+      "group": "AWS 3D",
+      "name": "cloudfront",
+      "digest": "sha256:31e9a2bc929adcf03ba187523d9b9cb318d58e96e4a97e825e506d945de54ce3",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "customer-gateway",
+      "path": "customer-gateway.svg",
+      "group": "AWS 3D",
+      "name": "customer-gateway",
+      "digest": "sha256:219882ef9cede60bee4f5a09c95d3e74a1a40fd7657e87e340f3b46a7a952ec8",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "dashed-arrowless-edge2",
+      "path": "dashed-arrowless-edge2.svg",
+      "group": "AWS 3D",
+      "name": "dashed-arrowless-edge2",
+      "digest": "sha256:8918a122930c01acbded280318fd7e53b65d062e63ff8695974d381ea16678aa",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "dashed-edge-double2",
+      "path": "dashed-edge-double2.svg",
+      "group": "AWS 3D",
+      "name": "dashed-edge-double2",
+      "digest": "sha256:46ed167d07f1ef6231dee8b821e5569963b7c568d74a6700fb564b8c4874d4b9",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "dashed-edge2",
+      "path": "dashed-edge2.svg",
+      "group": "AWS 3D",
+      "name": "dashed-edge2",
+      "digest": "sha256:4c0768fa3b582873a1c77e696b859ae498432a58009cb862204e4084cefeba23",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "data-center",
+      "path": "data-center.svg",
+      "group": "AWS 3D",
+      "name": "data-center",
+      "digest": "sha256:a82ab4521e91a8995d80b9ecccab681eb48ff8765de74f56bf76a72a007ba320",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "data-server",
+      "path": "data-server.svg",
+      "group": "AWS 3D",
+      "name": "data-server",
+      "digest": "sha256:a4095ae4e128124300c23c1acb9f559f52fc3e0ad977f897dfadbee1be5ec045",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "decider",
+      "path": "decider.svg",
+      "group": "AWS 3D",
+      "name": "decider",
+      "digest": "sha256:7f7d80f35d84a151151c6fc98fb59eef42cbb5225603836b613001b3dba341e7",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "dynamo-db",
+      "path": "dynamo-db.svg",
+      "group": "AWS 3D",
+      "name": "dynamo-db",
+      "digest": "sha256:ae7e36fa2ea44db175481ba0a91a2627f73d326244cf0dc18d1bf20d42745c76",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "ebs",
+      "path": "ebs.svg",
+      "group": "AWS 3D",
+      "name": "ebs",
+      "digest": "sha256:894f62ebb6ebe21e6428ad1c8677c8652be2eece809f82d7e1d4b9a5175470b5",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "ebs2",
+      "path": "ebs2.svg",
+      "group": "AWS 3D",
+      "name": "ebs2",
+      "digest": "sha256:e246b6ce81aebc8df573d2c0f56993d2d24b30c4bcf730f0fcd0872a430e90c3",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "edge2",
+      "path": "edge2.svg",
+      "group": "AWS 3D",
+      "name": "edge2",
+      "digest": "sha256:154c797f84adf366d5dae49a7bda2cce1be5d14aba3e45b2f772fb323a06306c",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "elastic-beanstalk",
+      "path": "elastic-beanstalk.svg",
+      "group": "AWS 3D",
+      "name": "elastic-beanstalk",
+      "digest": "sha256:3d2a1846c092b4755f3f84f6ac889a445d14fe7d3dc9b45db9243ddf72ab543f",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "elastic-load-balancing",
+      "path": "elastic-load-balancing.svg",
+      "group": "AWS 3D",
+      "name": "elastic-load-balancing",
+      "digest": "sha256:1ed7dd6fa0371a383d68b8761366490a1c39543099ee42a918f8fc14577c2dc3",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "elastic-map-reduce",
+      "path": "elastic-map-reduce.svg",
+      "group": "AWS 3D",
+      "name": "elastic-map-reduce",
+      "digest": "sha256:d2c153248f023a0c3a23479226e673cc78f01d004b24afd9d1807c479e0a1d71",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "email",
+      "path": "email.svg",
+      "group": "AWS 3D",
+      "name": "email",
+      "digest": "sha256:31e22f37906efdb412f2337dcd6b233fec24979e13b25fc2efe6f5b6e632293e",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "email-service",
+      "path": "email-service.svg",
+      "group": "AWS 3D",
+      "name": "email-service",
+      "digest": "sha256:fe377e29fbbeeb69ef9b1a12f7c0596d1a79547abe9237ddc4ea3afa3b415b71",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "end-user",
+      "path": "end-user.svg",
+      "group": "AWS 3D",
+      "name": "end-user",
+      "digest": "sha256:ae249ede9aafc3feb0437319063624e6f9780b7444423c72f227b159e48f7f25",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "file",
+      "path": "file.svg",
+      "group": "AWS 3D",
+      "name": "file",
+      "digest": "sha256:24d99e2b68a332da77b8b2d9c08e1bf01710fd293c293447a5eecc59b7351911",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "flat-double-edge2",
+      "path": "flat-double-edge2.svg",
+      "group": "AWS 3D",
+      "name": "flat-double-edge2",
+      "digest": "sha256:52f808efc9b6ebb40af6dc175035c1bbee58ef0e26054739c03c22170365dfcb",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "flat-edge2",
+      "path": "flat-edge2.svg",
+      "group": "AWS 3D",
+      "name": "flat-edge2",
+      "digest": "sha256:6321c938e7a6960bedc67ce6e7abe8f78649036a70576eb25ce47bb3ffc2f1e5",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "glacier",
+      "path": "glacier.svg",
+      "group": "AWS 3D",
+      "name": "glacier",
+      "digest": "sha256:ca9c9656e0b454c84a6aa68d01c4dbcfd501222d8eb098f8358476de8d1d044a",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "image",
+      "path": "image.svg",
+      "group": "AWS 3D",
+      "name": "image",
+      "digest": "sha256:9021538efb6f8e7b9054137727e2eb3691085249a225355d122c03a7cc359edd",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "instance",
+      "path": "instance.svg",
+      "group": "AWS 3D",
+      "name": "instance",
+      "digest": "sha256:89caa773d10454c7a5747b7055c4c06048c2fc28071ee70ceef43b5deb0d954f",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "internet-gateway",
+      "path": "internet-gateway.svg",
+      "group": "AWS 3D",
+      "name": "internet-gateway",
+      "digest": "sha256:b46ed4d4d685af49ce76e8a6e1cb3b7073395bb5b702d6eb2c879a6d5d48b973",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "lambda",
+      "path": "lambda.svg",
+      "group": "AWS 3D",
+      "name": "lambda",
+      "digest": "sha256:e4516396b48b90e40d28a16f010dfc2764987c16df515ad9eef8617842f15c2d",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "mobile-worker",
+      "path": "mobile-worker.svg",
+      "group": "AWS 3D",
+      "name": "mobile-worker",
+      "digest": "sha256:3728e7855ea0a0ef5993c471a0679874c14c3c78ce0649158c8ca40aa1f6775d",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "oracle-data-center",
+      "path": "oracle-data-center.svg",
+      "group": "AWS 3D",
+      "name": "oracle-data-center",
+      "digest": "sha256:ab6e6cfb7dced21c8f0f9ac0246246ff00a4b9d167b15ad073de90395b2f74a6",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "oracle-db-server",
+      "path": "oracle-db-server.svg",
+      "group": "AWS 3D",
+      "name": "oracle-db-server",
+      "digest": "sha256:7fbfc7de207115eabc66bbf00e052da71a1e348ded880571c19cad9fe5fb52bc",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "oracle-server",
+      "path": "oracle-server.svg",
+      "group": "AWS 3D",
+      "name": "oracle-server",
+      "digest": "sha256:e441d54e051fec6ca4cc7d860073d72c926023945a5b5fd8ab20800a976b41e5",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "rds",
+      "path": "rds.svg",
+      "group": "AWS 3D",
+      "name": "rds",
+      "digest": "sha256:acf23dd763d45082d1ce65f7a17922e1e11fbf0371dad749fad3fb52ae0bdf5c",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "rds-master",
+      "path": "rds-master.svg",
+      "group": "AWS 3D",
+      "name": "rds-master",
+      "digest": "sha256:997de5d6581c38e8639fae6f13f55678b3bcc137211bfcc8af9c5d4869023747",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "rds-slave",
+      "path": "rds-slave.svg",
+      "group": "AWS 3D",
+      "name": "rds-slave",
+      "digest": "sha256:268e36eb7404161f0ee919806e76a0f30bc93ee4b1566e5f071a4950057696c4",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "redshift",
+      "path": "redshift.svg",
+      "group": "AWS 3D",
+      "name": "redshift",
+      "digest": "sha256:d859f2e290f57dc634b864625617b3da208c12edd5a9ea3127e3175e21070775",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "reference2",
+      "path": "reference2.svg",
+      "group": "AWS 3D",
+      "name": "reference2",
+      "digest": "sha256:294739a09d2c9a4b0fcd0a6e5265350f09b9a257c247b6fe873a47317ee968fb",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "route53",
+      "path": "route53.svg",
+      "group": "AWS 3D",
+      "name": "route53",
+      "digest": "sha256:40f95f08cb9fc14b60ef589e1883209e732703dc759a488e094b443fa5b51865",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "s3",
+      "path": "s3.svg",
+      "group": "AWS 3D",
+      "name": "s3",
+      "digest": "sha256:c8c27dc649448527ef374212dbc1560241c247df30278c804b17d8a6197485cf",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "s3-bucket",
+      "path": "s3-bucket.svg",
+      "group": "AWS 3D",
+      "name": "s3-bucket",
+      "digest": "sha256:4cda9cddf189022a9f0acca338454252da679da4bf5bd039f1ee1df961b176fb",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "search-engine",
+      "path": "search-engine.svg",
+      "group": "AWS 3D",
+      "name": "search-engine",
+      "digest": "sha256:2eb0ea42bca040208f128d0e213bc7e26fb2ebaed653f8a859199261fdb4ffda",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "secure-connection",
+      "path": "secure-connection.svg",
+      "group": "AWS 3D",
+      "name": "secure-connection",
+      "digest": "sha256:8946927454154d5efe32fa1b4b8fc0f854e2e2877e6a8ddf707a010ad4bed654",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "security-token-service",
+      "path": "security-token-service.svg",
+      "group": "AWS 3D",
+      "name": "security-token-service",
+      "digest": "sha256:2de5302d585943a93f1eec213f99886817228b0dbaf80a8300637f212e1b0886",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "simple-db",
+      "path": "simple-db.svg",
+      "group": "AWS 3D",
+      "name": "simple-db",
+      "digest": "sha256:e14cd646ce564f4de81d3b2f848e7989022f01044d9ec273b6c42cdd5bb4281d",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "simple-db2",
+      "path": "simple-db2.svg",
+      "group": "AWS 3D",
+      "name": "simple-db2",
+      "digest": "sha256:e955d668bc81e2551cc58c37ad5b8862932550ef79a33060f51375241411cc9f",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "snapshot",
+      "path": "snapshot.svg",
+      "group": "AWS 3D",
+      "name": "snapshot",
+      "digest": "sha256:fc8062a00e93cf9eb50d47c517751a7927b896bbb51838aae6105e1d037dcf78",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "spot2",
+      "path": "spot2.svg",
+      "group": "AWS 3D",
+      "name": "spot2",
+      "digest": "sha256:fd796b4f9fad72997095c2f7b039f972aabe0314a3431137b7ece730284b30cd",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "sqs",
+      "path": "sqs.svg",
+      "group": "AWS 3D",
+      "name": "sqs",
+      "digest": "sha256:24eeb283da6436a2ed81788f7494a52f429f48f92b5f7d5a0e4da375b0311755",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "vpc-gateway",
+      "path": "vpc-gateway.svg",
+      "group": "AWS 3D",
+      "name": "vpc-gateway",
+      "digest": "sha256:8bdf19591d6b715167f42a2ee8a15d6d487adb39bf8bdf1081fc675f6bf7122c",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "worker",
+      "path": "worker.svg",
+      "group": "AWS 3D",
+      "name": "worker",
+      "digest": "sha256:77f6332c89189c9126a512b41882aab1aef0599bd419aec6c93c1833aae3b155",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    },
+    {
+      "id": "workflow-service",
+      "path": "workflow-service.svg",
+      "group": "AWS 3D",
+      "name": "workflow-service",
+      "digest": "sha256:76502966c203ebd6cb8dc9c5129f79188990dc6cd9f1447c4b94592a8f12aa13",
+      "anchor": [
+        0.5,
+        0.75
+      ]
+    }
+  ]
+}

@@ -71,4 +71,43 @@ describe('built package entrypoints', () => {
 		expect(result.stdout).toContain('OK examples/basic/source.isostate.yaml');
 		expect(result.status).toBe(0);
 	}, buildTimeoutMs);
+
+	test('browser DSL and editor-support dist entrypoints import cleanly', () => {
+		ensureDistBuilt();
+
+		const script = `
+			const browserDsl = await import('./packages/core/dist/dsl/browser.js');
+			const editorSupport = await import('./packages/core/dist/editor-support/index.js');
+			if (typeof browserDsl.parseScene !== 'function') throw new Error('browserDsl parseScene missing');
+			if (typeof browserDsl.validateScene !== 'function') throw new Error('browserDsl validateScene missing');
+			if (typeof browserDsl.compileScene !== 'function') throw new Error('browserDsl compileScene missing');
+			if (typeof editorSupport.projectGridPoint !== 'function') throw new Error('editorSupport projectGridPoint missing');
+			if (typeof editorSupport.createEditorRuntimeAdapter !== 'function') throw new Error('editorSupport createEditorRuntimeAdapter missing');
+		`;
+		const result = spawnSync('bun', ['--eval', script], {
+			cwd: process.cwd(),
+			encoding: 'utf8'
+		});
+
+		expect(result.stderr).toBe('');
+		expect(result.status).toBe(0);
+	}, buildTimeoutMs);
+
+	test('editor package dist entrypoint imports cleanly', () => {
+		ensureDistBuilt();
+
+		const script = `
+			const editor = await import('./packages/editor/dist/index.js');
+			if (typeof editor.mountEditor !== 'function') throw new Error('editor mountEditor missing');
+			if (typeof editor.IsostateEditor !== 'function') throw new Error('editor IsostateEditor missing');
+			if (typeof editor.createEditorWorkspace !== 'function') throw new Error('editor createEditorWorkspace missing');
+		`;
+		const result = spawnSync('bun', ['--eval', script], {
+			cwd: process.cwd(),
+			encoding: 'utf8'
+		});
+
+		expect(result.stderr).toBe('');
+		expect(result.status).toBe(0);
+	}, buildTimeoutMs);
 });

@@ -1,7 +1,7 @@
 # Isostate Assets Reference
 
-Use this when defining `header.assets`, SVG asset paths, anchors, floors,
-labels, and generated primitive underlays.
+Use this when defining `header.assets`, SVG asset paths, sprite sheets, anchors,
+floors, labels, and generated primitive underlays.
 
 ## Asset Catalog
 
@@ -24,6 +24,42 @@ Rules:
 - `anchor` is normalized viewport coordinate `[x, y]`, default `[0.5, 1]`.
 - Asset declaration order has no render-order meaning.
 - External assets must be browser-loadable standalone SVG files.
+
+## Sprite Sheets
+
+Sprite sheets expose many placeable sprite ids from one image file:
+
+```yaml
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: app-icons.png
+      sheetSize: [512, 256]
+      tileSize: [64, 64]
+      anchor: [0.5, 1]
+      sprites:
+        server: [0, 0]
+        database:
+          at: [1, 0]
+          anchor: [0.5, 0.92]
+        wide-service:
+          rect: [128, 0, 96, 64]
+```
+
+Rules:
+
+- Elements use nested sprite ids, for example `asset: server`.
+- The sheet id, for example `app-icons`, is only a namespace and is not
+  placeable.
+- `sheetSize`, `tileSize`, and `rect` are source-image pixels.
+- `tileSize` is required for tuple and `at` sprites; `rect` sprites do not need
+  `tileSize`.
+- Sprite ids must not collide with standalone asset ids, other sprite ids, or
+  built-ins.
+- Sprite sheet paths must include `.png`, `.webp`, `.jpg`, `.jpeg`, or `.svg`;
+  `.gif` is not supported.
 
 ## Text Labels
 
@@ -84,7 +120,7 @@ Primitive rules:
 - Primitive updates are sparse; changing one nested style field keeps omitted
   primitive fields unchanged.
 - Use whole-cell `size` values to scale primitives on the grid.
-- External SVG assets must not include `primitive`.
+- External URL assets and sprites must not include `primitive`.
 
 ## Floor And Fit
 

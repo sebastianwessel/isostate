@@ -25,6 +25,14 @@
 		"./dsl": {
 			"types": "./dist/dsl/index.d.ts",
 			"import": "./dist/dsl/index.js"
+		},
+		"./dsl/browser": {
+			"types": "./dist/dsl/browser.d.ts",
+			"import": "./dist/dsl/browser.js"
+		},
+		"./editor-support": {
+			"types": "./dist/editor-support/index.d.ts",
+			"import": "./dist/editor-support/index.js"
 		}
 	},
 	"files": [

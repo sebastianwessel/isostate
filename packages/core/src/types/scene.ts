@@ -17,8 +17,16 @@ export interface GridConfig {
 	cellSize?: number;
 }
 
-/** Asset declared in an authored scene document header. */
-export interface AssetCatalogEntry {
+export type SpriteDefinition =
+	| [number, number]
+	| {
+			at?: [number, number];
+			rect?: [number, number, number, number];
+			anchor?: [number, number];
+	  };
+
+/** Standalone URL asset declared in an authored scene document header. */
+export interface UrlAssetCatalogEntry {
 	/** Unique asset id used by scene elements. */
 	id: string;
 	/** Optional relative SVG path. Defaults to `id` when omitted. */
@@ -29,6 +37,26 @@ export interface AssetCatalogEntry {
 	 */
 	anchor?: [number, number];
 }
+
+/** Sprite sheet declared in an authored scene document header. */
+export interface SpriteSheetAssetCatalogEntry {
+	/** Namespace id for the sheet; nested sprite ids are used by scene elements. */
+	id: string;
+	type: "sprite-sheet";
+	/** Relative image path with explicit extension. */
+	path: string;
+	/** Source image size in pixels. */
+	sheetSize: [number, number];
+	/** Regular tile size in pixels for grid-addressed sprites. */
+	tileSize?: [number, number];
+	/** Default normalized anchor inherited by sprites. */
+	anchor?: [number, number];
+	/** Logical placeable asset ids exposed by this sheet. */
+	sprites: Record<string, SpriteDefinition>;
+}
+
+/** Asset declared in an authored scene document header. */
+export type AssetCatalogEntry = UrlAssetCatalogEntry | SpriteSheetAssetCatalogEntry;
 
 /** Logical ground plane and stable layout bounds. */
 export interface FloorConfig {

@@ -38,6 +38,41 @@ Simple underlays and markers also do not need custom SVG assets. Use reserved
 built-in primitive assets such as `asset: rectangle` with a matching
 `primitive.rectangle` payload.
 
+## Sprite Sheets
+
+Use sprite sheets when one image file should provide many logical asset ids:
+
+```yaml
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: app-icons.png
+      sheetSize: [512, 256]
+      tileSize: [64, 64]
+      anchor: [0.5, 1]
+      sprites:
+        server: [0, 0]
+        database:
+          at: [1, 0]
+          anchor: [0.5, 0.92]
+        wide-service:
+          rect: [128, 0, 96, 64]
+
+scenes:
+  - id: initial
+    elements:
+      - id: api
+        asset: server
+        at: [1, 1]
+```
+
+`sheetSize`, `tileSize`, and `rect` use source-image pixels. Elements reference
+the nested sprite id (`server`), not the sheet namespace id (`app-icons`).
+Sprite sheet paths must include `.png`, `.webp`, `.jpg`, `.jpeg`, or `.svg`;
+`.gif` is not supported.
+
 This also works with path-style libraries such as draw.io SVG sets: set
 `assetBaseUrl` to the library root, then use paths like
 `mscae/Active_Directory` or `azure2/Virtual_Machine`. Asset files must be

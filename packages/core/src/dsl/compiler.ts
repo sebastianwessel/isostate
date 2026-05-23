@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto";
 import type {
 	CompiledAsset,
 	CompiledFloor,
@@ -10,6 +9,7 @@ import type {
 	SceneDocument,
 } from "../types/index.ts";
 import { ValidationErrorClass } from "../types/index.ts";
+import { sha256 } from "../utils/sha256.ts";
 import { resolveSceneSnapshots } from "./scene-validator.ts";
 
 export interface CompileOptions {
@@ -206,7 +206,7 @@ function defaultFloorLayer(document: SceneDocument): string {
 }
 
 function digestBundle(bundle: Omit<RuntimeBundle, "_digest">): string {
-	return createHash("sha256").update(canonicalStringify(bundle)).digest("hex");
+	return sha256(canonicalStringify(bundle));
 }
 
 function canonicalStringify(value: unknown, space?: number): string {

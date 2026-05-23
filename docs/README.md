@@ -28,10 +28,14 @@ package-runner variants, agent-specific installation, and verification.
   scene files from CI or local scripts.
 - [Deploy Static Bundle](./guides/deploy-static-bundle.md): generate
   public-folder output with the CLI.
+- [Use The Editor In Astro](./guides/use-editor-in-astro.md): host assets in
+  `public/`, generate a manifest, and mount the editor as a React island.
 - [Public API](./reference/public-api.md): runtime and dev-time imports.
 - [Runtime Bundle](./reference/runtime-bundle.md): compiled artifact shape.
 - [Errors](./reference/errors.md): structured error classes and common fixes.
 - [Types Reference](./reference/types.md): exported TypeScript contracts.
+- [Editor Reference](./reference/editor.md): editor package API, workspace types,
+  commands, and serialization.
 
 ## Examples
 
@@ -42,11 +46,16 @@ package-runner variants, agent-specific installation, and verification.
 - [Compile YAML](./examples/compile-yaml.md): parse, validate, and compile
   `.isostate.yaml`.
 - [Custom Assets](./examples/custom-assets.md): create browser-loadable SVG
-  assets with explicit footprint anchors.
+  assets and sprite sheets with explicit footprint anchors.
 - [Custom Theme](./examples/custom-theme.md): use CSS variable themes.
 - [Inspect Bundle](./examples/inspect-bundle.md): read compiled bundle metadata.
 - [Low-Level Rendering](./examples/low-level-rendering.md): advanced rendering
   escape hatch.
+- [Editor Basic](./examples/editor-basic.md): mount the editor with initial YAML.
+- [Editor React](./examples/editor-react.md): controlled React component example.
+- [Editor Export](./examples/editor-export.md): export YAML and runtime bundles.
+- [Asset Manifest](./examples/asset-manifest.md): generate and use an asset
+  manifest with the CLI.
 
 ## Browser Demo
 

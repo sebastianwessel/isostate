@@ -47,8 +47,19 @@ print these as compact key/value pairs before the message.
 | `ASSET_URL_REQUIRED` | Declared external asset cannot resolve to a URL from `assetBaseUrl`. | Add `assetBaseUrl`, add `path`, or use `asset: text` for generated text. |
 | `ASSET_NOT_FOUND` | Runtime bundle does not contain a URL for a referenced external asset. | Recompile from valid YAML or fix reference. |
 | `ASSET_NOT_DECLARED` | Element references an asset not listed in `header.assets`. | Add asset to header or fix reference. |
+| `ASSET_TYPE_UNSUPPORTED` | `header.assets[]` declares an unsupported asset `type`. | Use no `type` for normal SVG URL assets or `type: sprite-sheet`. |
 | `BUILTIN_ASSET_ID_RESERVED` | `header.assets` declares a reserved built-in asset id such as `text`. | Remove the declaration and use the built-in element contract. |
 | `DUPLICATE_ASSET_ID` | Duplicate asset id in `header.assets`. | Rename or remove duplicate. |
+| `SPRITE_SHEET_NOT_PLACEABLE` | An element or floor references a sprite sheet namespace id instead of a sprite id. | Reference one of the sheet's `sprites` ids. |
+| `INVALID_SPRITE_SHEET_PATH` | A sprite sheet path is missing, lacks an explicit supported extension, uses `.gif`, or uses an unsupported extension. | Use a relative `.png`, `.webp`, `.jpg`, `.jpeg`, or `.svg` path. |
+| `INVALID_SPRITE_SHEET_SIZE` | `sheetSize` is missing or is not a positive whole-pixel `[width, height]` tuple. | Add a valid source image size. |
+| `INVALID_SPRITE_TILE_SIZE` | `tileSize` is required, malformed, or not a positive whole-pixel `[width, height]` tuple. | Add a valid tile size or use only `rect` sprites. |
+| `NO_SPRITES` | A sprite sheet declares no sprites. | Add at least one sprite or remove the sheet. |
+| `INVALID_SPRITE_ID` | A sprite id is not kebab-case or uses a reserved built-in id. | Rename the sprite. |
+| `DUPLICATE_SPRITE_ID` | A sprite id is repeated across sheets. | Rename one sprite. |
+| `SPRITE_ASSET_ID_COLLISION` | A sprite id collides with a normal asset id or sprite sheet namespace id. | Rename either the sprite or the colliding asset. |
+| `INVALID_SPRITE_DEFINITION` | A sprite definition has both `at` and `rect`, neither `at` nor `rect`, an invalid tuple, or unknown fields. | Use `[column, row]`, `{ at: [column, row] }`, or `{ rect: [x, y, width, height] }`. |
+| `INVALID_SPRITE_RECT` | A compiled or authored sprite rectangle is malformed or outside `sheetSize`. | Use whole positive dimensions inside the sheet bounds. |
 | `LAYER_NOT_FOUND` | Element, floor, or patch references missing layer. | Add layer or fix reference. |
 | `DUPLICATE_ELEMENT_ID` | Duplicate element ID. | Rename one element. |
 | `DUPLICATE_CONNECTOR_ID` | Duplicate connector ID. | Rename one connector. |

@@ -39,12 +39,13 @@ public/isostate/scene/
   scene.isostate.js
   manifest.json
   assets/
-    <referenced external SVG assets>
+    <referenced external asset source files>
 ```
 
 - `scene.isostate.js` is compiled scene data.
 - `isostate.runtime.js` is the standalone browser runtime.
-- `assets/` contains only referenced external SVG assets.
+- `assets/` contains only referenced external asset source files, including
+  standalone SVG assets and sprite sheet image files.
 - `manifest.json` records source, runtime, scene, asset paths, and digests.
 
 ## Review Rules

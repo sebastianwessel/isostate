@@ -123,7 +123,8 @@ The header is the document-level contract. It prevents examples from scattering 
 
 ### Assets
 
-`header.assets` is a local id catalog, not SVG content. With `assetBaseUrl`, the compiler emits browser-loadable SVG URLs from each asset `path`.
+`header.assets` is a local id catalog, not asset content. With `assetBaseUrl`,
+the compiler emits browser-loadable URLs from each asset declaration.
 
 ```yaml
 assets:
@@ -143,6 +144,45 @@ URL-loaded files must be standalone SVG documents with `xmlns="http://www.w3.org
 inside the square runtime SVG image viewport that the renderer places on the
 projected footprint anchor. Shared asset catalogs should declare it explicitly
 for every asset so unchecked imported SVG geometry does not drift from the grid.
+
+Sprite sheets expose multiple logical asset ids from one image URL while keeping
+scene elements simple:
+
+```yaml
+assets:
+  - id: app-icons
+    type: sprite-sheet
+    path: app-icons.png
+    sheetSize: [512, 256]
+    tileSize: [64, 64]
+    anchor: [0.5, 1]
+    sprites:
+      server: [0, 0]
+      database:
+        at: [1, 0]
+        anchor: [0.5, 0.92]
+      wide-service:
+        rect: [128, 0, 96, 64]
+```
+
+Elements reference sprite ids directly:
+
+```yaml
+- id: api
+  asset: server
+  layer: structures
+  at: [2, 2]
+```
+
+Rules:
+
+- `app-icons` is only a sheet namespace and is not placeable.
+- `server`, `database`, and `wide-service` are placeable asset ids.
+- `sheetSize`, `tileSize`, and `rect` use source-image pixels.
+- `tileSize` is required for tuple and `at` sprites.
+- `rect` sprites do not require `tileSize`.
+- Sprite ids share the same global asset id namespace as standalone assets and
+  built-ins.
 
 ### Built-In Text
 

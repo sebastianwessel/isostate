@@ -63,11 +63,33 @@ viewBox path in reverse.
 
 ## Assets
 
-External assets are browser-loadable SVG files. Author them in YAML with
-`header.assetBaseUrl` and `header.assets[].path`; the compiler emits URL entries
-in the runtime bundle and the renderer loads them with SVG `<image>` nodes.
-Use `header.assets[].anchor` to align imported SVGs whose visual ground contact
-is not centered in the viewport.
+External assets are browser-loadable URL assets. Normal assets are standalone
+SVG files authored with `header.assetBaseUrl` and `header.assets[].path`; the
+compiler emits URL entries in the runtime bundle and the renderer loads them
+with SVG `<image>` nodes. Use `header.assets[].anchor` to align imported SVGs
+whose visual ground contact is not centered in the viewport.
+
+Sprite sheet assets expose many logical asset ids from one image URL:
+
+```yaml
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: app-icons.png
+      sheetSize: [512, 256]
+      tileSize: [64, 64]
+      sprites:
+        server: [0, 0]
+
+scenes:
+  - id: initial
+    elements:
+      - id: api
+        asset: server
+        at: [1, 1]
+```
 
 Reserved built-in generated assets do not use external asset URLs. Use
 `asset: text` for labels:

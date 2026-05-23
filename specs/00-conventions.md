@@ -24,6 +24,8 @@ packages/
       types/            # Shared TypeScript types
       utils/            # Shared utilities
       index.ts          # Public API entry point
+  editor/               # Browser authoring UI, isolated from core runtime
+    src/                # React visual editor, YAML editor, workspace state
 specs/                  # All spec documents
   02-capabilities/dsl/compiler.md  # Compiler pipeline architecture
 skills/                 # AI agent skills for workflow guidance
