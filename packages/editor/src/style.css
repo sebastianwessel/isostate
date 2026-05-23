@@ -355,6 +355,13 @@
 	border-right: 1px solid var(--border);
 }
 
+.isostate-sidebar-tabs-host {
+	flex: 1 1 auto;
+	min-height: 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
 @media (max-width: 900px) {
 	.isostate-editor-body {
 		flex-direction: column;
