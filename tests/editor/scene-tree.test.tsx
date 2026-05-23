@@ -110,6 +110,15 @@ function createDataTransfer() {
 	};
 }
 
+function setInputValue(input: HTMLInputElement, value: string) {
+	const setter = Object.getOwnPropertyDescriptor(
+		window.HTMLInputElement.prototype,
+		'value'
+	)?.set;
+	setter?.call(input, value);
+	input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
 beforeEach(() => {
 	setupHappyDom();
 });
@@ -148,10 +157,13 @@ describe('SceneTreePanel', () => {
 			container.querySelectorAll('.isostate-tree-scene')
 		).find((scene) => scene.textContent?.includes('scene-2')) as HTMLElement;
 
-		expect(scene2.textContent).toContain('e1');
-		expect(scene2.textContent).toContain('e2');
-		expect(scene2.textContent).toContain('e3');
-		expect(scene2.textContent).toContain('c1');
+		const ids = Array.from(
+			scene2.querySelectorAll('.isostate-tree-id-input')
+		).map((input) => (input as HTMLInputElement).value);
+		expect(ids).toContain('e1');
+		expect(ids).toContain('e2');
+		expect(ids).toContain('e3');
+		expect(ids).toContain('c1');
 
 		root.unmount();
 		container.remove();
@@ -172,13 +184,48 @@ describe('SceneTreePanel', () => {
 		);
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
-		const element = Array.from(
-			container.querySelectorAll('.isostate-tree-element')
-		).find((item) => item.textContent?.includes('e2')) as HTMLButtonElement;
+		const elementInput = Array.from(
+			container.querySelectorAll('.isostate-tree-id-input')
+		).find((item) => (item as HTMLInputElement).value === 'e2');
+		const element = elementInput?.closest(
+			'.isostate-tree-element'
+		) as HTMLButtonElement;
 		element.click();
 
 		expect(selected?.objectIds).toEqual(['e2']);
 		expect(selected?.layerNames).toEqual(['overlay']);
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('element and connection rows use icons and editable ids', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(container.querySelectorAll('.isostate-tree-row-icon').length).toBeGreaterThan(
+			0
+		);
+		expect(container.querySelector('.isostate-tree-element-asset')).toBeNull();
+
+		const input = Array.from(
+			container.querySelectorAll('.isostate-tree-id-input')
+		).find((candidate) => (candidate as HTMLInputElement).value === 'e1') as
+			| HTMLInputElement
+			| undefined;
+		expect(input).toBeTruthy();
+		setInputValue(input, 'api-server');
+		input.dispatchEvent(new Event('blur', { bubbles: true }));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(
+			Array.from(container.querySelectorAll('.isostate-tree-id-input')).some(
+				(candidate) => (candidate as HTMLInputElement).value === 'api-server'
+			)
+		).toBe(true);
 
 		root.unmount();
 		container.remove();

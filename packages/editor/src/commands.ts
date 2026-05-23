@@ -27,6 +27,16 @@ function clone<T>(obj: T): T {
 	return JSON.parse(JSON.stringify(obj));
 }
 
+const IDENTIFIER_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/;
+
+function normalizeEditableId(id: string): string {
+	const next = id.trim();
+	if (!IDENTIFIER_PATTERN.test(next)) {
+		throw new Error(`Invalid id "${id}"`);
+	}
+	return next;
+}
+
 function convertValidationReport(report: {
 	errors: Array<{
 		code: string;
@@ -531,6 +541,98 @@ export function createObjectReorderCommand(
 	};
 }
 
+export function createObjectRenameCommand(
+	oldId: string,
+	newId: string
+): EditorCommand {
+	return {
+		id: 'object.rename',
+		label: 'Rename Object',
+		apply(workspace) {
+			return withDocumentMutation(
+				workspace,
+				'object.rename',
+				'Rename Object',
+				(doc) => {
+					const nextId = normalizeEditableId(newId);
+					if (oldId === nextId) return;
+					let found = false;
+					for (const scene of doc.scenes) {
+						for (const element of scene.elements ?? []) {
+							if (element.id === nextId) {
+								throw new Error(`Element ${nextId} already exists`);
+							}
+						}
+						for (const element of scene.add?.elements ?? []) {
+							if (element.id === nextId) {
+								throw new Error(`Element ${nextId} already exists`);
+							}
+						}
+					}
+					for (const scene of doc.scenes) {
+						for (const element of scene.elements ?? []) {
+							if (element.id === oldId) {
+								element.id = nextId;
+								found = true;
+							}
+						}
+						for (const element of scene.add?.elements ?? []) {
+							if (element.id === oldId) {
+								element.id = nextId;
+								found = true;
+							}
+						}
+						for (const patch of scene.update?.elements ?? []) {
+							if (patch.id === oldId) {
+								patch.id = nextId;
+								found = true;
+							}
+						}
+						for (const removal of scene.remove?.elements ?? []) {
+							if (removal.id === oldId) {
+								removal.id = nextId;
+								found = true;
+							}
+						}
+						for (const connection of scene.connections ?? []) {
+							if (connection.from?.element === oldId) {
+								connection.from.element = nextId;
+							}
+							if (connection.to?.element === oldId) {
+								connection.to.element = nextId;
+							}
+						}
+						for (const connection of scene.add?.connections ?? []) {
+							if (connection.from?.element === oldId) {
+								connection.from.element = nextId;
+							}
+							if (connection.to?.element === oldId) {
+								connection.to.element = nextId;
+							}
+						}
+						for (const connection of scene.update?.connections ?? []) {
+							if (connection.from?.element === oldId) {
+								connection.from.element = nextId;
+							}
+							if (connection.to?.element === oldId) {
+								connection.to.element = nextId;
+							}
+						}
+						if (scene.camera?.target && 'element' in scene.camera.target) {
+							if (scene.camera.target.element === oldId) {
+								scene.camera.target.element = nextId;
+							}
+						}
+					}
+					if (!found) {
+						throw new Error(`Element ${oldId} not found`);
+					}
+				}
+			);
+		}
+	};
+}
+
 export function createObjectRemoveCommand(
 	sceneId: string,
 	elementId: string
@@ -691,6 +793,69 @@ export function createConnectionUpdateCommand(
 									: existing.style
 							};
 						}
+					}
+				}
+			);
+		}
+	};
+}
+
+export function createConnectionRenameCommand(
+	oldId: string,
+	newId: string
+): EditorCommand {
+	return {
+		id: 'connection.rename',
+		label: 'Rename Connection',
+		apply(workspace) {
+			return withDocumentMutation(
+				workspace,
+				'connection.rename',
+				'Rename Connection',
+				(doc) => {
+					const nextId = normalizeEditableId(newId);
+					if (oldId === nextId) return;
+					let found = false;
+					for (const scene of doc.scenes) {
+						for (const connection of scene.connections ?? []) {
+							if (connection.id === nextId) {
+								throw new Error(`Connection ${nextId} already exists`);
+							}
+						}
+						for (const connection of scene.add?.connections ?? []) {
+							if (connection.id === nextId) {
+								throw new Error(`Connection ${nextId} already exists`);
+							}
+						}
+					}
+					for (const scene of doc.scenes) {
+						for (const connection of scene.connections ?? []) {
+							if (connection.id === oldId) {
+								connection.id = nextId;
+								found = true;
+							}
+						}
+						for (const connection of scene.add?.connections ?? []) {
+							if (connection.id === oldId) {
+								connection.id = nextId;
+								found = true;
+							}
+						}
+						for (const patch of scene.update?.connections ?? []) {
+							if (patch.id === oldId) {
+								patch.id = nextId;
+								found = true;
+							}
+						}
+						for (const removal of scene.remove?.connections ?? []) {
+							if (removal.id === oldId) {
+								removal.id = nextId;
+								found = true;
+							}
+						}
+					}
+					if (!found) {
+						throw new Error(`Connection ${oldId} not found`);
 					}
 				}
 			);

@@ -67,6 +67,7 @@ describe('createEditorWorkspace', () => {
 		expect(workspace.viewport.pan).toEqual({ x: 0, y: 0 });
 		expect(workspace.viewport.showGrid).toBe(true);
 		expect(workspace.viewport.showFloor).toBe(true);
+		expect(workspace.viewport.gridOpacity).toBe(0.7);
 	});
 
 	test('initializes default editState and uiState', () => {

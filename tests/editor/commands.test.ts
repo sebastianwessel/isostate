@@ -9,6 +9,7 @@ import {
 	createCameraUpdateCommand,
 	createConnectionAddCommand,
 	createConnectionRemoveCommand,
+	createConnectionRenameCommand,
 	createConnectionUpdateCommand,
 	createLayerAddCommand,
 	createLayerRemoveCommand,
@@ -16,6 +17,7 @@ import {
 	createLayerUpdateCommand,
 	createObjectAddCommand,
 	createObjectRemoveCommand,
+	createObjectRenameCommand,
 	createObjectUpdateCommand,
 	createSceneAddCommand,
 	createSceneRemoveCommand,
@@ -228,6 +230,20 @@ describe('applyEditorCommand', () => {
 		).toBeUndefined();
 	});
 
+	test('object.rename updates element ids and references', () => {
+		const workspace = makeWorkspace();
+		const command = createObjectRenameCommand('e1', 'api-server');
+		const result = applyEditorCommand(workspace, command);
+		expect(result.changed).toBe(true);
+		expect(result.workspace.document?.scenes[0].elements?.[0].id).toBe(
+			'api-server'
+		);
+		expect(
+			result.workspace.document?.scenes[0].connections?.[0].from?.element
+		).toBe('api-server');
+		expect(result.workspace.sourceYaml).toContain('id: api-server');
+	});
+
 	test('object.remove on first scene removes from elements and connections', () => {
 		const workspace = makeWorkspace();
 		const command = createObjectRemoveCommand('scene-1', 'e1');
@@ -335,6 +351,17 @@ describe('applyEditorCommand', () => {
 				(c) => c.id === 'c1'
 			)?.layer
 		).toBe('default');
+	});
+
+	test('connection.rename updates connection ids across scene deltas', () => {
+		const workspace = makeWorkspace();
+		const command = createConnectionRenameCommand('c1', 'server-link');
+		const result = applyEditorCommand(workspace, command);
+		expect(result.changed).toBe(true);
+		expect(result.workspace.document?.scenes[0].connections?.[0].id).toBe(
+			'server-link'
+		);
+		expect(result.workspace.sourceYaml).toContain('id: server-link');
 	});
 
 	test('connection.remove on first scene removes from connections', () => {

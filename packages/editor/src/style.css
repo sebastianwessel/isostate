@@ -223,7 +223,16 @@
 	overflow: hidden;
 	touch-action: none;
 	cursor: grab;
-	--isostate-editor-grid-opacity: 0.35;
+	--isostate-editor-grid-opacity: 0.7;
+	--isostate-editor-grid-line: #2563eb;
+	--isostate-editor-grid-boundary: #1d4ed8;
+	--isostate-editor-grid-fill: #dbeafe;
+}
+
+.isostate-editor[data-theme="dark"] .isostate-editor-canvas-view {
+	--isostate-editor-grid-line: #93c5fd;
+	--isostate-editor-grid-boundary: #bfdbfe;
+	--isostate-editor-grid-fill: #1e3a8a;
 }
 
 .isostate-editor-canvas-view--panning {
@@ -231,7 +240,22 @@
 }
 
 .isostate-editor-canvas-view .iso-floor-grid {
-	opacity: var(--isostate-editor-grid-opacity);
+	opacity: 1;
+}
+
+.isostate-editor-canvas-view .iso-floor-grid .iso-floor-slab {
+	fill: var(--isostate-editor-grid-fill);
+	fill-opacity: 0.12;
+	stroke: var(--isostate-editor-grid-boundary);
+	stroke-opacity: calc(var(--isostate-editor-grid-opacity) * 0.85);
+	stroke-width: 1.25;
+}
+
+.isostate-editor-canvas-view .iso-floor-grid line {
+	stroke: var(--isostate-editor-grid-line);
+	stroke-opacity: var(--isostate-editor-grid-opacity);
+	stroke-width: 1.35;
+	vector-effect: non-scaling-stroke;
 }
 
 .isostate-canvas-controls {
@@ -756,6 +780,13 @@
 	color: var(--muted-foreground);
 }
 
+.isostate-tree-row-icon {
+	width: 0.875rem;
+	height: 0.875rem;
+	flex: 0 0 auto;
+	color: var(--muted-foreground);
+}
+
 .isostate-tree-elements {
 	display: flex;
 	flex-direction: column;
@@ -766,7 +797,7 @@
 .isostate-tree-element {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: flex-start;
 	gap: 0.5rem;
 	width: 100%;
 	min-height: 28px;
@@ -785,22 +816,28 @@
 	background: var(--accent);
 }
 
-.isostate-tree-element-id,
-.isostate-tree-element-asset {
+.isostate-tree-id-input {
+	flex: 1 1 auto;
 	min-width: 0;
+	width: 100%;
+	border: 1px solid transparent;
+	border-radius: calc(var(--radius) - 2px);
+	background: transparent;
+	color: var(--foreground);
+	font: inherit;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 0.125rem 0.25rem;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.isostate-tree-element-id {
-	font-size: 12px;
-	font-weight: 600;
-}
-
-.isostate-tree-element-asset {
-	color: var(--muted-foreground);
-	font-size: 11px;
+.isostate-tree-id-input:focus {
+	background: var(--background);
+	border-color: var(--ring);
+	outline: none;
+	box-shadow: 0 0 0 1px var(--ring);
 }
 
 /* Asset Panel */

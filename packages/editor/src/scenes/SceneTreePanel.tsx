@@ -4,19 +4,24 @@ import type {
 	SceneStep
 } from '@sebastianwessel/isostate/types';
 import {
+	Box,
 	ChevronDown,
 	ChevronRight,
 	Eye,
 	EyeOff,
+	Layers,
+	Link2,
 	Lock,
 	Plus,
 	Unlock
 } from 'lucide-react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
+	createConnectionRenameCommand,
 	createConnectionUpdateCommand,
 	createLayerAddCommand,
 	createLayerReorderCommand,
+	createObjectRenameCommand,
 	createObjectReorderCommand,
 	createObjectUpdateCommand,
 	createSceneAddCommand,
@@ -75,6 +80,50 @@ function setDrag(event: React.DragEvent, payload: DragPayload) {
 		JSON.stringify(payload)
 	);
 	event.dataTransfer.setData('text/plain', JSON.stringify(payload));
+}
+
+function TreeIdInput({
+	value,
+	ariaLabel,
+	onCommit
+}: {
+	value: string;
+	ariaLabel: string;
+	onCommit: (value: string) => void;
+}) {
+	const [draft, setDraft] = useState(value);
+	useEffect(() => setDraft(value), [value]);
+	const commit = () => {
+		const next = draft.trim();
+		if (next && next !== value) {
+			onCommit(next);
+		} else {
+			setDraft(value);
+		}
+	};
+	return (
+		<input
+			type="text"
+			className="isostate-tree-id-input"
+			value={draft}
+			aria-label={ariaLabel}
+			draggable={false}
+			onClick={(event) => event.stopPropagation()}
+			onPointerDown={(event) => event.stopPropagation()}
+			onChange={(event) => setDraft(event.currentTarget.value)}
+			onBlur={commit}
+			onKeyDown={(event) => {
+				event.stopPropagation();
+				if (event.key === 'Enter') {
+					event.currentTarget.blur();
+				}
+				if (event.key === 'Escape') {
+					setDraft(value);
+					event.currentTarget.blur();
+				}
+			}}
+		/>
+	);
 }
 
 export function SceneTreePanel({
@@ -415,6 +464,10 @@ export function SceneTreePanel({
 															<Unlock aria-hidden="true" />
 														)}
 													</Button>
+													<Layers
+														className="isostate-tree-row-icon"
+														aria-hidden="true"
+													/>
 													<span className="isostate-tree-layer-name">
 														{layer.name}
 													</span>
@@ -461,15 +514,19 @@ export function SceneTreePanel({
 																});
 															}}
 														>
-															<span className="isostate-tree-element-id">
-																{element.id}
-															</span>
-															<Badge
-																className="isostate-tree-element-asset"
-																variant="outline"
-															>
-																{element.asset}
-															</Badge>
+															<Box
+																className="isostate-tree-row-icon"
+																aria-hidden="true"
+															/>
+															<TreeIdInput
+																value={element.id}
+																ariaLabel={`Rename element ${element.id}`}
+																onCommit={(value) =>
+																	onCommand(
+																		createObjectRenameCommand(element.id, value)
+																	)
+																}
+															/>
 														</button>
 													))}
 													{layerConnections.map((connection) => (
@@ -513,15 +570,22 @@ export function SceneTreePanel({
 																});
 															}}
 														>
-															<span className="isostate-tree-element-id">
-																{connection.id}
-															</span>
-															<Badge
-																className="isostate-tree-element-asset"
-																variant="outline"
-															>
-																connection
-															</Badge>
+															<Link2
+																className="isostate-tree-row-icon"
+																aria-hidden="true"
+															/>
+															<TreeIdInput
+																value={connection.id}
+																ariaLabel={`Rename connection ${connection.id}`}
+																onCommit={(value) =>
+																	onCommand(
+																		createConnectionRenameCommand(
+																			connection.id,
+																			value
+																		)
+																	)
+																}
+															/>
 														</button>
 													))}
 												</div>

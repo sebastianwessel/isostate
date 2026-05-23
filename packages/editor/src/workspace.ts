@@ -85,7 +85,7 @@ export function createEditorWorkspace(
 			zoom: 1,
 			showGrid: true,
 			showFloor: true,
-			gridOpacity: 0.35
+			gridOpacity: 0.7
 		},
 		editState: {
 			readonly: false,
