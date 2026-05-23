@@ -2,6 +2,7 @@ import { mountScene, resolveTheme } from '@sebastianwessel/isostate';
 import { compileScene } from '@sebastianwessel/isostate/dsl/browser';
 import type { EditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
 import { createEditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
+import { Grid2X2, Minus, Plus, RotateCcw } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createAssetPlacementCommand } from '../assets.ts';
@@ -11,6 +12,14 @@ import type {
 	EditorSelection,
 	EditorWorkspace
 } from '../types.ts';
+import { Button } from '../ui/button.tsx';
+import { Slider } from '../ui/slider.tsx';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger
+} from '../ui/tooltip.tsx';
 import type { EditorGridBounds } from './gridSnapping.ts';
 import { snapGridCell } from './gridSnapping.ts';
 import { SelectionOverlay } from './SelectionOverlay.tsx';
@@ -48,29 +57,6 @@ function createEditorPreviewDocument(
 			}
 		}
 	};
-}
-
-function Icon({ name }: { name: 'zoom-in' | 'zoom-out' | 'reset' }) {
-	const path =
-		name === 'zoom-in'
-			? 'M11 5v12M5 11h12M20 20l-4.2-4.2'
-			: name === 'zoom-out'
-				? 'M5 11h12M20 20l-4.2-4.2'
-				: 'M4 12a8 8 0 0 1 13.7-5.7M18 3v5h-5M20 12a8 8 0 0 1-13.7 5.7M6 21v-5h5';
-	return (
-		<svg
-			aria-hidden="true"
-			className="isostate-icon"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d={path} />
-		</svg>
-	);
 }
 
 function getEditorGridBounds(
@@ -236,9 +222,9 @@ export function CanvasView({
 	};
 
 	const gridOpacity = workspace.viewport.gridOpacity ?? 0.35;
-	const updateGridOpacity = (value: string) => {
+	const updateGridOpacity = (value: number) => {
 		updateViewport({
-			gridOpacity: Number(value)
+			gridOpacity: value
 		});
 	};
 
@@ -390,51 +376,81 @@ export function CanvasView({
 				role="toolbar"
 				aria-label="Canvas controls"
 			>
-				<button
-					type="button"
-					className="isostate-btn"
-					onClick={() => zoomBy(1.15)}
-					aria-label="Zoom in"
-					title="Zoom in"
-				>
-					<Icon name="zoom-in" />
-				</button>
-				<button
-					type="button"
-					className="isostate-btn"
-					onClick={() => zoomBy(0.85)}
-					aria-label="Zoom out"
-					title="Zoom out"
-				>
-					<Icon name="zoom-out" />
-				</button>
-				<button
-					type="button"
-					className="isostate-btn"
-					onClick={resetView}
-					aria-label="Reset view"
-					title="Reset view"
-				>
-					<Icon name="reset" />
-				</button>
+				<TooltipProvider>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="secondary"
+								size="icon-sm"
+								onClick={() => zoomBy(1.15)}
+								aria-label="Zoom in"
+							>
+								<Plus aria-hidden="true" />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>Zoom in</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="secondary"
+								size="icon-sm"
+								onClick={() => zoomBy(0.85)}
+								aria-label="Zoom out"
+							>
+								<Minus aria-hidden="true" />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>Zoom out</TooltipContent>
+					</Tooltip>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Button
+								type="button"
+								variant="secondary"
+								size="icon-sm"
+								onClick={resetView}
+								aria-label="Reset view"
+							>
+								<RotateCcw aria-hidden="true" />
+							</Button>
+						</TooltipTrigger>
+						<TooltipContent>Reset view</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
 				<span className="isostate-canvas-zoom">{Math.round(zoom * 100)}%</span>
-				<label className="isostate-grid-opacity-control">
-					<span>Grid</span>
+				<div className="isostate-grid-opacity-control">
+					<Grid2X2 aria-hidden="true" />
 					<input
 						type="range"
-						className="isostate-grid-opacity"
+						className="isostate-grid-opacity isostate-grid-opacity-native"
 						min="0"
 						max="1"
 						step="0.05"
 						value={gridOpacity}
-						onInput={(event) => updateGridOpacity(event.currentTarget.value)}
-						onPointerUp={(event) =>
-							updateGridOpacity(event.currentTarget.value)
+						onInput={(event) =>
+							updateGridOpacity(Number(event.currentTarget.value))
 						}
-						onKeyUp={(event) => updateGridOpacity(event.currentTarget.value)}
+						onPointerUp={(event) =>
+							updateGridOpacity(Number(event.currentTarget.value))
+						}
+						onKeyUp={(event) =>
+							updateGridOpacity(Number(event.currentTarget.value))
+						}
 						aria-label="Grid opacity"
 					/>
-				</label>
+					<Slider
+						className="isostate-grid-opacity-slider"
+						min={0}
+						max={1}
+						step={0.05}
+						value={[gridOpacity]}
+						onValueChange={([value]) => updateGridOpacity(value ?? gridOpacity)}
+						aria-label="Grid opacity"
+					/>
+				</div>
 			</div>
 			{adapter && vb && viewBoxStr && (
 				<svg

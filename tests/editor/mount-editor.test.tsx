@@ -87,12 +87,11 @@ describe('mountEditor', () => {
 		expect(body).toBeTruthy();
 		const main = body?.querySelector('.isostate-editor-main');
 		expect(main).toBeTruthy();
-		const paneClasses = Array.from(main?.children ?? []).map(
-			(child) => (child as HTMLElement).className
-		);
-		expect(paneClasses[0]).toContain('isostate-editor-canvas');
-		expect(paneClasses[2]).toContain('isostate-editor-sidebar');
-		expect(paneClasses[4]).toContain('isostate-editor-yaml');
+		expect(main?.querySelector('.isostate-editor-canvas')).toBeTruthy();
+		expect(main?.querySelector('.isostate-editor-sidebar')).toBeTruthy();
+		expect(main?.querySelector('.isostate-editor-yaml')).toBeTruthy();
+		expect(container.querySelector('[role="tablist"]')).toBeTruthy();
+		expect(container.querySelector('[role="separator"]')).toBeTruthy();
 		expect(container.querySelector('.isostate-attributes-panel')).toBeTruthy();
 
 		editor.destroy();

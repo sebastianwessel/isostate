@@ -7,6 +7,16 @@ import {
 	searchAssets
 } from '../assets.ts';
 import type { EditorAssetCatalog, EditorWorkspace } from '../types.ts';
+import { Badge } from '../ui/badge.tsx';
+import { Input } from '../ui/input.tsx';
+import { ScrollArea } from '../ui/scroll-area.tsx';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue
+} from '../ui/select.tsx';
 
 interface AssetPanelProps {
 	workspace: EditorWorkspace;
@@ -163,13 +173,12 @@ export function AssetPanel({
 	const builtInAssets = ['text', 'rectangle', 'circle', 'polygon', 'line'];
 
 	return (
-		<div className="isostate-asset-panel">
+		<ScrollArea className="isostate-asset-panel">
 			{!assetManifestUrl && (
 				<div className="isostate-asset-manifest-input">
 					<FormRow label="Manifest URL">
-						<input
+						<Input
 							type="text"
-							className="isostate-input"
 							placeholder="https://example.com/assets/manifest.json"
 							value={manifestUrl}
 							onChange={(e) => setManifestUrl(e.target.value)}
@@ -184,37 +193,48 @@ export function AssetPanel({
 			{error && <div className="isostate-asset-error">Error: {error}</div>}
 
 			<div className="isostate-asset-filters">
-				<input
+				<Input
 					type="text"
-					className="isostate-input"
 					placeholder="Search assets…"
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
 				/>
-				<select
-					className="isostate-select"
-					value={selectedGroup ?? ''}
-					onChange={(e) => setSelectedGroup(e.target.value || undefined)}
+				<Select
+					value={selectedGroup ?? 'all'}
+					onValueChange={(value) =>
+						setSelectedGroup(value === 'all' ? undefined : value)
+					}
 				>
-					<option value="">All groups</option>
-					{groups.map((g) => (
-						<option key={g} value={g}>
-							{g}
-						</option>
-					))}
-				</select>
-				<select
-					className="isostate-select"
-					value={selectedTag ?? ''}
-					onChange={(e) => setSelectedTag(e.target.value || undefined)}
+					<SelectTrigger>
+						<SelectValue placeholder="All groups" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All groups</SelectItem>
+						{groups.map((g) => (
+							<SelectItem key={g} value={g}>
+								{g}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+				<Select
+					value={selectedTag ?? 'all'}
+					onValueChange={(value) =>
+						setSelectedTag(value === 'all' ? undefined : value)
+					}
 				>
-					<option value="">All tags</option>
-					{tags.map((t) => (
-						<option key={t} value={t}>
-							{t}
-						</option>
-					))}
-				</select>
+					<SelectTrigger>
+						<SelectValue placeholder="All tags" />
+					</SelectTrigger>
+					<SelectContent>
+						<SelectItem value="all">All tags</SelectItem>
+						{tags.map((t) => (
+							<SelectItem key={t} value={t}>
+								{t}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
 			</div>
 
 			{missingAssets.length > 0 && (
@@ -296,7 +316,7 @@ export function AssetPanel({
 					))}
 				</div>
 			)}
-		</div>
+		</ScrollArea>
 	);
 }
 
@@ -448,7 +468,11 @@ function AssetItem({
 				{previewUrl && <img src={previewUrl} alt="" draggable={false} />}
 			</div>
 			<div className="isostate-asset-name">{asset.label ?? asset.name}</div>
-			{isDeclared && <div className="isostate-asset-declared-badge">YAML</div>}
+			{isDeclared && (
+				<Badge className="isostate-asset-declared-badge" variant="secondary">
+					YAML
+				</Badge>
+			)}
 		</div>
 	);
 }

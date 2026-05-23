@@ -3,6 +3,15 @@ import type {
 	ElementPlacement,
 	SceneStep
 } from '@sebastianwessel/isostate/types';
+import {
+	ChevronDown,
+	ChevronRight,
+	Eye,
+	EyeOff,
+	Lock,
+	Plus,
+	Unlock
+} from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 import {
 	createConnectionUpdateCommand,
@@ -22,6 +31,10 @@ import type {
 	EditorSelection,
 	EditorWorkspace
 } from '../types.ts';
+import { Badge } from '../ui/badge.tsx';
+import { Button } from '../ui/button.tsx';
+import { Input } from '../ui/input.tsx';
+import { ScrollArea } from '../ui/scroll-area.tsx';
 
 interface SceneTreePanelProps {
 	workspace: EditorWorkspace;
@@ -62,48 +75,6 @@ function setDrag(event: React.DragEvent, payload: DragPayload) {
 		JSON.stringify(payload)
 	);
 	event.dataTransfer.setData('text/plain', JSON.stringify(payload));
-}
-
-function TreeIcon({
-	name
-}: {
-	name:
-		| 'plus'
-		| 'chevron-right'
-		| 'chevron-down'
-		| 'eye'
-		| 'eye-off'
-		| 'lock'
-		| 'unlock';
-}) {
-	const path =
-		name === 'plus'
-			? 'M12 5v14M5 12h14'
-			: name === 'chevron-right'
-				? 'M9 6l6 6-6 6'
-				: name === 'chevron-down'
-					? 'M6 9l6 6 6-6'
-					: name === 'eye'
-						? 'M2 12s4-7 10-7 10 7 10 7-4 7-10 7M12 9a3 3 0 1 1 0 6 3 3 0 0 1 0-6'
-						: name === 'eye-off'
-							? 'M3 3l18 18M10.6 10.6a2 2 0 0 0 2.8 2.8M9.9 5.2A10.8 10.8 0 0 1 12 5c6 0 10 7 10 7a18 18 0 0 1-2.2 3.1M6.6 6.6C3.7 8.4 2 12 2 12s4 7 10 7c1 0 1.9-.2 2.8-.5'
-							: name === 'lock'
-								? 'M7 11V8a5 5 0 0 1 10 0v3M6 11h12v10H6z'
-								: 'M7 11V8a5 5 0 0 1 9.5-2.2M6 11h12v10H6z';
-	return (
-		<svg
-			aria-hidden="true"
-			className="isostate-icon"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-		>
-			<path d={path} />
-		</svg>
-	);
 }
 
 export function SceneTreePanel({
@@ -287,40 +258,39 @@ export function SceneTreePanel({
 	return (
 		<div className="isostate-scene-tree">
 			<div className="isostate-panel-header">
-				<button
+				<Button
 					type="button"
-					className="isostate-btn isostate-btn--primary"
 					onClick={handleAddScene}
 					disabled={!doc}
 					aria-label="Add scene"
 					title="Add scene"
+					size="sm"
 				>
-					<TreeIcon name="plus" />
+					<Plus data-icon="inline-start" />
 					<span>Scene</span>
-				</button>
+				</Button>
 				<div className="isostate-layer-add-row">
-					<input
+					<Input
 						type="text"
 						ref={newLayerInputRef}
-						className="isostate-input isostate-input--sm"
 						placeholder="new-layer"
 						onKeyDown={(event) => {
 							if (event.key === 'Enter') handleAddLayer();
 						}}
 					/>
-					<button
+					<Button
 						type="button"
-						className="isostate-btn isostate-btn--sm"
 						onClick={handleAddLayer}
 						aria-label="Add layer"
 						title="Add layer"
+						size="sm"
 					>
-						<TreeIcon name="plus" />
+						<Plus data-icon="inline-start" />
 						<span>Layer</span>
-					</button>
+					</Button>
 				</div>
 			</div>
-			<div className="isostate-tree-list">
+			<ScrollArea className="isostate-tree-list">
 				{scenes.map((scene, index) => {
 					const isCollapsed = collapsedScenes.has(scene.id);
 					const elements = sceneElements(scene);
@@ -346,16 +316,20 @@ export function SceneTreePanel({
 							}
 						>
 							<div className="isostate-tree-scene-header">
-								<button
+								<Button
 									type="button"
+									variant="ghost"
+									size="icon-xs"
 									className="isostate-tree-disclosure"
 									onClick={() => toggleScene(scene.id)}
 									aria-label={isCollapsed ? 'Expand scene' : 'Collapse scene'}
 								>
-									<TreeIcon
-										name={isCollapsed ? 'chevron-right' : 'chevron-down'}
-									/>
-								</button>
+									{isCollapsed ? (
+										<ChevronRight aria-hidden="true" />
+									) : (
+										<ChevronDown aria-hidden="true" />
+									)}
+								</Button>
 								<button
 									type="button"
 									className="isostate-tree-name"
@@ -363,9 +337,9 @@ export function SceneTreePanel({
 								>
 									{scene.id}
 								</button>
-								<span className="isostate-tree-count">
+								<Badge className="isostate-tree-count" variant="secondary">
 									{elements.length + connections.length}
-								</span>
+								</Badge>
 							</div>
 							{!isCollapsed && (
 								<div className="isostate-tree-layers">
@@ -409,17 +383,25 @@ export function SceneTreePanel({
 												}
 											>
 												<div className="isostate-tree-layer-header">
-													<button
+													<Button
 														type="button"
+														variant="ghost"
+														size="icon-xs"
 														className="isostate-layer-toggle"
 														onClick={() => toggleLayerVisibility(layer.name)}
 														title={isHidden ? 'Show layer' : 'Hide layer'}
 														aria-label={isHidden ? 'Show layer' : 'Hide layer'}
 													>
-														<TreeIcon name={isHidden ? 'eye-off' : 'eye'} />
-													</button>
-													<button
+														{isHidden ? (
+															<EyeOff aria-hidden="true" />
+														) : (
+															<Eye aria-hidden="true" />
+														)}
+													</Button>
+													<Button
 														type="button"
+														variant="ghost"
+														size="icon-xs"
 														className="isostate-layer-toggle"
 														onClick={() => toggleLayerLock(layer.name)}
 														title={isLocked ? 'Unlock layer' : 'Lock layer'}
@@ -427,8 +409,12 @@ export function SceneTreePanel({
 															isLocked ? 'Unlock layer' : 'Lock layer'
 														}
 													>
-														<TreeIcon name={isLocked ? 'lock' : 'unlock'} />
-													</button>
+														{isLocked ? (
+															<Lock aria-hidden="true" />
+														) : (
+															<Unlock aria-hidden="true" />
+														)}
+													</Button>
 													<span className="isostate-tree-layer-name">
 														{layer.name}
 													</span>
@@ -478,9 +464,12 @@ export function SceneTreePanel({
 															<span className="isostate-tree-element-id">
 																{element.id}
 															</span>
-															<span className="isostate-tree-element-asset">
+															<Badge
+																className="isostate-tree-element-asset"
+																variant="outline"
+															>
 																{element.asset}
-															</span>
+															</Badge>
 														</button>
 													))}
 													{layerConnections.map((connection) => (
@@ -527,9 +516,12 @@ export function SceneTreePanel({
 															<span className="isostate-tree-element-id">
 																{connection.id}
 															</span>
-															<span className="isostate-tree-element-asset">
+															<Badge
+																className="isostate-tree-element-asset"
+																variant="outline"
+															>
 																connection
-															</span>
+															</Badge>
 														</button>
 													))}
 												</div>
@@ -541,7 +533,7 @@ export function SceneTreePanel({
 						</div>
 					);
 				})}
-			</div>
+			</ScrollArea>
 		</div>
 	);
 }

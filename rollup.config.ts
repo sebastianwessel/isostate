@@ -34,7 +34,29 @@ const nodeBuiltins = new Set([
 ]);
 
 function cliExternal(id: string): boolean {
-	return id === '@sebastianwessel/isostate/dsl' || id === '@sebastianwessel/isostate' || nodeBuiltins.has(id);
+	return (
+		id === '@sebastianwessel/isostate/dsl' ||
+		id === '@sebastianwessel/isostate' ||
+		nodeBuiltins.has(id)
+	);
+}
+
+function editorExternal(id: string): boolean {
+	return (
+		id === 'react' ||
+		id === 'react/jsx-runtime' ||
+		id === 'react-dom' ||
+		id === 'react-dom/client' ||
+		id === 'radix-ui' ||
+		id.startsWith('@radix-ui/') ||
+		id === 'react-resizable-panels' ||
+		id === 'lucide-react' ||
+		id.startsWith('lucide-react/') ||
+		id === 'class-variance-authority' ||
+		id === 'clsx' ||
+		id === 'tailwind-merge' ||
+		id.startsWith('@sebastianwessel/isostate')
+	);
 }
 
 export default defineConfig([
@@ -68,8 +90,11 @@ export default defineConfig([
 			entryFileNames: '[name].js',
 			sourcemap: true
 		},
-		external: (id) => id === 'react' || id === 'react/jsx-runtime' || id === 'react-dom' || id === 'react-dom/client' || id.startsWith('@sebastianwessel/isostate'),
-		plugins: [nodeResolve({ extensions: ['.ts', '.tsx', '.js'] }), typescriptPlugin()]
+		external: editorExternal,
+		plugins: [
+			nodeResolve({ extensions: ['.ts', '.tsx', '.js'] }),
+			typescriptPlugin()
+		]
 	},
 	{
 		input: 'packages/cli/src/bin.ts',

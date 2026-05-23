@@ -5,7 +5,10 @@ import { createRoot } from 'react-dom/client';
 import { InspectorPanel } from '../../packages/editor/src/inspector/InspectorPanel.tsx';
 import { createEditorWorkspace } from '../../packages/editor/src/workspace.ts';
 import { applyEditorCommand } from '../../packages/editor/src/commands.ts';
-import type { EditorCommand, EditorWorkspace } from '../../packages/editor/src/types.ts';
+import type {
+	EditorCommand,
+	EditorWorkspace
+} from '../../packages/editor/src/types.ts';
 
 const BASE_YAML = `header:
   version: "1"
@@ -60,7 +63,7 @@ function makeWorkspace(): EditorWorkspace {
 }
 
 function TestWrapper({
-	initialWorkspace,
+	initialWorkspace
 }: {
 	initialWorkspace: EditorWorkspace;
 }) {
@@ -68,17 +71,17 @@ function TestWrapper({
 	return createElement(InspectorPanel, {
 		workspace: {
 			...workspace,
-			selection: { objectIds: ['e1'], connectionIds: [], layerNames: [] },
+			selection: { objectIds: ['e1'], connectionIds: [], layerNames: [] }
 		},
 		onCommand: (cmd: EditorCommand) => {
 			const result = applyEditorCommand(workspace, cmd);
 			setWorkspace(result.workspace);
-		},
+		}
 	});
 }
 
 function ConnectionTestWrapper({
-	initialWorkspace,
+	initialWorkspace
 }: {
 	initialWorkspace: EditorWorkspace;
 }) {
@@ -86,12 +89,12 @@ function ConnectionTestWrapper({
 	return createElement(InspectorPanel, {
 		workspace: {
 			...workspace,
-			selection: { objectIds: [], connectionIds: ['c1'], layerNames: [] },
+			selection: { objectIds: [], connectionIds: ['c1'], layerNames: [] }
 		},
 		onCommand: (cmd: EditorCommand) => {
 			const result = applyEditorCommand(workspace, cmd);
 			setWorkspace(result.workspace);
-		},
+		}
 	});
 }
 
@@ -109,9 +112,9 @@ describe('InspectorPanel', () => {
 			createElement(InspectorPanel, {
 				workspace: {
 					...workspace,
-					selection: { objectIds: ['e1'], connectionIds: [], layerNames: [] },
+					selection: { objectIds: ['e1'], connectionIds: [], layerNames: [] }
 				},
-				onCommand: () => {},
+				onCommand: () => {}
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
@@ -120,11 +123,11 @@ describe('InspectorPanel', () => {
 			row.textContent?.includes('Asset')
 		);
 		expect(assetRow).toBeTruthy();
-		const select = assetRow?.querySelector('.isostate-select') as HTMLSelectElement;
+		const select = assetRow?.querySelector(
+			'.isostate-select'
+		) as HTMLButtonElement;
 		expect(select).toBeTruthy();
-		const options = Array.from(select.options).map((o) => o.value);
-		expect(options).toContain('block');
-		expect(options).toContain('text');
+		expect(select.textContent).toContain('block');
 		root.unmount();
 		container.remove();
 	});
@@ -134,9 +137,7 @@ describe('InspectorPanel', () => {
 		document.body.appendChild(container);
 		const workspace = makeWorkspace();
 		const root = createRoot(container);
-		root.render(
-			createElement(TestWrapper, { initialWorkspace: workspace })
-		);
+		root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
 		await new Promise((r) => setTimeout(r, 10));
 		const inputs = container.querySelectorAll('.isostate-input');
 		const xInput = Array.from(inputs).find(
@@ -157,11 +158,13 @@ describe('InspectorPanel', () => {
 			createElement(ConnectionTestWrapper, { initialWorkspace: workspace })
 		);
 		await new Promise((r) => setTimeout(r, 10));
-		const selects = container.querySelectorAll('.isostate-select');
-		const fromElementSelect = Array.from(selects).find((s) => {
-			const opts = Array.from((s as HTMLSelectElement).options);
-			return opts.some((o) => o.value === 'e1') && opts.some((o) => o.value === 'e2');
-		}) as HTMLSelectElement;
+		const rows = container.querySelectorAll('.isostate-inspector-row');
+		const elementRows = Array.from(rows).filter((row) =>
+			row.textContent?.includes('Element')
+		);
+		const fromElementSelect = elementRows
+			.map((row) => row.querySelector('.isostate-select'))
+			.find((select) => select?.textContent?.includes('e1'));
 		expect(fromElementSelect).toBeTruthy();
 		root.unmount();
 		container.remove();
@@ -179,7 +182,7 @@ describe('InspectorPanel', () => {
 				onCommand: (cmd: EditorCommand) => {
 					const result = applyEditorCommand(current, cmd);
 					current = result.workspace;
-				},
+				}
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
@@ -205,13 +208,13 @@ describe('InspectorPanel', () => {
 					selection: {
 						objectIds: [],
 						connectionIds: ['c1'],
-						layerNames: [],
-					},
+						layerNames: []
+					}
 				},
 				onCommand: (cmd: EditorCommand) => {
 					const result = applyEditorCommand(current, cmd);
 					current = result.workspace;
-				},
+				}
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
@@ -229,7 +232,7 @@ describe('InspectorPanel', () => {
 		document.body.appendChild(container);
 		const workspace = {
 			...makeWorkspace(),
-			activeSceneId: 'scene-2',
+			activeSceneId: 'scene-2'
 		};
 		const root = createRoot(container);
 		let current = workspace;
@@ -241,13 +244,13 @@ describe('InspectorPanel', () => {
 						sceneId: 'scene-2',
 						objectIds: ['e1'],
 						connectionIds: [],
-						layerNames: [],
-					},
+						layerNames: []
+					}
 				},
 				onCommand: (cmd: EditorCommand) => {
 					const result = applyEditorCommand(current, cmd);
 					current = result.workspace;
-				},
+				}
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
@@ -256,7 +259,7 @@ describe('InspectorPanel', () => {
 		) as HTMLButtonElement;
 		button.click();
 		expect(current.document?.scenes[1].remove?.elements).toEqual([
-			{ id: 'e1' },
+			{ id: 'e1' }
 		]);
 		root.unmount();
 		container.remove();
@@ -267,7 +270,7 @@ describe('InspectorPanel', () => {
 		document.body.appendChild(container);
 		const workspace = {
 			...makeWorkspace(),
-			activeSceneId: 'scene-2',
+			activeSceneId: 'scene-2'
 		};
 		const root = createRoot(container);
 		let current = workspace;
@@ -279,13 +282,13 @@ describe('InspectorPanel', () => {
 						sceneId: 'scene-2',
 						objectIds: [],
 						connectionIds: ['c1'],
-						layerNames: [],
-					},
+						layerNames: []
+					}
 				},
 				onCommand: (cmd: EditorCommand) => {
 					const result = applyEditorCommand(current, cmd);
 					current = result.workspace;
-				},
+				}
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
@@ -294,7 +297,7 @@ describe('InspectorPanel', () => {
 		) as HTMLButtonElement;
 		button.click();
 		expect(current.document?.scenes[1].remove?.connections).toEqual([
-			{ id: 'c1' },
+			{ id: 'c1' }
 		]);
 		root.unmount();
 		container.remove();
@@ -309,19 +312,17 @@ describe('InspectorPanel', () => {
 			createElement(InspectorPanel, {
 				workspace,
 				onCommand: () => {},
-				mode: 'general',
+				mode: 'general'
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
-		// Find camera target type select
-		const selects = Array.from(container.querySelectorAll('.isostate-select'));
-		const cameraTargetSelect = selects.find((s) => {
-			const opts = Array.from((s as HTMLSelectElement).options);
-			return opts.some((o) => o.value === 'element') && opts.some((o) => o.value === 'area');
-		}) as HTMLSelectElement;
+		const rows = container.querySelectorAll('.isostate-inspector-row');
+		const targetRow = Array.from(rows).find((row) =>
+			row.textContent?.includes('Target')
+		);
+		const cameraTargetSelect = targetRow?.querySelector('.isostate-select');
 		expect(cameraTargetSelect).toBeTruthy();
-		expect(Array.from(cameraTargetSelect.options).map((o) => o.value)).toContain('element');
-		expect(Array.from(cameraTargetSelect.options).map((o) => o.value)).toContain('area');
+		expect(cameraTargetSelect?.textContent).toContain('None');
 		root.unmount();
 		container.remove();
 	});
@@ -336,16 +337,18 @@ describe('InspectorPanel', () => {
 			createElement(InspectorPanel, {
 				workspace: {
 					...workspace,
-					selection: { objectIds: [], connectionIds: [], layerNames: [] },
+					selection: { objectIds: [], connectionIds: [], layerNames: [] }
 				},
 				onCommand: () => {
 					commandCount++;
-				},
+				}
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
 		// With no selection, inputs should be read-only or not trigger updates
-		const readonlyInputs = container.querySelectorAll('.isostate-input--readonly');
+		const readonlyInputs = container.querySelectorAll(
+			'.isostate-input--readonly'
+		);
 		expect(readonlyInputs.length).toBeGreaterThan(0);
 		expect(commandCount).toBe(0);
 		root.unmount();

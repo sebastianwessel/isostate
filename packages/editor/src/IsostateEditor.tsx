@@ -1,3 +1,4 @@
+import { Grid2X2, Moon, Paintbrush, Sun } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { AssetPanel } from './assets/AssetPanel.tsx';
 import { CanvasView } from './canvas/CanvasView.tsx';
@@ -14,6 +15,20 @@ import type {
 	EditorWorkspace,
 	IsostateEditorProps
 } from './types.ts';
+import { Button } from './ui/button.tsx';
+import { EditorShell } from './ui/editor-shell.tsx';
+import {
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup
+} from './ui/resizable.tsx';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue
+} from './ui/select.tsx';
 import { createEditorWorkspace } from './workspace.ts';
 import { YamlEditor } from './yaml-editor/YamlEditor.tsx';
 
@@ -35,15 +50,6 @@ scenes:
           fontSize: 14
 `;
 
-const TABS: Array<{
-	id: EditorWorkspace['uiState']['sidebarTab'];
-	label: string;
-}> = [
-	{ id: 'assets', label: 'Assets' },
-	{ id: 'attributes', label: 'Attributes' },
-	{ id: 'general', label: 'General' }
-];
-
 export function IsostateEditor(props: IsostateEditorProps) {
 	const {
 		value,
@@ -61,13 +67,6 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		const initial = createEditorWorkspace({ sourceYaml: yaml });
 		return initial;
 	});
-	const [canvasPane, setCanvasPane] = useState(58);
-	const [sidebarPane, setSidebarPane] = useState(360);
-	const [attributeTreePane, setAttributeTreePane] = useState(56);
-	const [resizingPane, setResizingPane] = useState<
-		'canvas' | 'sidebar' | 'attributes' | null
-	>(null);
-
 	useEffect(() => {
 		if (value === undefined) return;
 		setWorkspace((prev) => {
@@ -217,52 +216,6 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		handleCommand(createYamlFormatCommand());
 	};
 
-	const handlePanePointerDown = (
-		event: React.PointerEvent,
-		pane: 'canvas' | 'sidebar' | 'attributes'
-	) => {
-		event.currentTarget.setPointerCapture(event.pointerId);
-		setResizingPane(pane);
-	};
-
-	const handlePanePointerMove = (event: React.PointerEvent) => {
-		if (!resizingPane) return;
-		const parent = event.currentTarget.parentElement;
-		const bounds = parent?.getBoundingClientRect();
-		if (!bounds) return;
-		if (resizingPane === 'sidebar') {
-			const sidebar = event.currentTarget.previousElementSibling;
-			const sidebarBounds = sidebar?.getBoundingClientRect();
-			if (!sidebarBounds) return;
-			setSidebarPane(
-				Math.min(560, Math.max(320, event.clientX - sidebarBounds.left))
-			);
-			return;
-		}
-		if (resizingPane === 'attributes') {
-			const next = ((event.clientY - bounds.top) / bounds.height) * 100;
-			setAttributeTreePane(Math.min(75, Math.max(28, next)));
-			return;
-		}
-		const isColumn =
-			parent !== null &&
-			getComputedStyle(parent).flexDirection.startsWith('column');
-		const next = isColumn
-			? ((event.clientY - bounds.top) / bounds.height) * 100
-			: ((event.clientX - bounds.left) / bounds.width) * 100;
-		setCanvasPane(Math.min(76, Math.max(32, next)));
-	};
-
-	const handlePanePointerUp = (event: React.PointerEvent) => {
-		if (!resizingPane) return;
-		setResizingPane(null);
-		try {
-			event.currentTarget.releasePointerCapture(event.pointerId);
-		} catch {
-			// Pointer capture may already be released by the browser.
-		}
-	};
-
 	const activeTheme =
 		workspace.uiState.theme === 'system' ? propTheme : workspace.uiState.theme;
 
@@ -271,6 +224,106 @@ export function IsostateEditor(props: IsostateEditorProps) {
 
 	const sceneOptions = workspace.document?.scenes ?? [];
 	const isInvalid = !workspace.document;
+	const canvasContent = (
+		<>
+			<CanvasView
+				workspace={workspace}
+				onCommand={handleCommand}
+				onSelect={handleSelect}
+				onClearDragPayload={clearDragPayload}
+				onViewportChange={(viewport) => {
+					setWorkspace((prev) => {
+						const next = { ...prev, viewport };
+						onWorkspaceChange?.(next);
+						return next;
+					});
+				}}
+				theme={activeTheme}
+			/>
+			{isInvalid && (
+				<div className="isostate-editor-canvas-overlay">
+					<span>YAML invalid - canvas read-only</span>
+				</div>
+			)}
+		</>
+	);
+	const assetsContent = (
+		<AssetPanel
+			workspace={workspace}
+			assetManifestUrl={assetManifestUrl}
+			activeAssetId={
+				workspace.editState.dragPayload?.kind === 'asset'
+					? workspace.editState.dragPayload.assetId
+					: undefined
+			}
+			onDragAsset={(assetId) => {
+				setWorkspace((prev) => ({
+					...prev,
+					editState: {
+						...prev.editState,
+						dragPayload: { kind: 'asset', assetId }
+					}
+				}));
+			}}
+			onClickAsset={(assetId) => {
+				setWorkspace((prev) => ({
+					...prev,
+					editState: {
+						...prev.editState,
+						dragPayload: { kind: 'asset', assetId }
+					}
+				}));
+			}}
+		/>
+	);
+	const attributesContent = (
+		<ResizablePanelGroup
+			direction="vertical"
+			className="isostate-attributes-panel"
+		>
+			<ResizablePanel
+				defaultSize={56}
+				minSize={24}
+				className="isostate-attributes-tree"
+			>
+				<SceneTreePanel
+					workspace={workspace}
+					onCommand={handleCommand}
+					onSelectScene={setActiveSceneId}
+					onSelect={handleSelect}
+					setWorkspace={(updater) => setWorkspace(updater)}
+				/>
+			</ResizablePanel>
+			<ResizableHandle withHandle aria-label="Resize attributes split" />
+			<ResizablePanel
+				defaultSize={44}
+				minSize={24}
+				className="isostate-attributes-inspector"
+			>
+				<InspectorPanel
+					workspace={workspace}
+					onCommand={handleCommand}
+					mode="attributes"
+				/>
+			</ResizablePanel>
+		</ResizablePanelGroup>
+	);
+	const generalContent = (
+		<InspectorPanel
+			workspace={workspace}
+			onCommand={handleCommand}
+			mode="general"
+		/>
+	);
+	const yamlContent = (
+		<YamlEditor
+			value={workspace.sourceYaml}
+			onChange={handleYamlChange}
+			theme={resolvedTheme}
+			readOnly={readonly}
+			diagnostics={workspace.diagnostics}
+		/>
+	);
 
 	return (
 		<div
@@ -281,221 +334,70 @@ export function IsostateEditor(props: IsostateEditorProps) {
 			<div className="isostate-editor-topbar">
 				<span className="isostate-editor-title">Isostate Editor</span>
 				<div className="isostate-editor-toolbar">
-					<select
-						className="isostate-select isostate-select--sm"
+					<Select
 						value={workspace.activeSceneId ?? ''}
-						onChange={(e) => setActiveSceneId(e.target.value)}
+						onValueChange={setActiveSceneId}
 					>
-						{sceneOptions.map((s) => (
-							<option key={s.id} value={s.id}>
-								{s.id}
-							</option>
-						))}
-					</select>
-					<button type="button" onClick={toggleGrid}>
+						<SelectTrigger size="sm" className="isostate-scene-select">
+							<SelectValue placeholder="Scene" />
+						</SelectTrigger>
+						<SelectContent>
+							{sceneOptions.map((s) => (
+								<SelectItem key={s.id} value={s.id}>
+									{s.id}
+								</SelectItem>
+							))}
+						</SelectContent>
+					</Select>
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						onClick={toggleGrid}
+					>
+						<Grid2X2 data-icon="inline-start" />
 						Grid
-					</button>
-					<button type="button" onClick={handleFormat}>
+					</Button>
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						onClick={handleFormat}
+					>
+						<Paintbrush data-icon="inline-start" />
 						Format
-					</button>
-					<button type="button" onClick={() => setTheme('light')}>
-						Light
-					</button>
-					<button type="button" onClick={() => setTheme('dark')}>
-						Dark
-					</button>
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						onClick={() => setTheme('light')}
+						aria-label="Preview light mode"
+					>
+						<Sun aria-hidden="true" />
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						onClick={() => setTheme('dark')}
+						aria-label="Preview dark mode"
+					>
+						<Moon aria-hidden="true" />
+					</Button>
 				</div>
 			</div>
 			<div className="isostate-editor-body">
-				<div
-					className="isostate-editor-main"
-					style={
-						{
-							'--isostate-canvas-pane': `${canvasPane}%`,
-							'--isostate-sidebar-pane': `${sidebarPane}px`,
-							'--isostate-attribute-tree-pane': `${attributeTreePane}%`
-						} as React.CSSProperties
-					}
-				>
-					<div
-						className={`isostate-editor-canvas ${isInvalid ? 'isostate-editor-canvas--invalid' : ''}`}
-					>
-						<CanvasView
-							workspace={workspace}
-							onCommand={handleCommand}
-							onSelect={handleSelect}
-							onClearDragPayload={clearDragPayload}
-							onViewportChange={(viewport) => {
-								setWorkspace((prev) => {
-									const next = { ...prev, viewport };
-									onWorkspaceChange?.(next);
-									return next;
-								});
-							}}
-							theme={activeTheme}
-						/>
-						{isInvalid && (
-							<div className="isostate-editor-canvas-overlay">
-								<span>YAML invalid - canvas read-only</span>
-							</div>
-						)}
-					</div>
-					<hr
-						className="isostate-pane-resizer"
-						aria-orientation="vertical"
-						aria-label="Resize canvas pane"
-						aria-valuemin={32}
-						aria-valuemax={76}
-						aria-valuenow={Math.round(canvasPane)}
-						tabIndex={0}
-						onPointerDown={(event) => handlePanePointerDown(event, 'canvas')}
-						onPointerMove={handlePanePointerMove}
-						onPointerUp={handlePanePointerUp}
-						onKeyDown={(event) => {
-							if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-								setCanvasPane((value) => Math.max(32, value - 4));
-							}
-							if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-								setCanvasPane((value) => Math.min(76, value + 4));
-							}
-						}}
-					/>
-					<div className="isostate-editor-sidebar">
-						<div className="isostate-sidebar-tabs">
-							{TABS.map((tab) => (
-								<button
-									key={tab.id}
-									type="button"
-									className={`isostate-sidebar-tab ${workspace.uiState.sidebarTab === tab.id ? 'isostate-sidebar-tab--active' : ''}`}
-									onClick={() => setSidebarTab(tab.id)}
-								>
-									{tab.label}
-								</button>
-							))}
-						</div>
-						<div
-							className={`isostate-sidebar-content ${isInvalid ? 'isostate-sidebar-content--disabled' : ''}`}
-						>
-							{workspace.uiState.sidebarTab === 'assets' && (
-								<AssetPanel
-									workspace={workspace}
-									assetManifestUrl={assetManifestUrl}
-									activeAssetId={
-										workspace.editState.dragPayload?.kind === 'asset'
-											? workspace.editState.dragPayload.assetId
-											: undefined
-									}
-									onDragAsset={(assetId) => {
-										setWorkspace((prev) => ({
-											...prev,
-											editState: {
-												...prev.editState,
-												dragPayload: { kind: 'asset', assetId }
-											}
-										}));
-									}}
-									onClickAsset={(assetId) => {
-										setWorkspace((prev) => ({
-											...prev,
-											editState: {
-												...prev.editState,
-												dragPayload: { kind: 'asset', assetId }
-											}
-										}));
-									}}
-								/>
-							)}
-							{workspace.uiState.sidebarTab === 'attributes' && (
-								<div className="isostate-attributes-panel">
-									<div className="isostate-attributes-tree">
-										<SceneTreePanel
-											workspace={workspace}
-											onCommand={handleCommand}
-											onSelectScene={setActiveSceneId}
-											onSelect={handleSelect}
-											setWorkspace={(updater) => setWorkspace(updater)}
-										/>
-									</div>
-									<hr
-										className="isostate-attribute-split-resizer"
-										aria-orientation="horizontal"
-										aria-label="Resize attributes split"
-										aria-valuemin={28}
-										aria-valuemax={75}
-										aria-valuenow={Math.round(attributeTreePane)}
-										tabIndex={0}
-										onPointerDown={(event) =>
-											handlePanePointerDown(event, 'attributes')
-										}
-										onPointerMove={handlePanePointerMove}
-										onPointerUp={handlePanePointerUp}
-										onKeyDown={(event) => {
-											if (
-												event.key === 'ArrowUp' ||
-												event.key === 'ArrowLeft'
-											) {
-												setAttributeTreePane((value) =>
-													Math.max(28, value - 4)
-												);
-											}
-											if (
-												event.key === 'ArrowDown' ||
-												event.key === 'ArrowRight'
-											) {
-												setAttributeTreePane((value) =>
-													Math.min(75, value + 4)
-												);
-											}
-										}}
-									/>
-									<div className="isostate-attributes-inspector">
-										<InspectorPanel
-											workspace={workspace}
-											onCommand={handleCommand}
-											mode="attributes"
-										/>
-									</div>
-								</div>
-							)}
-							{workspace.uiState.sidebarTab === 'general' && (
-								<InspectorPanel
-									workspace={workspace}
-									onCommand={handleCommand}
-									mode="general"
-								/>
-							)}
-						</div>
-					</div>
-					<hr
-						className="isostate-pane-resizer isostate-pane-resizer--sidebar"
-						aria-orientation="vertical"
-						aria-label="Resize attributes pane"
-						aria-valuemin={320}
-						aria-valuemax={560}
-						aria-valuenow={Math.round(sidebarPane)}
-						tabIndex={0}
-						onPointerDown={(event) => handlePanePointerDown(event, 'sidebar')}
-						onPointerMove={handlePanePointerMove}
-						onPointerUp={handlePanePointerUp}
-						onKeyDown={(event) => {
-							if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
-								setSidebarPane((value) => Math.max(320, value - 24));
-							}
-							if (event.key === 'ArrowRight' || event.key === 'ArrowDown') {
-								setSidebarPane((value) => Math.min(560, value + 24));
-							}
-						}}
-					/>
-					<div className="isostate-editor-yaml">
-						<YamlEditor
-							value={workspace.sourceYaml}
-							onChange={handleYamlChange}
-							theme={resolvedTheme}
-							readOnly={readonly}
-							diagnostics={workspace.diagnostics}
-						/>
-					</div>
-				</div>
+				<EditorShell
+					activeTab={workspace.uiState.sidebarTab}
+					onTabChange={setSidebarTab}
+					canvasInvalid={isInvalid}
+					canvas={canvasContent}
+					assets={assetsContent}
+					attributes={attributesContent}
+					general={generalContent}
+					editor={yamlContent}
+				/>
 			</div>
 		</div>
 	);

@@ -20,6 +20,7 @@
 		"baseUrl": ".",
 		"ignoreDeprecations": "6.0",
 		"paths": {
+			"@/*": ["./*"],
 			"@sebastianwessel/isostate": ["packages/core/src/index.ts"],
 			"@sebastianwessel/isostate/*": ["packages/core/src/*"]
 		},

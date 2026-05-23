@@ -21,6 +21,15 @@ import {
 	resolveSceneElements
 } from '../scene-resolver.ts';
 import type { EditorCommand, EditorWorkspace } from '../types.ts';
+import { Button } from '../ui/button.tsx';
+import { Input } from '../ui/input.tsx';
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue
+} from '../ui/select.tsx';
 
 interface InspectorPanelProps {
 	workspace: EditorWorkspace;
@@ -38,6 +47,7 @@ const ENDPOINT_TYPES = ['none', 'arrow', 'dot', 'circle', 'diamond', 'bar'];
 const DIRECTIONS = ['route', 'reverse'];
 const SIDES = ['auto', 'top', 'right', 'bottom', 'left', 'front', 'back'];
 const EASINGS = ['linear', 'ease-in-out', 'ease-out'];
+const SELECT_NONE_VALUE = '__none';
 
 function getActiveSceneIndex(workspace: EditorWorkspace): number {
 	if (!workspace.document || !workspace.activeSceneId) return -1;
@@ -63,6 +73,45 @@ function FormRow({
 
 function SectionHeader({ title }: { title: string }) {
 	return <div className="isostate-inspector-section">{title}</div>;
+}
+
+function InspectorSelect({
+	value,
+	options,
+	placeholder,
+	onChange
+}: {
+	value: string | undefined;
+	options: Array<{ value: string; label: string }>;
+	placeholder?: string;
+	onChange: (value: string) => void;
+}) {
+	const selectValue =
+		value === undefined || value === '' ? SELECT_NONE_VALUE : value;
+
+	return (
+		<Select
+			value={selectValue}
+			onValueChange={(nextValue) =>
+				onChange(nextValue === SELECT_NONE_VALUE ? '' : nextValue)
+			}
+		>
+			<SelectTrigger className="isostate-select">
+				<SelectValue placeholder={placeholder} />
+			</SelectTrigger>
+			<SelectContent>
+				{options.map((option) => (
+					<SelectItem key={option.value} value={option.value}>
+						{option.label}
+					</SelectItem>
+				))}
+			</SelectContent>
+		</Select>
+	);
+}
+
+function selectOptions(values: string[]) {
+	return values.map((value) => ({ value, label: value }));
 }
 
 export function InspectorPanel({
@@ -190,7 +239,7 @@ export function InspectorPanel({
 				<div className="isostate-inspector-empty">
 					<div className="isostate-inspector-section">Scene</div>
 					<FormRow label="Scene ID">
-						<input
+						<Input
 							type="text"
 							value={scene?.id ?? ''}
 							readOnly
@@ -255,7 +304,7 @@ export function InspectorPanel({
 				<div className="isostate-inspector-empty">
 					<div className="isostate-inspector-section">Scene</div>
 					<FormRow label="Scene ID">
-						<input
+						<Input
 							type="text"
 							value={scene?.id ?? ''}
 							readOnly
@@ -273,9 +322,9 @@ export function InspectorPanel({
 						</span>
 					</FormRow>
 					<div className="isostate-inspector-actions">
-						<button
+						<Button
 							type="button"
-							className="isostate-btn isostate-btn--sm"
+							size="sm"
 							onClick={() => {
 								if (!workspace.activeSceneId) return;
 								onCommand(
@@ -290,10 +339,10 @@ export function InspectorPanel({
 							}}
 						>
 							+ Text
-						</button>
-						<button
+						</Button>
+						<Button
 							type="button"
-							className="isostate-btn isostate-btn--sm"
+							size="sm"
 							onClick={() => {
 								if (!workspace.activeSceneId) return;
 								onCommand(
@@ -308,14 +357,10 @@ export function InspectorPanel({
 							}}
 						>
 							+ Rectangle
-						</button>
-						<button
-							type="button"
-							className="isostate-btn isostate-btn--sm"
-							onClick={handleConnectionAdd}
-						>
+						</Button>
+						<Button type="button" size="sm" onClick={handleConnectionAdd}>
 							+ Connection
-						</button>
+						</Button>
 					</div>
 				</div>
 			)}
@@ -349,7 +394,7 @@ function ElementInspector({
 		<div>
 			<SectionHeader title="Element" />
 			<FormRow label="ID">
-				<input
+				<Input
 					type="text"
 					value={element.id}
 					readOnly
@@ -357,22 +402,16 @@ function ElementInspector({
 				/>
 			</FormRow>
 			<FormRow label="Asset">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={element.asset}
-					onChange={(e) =>
-						onUpdate({ id: element.id, asset: e.target.value } as ElementPatch)
+					options={selectOptions(assetIds)}
+					onChange={(value) =>
+						onUpdate({ id: element.id, asset: value } as ElementPatch)
 					}
-				>
-					{assetIds.map((id) => (
-						<option key={id} value={id}>
-							{id}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			<FormRow label="Position X">
-				<input
+				<Input
 					type="number"
 					min={0}
 					step={1}
@@ -387,7 +426,7 @@ function ElementInspector({
 				/>
 			</FormRow>
 			<FormRow label="Position Y">
-				<input
+				<Input
 					type="number"
 					min={0}
 					step={1}
@@ -402,7 +441,7 @@ function ElementInspector({
 				/>
 			</FormRow>
 			<FormRow label="Size">
-				<input
+				<Input
 					type="number"
 					min={1}
 					step={1}
@@ -417,61 +456,47 @@ function ElementInspector({
 				/>
 			</FormRow>
 			<FormRow label="Layer">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={element.layer ?? layerNames[0] ?? ''}
-					onChange={(e) => onUpdate({ id: element.id, layer: e.target.value })}
-				>
-					{layerNames.map((name) => (
-						<option key={name} value={name}>
-							{name}
-						</option>
-					))}
-				</select>
+					options={selectOptions(layerNames)}
+					onChange={(value) => onUpdate({ id: element.id, layer: value })}
+				/>
 			</FormRow>
 			<FormRow label="Enter">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={element.enter ?? ''}
-					onChange={(e) =>
+					options={[
+						{ value: SELECT_NONE_VALUE, label: '—' },
+						...selectOptions(ENTRY_ANIMATIONS)
+					]}
+					onChange={(value) =>
 						onUpdate({
 							id: element.id,
-							enter: (e.target.value || undefined) as ElementPatch['enter']
+							enter: (value || undefined) as ElementPatch['enter']
 						})
 					}
-				>
-					<option value="">—</option>
-					{ENTRY_ANIMATIONS.map((a) => (
-						<option key={a} value={a}>
-							{a}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			<FormRow label="Exit">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={element.exit ?? ''}
-					onChange={(e) =>
+					options={[
+						{ value: SELECT_NONE_VALUE, label: '—' },
+						...selectOptions(EXIT_ANIMATIONS)
+					]}
+					onChange={(value) =>
 						onUpdate({
 							id: element.id,
-							exit: (e.target.value || undefined) as ElementPatch['exit']
+							exit: (value || undefined) as ElementPatch['exit']
 						})
 					}
-				>
-					<option value="">—</option>
-					{EXIT_ANIMATIONS.map((a) => (
-						<option key={a} value={a}>
-							{a}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			{isText && (
 				<div>
 					<SectionHeader title="Text" />
 					<FormRow label="Content">
-						<input
+						<Input
 							type="text"
 							value={element.text?.value ?? ''}
 							className="isostate-input"
@@ -484,23 +509,19 @@ function ElementInspector({
 						/>
 					</FormRow>
 					<FormRow label="Align">
-						<select
-							className="isostate-select"
+						<InspectorSelect
 							value={element.text?.align ?? 'middle'}
-							onChange={(e) =>
+							options={selectOptions(['start', 'middle', 'end'])}
+							onChange={(value) =>
 								onUpdate({
 									id: element.id,
-									text: { align: e.target.value as 'start' | 'middle' | 'end' }
+									text: { align: value as 'start' | 'middle' | 'end' }
 								})
 							}
-						>
-							<option value="start">start</option>
-							<option value="middle">middle</option>
-							<option value="end">end</option>
-						</select>
+						/>
 					</FormRow>
 					<FormRow label="Font Size">
-						<input
+						<Input
 							type="number"
 							min={1}
 							value={element.text?.fontSize ?? 12}
@@ -514,7 +535,7 @@ function ElementInspector({
 						/>
 					</FormRow>
 					<FormRow label="Fill">
-						<input
+						<Input
 							type="text"
 							value={element.text?.fill ?? 'currentColor'}
 							className="isostate-input"
@@ -535,13 +556,14 @@ function ElementInspector({
 				</div>
 			)}
 			<div className="isostate-inspector-actions">
-				<button
+				<Button
 					type="button"
-					className="isostate-btn isostate-btn--sm isostate-btn--danger"
+					size="sm"
+					variant="destructive"
 					onClick={onRemove}
 				>
 					Delete Element
-				</button>
+				</Button>
 			</div>
 		</div>
 	);
@@ -583,7 +605,7 @@ function PrimitiveStyleFields({
 		<div>
 			{'fill' in shape && (
 				<FormRow label="Fill">
-					<input
+					<Input
 						type="text"
 						value={(shape as Record<string, string | undefined>).fill ?? ''}
 						className="isostate-input"
@@ -592,7 +614,7 @@ function PrimitiveStyleFields({
 				</FormRow>
 			)}
 			<FormRow label="Stroke">
-				<input
+				<Input
 					type="text"
 					value={shape.stroke ?? ''}
 					className="isostate-input"
@@ -600,7 +622,7 @@ function PrimitiveStyleFields({
 				/>
 			</FormRow>
 			<FormRow label="Stroke Width">
-				<input
+				<Input
 					type="number"
 					min={0}
 					step={0.5}
@@ -610,7 +632,7 @@ function PrimitiveStyleFields({
 				/>
 			</FormRow>
 			<FormRow label="Opacity">
-				<input
+				<Input
 					type="number"
 					min={0}
 					max={1}
@@ -644,7 +666,7 @@ function ConnectionInspector({
 		<div>
 			<SectionHeader title="Connection" />
 			<FormRow label="ID">
-				<input
+				<Input
 					type="text"
 					value={connection.id}
 					readOnly
@@ -654,11 +676,14 @@ function ConnectionInspector({
 
 			<SectionHeader title="From" />
 			<FormRow label="Type">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={fromMode}
-					onChange={(e) => {
-						if (e.target.value === 'element') {
+					options={[
+						{ value: 'element', label: 'Element' },
+						{ value: 'point', label: 'Grid Point' }
+					]}
+					onChange={(value) => {
+						if (value === 'element') {
 							onUpdate({
 								id: connection.id,
 								from: {
@@ -672,37 +697,28 @@ function ConnectionInspector({
 							});
 						}
 					}}
-				>
-					<option value="element">Element</option>
-					<option value="point">Grid Point</option>
-				</select>
+				/>
 			</FormRow>
 			{fromMode === 'element' && (
 				<FormRow label="Element">
-					<select
-						className="isostate-select"
+					<InspectorSelect
 						value={connection.from?.element ?? ''}
-						onChange={(e) =>
+						options={selectOptions(sceneElementIds)}
+						onChange={(value) =>
 							onUpdate({
 								id: connection.id,
 								from: {
-									element: e.target.value
+									element: value
 								}
 							})
 						}
-					>
-						{sceneElementIds.map((id) => (
-							<option key={id} value={id}>
-								{id}
-							</option>
-						))}
-					</select>
+					/>
 				</FormRow>
 			)}
 			{fromMode === 'point' && (
 				<div>
 					<FormRow label="X">
-						<input
+						<Input
 							type="number"
 							min={0}
 							step={1}
@@ -719,7 +735,7 @@ function ConnectionInspector({
 						/>
 					</FormRow>
 					<FormRow label="Y">
-						<input
+						<Input
 							type="number"
 							min={0}
 							step={1}
@@ -738,30 +754,22 @@ function ConnectionInspector({
 				</div>
 			)}
 			<FormRow label="Side">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={connection.from?.side ?? 'auto'}
-					onChange={(e) =>
+					options={selectOptions(SIDES)}
+					onChange={(value) =>
 						onUpdate({
 							id: connection.id,
 							from: {
 								...connection.from,
-								side: e.target.value as NonNullable<
-									ConnectionPatch['from']
-								>['side']
+								side: value as NonNullable<ConnectionPatch['from']>['side']
 							}
 						})
 					}
-				>
-					{SIDES.map((s) => (
-						<option key={s} value={s}>
-							{s}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			<FormRow label="Offset">
-				<input
+				<Input
 					type="number"
 					step={1}
 					value={connection.from?.offset ?? 0}
@@ -780,11 +788,14 @@ function ConnectionInspector({
 
 			<SectionHeader title="To" />
 			<FormRow label="Type">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={toMode}
-					onChange={(e) => {
-						if (e.target.value === 'element') {
+					options={[
+						{ value: 'element', label: 'Element' },
+						{ value: 'point', label: 'Grid Point' }
+					]}
+					onChange={(value) => {
+						if (value === 'element') {
 							onUpdate({
 								id: connection.id,
 								to: {
@@ -798,37 +809,28 @@ function ConnectionInspector({
 							});
 						}
 					}}
-				>
-					<option value="element">Element</option>
-					<option value="point">Grid Point</option>
-				</select>
+				/>
 			</FormRow>
 			{toMode === 'element' && (
 				<FormRow label="Element">
-					<select
-						className="isostate-select"
+					<InspectorSelect
 						value={connection.to?.element ?? ''}
-						onChange={(e) =>
+						options={selectOptions(sceneElementIds)}
+						onChange={(value) =>
 							onUpdate({
 								id: connection.id,
 								to: {
-									element: e.target.value
+									element: value
 								}
 							})
 						}
-					>
-						{sceneElementIds.map((id) => (
-							<option key={id} value={id}>
-								{id}
-							</option>
-						))}
-					</select>
+					/>
 				</FormRow>
 			)}
 			{toMode === 'point' && (
 				<div>
 					<FormRow label="X">
-						<input
+						<Input
 							type="number"
 							min={0}
 							step={1}
@@ -845,7 +847,7 @@ function ConnectionInspector({
 						/>
 					</FormRow>
 					<FormRow label="Y">
-						<input
+						<Input
 							type="number"
 							min={0}
 							step={1}
@@ -864,30 +866,22 @@ function ConnectionInspector({
 				</div>
 			)}
 			<FormRow label="Side">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={connection.to?.side ?? 'auto'}
-					onChange={(e) =>
+					options={selectOptions(SIDES)}
+					onChange={(value) =>
 						onUpdate({
 							id: connection.id,
 							to: {
 								...connection.to,
-								side: e.target.value as NonNullable<
-									ConnectionPatch['to']
-								>['side']
+								side: value as NonNullable<ConnectionPatch['to']>['side']
 							}
 						})
 					}
-				>
-					{SIDES.map((s) => (
-						<option key={s} value={s}>
-							{s}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			<FormRow label="Offset">
-				<input
+				<Input
 					type="number"
 					step={1}
 					value={connection.to?.offset ?? 0}
@@ -906,27 +900,19 @@ function ConnectionInspector({
 
 			<SectionHeader title="Routing" />
 			<FormRow label="Mode">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={connection.routing?.mode ?? 'orthogonal'}
-					onChange={(e) =>
+					options={selectOptions(ROUTING_MODES)}
+					onChange={(value) =>
 						onUpdate({
 							id: connection.id,
 							routing: {
 								...connection.routing,
-								mode: e.target.value as NonNullable<
-									ConnectionPatch['routing']
-								>['mode']
+								mode: value as NonNullable<ConnectionPatch['routing']>['mode']
 							}
 						})
 					}
-				>
-					{ROUTING_MODES.map((m) => (
-						<option key={m} value={m}>
-							{m}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			{connection.route && (
 				<FormRow label="Route">
@@ -938,30 +924,24 @@ function ConnectionInspector({
 
 			<SectionHeader title="Style" />
 			<FormRow label="Pattern">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={connection.style?.pattern ?? 'solid'}
-					onChange={(e) =>
+					options={selectOptions(CONNECTOR_PATTERNS)}
+					onChange={(value) =>
 						onUpdate({
 							id: connection.id,
 							style: {
 								...connection.style,
-								pattern: e.target.value as NonNullable<
+								pattern: value as NonNullable<
 									ConnectionPatch['style']
 								>['pattern']
 							}
 						})
 					}
-				>
-					{CONNECTOR_PATTERNS.map((p) => (
-						<option key={p} value={p}>
-							{p}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			<FormRow label="Stroke">
-				<input
+				<Input
 					type="text"
 					value={connection.style?.stroke ?? ''}
 					className="isostate-input"
@@ -977,7 +957,7 @@ function ConnectionInspector({
 				/>
 			</FormRow>
 			<FormRow label="Stroke Width">
-				<input
+				<Input
 					type="number"
 					min={0}
 					step={0.5}
@@ -995,7 +975,7 @@ function ConnectionInspector({
 				/>
 			</FormRow>
 			<FormRow label="Opacity">
-				<input
+				<Input
 					type="number"
 					min={0}
 					max={1}
@@ -1016,83 +996,58 @@ function ConnectionInspector({
 
 			<SectionHeader title="Endpoints" />
 			<FormRow label="Start">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={connection.start ?? 'none'}
-					onChange={(e) =>
+					options={selectOptions(ENDPOINT_TYPES)}
+					onChange={(value) =>
 						onUpdate({
 							id: connection.id,
-							start: e.target.value as ConnectionPatch['start']
+							start: value as ConnectionPatch['start']
 						})
 					}
-				>
-					{ENDPOINT_TYPES.map((t) => (
-						<option key={t} value={t}>
-							{t}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			<FormRow label="End">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={connection.end ?? 'arrow'}
-					onChange={(e) =>
+					options={selectOptions(ENDPOINT_TYPES)}
+					onChange={(value) =>
 						onUpdate({
 							id: connection.id,
-							end: e.target.value as ConnectionPatch['end']
+							end: value as ConnectionPatch['end']
 						})
 					}
-				>
-					{ENDPOINT_TYPES.map((t) => (
-						<option key={t} value={t}>
-							{t}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 			<FormRow label="Direction">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={connection.direction ?? 'route'}
-					onChange={(e) =>
+					options={selectOptions(DIRECTIONS)}
+					onChange={(value) =>
 						onUpdate({
 							id: connection.id,
-							direction: e.target.value as ConnectionPatch['direction']
+							direction: value as ConnectionPatch['direction']
 						})
 					}
-				>
-					{DIRECTIONS.map((d) => (
-						<option key={d} value={d}>
-							{d}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 
 			<FormRow label="Layer">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={connection.layer ?? layerNames[0] ?? ''}
-					onChange={(e) =>
-						onUpdate({ id: connection.id, layer: e.target.value })
-					}
-				>
-					{layerNames.map((name) => (
-						<option key={name} value={name}>
-							{name}
-						</option>
-					))}
-				</select>
+					options={selectOptions(layerNames)}
+					onChange={(value) => onUpdate({ id: connection.id, layer: value })}
+				/>
 			</FormRow>
 			<div className="isostate-inspector-actions">
-				<button
+				<Button
 					type="button"
-					className="isostate-btn isostate-btn--sm isostate-btn--danger"
+					size="sm"
+					variant="destructive"
 					onClick={onRemove}
 				>
 					Delete Connection
-				</button>
+				</Button>
 			</div>
 		</div>
 	);
@@ -1127,62 +1082,58 @@ function MultiSelectionControls({
 		<div>
 			<SectionHeader title={`${allIds.length} Selected`} />
 			<div className="isostate-inspector-row isostate-nudge-row">
-				<button
+				<Button
 					type="button"
-					className="isostate-btn isostate-btn--sm"
+					size="sm"
 					onClick={() => nudge(0, -1)}
 					title="Nudge up"
 				>
 					&uarr;
-				</button>
-				<button
+				</Button>
+				<Button
 					type="button"
-					className="isostate-btn isostate-btn--sm"
+					size="sm"
 					onClick={() => nudge(0, 1)}
 					title="Nudge down"
 				>
 					&darr;
-				</button>
-				<button
+				</Button>
+				<Button
 					type="button"
-					className="isostate-btn isostate-btn--sm"
+					size="sm"
 					onClick={() => nudge(-1, 0)}
 					title="Nudge left"
 				>
 					&larr;
-				</button>
-				<button
+				</Button>
+				<Button
 					type="button"
-					className="isostate-btn isostate-btn--sm"
+					size="sm"
 					onClick={() => nudge(1, 0)}
 					title="Nudge right"
 				>
 					&rarr;
-				</button>
+				</Button>
 			</div>
 			<FormRow label="Layer">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value=""
-					onChange={(e) => {
-						if (!workspace.activeSceneId || !e.target.value) return;
+					options={[
+						{ value: SELECT_NONE_VALUE, label: 'Assign to layer…' },
+						...selectOptions(layerNames)
+					]}
+					onChange={(value) => {
+						if (!workspace.activeSceneId || !value) return;
 						for (const id of selection.objectIds) {
 							onCommand(
 								createObjectUpdateCommand(workspace.activeSceneId, {
 									id,
-									layer: e.target.value
+									layer: value
 								})
 							);
 						}
 					}}
-				>
-					<option value="">Assign to layer…</option>
-					{layerNames.map((name) => (
-						<option key={name} value={name}>
-							{name}
-						</option>
-					))}
-				</select>
+				/>
 			</FormRow>
 		</div>
 	);
@@ -1211,15 +1162,16 @@ function CameraSection({
 		<div>
 			<SectionHeader title="Camera" />
 			<FormRow label="Target">
-				<select
-					className="isostate-select"
+				<InspectorSelect
 					value={targetType}
-					onChange={(e) => {
-						const type = e.target.value as
-							| 'none'
-							| 'element'
-							| 'area'
-							| 'reset';
+					options={[
+						{ value: 'none', label: 'None' },
+						{ value: 'element', label: 'Element' },
+						{ value: 'area', label: 'Area' },
+						{ value: 'reset', label: 'Reset' }
+					]}
+					onChange={(value) => {
+						const type = value as 'none' | 'element' | 'area' | 'reset';
 						if (type === 'none') {
 							onRemove();
 						} else if (type === 'element') {
@@ -1236,38 +1188,27 @@ function CameraSection({
 							onUpdate({ target: { reset: true } });
 						}
 					}}
-				>
-					<option value="none">None</option>
-					<option value="element">Element</option>
-					<option value="area">Area</option>
-					<option value="reset">Reset</option>
-				</select>
+				/>
 			</FormRow>
 
 			{targetType === 'element' && (
 				<FormRow label="Element">
-					<select
-						className="isostate-select"
+					<InspectorSelect
 						value={
 							(camera && 'element' in camera.target
 								? camera.target.element
 								: '') ?? ''
 						}
-						onChange={(e) =>
+						options={selectOptions(sceneElementIds)}
+						onChange={(value) =>
 							onUpdate({
-								target: { element: e.target.value },
+								target: { element: value },
 								padding: camera?.padding,
 								duration: camera?.duration,
 								easing: camera?.easing
 							})
 						}
-					>
-						{sceneElementIds.map((id) => (
-							<option key={id} value={id}>
-								{id}
-							</option>
-						))}
-					</select>
+					/>
 				</FormRow>
 			)}
 
@@ -1281,7 +1222,7 @@ function CameraSection({
 					return (
 						<div>
 							<FormRow label="X">
-								<input
+								<Input
 									type="number"
 									min={0}
 									step={1}
@@ -1303,7 +1244,7 @@ function CameraSection({
 								/>
 							</FormRow>
 							<FormRow label="Y">
-								<input
+								<Input
 									type="number"
 									min={0}
 									step={1}
@@ -1325,7 +1266,7 @@ function CameraSection({
 								/>
 							</FormRow>
 							<FormRow label="Width">
-								<input
+								<Input
 									type="number"
 									min={1}
 									step={1}
@@ -1350,7 +1291,7 @@ function CameraSection({
 								/>
 							</FormRow>
 							<FormRow label="Height">
-								<input
+								<Input
 									type="number"
 									min={1}
 									step={1}
@@ -1381,7 +1322,7 @@ function CameraSection({
 			{targetType !== 'none' && targetType !== 'reset' && camera && (
 				<div>
 					<FormRow label="Padding">
-						<input
+						<Input
 							type="number"
 							min={0}
 							max={2048}
@@ -1397,7 +1338,7 @@ function CameraSection({
 						/>
 					</FormRow>
 					<FormRow label="Duration">
-						<input
+						<Input
 							type="number"
 							min={0}
 							max={10000}
@@ -1414,39 +1355,29 @@ function CameraSection({
 						/>
 					</FormRow>
 					<FormRow label="Easing">
-						<select
-							className="isostate-select"
+						<InspectorSelect
 							value={camera.easing ?? ''}
-							onChange={(e) =>
+							options={[
+								{ value: SELECT_NONE_VALUE, label: 'Default' },
+								...selectOptions(EASINGS)
+							]}
+							onChange={(value) =>
 								onUpdate({
 									...camera,
 									easing:
-										e.target.value === ''
-											? undefined
-											: (e.target.value as CameraFocus['easing'])
+										value === '' ? undefined : (value as CameraFocus['easing'])
 								})
 							}
-						>
-							<option value="">Default</option>
-							{EASINGS.map((e) => (
-								<option key={e} value={e}>
-									{e}
-								</option>
-							))}
-						</select>
+						/>
 					</FormRow>
 				</div>
 			)}
 
 			{targetType !== 'none' && (
 				<div className="isostate-inspector-row">
-					<button
-						type="button"
-						className="isostate-btn isostate-btn--secondary"
-						onClick={onRemove}
-					>
+					<Button type="button" variant="secondary" onClick={onRemove}>
 						Clear Camera
-					</button>
+					</Button>
 				</div>
 			)}
 		</div>
