@@ -52,6 +52,10 @@ function serializeTuple(t: [number, number]): string {
 	return `[${t[0]}, ${t[1]}]`;
 }
 
+function serializeNumberTuple(t: number[]): string {
+	return `[${t.join(', ')}]`;
+}
+
 function serializeTupleArray(arr: [number, number][]): string {
 	if (arr.length === 0) return '[]';
 	return `[${arr.map((t) => `[${t[0]}, ${t[1]}]`).join(', ')}]`;
@@ -461,10 +465,33 @@ function serializeSceneItem(buf: string[], scene: SceneStep): void {
 
 function serializeAssetItem(buf: string[], asset: AssetCatalogEntry): void {
 	buf.push(`id: ${serializeScalarString(asset.id)}`);
+	if ('type' in asset && asset.type !== undefined) {
+		buf.push(`type: ${serializeScalarString(asset.type)}`);
+	}
 	if (asset.path !== undefined)
 		buf.push(`path: ${serializeScalarString(asset.path)}`);
+	if ('sheetSize' in asset && asset.sheetSize !== undefined)
+		buf.push(`sheetSize: ${serializeTuple(asset.sheetSize)}`);
+	if ('tileSize' in asset && asset.tileSize !== undefined)
+		buf.push(`tileSize: ${serializeTuple(asset.tileSize)}`);
 	if (asset.anchor !== undefined)
 		buf.push(`anchor: ${serializeTuple(asset.anchor)}`);
+	if ('sprites' in asset && asset.sprites !== undefined) {
+		buf.push('sprites:');
+		for (const [id, sprite] of Object.entries(asset.sprites)) {
+			if (Array.isArray(sprite)) {
+				buf.push(`  ${serializeScalarString(id)}: ${serializeTuple(sprite)}`);
+			} else {
+				buf.push(`  ${serializeScalarString(id)}:`);
+				if (sprite.at !== undefined)
+					buf.push(`    at: ${serializeTuple(sprite.at)}`);
+				if (sprite.rect !== undefined)
+					buf.push(`    rect: ${serializeNumberTuple(sprite.rect)}`);
+				if (sprite.anchor !== undefined)
+					buf.push(`    anchor: ${serializeTuple(sprite.anchor)}`);
+			}
+		}
+	}
 }
 
 function serializeLayerItem(buf: string[], layer: LayerDefinition): void {

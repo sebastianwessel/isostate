@@ -2,18 +2,22 @@ import type {
 	CameraFocus,
 	ConnectionPatch,
 	ConnectionPlacement,
+	ConnectorRouting,
 	ElementPatch,
 	ElementPlacement
 } from '@sebastianwessel/isostate/types';
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
 	createCameraRemoveCommand,
 	createCameraUpdateCommand,
-	createConnectionAddCommand,
 	createConnectionRemoveCommand,
+	createConnectionRenameCommand,
 	createConnectionUpdateCommand,
+	createLayerUpdateCommand,
 	createObjectRemoveCommand,
-	createObjectUpdateCommand
+	createObjectRenameCommand,
+	createObjectUpdateCommand,
+	createSceneUpdateCommand
 } from '../commands.ts';
 import {
 	resolveSceneConnections,
@@ -30,6 +34,7 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '../ui/select.tsx';
+import { Textarea } from '../ui/textarea.tsx';
 
 interface InspectorPanelProps {
 	workspace: EditorWorkspace;
@@ -37,12 +42,33 @@ interface InspectorPanelProps {
 	mode?: 'attributes' | 'general';
 }
 
-const BUILT_IN_ASSETS = ['text', 'rectangle', 'circle', 'polygon', 'line'];
-const ENTRY_ANIMATIONS = ['fade-in', 'slide-up', 'scale-in', 'pop-in'];
-const EXIT_ANIMATIONS = ['fade-out', 'slide-down', 'scale-out', 'pop-out'];
-const _AMBIENT_ANIMATIONS = ['pulse', 'float', 'bounce', 'shake', 'flow'];
+const ENTRY_ANIMATIONS = [
+	'fade-in',
+	'fade-in-grow',
+	'fall-in',
+	'rise-from-ground',
+	'slide-in-left',
+	'slide-in-right',
+	'flip-in',
+	'none'
+];
+const EXIT_ANIMATIONS = [
+	'fade-out',
+	'fade-out-shrink',
+	'fall-through-ground',
+	'rise-away',
+	'slide-out-left',
+	'slide-out-right',
+	'flip-out',
+	'none'
+];
+const AMBIENT_ANIMATIONS = ['pulse', 'float', 'bounce', 'shake'];
 const ROUTING_MODES = ['straight', 'orthogonal', 'manual'];
+const ROUTING_AVOID = ['objects', 'none'];
+const ROUTING_PREFER = ['direct', 'fewest-bends', 'shortest'];
+const CONNECTOR_VARIANTS = ['line', 'road'];
 const CONNECTOR_PATTERNS = ['solid', 'dashed', 'dotted'];
+const CONNECTOR_LANES = ['none', 'center-dashed'];
 const ENDPOINT_TYPES = ['none', 'arrow', 'dot', 'circle', 'diamond', 'bar'];
 const DIRECTIONS = ['route', 'reverse'];
 const SIDES = ['auto', 'top', 'right', 'bottom', 'left', 'front', 'back'];
@@ -73,6 +99,46 @@ function FormRow({
 
 function SectionHeader({ title }: { title: string }) {
 	return <div className="isostate-inspector-section">{title}</div>;
+}
+
+function EditableIdInput({
+	value,
+	ariaLabel,
+	onCommit
+}: {
+	value: string;
+	ariaLabel: string;
+	onCommit: (value: string) => void;
+}) {
+	const [draft, setDraft] = useState(value);
+	useEffect(() => setDraft(value), [value]);
+	const commit = (rawValue = draft) => {
+		const next = rawValue.trim();
+		if (next && next !== value) {
+			onCommit(next);
+			return;
+		}
+		setDraft(value);
+	};
+	return (
+		<Input
+			type="text"
+			value={draft}
+			aria-label={ariaLabel}
+			className="isostate-input"
+			onChange={(event) => setDraft(event.currentTarget.value)}
+			onBlur={(event) => commit(event.currentTarget.value)}
+			onKeyDown={(event) => {
+				if (event.key === 'Enter') {
+					event.currentTarget.blur();
+				}
+				if (event.key === 'Escape') {
+					setDraft(value);
+					event.currentTarget.blur();
+				}
+			}}
+		/>
+	);
 }
 
 function InspectorSelect({
@@ -116,6 +182,36 @@ function selectOptions(values: string[]) {
 	return values.map((value) => ({ value, label: value }));
 }
 
+function formatRoute(route: [number, number][] | undefined): string {
+	return (route ?? []).map((point) => `${point[0]}, ${point[1]}`).join('\n');
+}
+
+function parseRoute(value: string): [number, number][] | undefined {
+	const route: [number, number][] = [];
+	for (const line of value.split('\n')) {
+		const trimmed = line.trim();
+		if (!trimmed) continue;
+		const match = trimmed.match(
+			/^\[?\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*\]?$/
+		);
+		if (!match) return undefined;
+		route.push([Number(match[1]), Number(match[2])]);
+	}
+	return route.length >= 2 ? route : undefined;
+}
+
+function updateAmbient(
+	ambient: ConnectionPlacement['ambient'] | ElementPlacement['ambient'],
+	name: string,
+	enabled: boolean
+) {
+	const next = (ambient ?? []).filter((item) => item.name !== name);
+	if (enabled) {
+		next.push({ name });
+	}
+	return next;
+}
+
 export function InspectorPanel({
 	workspace,
 	onCommand,
@@ -141,6 +237,12 @@ export function InspectorPanel({
 		selection.connectionIds.length === 1
 			? selection.connectionIds[0]
 			: undefined;
+	const selectedLayerName =
+		selection.layerNames.length === 1 &&
+		selection.objectIds.length === 0 &&
+		selection.connectionIds.length === 0
+			? selection.layerNames[0]
+			: undefined;
 	const hasMultiSelection =
 		selection.objectIds.length + selection.connectionIds.length > 1;
 
@@ -152,11 +254,10 @@ export function InspectorPanel({
 		: undefined;
 
 	const layerNames = doc?.header.layers.map((l) => l.name) ?? [];
-	const assetIds = [
-		...BUILT_IN_ASSETS,
-		...(doc?.header.assets.map((a) => a.id) ?? [])
-	];
-
+	const selectedLayer = selectedLayerName
+		? (doc?.header.layers.find((layer) => layer.name === selectedLayerName) ??
+			undefined)
+		: undefined;
 	const sceneElementIds = useMemo(() => {
 		return Array.from(resolvedElements.keys());
 	}, [resolvedElements]);
@@ -189,30 +290,6 @@ export function InspectorPanel({
 				...patch
 			} as ConnectionPatch)
 		);
-	};
-
-	const handleConnectionAdd = () => {
-		if (!workspace.activeSceneId) return;
-		const ids = sceneElementIds;
-		const connection: ConnectionPlacement =
-			ids.length >= 2
-				? {
-						id: `conn-${Math.random().toString(36).slice(2, 6)}`,
-						from: { element: ids[0] },
-						to: { element: ids[1] },
-						layer: layerNames[0] ?? 'default',
-						end: 'arrow'
-					}
-				: {
-						id: `conn-${Math.random().toString(36).slice(2, 6)}`,
-						route: [
-							[0, 0],
-							[2, 0]
-						],
-						layer: layerNames[0] ?? 'default',
-						end: 'arrow'
-					};
-		onCommand(createConnectionAddCommand(workspace.activeSceneId, connection));
 	};
 
 	const handleConnectionRemove = () => {
@@ -275,11 +352,13 @@ export function InspectorPanel({
 				<ElementInspector
 					element={selectedElement}
 					layerNames={layerNames}
-					assetIds={assetIds}
 					onUpdate={handleElementUpdate}
 					onRemove={handleElementRemove}
 					onCommand={onCommand}
 					workspace={workspace}
+					onRename={(nextId) =>
+						onCommand(createObjectRenameCommand(selectedElement.id, nextId))
+					}
 				/>
 			)}
 
@@ -290,6 +369,23 @@ export function InspectorPanel({
 					layerNames={layerNames}
 					onUpdate={handleConnectionUpdate}
 					onRemove={handleConnectionRemove}
+					onRename={(nextId) =>
+						onCommand(
+							createConnectionRenameCommand(selectedConnection.id, nextId)
+						)
+					}
+				/>
+			)}
+
+			{selectedLayer && (
+				<LayerInspector
+					layerName={selectedLayer.name}
+					order={selectedLayer.order}
+					onRename={(nextName) =>
+						onCommand(
+							createLayerUpdateCommand(selectedLayer.name, { name: nextName })
+						)
+					}
 				/>
 			)}
 
@@ -302,34 +398,34 @@ export function InspectorPanel({
 				/>
 			)}
 
-			{!selectedElement && !selectedConnection && !hasMultiSelection && (
-				<div className="isostate-inspector-empty">
-					<div className="isostate-inspector-section">Scene</div>
-					<FormRow label="Scene ID">
-						<Input
-							type="text"
-							value={scene?.id ?? ''}
-							readOnly
-							className="isostate-input isostate-input--readonly"
-						/>
-					</FormRow>
-					<FormRow label="Elements">
-						<span className="isostate-readonly-value">
-							{resolvedElements.size}
-						</span>
-					</FormRow>
-					<FormRow label="Connections">
-						<span className="isostate-readonly-value">
-							{resolvedConnections.size}
-						</span>
-					</FormRow>
-					<div className="isostate-inspector-actions">
-						<Button type="button" size="sm" onClick={handleConnectionAdd}>
-							+ Connection
-						</Button>
+			{!selectedElement &&
+				!selectedConnection &&
+				!selectedLayer &&
+				!hasMultiSelection && (
+					<div className="isostate-inspector-empty">
+						<div className="isostate-inspector-section">Scene</div>
+						<FormRow label="Scene ID">
+							<EditableIdInput
+								value={scene?.id ?? ''}
+								ariaLabel="Rename scene"
+								onCommit={(nextId) => {
+									if (!scene) return;
+									onCommand(createSceneUpdateCommand(scene.id, { id: nextId }));
+								}}
+							/>
+						</FormRow>
+						<FormRow label="Elements">
+							<span className="isostate-readonly-value">
+								{resolvedElements.size}
+							</span>
+						</FormRow>
+						<FormRow label="Connections">
+							<span className="isostate-readonly-value">
+								{resolvedConnections.size}
+							</span>
+						</FormRow>
 					</div>
-				</div>
-			)}
+				)}
 		</div>
 	);
 }
@@ -337,17 +433,17 @@ export function InspectorPanel({
 function ElementInspector({
 	element,
 	layerNames,
-	assetIds,
 	onUpdate,
-	onRemove
+	onRemove,
+	onRename
 }: {
 	element: ElementPlacement;
 	layerNames: string[];
-	assetIds: string[];
 	onUpdate: (patch: ElementPatch) => void;
 	onRemove: () => void;
 	onCommand: (cmd: EditorCommand) => void;
 	workspace: EditorWorkspace;
+	onRename: (value: string) => void;
 }) {
 	const isText = element.asset === 'text';
 	const isPrimitive =
@@ -360,20 +456,18 @@ function ElementInspector({
 		<div>
 			<SectionHeader title="Element" />
 			<FormRow label="ID">
-				<Input
-					type="text"
+				<EditableIdInput
 					value={element.id}
-					readOnly
-					className="isostate-input isostate-input--readonly"
+					ariaLabel={`Rename element ${element.id}`}
+					onCommit={onRename}
 				/>
 			</FormRow>
 			<FormRow label="Asset">
-				<InspectorSelect
+				<Input
+					type="text"
 					value={element.asset}
-					options={selectOptions(assetIds)}
-					onChange={(value) =>
-						onUpdate({ id: element.id, asset: value } as ElementPatch)
-					}
+					readOnly
+					className="isostate-input isostate-input--readonly"
 				/>
 			</FormRow>
 			<FormRow label="Position X">
@@ -409,7 +503,7 @@ function ElementInspector({
 			<FormRow label="Size">
 				<Input
 					type="number"
-					min={1}
+					min={0}
 					step={1}
 					value={element.size ?? 1}
 					className="isostate-input"
@@ -457,6 +551,30 @@ function ElementInspector({
 						})
 					}
 				/>
+			</FormRow>
+			<FormRow label="Ambient">
+				<div className="isostate-toggle-row">
+					{AMBIENT_ANIMATIONS.map((name) => {
+						const enabled =
+							element.ambient?.some((item) => item.name === name) ?? false;
+						return (
+							<Button
+								key={name}
+								type="button"
+								size="sm"
+								variant={enabled ? 'default' : 'secondary'}
+								onClick={() =>
+									onUpdate({
+										id: element.id,
+										ambient: updateAmbient(element.ambient, name, !enabled)
+									})
+								}
+							>
+								{name}
+							</Button>
+						);
+					})}
+				</div>
 			</FormRow>
 			{isText && (
 				<div>
@@ -612,257 +730,354 @@ function PrimitiveStyleFields({
 	);
 }
 
+function LayerInspector({
+	layerName,
+	order,
+	onRename
+}: {
+	layerName: string;
+	order?: number;
+	onRename: (value: string) => void;
+}) {
+	return (
+		<div>
+			<SectionHeader title="Layer" />
+			<FormRow label="ID">
+				<EditableIdInput
+					value={layerName}
+					ariaLabel={`Rename layer ${layerName}`}
+					onCommit={onRename}
+				/>
+			</FormRow>
+			<FormRow label="Order">
+				<span className="isostate-readonly-value">{order ?? 'auto'}</span>
+			</FormRow>
+		</div>
+	);
+}
+
 function ConnectionInspector({
 	connection,
 	sceneElementIds,
 	layerNames,
 	onUpdate,
-	onRemove
+	onRemove,
+	onRename
 }: {
 	connection: ConnectionPlacement;
 	sceneElementIds: string[];
 	layerNames: string[];
 	onUpdate: (patch: ConnectionPatch) => void;
 	onRemove: () => void;
+	onRename: (value: string) => void;
 }) {
+	const routeSourceMode = connection.route ? 'manual' : 'endpoints';
 	const fromMode = connection.from?.element ? 'element' : 'point';
 	const toMode = connection.to?.element ? 'element' : 'point';
+	const hasFlow =
+		connection.ambient?.some((item) => item.name === 'flow') ?? false;
 
 	return (
 		<div>
 			<SectionHeader title="Connection" />
 			<FormRow label="ID">
-				<Input
-					type="text"
+				<EditableIdInput
 					value={connection.id}
-					readOnly
-					className="isostate-input isostate-input--readonly"
+					ariaLabel={`Rename connection ${connection.id}`}
+					onCommit={onRename}
 				/>
 			</FormRow>
-
-			<SectionHeader title="From" />
-			<FormRow label="Type">
+			<FormRow label="Route Source">
 				<InspectorSelect
-					value={fromMode}
+					value={routeSourceMode}
 					options={[
-						{ value: 'element', label: 'Element' },
-						{ value: 'point', label: 'Grid Point' }
+						{ value: 'endpoints', label: 'Endpoints' },
+						{ value: 'manual', label: 'Manual Route' }
 					]}
 					onChange={(value) => {
-						if (value === 'element') {
+						if (value === 'manual') {
 							onUpdate({
 								id: connection.id,
-								from: {
-									element: sceneElementIds[0] ?? ''
-								}
+								route: connection.route ?? [
+									connection.from?.at ?? [0, 0],
+									connection.to?.at ?? [2, 0]
+								],
+								from: undefined,
+								to: undefined
 							});
 						} else {
 							onUpdate({
 								id: connection.id,
-								from: { at: [0, 0] }
+								route: undefined,
+								from: connection.from ?? { element: sceneElementIds[0] ?? '' },
+								to: connection.to ?? {
+									element: sceneElementIds[1] ?? sceneElementIds[0] ?? ''
+								}
 							});
 						}
 					}}
 				/>
 			</FormRow>
-			{fromMode === 'element' && (
-				<FormRow label="Element">
-					<InspectorSelect
-						value={connection.from?.element ?? ''}
-						options={selectOptions(sceneElementIds)}
-						onChange={(value) =>
-							onUpdate({
-								id: connection.id,
-								from: {
-									element: value
-								}
-							})
-						}
-					/>
-				</FormRow>
-			)}
-			{fromMode === 'point' && (
-				<div>
-					<FormRow label="X">
-						<Input
-							type="number"
-							min={0}
-							step={1}
-							value={connection.from?.at?.[0] ?? 0}
-							className="isostate-input"
-							onChange={(e) =>
-								onUpdate({
-									id: connection.id,
-									from: {
-										at: [Number(e.target.value), connection.from?.at?.[1] ?? 0]
-									}
-								})
-							}
-						/>
-					</FormRow>
-					<FormRow label="Y">
-						<Input
-							type="number"
-							min={0}
-							step={1}
-							value={connection.from?.at?.[1] ?? 0}
-							className="isostate-input"
-							onChange={(e) =>
-								onUpdate({
-									id: connection.id,
-									from: {
-										at: [connection.from?.at?.[0] ?? 0, Number(e.target.value)]
-									}
-								})
-							}
-						/>
-					</FormRow>
-				</div>
-			)}
-			<FormRow label="Side">
-				<InspectorSelect
-					value={connection.from?.side ?? 'auto'}
-					options={selectOptions(SIDES)}
-					onChange={(value) =>
-						onUpdate({
-							id: connection.id,
-							from: {
-								...connection.from,
-								side: value as NonNullable<ConnectionPatch['from']>['side']
-							}
-						})
-					}
-				/>
-			</FormRow>
-			<FormRow label="Offset">
-				<Input
-					type="number"
-					step={1}
-					value={connection.from?.offset ?? 0}
-					className="isostate-input"
-					onChange={(e) =>
-						onUpdate({
-							id: connection.id,
-							from: {
-								...connection.from,
-								offset: Number(e.target.value)
-							}
-						})
-					}
-				/>
-			</FormRow>
 
-			<SectionHeader title="To" />
-			<FormRow label="Type">
-				<InspectorSelect
-					value={toMode}
-					options={[
-						{ value: 'element', label: 'Element' },
-						{ value: 'point', label: 'Grid Point' }
-					]}
-					onChange={(value) => {
-						if (value === 'element') {
+			{routeSourceMode === 'manual' && (
+				<FormRow label="Route">
+					<Textarea
+						value={formatRoute(connection.route)}
+						className="isostate-textarea"
+						placeholder={'0, 0\n2, 0'}
+						onChange={(event) => {
+							const route = parseRoute(event.target.value);
+							if (!route) return;
 							onUpdate({
 								id: connection.id,
-								to: {
-									element: sceneElementIds[0] ?? ''
-								}
+								route,
+								from: undefined,
+								to: undefined
 							});
-						} else {
-							onUpdate({
-								id: connection.id,
-								to: { at: [0, 0] }
-							});
-						}
-					}}
-				/>
-			</FormRow>
-			{toMode === 'element' && (
-				<FormRow label="Element">
-					<InspectorSelect
-						value={connection.to?.element ?? ''}
-						options={selectOptions(sceneElementIds)}
-						onChange={(value) =>
-							onUpdate({
-								id: connection.id,
-								to: {
-									element: value
-								}
-							})
-						}
+						}}
 					/>
 				</FormRow>
 			)}
-			{toMode === 'point' && (
-				<div>
-					<FormRow label="X">
-						<Input
-							type="number"
-							min={0}
-							step={1}
-							value={connection.to?.at?.[0] ?? 0}
-							className="isostate-input"
-							onChange={(e) =>
+
+			{routeSourceMode === 'endpoints' && (
+				<>
+					<SectionHeader title="From" />
+					<FormRow label="Type">
+						<InspectorSelect
+							value={fromMode}
+							options={[
+								{ value: 'element', label: 'Element' },
+								{ value: 'point', label: 'Grid Point' }
+							]}
+							onChange={(value) => {
+								if (value === 'element') {
+									onUpdate({
+										id: connection.id,
+										from: {
+											element: sceneElementIds[0] ?? ''
+										}
+									});
+								} else {
+									onUpdate({
+										id: connection.id,
+										from: { at: [0, 0] }
+									});
+								}
+							}}
+						/>
+					</FormRow>
+					{fromMode === 'element' && (
+						<FormRow label="Element">
+							<InspectorSelect
+								value={connection.from?.element ?? ''}
+								options={selectOptions(sceneElementIds)}
+								onChange={(value) =>
+									onUpdate({
+										id: connection.id,
+										from: {
+											element: value
+										}
+									})
+								}
+							/>
+						</FormRow>
+					)}
+					{fromMode === 'point' && (
+						<div>
+							<FormRow label="X">
+								<Input
+									type="number"
+									min={0}
+									step={1}
+									value={connection.from?.at?.[0] ?? 0}
+									className="isostate-input"
+									onChange={(e) =>
+										onUpdate({
+											id: connection.id,
+											from: {
+												at: [
+													Number(e.target.value),
+													connection.from?.at?.[1] ?? 0
+												]
+											}
+										})
+									}
+								/>
+							</FormRow>
+							<FormRow label="Y">
+								<Input
+									type="number"
+									min={0}
+									step={1}
+									value={connection.from?.at?.[1] ?? 0}
+									className="isostate-input"
+									onChange={(e) =>
+										onUpdate({
+											id: connection.id,
+											from: {
+												at: [
+													connection.from?.at?.[0] ?? 0,
+													Number(e.target.value)
+												]
+											}
+										})
+									}
+								/>
+							</FormRow>
+						</div>
+					)}
+					<FormRow label="Side">
+						<InspectorSelect
+							value={connection.from?.side ?? 'auto'}
+							options={selectOptions(SIDES)}
+							onChange={(value) =>
 								onUpdate({
 									id: connection.id,
-									to: {
-										at: [Number(e.target.value), connection.to?.at?.[1] ?? 0]
+									from: {
+										...connection.from,
+										side: value as NonNullable<ConnectionPatch['from']>['side']
 									}
 								})
 							}
 						/>
 					</FormRow>
-					<FormRow label="Y">
+					<FormRow label="Offset">
 						<Input
 							type="number"
-							min={0}
 							step={1}
-							value={connection.to?.at?.[1] ?? 0}
+							value={connection.from?.offset ?? 0}
 							className="isostate-input"
 							onChange={(e) =>
 								onUpdate({
 									id: connection.id,
-									to: {
-										at: [connection.to?.at?.[0] ?? 0, Number(e.target.value)]
+									from: {
+										...connection.from,
+										offset: Number(e.target.value)
 									}
 								})
 							}
 						/>
 					</FormRow>
-				</div>
+
+					<SectionHeader title="To" />
+					<FormRow label="Type">
+						<InspectorSelect
+							value={toMode}
+							options={[
+								{ value: 'element', label: 'Element' },
+								{ value: 'point', label: 'Grid Point' }
+							]}
+							onChange={(value) => {
+								if (value === 'element') {
+									onUpdate({
+										id: connection.id,
+										to: {
+											element: sceneElementIds[0] ?? ''
+										}
+									});
+								} else {
+									onUpdate({
+										id: connection.id,
+										to: { at: [0, 0] }
+									});
+								}
+							}}
+						/>
+					</FormRow>
+					{toMode === 'element' && (
+						<FormRow label="Element">
+							<InspectorSelect
+								value={connection.to?.element ?? ''}
+								options={selectOptions(sceneElementIds)}
+								onChange={(value) =>
+									onUpdate({
+										id: connection.id,
+										to: {
+											element: value
+										}
+									})
+								}
+							/>
+						</FormRow>
+					)}
+					{toMode === 'point' && (
+						<div>
+							<FormRow label="X">
+								<Input
+									type="number"
+									min={0}
+									step={1}
+									value={connection.to?.at?.[0] ?? 0}
+									className="isostate-input"
+									onChange={(e) =>
+										onUpdate({
+											id: connection.id,
+											to: {
+												at: [
+													Number(e.target.value),
+													connection.to?.at?.[1] ?? 0
+												]
+											}
+										})
+									}
+								/>
+							</FormRow>
+							<FormRow label="Y">
+								<Input
+									type="number"
+									min={0}
+									step={1}
+									value={connection.to?.at?.[1] ?? 0}
+									className="isostate-input"
+									onChange={(e) =>
+										onUpdate({
+											id: connection.id,
+											to: {
+												at: [
+													connection.to?.at?.[0] ?? 0,
+													Number(e.target.value)
+												]
+											}
+										})
+									}
+								/>
+							</FormRow>
+						</div>
+					)}
+					<FormRow label="Side">
+						<InspectorSelect
+							value={connection.to?.side ?? 'auto'}
+							options={selectOptions(SIDES)}
+							onChange={(value) =>
+								onUpdate({
+									id: connection.id,
+									to: {
+										...connection.to,
+										side: value as NonNullable<ConnectionPatch['to']>['side']
+									}
+								})
+							}
+						/>
+					</FormRow>
+					<FormRow label="Offset">
+						<Input
+							type="number"
+							step={1}
+							value={connection.to?.offset ?? 0}
+							className="isostate-input"
+							onChange={(e) =>
+								onUpdate({
+									id: connection.id,
+									to: {
+										...connection.to,
+										offset: Number(e.target.value)
+									}
+								})
+							}
+						/>
+					</FormRow>
+				</>
 			)}
-			<FormRow label="Side">
-				<InspectorSelect
-					value={connection.to?.side ?? 'auto'}
-					options={selectOptions(SIDES)}
-					onChange={(value) =>
-						onUpdate({
-							id: connection.id,
-							to: {
-								...connection.to,
-								side: value as NonNullable<ConnectionPatch['to']>['side']
-							}
-						})
-					}
-				/>
-			</FormRow>
-			<FormRow label="Offset">
-				<Input
-					type="number"
-					step={1}
-					value={connection.to?.offset ?? 0}
-					className="isostate-input"
-					onChange={(e) =>
-						onUpdate({
-							id: connection.id,
-							to: {
-								...connection.to,
-								offset: Number(e.target.value)
-							}
-						})
-					}
-				/>
-			</FormRow>
 
 			<SectionHeader title="Routing" />
 			<FormRow label="Mode">
@@ -880,15 +1095,122 @@ function ConnectionInspector({
 					}
 				/>
 			</FormRow>
-			{connection.route && (
-				<FormRow label="Route">
-					<span className="isostate-readonly-value">
-						{connection.route.length} points
-					</span>
-				</FormRow>
-			)}
+			<FormRow label="Avoid">
+				<InspectorSelect
+					value={
+						Array.isArray(connection.routing?.avoid)
+							? connection.routing.avoid.join(',')
+							: (connection.routing?.avoid ?? 'objects')
+					}
+					options={selectOptions(ROUTING_AVOID)}
+					onChange={(value) =>
+						onUpdate({
+							id: connection.id,
+							routing: {
+								...connection.routing,
+								avoid: value as ConnectorRouting['avoid']
+							}
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Clearance">
+				<Input
+					type="number"
+					min={0}
+					step={0.25}
+					value={connection.routing?.clearance ?? ''}
+					className="isostate-input"
+					onChange={(e) =>
+						onUpdate({
+							id: connection.id,
+							routing: {
+								...connection.routing,
+								clearance:
+									e.target.value === '' ? undefined : Number(e.target.value)
+							}
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Grid Step">
+				<Input
+					type="number"
+					min={0.25}
+					step={0.25}
+					value={connection.routing?.gridStep ?? ''}
+					className="isostate-input"
+					onChange={(e) =>
+						onUpdate({
+							id: connection.id,
+							routing: {
+								...connection.routing,
+								gridStep:
+									e.target.value === '' ? undefined : Number(e.target.value)
+							}
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Max Bends">
+				<Input
+					type="number"
+					min={0}
+					step={1}
+					value={connection.routing?.maxBends ?? ''}
+					className="isostate-input"
+					onChange={(e) =>
+						onUpdate({
+							id: connection.id,
+							routing: {
+								...connection.routing,
+								maxBends:
+									e.target.value === '' ? undefined : Number(e.target.value)
+							}
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Prefer">
+				<InspectorSelect
+					value={connection.routing?.prefer ?? ''}
+					options={[
+						{ value: SELECT_NONE_VALUE, label: 'Default' },
+						...selectOptions(ROUTING_PREFER)
+					]}
+					onChange={(value) =>
+						onUpdate({
+							id: connection.id,
+							routing: {
+								...connection.routing,
+								prefer:
+									value === ''
+										? undefined
+										: (value as ConnectorRouting['prefer'])
+							}
+						})
+					}
+				/>
+			</FormRow>
 
 			<SectionHeader title="Style" />
+			<FormRow label="Variant">
+				<InspectorSelect
+					value={connection.style?.variant ?? 'line'}
+					options={selectOptions(CONNECTOR_VARIANTS)}
+					onChange={(value) =>
+						onUpdate({
+							id: connection.id,
+							style: {
+								...connection.style,
+								variant: value as NonNullable<
+									ConnectionPatch['style']
+								>['variant']
+							}
+						})
+					}
+				/>
+			</FormRow>
 			<FormRow label="Pattern">
 				<InspectorSelect
 					value={connection.style?.pattern ?? 'solid'}
@@ -959,6 +1281,122 @@ function ConnectionInspector({
 					}
 				/>
 			</FormRow>
+			<FormRow label="Dash">
+				<div className="isostate-grid-pair">
+					<Input
+						type="number"
+						min={0}
+						step={1}
+						value={connection.style?.dash?.[0] ?? ''}
+						className="isostate-input"
+						placeholder="dash"
+						onChange={(e) =>
+							onUpdate({
+								id: connection.id,
+								style: {
+									...connection.style,
+									dash: [
+										Number(e.target.value || 0),
+										connection.style?.dash?.[1] ?? 4
+									]
+								}
+							})
+						}
+					/>
+					<Input
+						type="number"
+						min={0}
+						step={1}
+						value={connection.style?.dash?.[1] ?? ''}
+						className="isostate-input"
+						placeholder="gap"
+						onChange={(e) =>
+							onUpdate({
+								id: connection.id,
+								style: {
+									...connection.style,
+									dash: [
+										connection.style?.dash?.[0] ?? 4,
+										Number(e.target.value || 0)
+									]
+								}
+							})
+						}
+					/>
+				</div>
+			</FormRow>
+			<FormRow label="Outline">
+				<Input
+					type="text"
+					value={connection.style?.outline ?? ''}
+					className="isostate-input"
+					onChange={(e) =>
+						onUpdate({
+							id: connection.id,
+							style: {
+								...connection.style,
+								outline: e.target.value || undefined
+							}
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Outline Width">
+				<Input
+					type="number"
+					min={0}
+					step={0.5}
+					value={connection.style?.outlineWidth ?? ''}
+					className="isostate-input"
+					onChange={(e) =>
+						onUpdate({
+							id: connection.id,
+							style: {
+								...connection.style,
+								outlineWidth:
+									e.target.value === '' ? undefined : Number(e.target.value)
+							}
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Lane">
+				<InspectorSelect
+					value={connection.style?.lane ?? 'none'}
+					options={selectOptions(CONNECTOR_LANES)}
+					onChange={(value) =>
+						onUpdate({
+							id: connection.id,
+							style: {
+								...connection.style,
+								lane: value as NonNullable<ConnectionPatch['style']>['lane']
+							}
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Flow">
+				<Button
+					type="button"
+					size="sm"
+					variant={hasFlow ? 'default' : 'secondary'}
+					onClick={() =>
+						onUpdate({
+							id: connection.id,
+							ambient: updateAmbient(connection.ambient, 'flow', !hasFlow),
+							style: {
+								...connection.style,
+								pattern:
+									!hasFlow && (connection.style?.pattern ?? 'solid') === 'solid'
+										? 'dashed'
+										: connection.style?.pattern
+							}
+						})
+					}
+				>
+					{hasFlow ? 'Flow on' : 'Flow off'}
+				</Button>
+			</FormRow>
 
 			<SectionHeader title="Endpoints" />
 			<FormRow label="Start">
@@ -993,6 +1431,36 @@ function ConnectionInspector({
 						onUpdate({
 							id: connection.id,
 							direction: value as ConnectionPatch['direction']
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Enter">
+				<InspectorSelect
+					value={connection.enter ?? ''}
+					options={[
+						{ value: SELECT_NONE_VALUE, label: '—' },
+						...selectOptions(ENTRY_ANIMATIONS)
+					]}
+					onChange={(value) =>
+						onUpdate({
+							id: connection.id,
+							enter: (value || undefined) as ConnectionPatch['enter']
+						})
+					}
+				/>
+			</FormRow>
+			<FormRow label="Exit">
+				<InspectorSelect
+					value={connection.exit ?? ''}
+					options={[
+						{ value: SELECT_NONE_VALUE, label: '—' },
+						...selectOptions(EXIT_ANIMATIONS)
+					]}
+					onChange={(value) =>
+						onUpdate({
+							id: connection.id,
+							exit: (value || undefined) as ConnectionPatch['exit']
 						})
 					}
 				/>

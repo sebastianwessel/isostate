@@ -163,6 +163,20 @@ describe('applyEditorCommand', () => {
 		).toBe(true);
 	});
 
+	test('object.add expands the authored floor when needed', () => {
+		const workspace = makeWorkspace();
+		const element = {
+			id: 'far',
+			asset: 'server',
+			at: [24, 25],
+			size: 2
+		} as import('@sebastianwessel/isostate/types').ElementPlacement;
+		const command = createObjectAddCommand('scene-1', element);
+		const result = applyEditorCommand(workspace, command);
+		expect(result.changed).toBe(true);
+		expect(result.workspace.document?.header.floor?.size).toEqual([26, 27]);
+	});
+
 	test('object.add on later scene adds to add.elements', () => {
 		const workspace = makeWorkspace();
 		const element = {
@@ -193,6 +207,18 @@ describe('applyEditorCommand', () => {
 			result.workspace.document?.scenes[0].elements?.find((e) => e.id === 'e1')
 				?.at
 		).toEqual([5, 5]);
+	});
+
+	test('object.update expands the authored floor for moved elements', () => {
+		const workspace = makeWorkspace();
+		const patch = {
+			id: 'e1',
+			at: [30, 31]
+		} as import('@sebastianwessel/isostate/types').ElementPatch;
+		const command = createObjectUpdateCommand('scene-1', patch);
+		const result = applyEditorCommand(workspace, command);
+		expect(result.changed).toBe(true);
+		expect(result.workspace.document?.header.floor?.size).toEqual([31, 32]);
 	});
 
 	test('object.update on later scene for base element creates update.elements', () => {
@@ -496,6 +522,26 @@ describe('applyEditorCommand', () => {
 		expect(element).toBeDefined();
 		expect(element?.at).toEqual([3, 3]);
 		expect(element?.size).toBe(1);
+	});
+
+	test('asset placement command expands the authored floor', () => {
+		const workspace = makeWorkspace();
+		const manifestEntry = {
+			id: 'new-asset',
+			path: 'new/asset.svg',
+			group: 'new',
+			name: 'asset',
+			digest: 'sha256:abc'
+		};
+		const command = createAssetPlacementCommand(
+			'scene-1',
+			manifestEntry,
+			[22, 23],
+			'https://example.com/assets'
+		);
+		const result = applyEditorCommand(workspace, command);
+		expect(result.changed).toBe(true);
+		expect(result.workspace.document?.header.floor?.size).toEqual([23, 24]);
 	});
 
 	test('asset placement command reuses existing asset declaration', () => {

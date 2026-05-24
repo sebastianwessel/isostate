@@ -28,6 +28,7 @@ function clone<T>(obj: T): T {
 }
 
 const IDENTIFIER_PATTERN = /^[A-Za-z][A-Za-z0-9_-]*$/;
+const EDITOR_MIN_FLOOR_SIZE: [number, number] = [20, 20];
 
 function normalizeEditableId(id: string): string {
 	const next = id.trim();
@@ -206,6 +207,28 @@ function mergeElementPatch<T extends ElementPlacement | ElementPatch>(
 	return merged;
 }
 
+export function ensureFloorContainsElement(
+	document: SceneDocument,
+	element: Pick<ElementPlacement, 'at' | 'size'>
+): void {
+	const origin = document.header.floor?.origin ?? [0, 0];
+	const currentSize = document.header.floor?.size ?? [1, 1];
+	const footprint = Math.max(1, element.size ?? 1);
+	const requiredSize: [number, number] = [
+		Math.ceil(element.at[0] + footprint - origin[0]),
+		Math.ceil(element.at[1] + footprint - origin[1])
+	];
+	const nextSize: [number, number] = [
+		Math.max(EDITOR_MIN_FLOOR_SIZE[0], currentSize[0], requiredSize[0]),
+		Math.max(EDITOR_MIN_FLOOR_SIZE[1], currentSize[1], requiredSize[1])
+	];
+	if (nextSize[0] === currentSize[0] && nextSize[1] === currentSize[1]) return;
+	document.header.floor = {
+		...document.header.floor,
+		size: nextSize
+	};
+}
+
 function resolveBaseElements(
 	document: SceneDocument,
 	upToIndex: number
@@ -346,7 +369,7 @@ export function createSceneUpdateCommand(
 		id: 'scene.update',
 		label: 'Update Scene',
 		apply(workspace) {
-			return withDocumentMutation(
+			const result = withDocumentMutation(
 				workspace,
 				'scene.update',
 				'Update Scene',
@@ -364,6 +387,24 @@ export function createSceneUpdateCommand(
 					if (patch.camera !== undefined) scene.camera = clone(patch.camera);
 				}
 			);
+			if (!result.changed || patch.id === undefined) return result;
+			return {
+				...result,
+				workspace: {
+					...result.workspace,
+					activeSceneId:
+						workspace.activeSceneId === sceneId
+							? patch.id
+							: result.workspace.activeSceneId,
+					selection: {
+						...result.workspace.selection,
+						sceneId:
+							result.workspace.selection.sceneId === sceneId
+								? patch.id
+								: result.workspace.selection.sceneId
+					}
+				}
+			};
 		}
 	};
 }
@@ -434,6 +475,7 @@ export function createObjectAddCommand(
 						scene.add.elements = scene.add.elements ?? [];
 						scene.add.elements.push(clone(element));
 					}
+					ensureFloorContainsElement(doc, element);
 				}
 			);
 		}
@@ -464,9 +506,17 @@ export function createObjectUpdateCommand(
 							elements[index],
 							patch
 						) as ElementPlacement;
+						ensureFloorContainsElement(doc, elements[index]);
 					} else {
 						const baseElements = resolveBaseElements(doc, sceneIndex - 1);
 						if (baseElements.has(patch.id)) {
+							const baseElement = baseElements.get(patch.id);
+							if (!baseElement)
+								throw new Error(`Element ${patch.id} not found`);
+							const mergedElement = mergeElementPatch(
+								baseElement,
+								patch
+							) as ElementPlacement;
 							scene.update = scene.update ?? {};
 							scene.update.elements = scene.update.elements ?? [];
 							const existingIndex = scene.update.elements.findIndex(
@@ -480,6 +530,7 @@ export function createObjectUpdateCommand(
 							} else {
 								scene.update.elements.push(clone(patch));
 							}
+							ensureFloorContainsElement(doc, mergedElement);
 						} else {
 							const addElements = scene.add?.elements ?? [];
 							const index = addElements.findIndex((e) => e.id === patch.id);
@@ -491,6 +542,7 @@ export function createObjectUpdateCommand(
 								addElements[index],
 								patch
 							) as ElementPlacement;
+							ensureFloorContainsElement(doc, addElements[index]);
 						}
 					}
 				}
@@ -549,7 +601,7 @@ export function createObjectRenameCommand(
 		id: 'object.rename',
 		label: 'Rename Object',
 		apply(workspace) {
-			return withDocumentMutation(
+			const result = withDocumentMutation(
 				workspace,
 				'object.rename',
 				'Rename Object',
@@ -629,6 +681,19 @@ export function createObjectRenameCommand(
 					}
 				}
 			);
+			if (!result.changed) return result;
+			return {
+				...result,
+				workspace: {
+					...result.workspace,
+					selection: {
+						...result.workspace.selection,
+						objectIds: result.workspace.selection.objectIds.map((id) =>
+							id === oldId ? newId : id
+						)
+					}
+				}
+			};
 		}
 	};
 }
@@ -808,7 +873,7 @@ export function createConnectionRenameCommand(
 		id: 'connection.rename',
 		label: 'Rename Connection',
 		apply(workspace) {
-			return withDocumentMutation(
+			const result = withDocumentMutation(
 				workspace,
 				'connection.rename',
 				'Rename Connection',
@@ -859,6 +924,19 @@ export function createConnectionRenameCommand(
 					}
 				}
 			);
+			if (!result.changed) return result;
+			return {
+				...result,
+				workspace: {
+					...result.workspace,
+					selection: {
+						...result.workspace.selection,
+						connectionIds: result.workspace.selection.connectionIds.map((id) =>
+							id === oldId ? newId : id
+						)
+					}
+				}
+			};
 		}
 	};
 }
@@ -931,17 +1009,65 @@ export function createLayerUpdateCommand(
 		id: 'layer.update',
 		label: 'Update Layer',
 		apply(workspace) {
-			return withDocumentMutation(
+			const result = withDocumentMutation(
 				workspace,
 				'layer.update',
 				'Update Layer',
 				(doc) => {
 					const layer = doc.header.layers.find((l) => l.name === name);
 					if (!layer) throw new Error(`Layer ${name} not found`);
-					if (patch.name !== undefined) layer.name = patch.name;
+					if (patch.name !== undefined) {
+						layer.name = patch.name;
+						if (doc.header.floor?.layer === name) {
+							doc.header.floor.layer = patch.name;
+						}
+						for (const scene of doc.scenes) {
+							for (const element of scene.elements ?? []) {
+								if (element.layer === name) element.layer = patch.name;
+							}
+							for (const element of scene.add?.elements ?? []) {
+								if (element.layer === name) element.layer = patch.name;
+							}
+							for (const element of scene.update?.elements ?? []) {
+								if (element.layer === name) element.layer = patch.name;
+							}
+							for (const connection of scene.connections ?? []) {
+								if (connection.layer === name) connection.layer = patch.name;
+							}
+							for (const connection of scene.add?.connections ?? []) {
+								if (connection.layer === name) connection.layer = patch.name;
+							}
+							for (const connection of scene.update?.connections ?? []) {
+								if (connection.layer === name) connection.layer = patch.name;
+							}
+						}
+					}
 					if (patch.order !== undefined) layer.order = patch.order;
 				}
 			);
+			const nextName = patch.name;
+			if (!result.changed || nextName === undefined) return result;
+			return {
+				...result,
+				workspace: {
+					...result.workspace,
+					selection: {
+						...result.workspace.selection,
+						layerNames: result.workspace.selection.layerNames.map(
+							(layerName) => (layerName === name ? nextName : layerName)
+						)
+					},
+					lockedLayers: (result.workspace.lockedLayers ?? []).map(
+						(layerName) => (layerName === name ? nextName : layerName)
+					),
+					uiState: {
+						...result.workspace.uiState,
+						hiddenLayers: (result.workspace.uiState.hiddenLayers ?? []).map(
+							(layerName) => (layerName === name ? nextName : layerName)
+						)
+					}
+				}
+			};
 		}
 	};
 }

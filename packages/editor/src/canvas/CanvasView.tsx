@@ -2,7 +2,6 @@ import { mountScene, resolveTheme } from '@sebastianwessel/isostate';
 import { compileScene } from '@sebastianwessel/isostate/dsl/browser';
 import type { EditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
 import { createEditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
-import type { ElementPlacement } from '@sebastianwessel/isostate/types';
 import { Grid2X2, Minus, Plus, RotateCcw } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -21,6 +20,7 @@ import {
 	TooltipProvider,
 	TooltipTrigger
 } from '../ui/tooltip.tsx';
+import { createPlacedElement } from './elementFactory.ts';
 import type { EditorGridBounds } from './gridSnapping.ts';
 import { snapGridCell } from './gridSnapping.ts';
 import { SelectionOverlay } from './SelectionOverlay.tsx';
@@ -41,89 +41,9 @@ function escapeCssAttribute(value: string): string {
 	return value.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 }
 
-function createPlacedElement(
-	assetId: string,
-	at: [number, number],
-	layer: string
-): ElementPlacement {
-	const base: ElementPlacement = {
-		id: `el-${Math.random().toString(36).slice(2, 7)}`,
-		asset: assetId,
-		at,
-		layer,
-		size: 1
-	};
-	switch (assetId) {
-		case 'text':
-			return {
-				...base,
-				text: {
-					value: 'Text',
-					align: 'middle',
-					fontSize: 12
-				}
-			};
-		case 'rectangle':
-			return {
-				...base,
-				primitive: {
-					rectangle: {
-						fill: 'var(--color-top)',
-						stroke: 'var(--color-back)',
-						strokeWidth: 1
-					}
-				}
-			};
-		case 'circle':
-			return {
-				...base,
-				primitive: {
-					circle: {
-						fill: 'var(--color-top)',
-						stroke: 'var(--color-back)',
-						strokeWidth: 1
-					}
-				}
-			};
-		case 'polygon':
-			return {
-				...base,
-				primitive: {
-					polygon: {
-						points: [
-							[0.5, 0],
-							[1, 0.5],
-							[0.5, 1],
-							[0, 0.5]
-						],
-						fill: 'var(--color-top)',
-						stroke: 'var(--color-back)',
-						strokeWidth: 1
-					}
-				}
-			};
-		case 'line':
-			return {
-				...base,
-				primitive: {
-					line: {
-						points: [
-							[0, 0],
-							[1, 1]
-						],
-						stroke: 'var(--color-back)',
-						strokeWidth: 1
-					}
-				}
-			};
-		default:
-			return base;
-	}
-}
-
 function createEditorPreviewDocument(
 	document: EditorWorkspace['document'],
-	showGrid: boolean
+	showFloor: boolean
 ) {
 	if (!document) return undefined;
 	const floor = document.header.floor;
@@ -138,7 +58,7 @@ function createEditorPreviewDocument(
 					Math.max(EDITOR_MIN_FLOOR_SIZE[0], size[0]),
 					Math.max(EDITOR_MIN_FLOOR_SIZE[1], size[1])
 				] as [number, number],
-				visible: showGrid
+				visible: showFloor
 			}
 		}
 	};
@@ -213,9 +133,9 @@ export function CanvasView({
 		() =>
 			createEditorPreviewDocument(
 				workspace.document,
-				workspace.viewport.showGrid
+				workspace.viewport.showFloor
 			),
-		[workspace.document, workspace.viewport.showGrid]
+		[workspace.document, workspace.viewport.showFloor]
 	);
 	const gridBounds = useMemo(
 		() => getEditorGridBounds(workspace.document),
@@ -321,10 +241,11 @@ export function CanvasView({
 		updateViewport({ zoom: 1, pan: { x: 0, y: 0 } });
 	};
 
-	const gridOpacity = workspace.viewport.gridOpacity ?? 0.35;
+	const gridOpacity = workspace.viewport.gridOpacity ?? 0.7;
+	const effectiveGridOpacity = workspace.viewport.showGrid ? gridOpacity : 0;
 	const updateGridOpacity = (value: number) => {
 		updateViewport({
-			gridOpacity: value
+			gridOpacity: Math.min(1, Math.max(0, value))
 		});
 	};
 
@@ -369,7 +290,7 @@ export function CanvasView({
 			className={`isostate-editor-canvas-view ${isPanning ? 'isostate-editor-canvas-view--panning' : ''}`}
 			style={
 				{
-					'--isostate-editor-grid-opacity': String(gridOpacity)
+					'--isostate-editor-grid-opacity': String(effectiveGridOpacity)
 				} as CSSProperties
 			}
 			role="application"
@@ -441,7 +362,7 @@ export function CanvasView({
 						clientY: e.clientY
 					});
 					const gridPoint = adapter.unprojectScreenPoint(svgPoint);
-					const snapped = snapGridCell(gridPoint, gridBounds);
+					const snapped = snapGridCell(gridPoint, gridBounds, { clamp: false });
 					const sceneId = workspace.activeSceneId;
 					if (!sceneId) return;
 					if (manifestDrop) {
@@ -525,7 +446,7 @@ export function CanvasView({
 						className="isostate-grid-opacity isostate-grid-opacity-native"
 						min="0"
 						max="1"
-						step="0.05"
+						step="0.01"
 						value={gridOpacity}
 						onInput={(event) =>
 							updateGridOpacity(Number(event.currentTarget.value))
@@ -542,7 +463,7 @@ export function CanvasView({
 						className="isostate-grid-opacity-slider"
 						min={0}
 						max={1}
-						step={0.05}
+						step={0.01}
 						value={[gridOpacity]}
 						onValueChange={([value]) => updateGridOpacity(value ?? gridOpacity)}
 						aria-label="Grid opacity"

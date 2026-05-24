@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, test } from 'bun:test';
 import { Window } from 'happy-dom';
 import { createElement, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { InspectorPanel } from '../../packages/editor/src/inspector/InspectorPanel.tsx';
-import { createEditorWorkspace } from '../../packages/editor/src/workspace.ts';
 import { applyEditorCommand } from '../../packages/editor/src/commands.ts';
+import { InspectorPanel } from '../../packages/editor/src/inspector/InspectorPanel.tsx';
 import type {
 	EditorCommand,
 	EditorWorkspace
 } from '../../packages/editor/src/types.ts';
+import { createEditorWorkspace } from '../../packages/editor/src/workspace.ts';
 
 const BASE_YAML = `header:
   version: "1"
@@ -56,10 +56,24 @@ function setupHappyDom() {
 	g.Element = w.Element;
 	g.Node = w.Node;
 	g.SVGElement = w.SVGElement;
+	g.FocusEvent = w.FocusEvent;
 }
 
 function makeWorkspace(): EditorWorkspace {
 	return createEditorWorkspace({ sourceYaml: BASE_YAML });
+}
+
+function setInputValue(input: HTMLInputElement, value: string) {
+	const setter = Object.getOwnPropertyDescriptor(
+		window.HTMLInputElement.prototype,
+		'value'
+	)?.set;
+	setter?.call(input, value);
+	input.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function blurInput(input: HTMLInputElement) {
+	input.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
 }
 
 function TestWrapper({
@@ -103,7 +117,7 @@ beforeEach(() => {
 });
 
 describe('InspectorPanel', () => {
-	test('element inspector shows asset options', async () => {
+	test('element inspector shows the selected asset without invalid patch editing', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const workspace = makeWorkspace();
@@ -123,11 +137,12 @@ describe('InspectorPanel', () => {
 			row.textContent?.includes('Asset')
 		);
 		expect(assetRow).toBeTruthy();
-		const select = assetRow?.querySelector(
-			'.isostate-select'
-		) as HTMLButtonElement;
-		expect(select).toBeTruthy();
-		expect(select.textContent).toContain('block');
+		const input = assetRow?.querySelector(
+			'.isostate-input'
+		) as HTMLInputElement;
+		expect(input).toBeTruthy();
+		expect(input.value).toBe('block');
+		expect(input.readOnly).toBe(true);
 		root.unmount();
 		container.remove();
 	});
@@ -170,7 +185,7 @@ describe('InspectorPanel', () => {
 		container.remove();
 	});
 
-	test('empty inspector can add a connection', async () => {
+	test('empty inspector edits the active scene id', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const workspace = makeWorkspace();
@@ -186,11 +201,80 @@ describe('InspectorPanel', () => {
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
-		const button = Array.from(container.querySelectorAll('button')).find(
-			(candidate) => candidate.textContent?.includes('Connection')
-		) as HTMLButtonElement;
-		button.click();
-		expect(current.document?.scenes[0].connections?.length).toBe(2);
+		const sceneInput = container.querySelector(
+			'input[aria-label="Rename scene"]'
+		) as HTMLInputElement;
+		setInputValue(sceneInput, 'intro');
+		blurInput(sceneInput);
+		expect(current.document?.scenes[0].id).toBe('intro');
+		expect(current.activeSceneId).toBe('intro');
+		root.unmount();
+		container.remove();
+	});
+
+	test('element inspector edits the selected element id', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = {
+			...makeWorkspace(),
+			selection: { objectIds: ['e1'], connectionIds: [], layerNames: [] }
+		};
+		const root = createRoot(container);
+		let current = workspace;
+		root.render(
+			createElement(InspectorPanel, {
+				workspace: current,
+				onCommand: (cmd: EditorCommand) => {
+					const result = applyEditorCommand(current, cmd);
+					current = result.workspace;
+				}
+			})
+		);
+		await new Promise((r) => setTimeout(r, 10));
+		const input = container.querySelector(
+			'input[aria-label="Rename element e1"]'
+		) as HTMLInputElement;
+		setInputValue(input, 'api-server');
+		blurInput(input);
+		expect(current.document?.scenes[0].elements?.[0].id).toBe('api-server');
+		expect(current.selection.objectIds).toEqual(['api-server']);
+		root.unmount();
+		container.remove();
+	});
+
+	test('layer inspector edits the selected layer id', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = {
+			...makeWorkspace(),
+			selection: { objectIds: [], connectionIds: [], layerNames: ['overlay'] }
+		};
+		const root = createRoot(container);
+		let current = workspace;
+		root.render(
+			createElement(InspectorPanel, {
+				workspace: current,
+				onCommand: (cmd: EditorCommand) => {
+					const result = applyEditorCommand(current, cmd);
+					current = result.workspace;
+				}
+			})
+		);
+		await new Promise((r) => setTimeout(r, 10));
+		const input = container.querySelector(
+			'input[aria-label="Rename layer overlay"]'
+		) as HTMLInputElement;
+		setInputValue(input, 'foreground');
+		blurInput(input);
+		expect(
+			current.document?.header.layers.some(
+				(layer) => layer.name === 'foreground'
+			)
+		).toBe(true);
+		expect(current.document?.scenes[1].add?.elements?.[0].layer).toBe(
+			'foreground'
+		);
+		expect(current.selection.layerNames).toEqual(['foreground']);
 		root.unmount();
 		container.remove();
 	});
@@ -223,6 +307,44 @@ describe('InspectorPanel', () => {
 		) as HTMLButtonElement;
 		button.click();
 		expect(current.document?.scenes[0].connections ?? []).toHaveLength(0);
+		root.unmount();
+		container.remove();
+	});
+
+	test('connection inspector can enable flow without manual YAML edits', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeWorkspace();
+		const root = createRoot(container);
+		let current = workspace;
+		root.render(
+			createElement(InspectorPanel, {
+				workspace: {
+					...current,
+					selection: {
+						objectIds: [],
+						connectionIds: ['c1'],
+						layerNames: []
+					}
+				},
+				onCommand: (cmd: EditorCommand) => {
+					const result = applyEditorCommand(current, cmd);
+					current = result.workspace;
+				}
+			})
+		);
+		await new Promise((r) => setTimeout(r, 10));
+		const button = Array.from(container.querySelectorAll('button')).find(
+			(candidate) => candidate.textContent?.includes('Flow off')
+		) as HTMLButtonElement;
+		button.click();
+		const connection = current.document?.scenes[0].connections?.find(
+			(candidate) => candidate.id === 'c1'
+		);
+		expect(connection?.ambient?.some((item) => item.name === 'flow')).toBe(
+			true
+		);
+		expect(connection?.style?.pattern).toBe('dashed');
 		root.unmount();
 		container.remove();
 	});
@@ -345,11 +467,12 @@ describe('InspectorPanel', () => {
 			})
 		);
 		await new Promise((r) => setTimeout(r, 10));
-		// With no selection, inputs should be read-only or not trigger updates
-		const readonlyInputs = container.querySelectorAll(
-			'.isostate-input--readonly'
-		);
-		expect(readonlyInputs.length).toBeGreaterThan(0);
+		expect(
+			container.querySelector('button[aria-label="Delete Element"]')
+		).toBeNull();
+		expect(
+			container.querySelector('button[aria-label="Delete Connection"]')
+		).toBeNull();
 		expect(commandCount).toBe(0);
 		root.unmount();
 		container.remove();

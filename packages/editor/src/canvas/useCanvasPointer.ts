@@ -1,5 +1,4 @@
 import type { EditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
-import type { ElementPlacement } from '@sebastianwessel/isostate/types';
 import { useCallback, useRef, useState } from 'react';
 import {
 	createObjectAddCommand,
@@ -10,6 +9,7 @@ import type {
 	EditorSelection,
 	EditorWorkspace
 } from '../types.ts';
+import { createPlacedElement } from './elementFactory.ts';
 import type { EditorGridBounds } from './gridSnapping.ts';
 import { snapGridCell } from './gridSnapping.ts';
 
@@ -56,7 +56,7 @@ export function useCanvasPointer({
 				return {
 					svgPoint,
 					gridPoint,
-					snapped: snapGridCell(gridPoint, gridBounds)
+					snapped: snapGridCell(gridPoint, gridBounds, { clamp: false })
 				};
 			} catch {
 				return null;
@@ -182,13 +182,11 @@ export function useCanvasPointer({
 			if (drag.mode === 'place') {
 				const payload = workspace.editState.dragPayload;
 				if (!payload || payload.kind !== 'asset') return;
-				const element: ElementPlacement = {
-					id: `el-${Math.random().toString(36).slice(2, 7)}`,
-					asset: payload.assetId,
-					at: pt.snapped,
-					layer: workspace.document?.header.layers[0]?.name ?? 'default',
-					size: 1
-				};
+				const element = createPlacedElement(
+					payload.assetId,
+					pt.snapped,
+					workspace.document?.header.layers[0]?.name ?? 'default'
+				);
 				const sceneId = workspace.activeSceneId;
 				if (!sceneId) return;
 				onCommand(createObjectAddCommand(sceneId, element));

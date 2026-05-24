@@ -3,7 +3,10 @@ import type {
 	ElementPlacement,
 	SceneDocument
 } from '@sebastianwessel/isostate/types';
-import { withDocumentMutation } from './commands.ts';
+import {
+	ensureFloorContainsElement,
+	withDocumentMutation
+} from './commands.ts';
 import type {
 	AssetManifestEntry,
 	EditorAssetCatalog,
@@ -326,6 +329,7 @@ export function createAssetPlacementCommand(
 						scene.add.elements = scene.add.elements ?? [];
 						scene.add.elements.push(element);
 					}
+					ensureFloorContainsElement(doc, element);
 				}
 			);
 		}

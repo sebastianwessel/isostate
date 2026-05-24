@@ -5,14 +5,15 @@ export interface EditorGridBounds {
 
 export function snapGridCell(
 	point: [number, number],
-	bounds?: EditorGridBounds
+	bounds?: EditorGridBounds,
+	options: { clamp?: boolean } = {}
 ): [number, number] {
 	const epsilon = 1e-6;
 	const cell: [number, number] = [
 		Math.floor(point[0] + epsilon),
 		Math.floor(point[1] + epsilon)
 	];
-	if (!bounds) return cell;
+	if (!bounds || options.clamp === false) return cell;
 	const [originX, originY] = bounds.origin;
 	const [width, height] = bounds.size;
 	const maxX = originX + Math.max(0, width - 1);

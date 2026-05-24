@@ -110,15 +110,6 @@ function createDataTransfer() {
 	};
 }
 
-function setInputValue(input: HTMLInputElement, value: string) {
-	const setter = Object.getOwnPropertyDescriptor(
-		window.HTMLInputElement.prototype,
-		'value'
-	)?.set;
-	setter?.call(input, value);
-	input.dispatchEvent(new Event('input', { bubbles: true }));
-}
-
 beforeEach(() => {
 	setupHappyDom();
 });
@@ -128,7 +119,9 @@ describe('SceneTreePanel', () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const root = createRoot(container);
-		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		expect(container.querySelectorAll('.isostate-tree-scene').length).toBe(2);
@@ -150,7 +143,9 @@ describe('SceneTreePanel', () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const root = createRoot(container);
-		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		const scene2 = Array.from(
@@ -158,8 +153,8 @@ describe('SceneTreePanel', () => {
 		).find((scene) => scene.textContent?.includes('scene-2')) as HTMLElement;
 
 		const ids = Array.from(
-			scene2.querySelectorAll('.isostate-tree-id-input')
-		).map((input) => (input as HTMLInputElement).value);
+			scene2.querySelectorAll('.isostate-tree-row-label')
+		).map((input) => input.textContent);
 		expect(ids).toContain('e1');
 		expect(ids).toContain('e2');
 		expect(ids).toContain('e3');
@@ -184,10 +179,10 @@ describe('SceneTreePanel', () => {
 		);
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
-		const elementInput = Array.from(
-			container.querySelectorAll('.isostate-tree-id-input')
-		).find((item) => (item as HTMLInputElement).value === 'e2');
-		const element = elementInput?.closest(
+		const elementLabel = Array.from(
+			container.querySelectorAll('.isostate-tree-row-label')
+		).find((item) => item.textContent === 'e2');
+		const element = elementLabel?.closest(
 			'.isostate-tree-element'
 		) as HTMLButtonElement;
 		element.click();
@@ -199,33 +194,25 @@ describe('SceneTreePanel', () => {
 		container.remove();
 	});
 
-	test('element and connection rows use icons and editable ids', async () => {
+	test('element and connection rows use icons and static labels', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const root = createRoot(container);
-		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
-		await new Promise((resolve) => setTimeout(resolve, 10));
-
-		expect(container.querySelectorAll('.isostate-tree-row-icon').length).toBeGreaterThan(
-			0
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
 		);
-		expect(container.querySelector('.isostate-tree-element-asset')).toBeNull();
-
-		const input = Array.from(
-			container.querySelectorAll('.isostate-tree-id-input')
-		).find((candidate) => (candidate as HTMLInputElement).value === 'e1') as
-			| HTMLInputElement
-			| undefined;
-		expect(input).toBeTruthy();
-		setInputValue(input, 'api-server');
-		input.dispatchEvent(new Event('blur', { bubbles: true }));
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		expect(
-			Array.from(container.querySelectorAll('.isostate-tree-id-input')).some(
-				(candidate) => (candidate as HTMLInputElement).value === 'api-server'
+			container.querySelectorAll('.isostate-tree-row-icon').length
+		).toBeGreaterThan(0);
+		expect(container.querySelector('.isostate-tree-element-asset')).toBeNull();
+		expect(
+			Array.from(container.querySelectorAll('.isostate-tree-row-label')).some(
+				(candidate) => candidate.textContent === 'e1'
 			)
 		).toBe(true);
+		expect(container.querySelector('.isostate-tree-id-input')).toBeNull();
 
 		root.unmount();
 		container.remove();
@@ -263,7 +250,9 @@ describe('SceneTreePanel', () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const root = createRoot(container);
-		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		const addButton = container.querySelector(
@@ -278,18 +267,38 @@ describe('SceneTreePanel', () => {
 		container.remove();
 	});
 
+	test('adding a connection uses the tree header action', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const addButton = container.querySelector(
+			'button[aria-label="Add connection"]'
+		) as HTMLButtonElement;
+		addButton.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(
+			container.querySelectorAll('.isostate-tree-connection')
+		).toHaveLength(4);
+
+		root.unmount();
+		container.remove();
+	});
+
 	test('adding a layer updates every scene group', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const root = createRoot(container);
-		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
-		const input = container.querySelector(
-			'.isostate-layer-add-row input'
-		) as HTMLInputElement;
-		input.value = 'Foreground';
-		input.dispatchEvent(new Event('input', { bubbles: true }));
 		const button = container.querySelector(
 			'button[aria-label="Add layer"]'
 		) as HTMLButtonElement;
@@ -297,9 +306,9 @@ describe('SceneTreePanel', () => {
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		expect(
-			Array.from(container.querySelectorAll('.isostate-tree-layer-name')).filter(
-				(node) => node.textContent === 'foreground'
-			)
+			Array.from(
+				container.querySelectorAll('.isostate-tree-layer-name')
+			).filter((node) => node.textContent === 'layer-3')
 		).toHaveLength(2);
 
 		root.unmount();
@@ -310,7 +319,9 @@ describe('SceneTreePanel', () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const root = createRoot(container);
-		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		const layers = Array.from(
@@ -342,7 +353,9 @@ describe('SceneTreePanel', () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const root = createRoot(container);
-		root.render(createElement(TestWrapper, { initialWorkspace: makeWorkspace() }));
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
 		await new Promise((resolve) => setTimeout(resolve, 10));
 
 		const defaultLayer = Array.from(

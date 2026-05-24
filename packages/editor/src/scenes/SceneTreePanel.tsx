@@ -15,13 +15,12 @@ import {
 	Plus,
 	Unlock
 } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
-	createConnectionRenameCommand,
+	createConnectionAddCommand,
 	createConnectionUpdateCommand,
 	createLayerAddCommand,
 	createLayerReorderCommand,
-	createObjectRenameCommand,
 	createObjectReorderCommand,
 	createObjectUpdateCommand,
 	createSceneAddCommand,
@@ -38,7 +37,6 @@ import type {
 } from '../types.ts';
 import { Badge } from '../ui/badge.tsx';
 import { Button } from '../ui/button.tsx';
-import { Input } from '../ui/input.tsx';
 import { ScrollArea } from '../ui/scroll-area.tsx';
 
 interface SceneTreePanelProps {
@@ -82,50 +80,6 @@ function setDrag(event: React.DragEvent, payload: DragPayload) {
 	event.dataTransfer.setData('text/plain', JSON.stringify(payload));
 }
 
-function TreeIdInput({
-	value,
-	ariaLabel,
-	onCommit
-}: {
-	value: string;
-	ariaLabel: string;
-	onCommit: (value: string) => void;
-}) {
-	const [draft, setDraft] = useState(value);
-	useEffect(() => setDraft(value), [value]);
-	const commit = () => {
-		const next = draft.trim();
-		if (next && next !== value) {
-			onCommit(next);
-		} else {
-			setDraft(value);
-		}
-	};
-	return (
-		<input
-			type="text"
-			className="isostate-tree-id-input"
-			value={draft}
-			aria-label={ariaLabel}
-			draggable={false}
-			onClick={(event) => event.stopPropagation()}
-			onPointerDown={(event) => event.stopPropagation()}
-			onChange={(event) => setDraft(event.currentTarget.value)}
-			onBlur={commit}
-			onKeyDown={(event) => {
-				event.stopPropagation();
-				if (event.key === 'Enter') {
-					event.currentTarget.blur();
-				}
-				if (event.key === 'Escape') {
-					setDraft(value);
-					event.currentTarget.blur();
-				}
-			}}
-		/>
-	);
-}
-
 export function SceneTreePanel({
 	workspace,
 	onCommand,
@@ -139,7 +93,6 @@ export function SceneTreePanel({
 	const [collapsedScenes, setCollapsedScenes] = useState<Set<string>>(
 		new Set()
 	);
-	const newLayerInputRef = useRef<HTMLInputElement>(null);
 
 	const sceneIndex = useMemo(
 		() => new Map(scenes.map((scene, index) => [scene.id, index])),
@@ -183,14 +136,58 @@ export function SceneTreePanel({
 		const newId = `scene-${scenes.length + 1}`;
 		onCommand(createSceneAddCommand({ id: newId }, index));
 		onSelectScene?.(newId);
+		onSelect?.({
+			sceneId: newId,
+			objectIds: [],
+			connectionIds: [],
+			layerNames: []
+		});
 	};
 
 	const handleAddLayer = () => {
-		const input = newLayerInputRef.current;
-		const name = (input?.value ?? '').trim().toLowerCase().replace(/\s+/g, '-');
-		if (!name || layers.some((layer) => layer.name === name)) return;
+		let index = layers.length + 1;
+		let name = `layer-${index}`;
+		while (layers.some((layer) => layer.name === name)) {
+			index++;
+			name = `layer-${index}`;
+		}
 		onCommand(createLayerAddCommand({ name, order: layers.length }));
-		if (input) input.value = '';
+		onSelect?.({ objectIds: [], connectionIds: [], layerNames: [name] });
+	};
+
+	const handleAddConnection = () => {
+		if (!workspace.activeSceneId) return;
+		const scene = scenes.find(
+			(candidate) => candidate.id === workspace.activeSceneId
+		);
+		if (!scene) return;
+		const ids = sceneElements(scene).map((element) => element.id);
+		const id = `conn-${Math.random().toString(36).slice(2, 6)}`;
+		const connection: ConnectionPlacement =
+			ids.length >= 2
+				? {
+						id,
+						from: { element: ids[0] },
+						to: { element: ids[1] },
+						layer: layers[0]?.name ?? 'default',
+						end: 'arrow'
+					}
+				: {
+						id,
+						route: [
+							[0, 0],
+							[2, 0]
+						],
+						layer: layers[0]?.name ?? 'default',
+						end: 'arrow'
+					};
+		onCommand(createConnectionAddCommand(workspace.activeSceneId, connection));
+		onSelect?.({
+			sceneId: workspace.activeSceneId,
+			objectIds: [],
+			connectionIds: [id],
+			layerNames: [connection.layer ?? layers[0]?.name ?? 'default']
+		});
 	};
 
 	const toggleLayerVisibility = (name: string) => {
@@ -318,26 +315,28 @@ export function SceneTreePanel({
 					<Plus data-icon="inline-start" />
 					<span>Scene</span>
 				</Button>
-				<div className="isostate-layer-add-row">
-					<Input
-						type="text"
-						ref={newLayerInputRef}
-						placeholder="new-layer"
-						onKeyDown={(event) => {
-							if (event.key === 'Enter') handleAddLayer();
-						}}
-					/>
-					<Button
-						type="button"
-						onClick={handleAddLayer}
-						aria-label="Add layer"
-						title="Add layer"
-						size="sm"
-					>
-						<Plus data-icon="inline-start" />
-						<span>Layer</span>
-					</Button>
-				</div>
+				<Button
+					type="button"
+					onClick={handleAddConnection}
+					disabled={!doc || !workspace.activeSceneId}
+					aria-label="Add connection"
+					title="Add connection"
+					size="sm"
+				>
+					<Plus data-icon="inline-start" />
+					<span>Connection</span>
+				</Button>
+				<Button
+					type="button"
+					onClick={handleAddLayer}
+					disabled={!doc}
+					aria-label="Add layer"
+					title="Add layer"
+					size="sm"
+				>
+					<Plus data-icon="inline-start" />
+					<span>Layer</span>
+				</Button>
 			</div>
 			<ScrollArea className="isostate-tree-list">
 				{scenes.map((scene, index) => {
@@ -382,7 +381,15 @@ export function SceneTreePanel({
 								<button
 									type="button"
 									className="isostate-tree-name"
-									onClick={() => onSelectScene?.(scene.id)}
+									onClick={() => {
+										onSelectScene?.(scene.id);
+										onSelect?.({
+											sceneId: scene.id,
+											objectIds: [],
+											connectionIds: [],
+											layerNames: []
+										});
+									}}
 								>
 									{scene.id}
 								</button>
@@ -438,6 +445,7 @@ export function SceneTreePanel({
 														size="icon-xs"
 														className="isostate-layer-toggle"
 														onClick={() => toggleLayerVisibility(layer.name)}
+														onPointerDown={(event) => event.stopPropagation()}
 														title={isHidden ? 'Show layer' : 'Hide layer'}
 														aria-label={isHidden ? 'Show layer' : 'Hide layer'}
 													>
@@ -453,6 +461,7 @@ export function SceneTreePanel({
 														size="icon-xs"
 														className="isostate-layer-toggle"
 														onClick={() => toggleLayerLock(layer.name)}
+														onPointerDown={(event) => event.stopPropagation()}
 														title={isLocked ? 'Unlock layer' : 'Lock layer'}
 														aria-label={
 															isLocked ? 'Unlock layer' : 'Lock layer'
@@ -468,9 +477,21 @@ export function SceneTreePanel({
 														className="isostate-tree-row-icon"
 														aria-hidden="true"
 													/>
-													<span className="isostate-tree-layer-name">
+													<button
+														type="button"
+														className="isostate-tree-layer-name"
+														onClick={() => {
+															onSelectScene?.(scene.id);
+															onSelect?.({
+																sceneId: scene.id,
+																objectIds: [],
+																connectionIds: [],
+																layerNames: [layer.name]
+															});
+														}}
+													>
 														{layer.name}
-													</span>
+													</button>
 												</div>
 												<div className="isostate-tree-elements">
 													{layerElements.map((element) => (
@@ -518,15 +539,9 @@ export function SceneTreePanel({
 																className="isostate-tree-row-icon"
 																aria-hidden="true"
 															/>
-															<TreeIdInput
-																value={element.id}
-																ariaLabel={`Rename element ${element.id}`}
-																onCommit={(value) =>
-																	onCommand(
-																		createObjectRenameCommand(element.id, value)
-																	)
-																}
-															/>
+															<span className="isostate-tree-row-label">
+																{element.id}
+															</span>
 														</button>
 													))}
 													{layerConnections.map((connection) => (
@@ -574,18 +589,9 @@ export function SceneTreePanel({
 																className="isostate-tree-row-icon"
 																aria-hidden="true"
 															/>
-															<TreeIdInput
-																value={connection.id}
-																ariaLabel={`Rename connection ${connection.id}`}
-																onCommit={(value) =>
-																	onCommand(
-																		createConnectionRenameCommand(
-																			connection.id,
-																			value
-																		)
-																	)
-																}
-															/>
+															<span className="isostate-tree-row-label">
+																{connection.id}
+															</span>
 														</button>
 													))}
 												</div>

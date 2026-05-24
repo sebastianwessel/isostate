@@ -26,7 +26,10 @@ function href(path: string): string {
 }
 
 function isActive(path: string): boolean {
-	return currentPath === `${base}${path}` || currentPath.startsWith(`${base}${path}/`);
+	return (
+		currentPath === `${base}${path}` ||
+		currentPath.startsWith(`${base}${path}/`)
+	);
 }
 ---
 
@@ -162,38 +165,58 @@ function isActive(path: string): boolean {
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				gap: 2px;
+				gap: clamp(14px, 2vw, 24px);
 				margin: 0 auto;
-				padding: 3px;
-				border: 1px solid rgba(16, 20, 21, 0.12);
-				background: rgba(255, 253, 245, 0.9);
-				border-radius: 10px;
+				padding: 0;
 			}
 
 			.nav-links a {
+				position: relative;
 				display: inline-flex;
 				align-items: center;
-				min-height: 32px;
-				padding: 6px 13px;
-				color: var(--muted);
+				min-height: 36px;
+				padding: 6px 0;
+				color: var(--soft-ink);
 				font-size: 0.875rem;
-				font-weight: 500;
-				border-radius: 7px;
+				font-weight: 600;
 				text-decoration: none;
+				transition: color 140ms ease;
+			}
+
+			.nav-links a::after {
+				position: absolute;
+				right: 0;
+				bottom: 2px;
+				left: 0;
+				height: 2px;
+				border-radius: 999px;
+				background: currentColor;
+				opacity: 0;
+				transform: scaleX(0.4);
+				transform-origin: center;
 				transition:
-					background-color 140ms ease,
-					color 140ms ease;
+					opacity 140ms ease,
+					transform 140ms ease;
+				content: "";
 			}
 
 			.nav-links a[aria-current="page"] {
-				background: var(--ink);
-				color: #fffdf7;
-				font-weight: 600;
+				color: var(--green-dark);
+				font-weight: 700;
+			}
+
+			.nav-links a[aria-current="page"]::after {
+				opacity: 1;
+				transform: scaleX(1);
 			}
 
 			.nav-links a:hover:not([aria-current="page"]) {
-				background: rgba(16, 20, 21, 0.06);
-				color: var(--ink);
+				color: var(--green-dark);
+			}
+
+			.nav-links a:hover:not([aria-current="page"])::after {
+				opacity: 0.45;
+				transform: scaleX(1);
 			}
 
 			.topbar-meta {
@@ -205,21 +228,20 @@ function isActive(path: string): boolean {
 				width: 36px;
 				height: 36px;
 				padding: 0;
-				border: 1px solid rgba(16, 20, 21, 0.12);
-				border-radius: 8px;
-				background: rgba(255, 253, 245, 0.9);
-				color: var(--ink);
+				border-radius: 999px;
+				color: var(--soft-ink);
 				font-size: 0.85rem;
 				font-weight: 600;
 				letter-spacing: 0.01em;
 				text-decoration: none;
-				transition: background 140ms ease, transform 140ms ease;
+				transition:
+					background-color 140ms ease,
+					color 140ms ease;
 			}
 
 			.topbar-meta:hover {
-				background: var(--ink);
-				color: #fffdf5;
-				transform: translateY(-1px);
+				background: rgba(16, 20, 21, 0.06);
+				color: var(--ink);
 			}
 
 			.topbar-meta svg {
@@ -474,6 +496,7 @@ function isActive(path: string): boolean {
 					order: 3;
 					width: 100%;
 					justify-content: flex-start;
+					gap: 18px;
 					overflow-x: auto;
 				}
 

@@ -617,7 +617,8 @@
 }
 
 .isostate-input,
-.isostate-select {
+.isostate-select,
+.isostate-textarea {
 	width: 100%;
 	padding: 0.25rem 0.375rem;
 	font-size: 12px;
@@ -629,9 +630,29 @@
 }
 
 .isostate-input:focus,
-.isostate-select:focus {
+.isostate-select:focus,
+.isostate-textarea:focus {
 	border-color: var(--ring);
 	box-shadow: 0 0 0 1px var(--ring);
+}
+
+.isostate-textarea {
+	min-height: 72px;
+	resize: vertical;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
+	line-height: 1.35;
+}
+
+.isostate-toggle-row,
+.isostate-grid-pair {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.375rem;
+}
+
+.isostate-grid-pair {
+	flex-wrap: nowrap;
 }
 
 .isostate-input--readonly {

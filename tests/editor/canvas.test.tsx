@@ -66,14 +66,29 @@ function setupHappyDom() {
 	g.PointerEvent = w.PointerEvent;
 	g.DragEvent = w.DragEvent;
 
-	const proto = (w.SVGSVGElement as any).prototype;
+	type MatrixLike = {
+		a: number;
+		b: number;
+		c: number;
+		d: number;
+		e: number;
+		f: number;
+	};
+	const proto = w.SVGSVGElement.prototype as SVGSVGElement & {
+		getScreenCTM: () => { inverse: () => MatrixLike };
+		createSVGPoint: () => {
+			x: number;
+			y: number;
+			matrixTransform(m: MatrixLike): { x: number; y: number };
+		};
+	};
 	proto.getScreenCTM = () => ({
 		inverse: () => ({ a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 })
 	});
 	proto.createSVGPoint = () => ({
 		x: 0,
 		y: 0,
-		matrixTransform(m: any) {
+		matrixTransform(m: MatrixLike) {
 			return {
 				x: this.x * m.a + this.y * m.c + m.e,
 				y: this.x * m.b + this.y * m.d + m.f
@@ -94,12 +109,14 @@ function makeMultiSceneWorkspace(): EditorWorkspace {
 }
 
 function getGridPoint(workspace: EditorWorkspace, grid: [number, number]) {
+	const sourceDocument = workspace.document;
+	if (!sourceDocument) throw new Error('Expected valid workspace document');
 	const document = {
-		...workspace.document!,
+		...sourceDocument,
 		header: {
-			...workspace.document!.header,
+			...sourceDocument.header,
 			floor: {
-				...workspace.document!.header.floor,
+				...sourceDocument.header.floor,
 				size: [20, 20] as [number, number],
 				visible: false
 			}
@@ -281,11 +298,25 @@ describe('CanvasView', () => {
 		const slider = container.querySelector(
 			'.isostate-grid-opacity'
 		) as HTMLInputElement;
+		expect(slider.step).toBe('0.01');
 		slider.value = '0.7';
 		slider.dispatchEvent(new PointerEvent('pointerup', { bubbles: true }));
 		expect(nextViewport?.gridOpacity).toBe(0.7);
 		root.unmount();
 		container.remove();
+	});
+
+	test('snapGridCell can snap outside bounds for edit placement', () => {
+		expect(
+			snapGridCell([24.8, 25.1], { origin: [0, 0], size: [20, 20] })
+		).toEqual([19, 19]);
+		expect(
+			snapGridCell(
+				[24.8, 25.1],
+				{ origin: [0, 0], size: [20, 20] },
+				{ clamp: false }
+			)
+		).toEqual([24, 25]);
 	});
 
 	test('left-dragging empty zoomed canvas pans the viewport', async () => {
@@ -326,8 +357,12 @@ describe('CanvasView', () => {
 				}
 			})
 		});
-		canvas.dispatchEvent(createPointerEventAt('pointerdown', { x: 900, y: 10 }));
-		canvas.dispatchEvent(createPointerEventAt('pointermove', { x: 800, y: 60 }));
+		canvas.dispatchEvent(
+			createPointerEventAt('pointerdown', { x: 900, y: 10 })
+		);
+		canvas.dispatchEvent(
+			createPointerEventAt('pointermove', { x: 800, y: 60 })
+		);
 		canvas.dispatchEvent(createPointerEventAt('pointerup', { x: 800, y: 60 }));
 
 		expect(nextViewport?.pan.x).not.toBe(0);
@@ -501,7 +536,11 @@ describe('CanvasView', () => {
 			(candidate) => candidate.asset === 'text' && candidate.id !== 'e1'
 		);
 		expect(element?.text?.value).toBe('Text');
-		expect(() => compileScene(result?.workspace.document!)).not.toThrow();
+		const compiledDocument = result?.workspace.document;
+		expect(compiledDocument).toBeDefined();
+		if (!compiledDocument)
+			throw new Error('Expected command to produce a document');
+		expect(() => compileScene(compiledDocument)).not.toThrow();
 
 		root.unmount();
 		container.remove();
@@ -674,8 +713,9 @@ describe('CanvasView', () => {
 			'[data-layer="default"]'
 		);
 		expect(layerNodes.length).toBeGreaterThan(0);
-		expect(Array.from(layerNodes).every((node) => node.style.display === 'none'))
-			.toBe(true);
+		expect(
+			Array.from(layerNodes).every((node) => node.style.display === 'none')
+		).toBe(true);
 
 		root.unmount();
 		container.remove();
