@@ -3,6 +3,22 @@
 Assets make an isostate scene readable. Keep them small, anchored, and
 publishable before you build a long animation around them.
 
+This guide belongs after [Plan A Scene](./plan-a-scene.md): first decide what
+the story needs, then create only the assets that serve that story.
+
+```mermaid
+flowchart LR
+  Need[Scene needs object] --> Type{Choose type}
+  Type --> SVG[Standalone SVG]
+  Type --> Sheet[Sprite sheet]
+  Type --> BuiltIn[Text or primitive]
+  SVG --> Anchor[Set anchor]
+  Sheet --> Anchor
+  Anchor --> Manifest[Generate manifest for editor]
+  Manifest --> Place[Place in YAML/editor]
+  Place --> Bundle[Bundle and publish]
+```
+
 ## Choose The Asset Type
 
 | Need | Use | Notes |
@@ -175,3 +191,5 @@ Before publishing:
 The static bundle should contain compiled scene data, the runtime, copied
 referenced assets, and digests. It should not contain the editor, YAML parser,
 validator, compiler, CLI, or authored YAML.
+
+Next: [Animation And Connections](./animation-and-connections.md).

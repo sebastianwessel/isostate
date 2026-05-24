@@ -1,5 +1,11 @@
 # Examples
 
+Use examples after the main storyline is clear:
+[How isostate Works](../concepts/how-isostate-works.md) →
+[Plan A Scene](../guides/plan-a-scene.md) →
+[Assets Workflow](../guides/assets-workflow.md) →
+[Animation And Connections](../guides/animation-and-connections.md).
+
 Each example focuses on one public workflow.
 
 | Example | Proves |

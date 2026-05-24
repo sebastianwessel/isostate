@@ -3,6 +3,9 @@
 isostate animation is scene-based. You do not write keyframes. You write a
 sequence of resolved scene stops, and the runtime interpolates between them.
 
+Use this guide after [Assets Workflow](./assets-workflow.md), when the visual
+objects exist and the scene needs movement, relationships, or camera focus.
+
 ## Scene Timeline
 
 The first scene is a complete placement snapshot. Later scenes contain sparse
@@ -182,3 +185,5 @@ mounted.controller?.previous();
 - Removed endpoint elements have matching connection removals.
 - Camera stops are sparse and intentional.
 - Validation passes before compile or bundle.
+
+Next: [Use The CLI](./use-the-cli.md).

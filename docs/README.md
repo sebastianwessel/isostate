@@ -1,76 +1,97 @@
-# isostate Docs
+# isostate Documentation
 
-isostate turns YAML into compiled, browser-safe isometric SVG scenes. You can
-write the YAML by hand, edit it visually, or ask an AI assistant to draft it.
-The browser still receives the same small runtime bundle.
+isostate is a workflow for turning a technical story into a compiled
+isometric SVG scene. The source is YAML. The browser receives a small runtime,
+a compiled scene bundle, and referenced assets.
 
-```mermaid
-flowchart LR
-  Idea[Idea or story] --> Author{Authoring path}
-  Author --> YAML[Write YAML]
-  Author --> Editor[Use the editor]
-  Author --> AI[Ask an AI assistant]
-  YAML --> Validate[Validate]
-  Editor --> Validate
-  AI --> Validate
-  Validate --> Compile[Compile runtime bundle]
-  Compile --> Publish[Publish static assets]
-```
-
-## The Flow
-
-1. Decide what the scene should explain.
-2. Choose an authoring path: hand-written YAML, the website editor, or AI with
-   the authoring skill installed.
-3. Add assets, labels, connections, animation, and camera stops.
-4. Validate and compile the YAML during development or CI.
-5. Publish only the compiled bundle, runtime, and referenced assets.
-
-## Start Here
-
-| Goal | Read |
-|---|---|
-| Build the first scene | [Getting Started](./getting-started.md) |
-| Understand scene timelines | [Author Scene Deltas](./guides/author-scene-deltas.md) |
-| Create SVG or sprite assets | [Assets Workflow](./guides/assets-workflow.md) |
-| Add movement, flows, and camera focus | [Animation And Connections](./guides/animation-and-connections.md) |
-| Use the visual editor | [Use The Editor In Astro](./guides/use-editor-in-astro.md) |
-| Validate, compile, bundle, inspect | [Use The CLI](./guides/use-the-cli.md) |
-| Publish static output | [Deploy Static Bundle](./guides/deploy-static-bundle.md) |
-| Let an AI assistant help | [Install The Authoring Skill](./guides/install-authoring-skill.md) |
-
-## Runtime Boundary
-
-The YAML parser, validator, compiler, CLI, editor, and `yaml` package are
-development tools. They do not ship in the normal browser runtime path.
+The docs are organized around the same path you follow when creating a scene:
+understand the boundary, plan the story, choose an authoring mode, build the
+visual language, animate it, verify it, and publish it.
 
 ```mermaid
-flowchart LR
-  subgraph DevTime [Development and CI]
-    YAML[scene.isostate.yaml] --> CLI[isostate CLI]
-    CLI --> Bundle[scene.isostate.js or JSON]
-    Assets[SVG and sprite assets] --> CLI
-  end
-  subgraph Browser [Browser]
-    Runtime[isostate runtime] --> SVG[SVG scene]
-    Bundle --> Runtime
-    CopiedAssets[Published assets] --> Runtime
-  end
+flowchart TD
+  A[Understand the runtime boundary] --> B[Plan the scene story]
+  B --> C{Choose authoring mode}
+  C --> C1[Website editor]
+  C --> C2[Manual YAML]
+  C --> C3[AI-assisted draft]
+  C1 --> D[Build the visual language]
+  C2 --> D
+  C3 --> D
+  D --> D1[Assets and anchors]
+  D --> D2[Labels and primitives]
+  D --> D3[Connections and roads]
+  D1 --> E[Animate the sequence]
+  D2 --> E
+  D3 --> E
+  E --> F[Validate, compile, inspect]
+  F --> G[Bundle and publish]
 ```
 
-## References
+## Read In This Order
 
-- [Public API](./reference/public-api.md): runtime, DSL, CLI, and support
-  entrypoints.
-- [Editor Reference](./reference/editor.md): editor embedding API. The editor
-  is its own package internally, but it is not planned as a public npm package
-  for this version.
-- [Runtime Bundle](./reference/runtime-bundle.md): compiled artifact shape.
-- [Types Reference](./reference/types.md): exported TypeScript contracts.
-- [Errors](./reference/errors.md): structured error classes and fixes.
+### 1. Understand
+
+Start with [How isostate works](./concepts/how-isostate-works.md). It explains
+the development/runtime split, why YAML is compiled before the browser sees it,
+and which files are source versus output.
+
+Then run [Getting Started](./getting-started.md) to build and mount the first
+scene.
+
+### 2. Create
+
+Use [Plan A Scene](./guides/plan-a-scene.md) before writing YAML. It gives you a
+simple storyboard format: each scene stop gets one purpose, one visual change,
+and one verification check.
+
+Choose one authoring path:
+
+| Path | Best For | Page |
+|---|---|---|
+| Website editor | Placing assets, checking anchors, iterating visually | [Use The Editor](./guides/use-editor-in-astro.md) |
+| Manual YAML | Source-controlled diagrams and precise review | [Author Scene Deltas](./guides/author-scene-deltas.md) |
+| AI assistant | Drafting or reviewing YAML from a written brief | [Install Authoring Skill](./guides/install-authoring-skill.md) |
+
+### 3. Build The Visual Language
+
+Use [Assets Workflow](./guides/assets-workflow.md) to create SVG assets, sprite
+sheets, manifests, anchors, and AI-generated asset sets. Use
+[Animation And Connections](./guides/animation-and-connections.md) for motion,
+connection routes, road paths, flow effects, and camera focus.
+
+### 4. Verify And Publish
+
+Use [The CLI](./guides/use-the-cli.md) for repeatable validation, compilation,
+inspection, and CI. Use [Deploy Static Bundle](./guides/deploy-static-bundle.md)
+when the result should be copied into a website public folder or CDN.
+
+```mermaid
+sequenceDiagram
+  participant Author
+  participant CLI
+  participant Browser
+
+  Author->>CLI: validate scene.isostate.yaml
+  CLI-->>Author: diagnostics
+  Author->>CLI: compile or bundle
+  CLI-->>Author: scene.isostate.js + assets
+  Browser->>Browser: import runtime and compiled bundle
+  Browser-->>Author: rendered SVG scene
+```
 
 ## Examples
 
-Use [Examples](./examples/README.md) for focused copyable workflows: runtime
-mounting, scroll control, custom assets, static bundling, editor embedding,
-bundle inspection, and theme customization.
+Use [Examples](./examples/README.md) after the main workflow is clear. They are
+copyable slices for runtime mounting, scroll control, custom assets, static
+bundling, editor embedding, bundle inspection, and theme customization.
+
+## Reference
+
+The reference pages are for details after you know the flow:
+
+- [Public API](./reference/public-api.md)
+- [Editor Reference](./reference/editor.md)
+- [Runtime Bundle](./reference/runtime-bundle.md)
+- [Types](./reference/types.md)
+- [Errors](./reference/errors.md)

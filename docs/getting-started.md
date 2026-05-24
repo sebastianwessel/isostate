@@ -1,14 +1,17 @@
 # Getting Started
 
-Use isostate in five steps:
+This page gets one scene mounted in a browser. It is intentionally small; the
+full creation workflow starts in [Plan A Scene](./guides/plan-a-scene.md).
+
+You will run the demo, compile YAML, and mount the compiled bundle.
 
 ```mermaid
-flowchart LR
-  Install[Install] --> Author[Author YAML or use editor]
-  Author --> Validate[Validate]
+flowchart TD
+  Install[Install dependencies] --> Build[Build packages]
+  Build --> Demo[Open the demo]
+  Demo --> Validate[Validate YAML]
   Validate --> Compile[Compile]
-  Compile --> Mount[Mount in browser]
-  Mount --> Publish[Publish static output]
+  Compile --> Mount[mountScene in browser]
 ```
 
 If you want an AI assistant to help author scenes, install the project skill
@@ -38,6 +41,7 @@ http://localhost:4173/examples/basic/
 ```
 
 The browser loads `examples/basic/scene.isostate.js`. It does not parse YAML.
+That compiled file is generated from `examples/basic/source.isostate.yaml`.
 
 ## 2. Validate And Compile
 
@@ -89,7 +93,7 @@ const moduleText = toJs(bundle);
 Do not import `@sebastianwessel/isostate/dsl` from browser code. It is
 development tooling.
 
-## 5. Author The Scene
+## 5. Read The YAML Shape
 
 YAML starts with a `header`, then defines ordered `scenes`.
 
@@ -129,8 +133,9 @@ scenes:
 The first scene is the full placement snapshot. Later scenes define only deltas.
 `asset: text` is built in and is not declared in `header.assets`.
 
-Next:
+Next, follow the full authoring path:
 
+- [Plan A Scene](./guides/plan-a-scene.md)
 - [Author Scene Deltas](./guides/author-scene-deltas.md)
 - [Assets Workflow](./guides/assets-workflow.md)
 - [Animation And Connections](./guides/animation-and-connections.md)

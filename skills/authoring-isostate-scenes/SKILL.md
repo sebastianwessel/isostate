@@ -11,6 +11,11 @@ Use this skill when creating or reviewing isostate scene definitions and example
 
 1. Start from the user-visible story, not from YAML fields:
    - define the audience and the one thing each scene step should explain
+   - follow the public docs flow when teaching or creating a new scene:
+     `docs/concepts/how-isostate-works.md` →
+     `docs/guides/plan-a-scene.md` → `docs/guides/assets-workflow.md` →
+     `docs/guides/animation-and-connections.md` →
+     `docs/guides/use-the-cli.md` → `docs/guides/deploy-static-bundle.md`
    - choose an authoring path: manual YAML, website editor, or AI-assisted draft
    - identify required assets before writing a long timeline
 2. Read the relevant reference file only when needed:

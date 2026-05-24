@@ -9,8 +9,10 @@ const docs = [
 	'packages/core/README.md',
 	'packages/cli/README.md',
 	'docs/README.md',
+	'docs/concepts/how-isostate-works.md',
 	'docs/getting-started.md',
 	'docs/guides/install-authoring-skill.md',
+	'docs/guides/plan-a-scene.md',
 	'docs/guides/author-scene-deltas.md',
 	'docs/guides/assets-workflow.md',
 	'docs/guides/animation-and-connections.md',
@@ -62,6 +64,58 @@ describe('public docs inventory', () => {
 		}
 	});
 
+	test('docs expose the story-first workflow with visual diagrams', async () => {
+		const docsIndex = await readFile(join(root, 'docs/README.md'), 'utf8');
+		const concept = await readFile(
+			join(root, 'docs/concepts/how-isostate-works.md'),
+			'utf8'
+		);
+		const plan = await readFile(
+			join(root, 'docs/guides/plan-a-scene.md'),
+			'utf8'
+		);
+		const assets = await readFile(
+			join(root, 'docs/guides/assets-workflow.md'),
+			'utf8'
+		);
+		const animation = await readFile(
+			join(root, 'docs/guides/animation-and-connections.md'),
+			'utf8'
+		);
+		const siteDocs = await readFile(join(root, 'website/src/docs.ts'), 'utf8');
+		const normalizedDocsIndex = docsIndex.replace(/\s+/g, ' ');
+
+		for (const fragment of [
+			'understand the boundary',
+			'plan the story',
+			'choose an authoring mode',
+			'build the visual language',
+			'verify it',
+			'publish it'
+		]) {
+			expect(normalizedDocsIndex).toContain(fragment);
+		}
+
+		expect(docsIndex).toContain('./concepts/how-isostate-works.md');
+		expect(docsIndex).toContain('./guides/plan-a-scene.md');
+		expect(concept).toContain('Development and CI');
+		expect(concept).toContain('Browser runtime');
+		expect(plan).toContain('The Storyboard');
+		expect(plan).toContain('Choose The Authoring Mode');
+		expect(assets).toContain('Sprite Sheets');
+		expect(assets).toContain('Generate Assets With OpenAI');
+		expect(animation).toContain('Scene Timeline');
+
+		for (const text of [docsIndex, concept, plan, assets, animation]) {
+			expect(text).toContain('```mermaid');
+		}
+
+		expect(siteDocs).toContain('docNav');
+		expect(siteDocs).toContain("title: 'Create'");
+		expect(siteDocs).toContain("title: 'Visual Language'");
+		expect(siteDocs).toContain("title: 'Ship'");
+	});
+
 	test('dev-time examples use the DSL entrypoint', async () => {
 		for (const path of [
 			'docs/examples/compile-yaml.md',
@@ -109,10 +163,14 @@ describe('public docs inventory', () => {
 		expect(text).toMatch(/does not include\s+authored YAML/);
 		expect(rootReadme).toContain('./docs/guides/deploy-static-bundle.md');
 		expect(rootReadme).toContain('bun run examples:basic:bundle');
-		expect(rootReadme).toContain('bunx --package @sebastianwessel/isostate-cli isostate bundle');
+		expect(rootReadme).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate bundle'
+		);
 		expect(docsIndex).toContain('./guides/install-authoring-skill.md');
 		expect(docsIndex).toContain('./guides/deploy-static-bundle.md');
-		expect(gettingStarted).toContain('bunx skills add sebastianwessel/isostate');
+		expect(gettingStarted).toContain(
+			'bunx skills add sebastianwessel/isostate'
+		);
 		expect(skillsGuide).toContain('bunx skills add sebastianwessel/isostate');
 		expect(skillsGuide).toContain('--skill authoring-isostate-scenes');
 		expect(skillsGuide).toContain('--agent codex');
@@ -162,15 +220,25 @@ describe('public docs inventory', () => {
 		);
 
 		expect(skill).toContain('references/deployment.md');
+		expect(skill).toContain('docs/guides/plan-a-scene.md');
+		expect(skill).toContain('docs/guides/assets-workflow.md');
 		expect(skill).toContain('isostate validate');
 		expect(skill).toContain('isostate compile');
 		expect(skill).toContain('isostate bundle');
 		expect(skill).toContain('isostate inspect');
 		expect(reference).toContain('CLI Command Surface');
-		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate validate');
-		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate compile');
-		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate bundle');
-		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate inspect');
+		expect(reference).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate validate'
+		);
+		expect(reference).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate compile'
+		);
+		expect(reference).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate bundle'
+		);
+		expect(reference).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate inspect'
+		);
 		expect(reference).toContain('isostate.runtime.js');
 		expect(reference).toContain('manifest.json');
 		expect(reference).toContain('yaml` package');

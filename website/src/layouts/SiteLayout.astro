@@ -1,5 +1,5 @@
 ---
-import { docGroups, docs } from '../docs';
+import { docNav, docs } from '../docs';
 
 type Props = {
 	title: string;
@@ -20,6 +20,7 @@ const site = Astro.site ?? new URL('https://sebastianwessel.github.io');
 const pageTitle = `${title} | isostate`;
 const canonicalUrl = new URL(Astro.url.pathname, site).toString();
 const ogImageUrl = new URL(`${base}${ogImage}`, site).toString();
+const docBySlug = new Map(docs.map((doc) => [doc.slug, doc] as const));
 
 function href(path: string): string {
 	return `${base}${path}`;
@@ -30,6 +31,10 @@ function isActive(path: string): boolean {
 		currentPath === `${base}${path}` ||
 		currentPath.startsWith(`${base}${path}/`)
 	);
+}
+
+function navId(value: string): string {
+	return `nav-${value.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 }
 ---
 
@@ -342,6 +347,25 @@ function isActive(path: string): boolean {
 				background: rgba(16, 20, 21, 0.04);
 				color: var(--ink);
 				border-color: rgba(15, 95, 79, 0.2);
+			}
+
+			.nav-subgroup {
+				margin-top: 8px;
+			}
+
+			.nav-subgroup h3 {
+				margin: 8px 0 2px;
+				padding: 0 12px 0 22px;
+				color: var(--faint);
+				font-size: 0.68rem;
+				font-weight: 700;
+				letter-spacing: 0.05em;
+				text-transform: uppercase;
+			}
+
+			.nav-subgroup a {
+				padding-left: 28px;
+				font-size: 0.84rem;
 			}
 
 			.docs-content {
@@ -672,7 +696,7 @@ function isActive(path: string): boolean {
 			<nav class="nav-links" aria-label="Primary navigation">
 				<a href={href('/')} aria-current={currentPath === base || currentPath === `${base}/` ? 'page' : undefined}>Overview</a>
 				<a href={href('/#story')}>Demo</a>
-				<a href={href('/docs/getting-started.md')} aria-current={isActive('/docs') ? 'page' : undefined}>Docs</a>
+				<a href={href('/docs/README.md')} aria-current={isActive('/docs') ? 'page' : undefined}>Docs</a>
 				<a href={href('/editor')} aria-current={isActive('/editor') ? 'page' : undefined}>Editor</a>
 			</nav>
 			<a class="topbar-meta" href="https://github.com/sebastianwessel/isostate" aria-label="Open GitHub repository" title="GitHub">
@@ -688,24 +712,46 @@ function isActive(path: string): boolean {
 					<>
 						<aside class="docs-sidebar" aria-label="Documentation navigation">
 							<p class="docs-kicker">Documentation</p>
-							{docGroups.map((group) => (
-								<nav class="nav-group" aria-labelledby={`nav-${group}`}>
-									<h2 id={`nav-${group}`}>{group}</h2>
-									<ul>
-										{docs
-											.filter((doc) => doc.group === group)
-											.map((doc) => {
-												const path = `/docs/${doc.slug}`;
-												const active = currentPath === `${base}${path}`;
-												return (
+							{docNav.map((section) => (
+								<nav class="nav-group" aria-labelledby={navId(section.title)}>
+									<h2 id={navId(section.title)}>{section.title}</h2>
+									{section.items.map((item) => {
+										if (item.type === 'doc') {
+											const doc = docBySlug.get(item.slug);
+											if (!doc) return null;
+											const path = `/docs/${doc.slug}`;
+											const active = currentPath === `${base}${path}`;
+											return (
+												<ul>
 													<li>
 														<a href={href(path)} aria-current={active ? 'page' : undefined}>
 															{doc.title}
 														</a>
 													</li>
-												);
-											})}
-									</ul>
+												</ul>
+											);
+										}
+										return (
+											<div class="nav-subgroup">
+												<h3>{item.title}</h3>
+												<ul>
+													{item.items.map((slug) => {
+														const doc = docBySlug.get(slug);
+														if (!doc) return null;
+														const path = `/docs/${doc.slug}`;
+														const active = currentPath === `${base}${path}`;
+														return (
+															<li>
+																<a href={href(path)} aria-current={active ? 'page' : undefined}>
+																	{doc.title}
+																</a>
+															</li>
+														);
+													})}
+												</ul>
+											</div>
+										);
+									})}
 								</nav>
 							))}
 						</aside>
@@ -719,6 +765,8 @@ function isActive(path: string): boolean {
 			}
 		</main>
 	<script>
+		import { renderMermaidSVGAsync } from 'beautiful-mermaid';
+
 		const copyIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
 		const checkIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m20 6-11 11-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 		const zoomInIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M11 8v6M8 11h6M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -750,7 +798,10 @@ function isActive(path: string): boolean {
 				if (pre.closest('.code-frame') || pre.closest('.mermaid-frame')) continue;
 				const code = pre.querySelector('code');
 				if (!code) continue;
-				if (code.className.includes('language-mermaid')) continue;
+				if (
+					code.className.includes('language-mermaid') ||
+					pre.dataset.language === 'mermaid'
+				) continue;
 				const frame = document.createElement('div');
 				frame.className = 'code-frame';
 				pre.replaceWith(frame);
@@ -826,17 +877,13 @@ function isActive(path: string): boolean {
 		}
 
 		async function enhanceMermaidBlocks() {
-			const mermaidBlocks = [
-				...document.querySelectorAll('article pre code.language-mermaid')
-			];
+			const mermaidBlocks = Array.from(
+				new Set([
+					...document.querySelectorAll('article pre code.language-mermaid'),
+					...document.querySelectorAll('article pre[data-language="mermaid"] code')
+				])
+			);
 			if (mermaidBlocks.length === 0) return;
-
-			let renderer;
-			try {
-				renderer = await import('https://esm.sh/beautiful-mermaid@1.1.3');
-			} catch (error) {
-				renderer = null;
-			}
 
 			for (const code of mermaidBlocks) {
 				const source = code.textContent ?? '';
@@ -874,16 +921,8 @@ function isActive(path: string): boolean {
 				pre.replaceWith(frame);
 				frame.append(card);
 
-				if (!renderer?.renderMermaidSVGAsync) {
-					const error = document.createElement('div');
-					error.className = 'mermaid-error';
-					error.textContent = 'Unable to load the Mermaid renderer.';
-					stage.append(error);
-					continue;
-				}
-
 				try {
-					stage.innerHTML = await renderer.renderMermaidSVGAsync(source, {
+					stage.innerHTML = await renderMermaidSVGAsync(source, {
 						bg: '#fffdf5',
 						fg: '#101415'
 					});
