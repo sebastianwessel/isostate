@@ -8,7 +8,8 @@ import {
 import type {
 	EditorAssetCatalog,
 	EditorWorkspace,
-	PlaceableAssetManifestEntry
+	PlaceableAssetManifestEntry,
+	SpriteAssetManifestEntry
 } from '../types.ts';
 import { Badge } from '../ui/badge.tsx';
 import { Input } from '../ui/input.tsx';
@@ -400,7 +401,11 @@ function AssetItem({
 			title={asset.id}
 		>
 			<div className="isostate-asset-thumb">
-				{previewUrl && <img src={previewUrl} alt="" draggable={false} />}
+				{previewUrl && isSpriteManifestAsset(asset) ? (
+					<SpriteAssetPreview asset={asset} previewUrl={previewUrl} />
+				) : (
+					previewUrl && <img src={previewUrl} alt="" draggable={false} />
+				)}
 			</div>
 			<div className="isostate-asset-name">{asset.label ?? asset.name}</div>
 			{isDeclared && (
@@ -410,6 +415,67 @@ function AssetItem({
 			)}
 		</div>
 	);
+}
+
+function isSpriteManifestAsset(
+	asset:
+		| PlaceableAssetManifestEntry
+		| { id: string; name: string; label?: string }
+): asset is SpriteAssetManifestEntry {
+	return 'type' in asset && asset.type === 'sprite';
+}
+
+function SpriteAssetPreview({
+	asset,
+	previewUrl
+}: {
+	asset: SpriteAssetManifestEntry;
+	previewUrl: string;
+}) {
+	const rect = spriteRect(asset);
+	if (!rect) return <img src={previewUrl} alt="" draggable={false} />;
+	const [x, y, width, height] = rect;
+	return (
+		<div
+			className="isostate-asset-sprite-window"
+			style={{ aspectRatio: `${width} / ${height}` }}
+		>
+			<img
+				src={previewUrl}
+				alt=""
+				draggable={false}
+				style={{
+					width: `${(asset.sheetSize[0] / width) * 100}%`,
+					height: `${(asset.sheetSize[1] / height) * 100}%`,
+					transform: `translate(${(-x / asset.sheetSize[0]) * 100}%, ${(-y / asset.sheetSize[1]) * 100}%)`
+				}}
+			/>
+		</div>
+	);
+}
+
+function spriteRect(
+	asset: SpriteAssetManifestEntry
+): [number, number, number, number] | undefined {
+	if (Array.isArray(asset.sprite)) {
+		if (!asset.tileSize) return undefined;
+		return [
+			asset.sprite[0] * asset.tileSize[0],
+			asset.sprite[1] * asset.tileSize[1],
+			asset.tileSize[0],
+			asset.tileSize[1]
+		];
+	}
+	if (asset.sprite.rect) return asset.sprite.rect;
+	if (asset.sprite.at && asset.tileSize) {
+		return [
+			asset.sprite.at[0] * asset.tileSize[0],
+			asset.sprite.at[1] * asset.tileSize[1],
+			asset.tileSize[0],
+			asset.tileSize[1]
+		];
+	}
+	return undefined;
 }
 
 function FormRow({

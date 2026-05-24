@@ -15,7 +15,7 @@ scenes:
 `;
 
 function setupHappyDom() {
-	const w = new Window();
+	const w = new Window({ url: 'https://editor.test/' });
 	const g = globalThis as unknown as Record<string, unknown>;
 	g.document = w.document;
 	g.window = w;
@@ -30,6 +30,71 @@ beforeEach(() => {
 });
 
 describe('AssetPanel', () => {
+	test('renders sprite manifest entries as cropped logical asset previews', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = createEditorWorkspace({ sourceYaml: BASE_YAML });
+		const root = createRoot(container);
+		const g = globalThis as unknown as {
+			fetch: (url: string) => Promise<Response>;
+		};
+		g.fetch = async () =>
+			new Response(
+				JSON.stringify({
+					format: 'isostate.asset-manifest',
+					version: 1,
+					assetBaseUrl: '/assets',
+					assets: [
+						{
+							id: 'traffic-sheet',
+							type: 'sprite-sheet',
+							path: 'traffic.png',
+							group: 'traffic',
+							name: 'traffic',
+							digest: 'sha256:abc',
+							sheetSize: [128, 64],
+							tileSize: [32, 32],
+							sprites: {
+								car: [1, 0],
+								bus: { rect: [64, 0, 64, 32] }
+							}
+						}
+					]
+				}),
+				{ status: 200 }
+			);
+
+		root.render(
+			createElement(AssetPanel, {
+				workspace,
+				assetManifestUrl: '/manifest.json'
+			})
+		);
+
+		await waitFor(() => container.querySelector('[title="car"]'));
+
+		const car = container
+			.querySelector('[title="car"]')
+			?.querySelector(
+				'.isostate-asset-sprite-window img'
+			) as HTMLImageElement | null;
+		const bus = container
+			.querySelector('[title="bus"]')
+			?.querySelector(
+				'.isostate-asset-sprite-window img'
+			) as HTMLImageElement | null;
+		expect(car).toBeTruthy();
+		expect(bus).toBeTruthy();
+		expect(car?.style.width).toBe('400%');
+		expect(car?.style.height).toBe('200%');
+		expect(car?.style.transform).toBe('translate(-25%, 0%)');
+		expect(bus?.style.width).toBe('200%');
+		expect(bus?.style.transform).toBe('translate(-50%, 0%)');
+
+		root.unmount();
+		container.remove();
+	});
+
 	test('renders preview artwork for built-in assets', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
@@ -65,3 +130,10 @@ describe('AssetPanel', () => {
 		container.remove();
 	});
 });
+
+async function waitFor(predicate: () => unknown): Promise<void> {
+	for (let attempt = 0; attempt < 20; attempt++) {
+		if (predicate()) return;
+		await new Promise((r) => setTimeout(r, 10));
+	}
+}
