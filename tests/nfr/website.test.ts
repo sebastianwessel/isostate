@@ -99,7 +99,8 @@ describe('Astro website', () => {
 		expect(layout).toContain(
 			"import { renderMermaidSVGAsync } from 'beautiful-mermaid'"
 		);
-		expect(layout).toContain('https://agents.craft.do/mermaid');
+		expect(layout).not.toContain('Rendered with');
+		expect(layout).not.toContain('Beautiful Mermaid by Craft');
 		expect(layout).toContain('requestFullscreen');
 		expect(layout).toContain('Copy Mermaid source');
 		expect(layout).toContain('pre[data-language="mermaid"] code');

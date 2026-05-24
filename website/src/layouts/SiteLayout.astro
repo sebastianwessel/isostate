@@ -441,17 +441,6 @@ function navId(value: string): string {
 				background: rgba(15, 95, 79, 0.04);
 			}
 
-			:global(.mermaid-credit) {
-				color: var(--muted);
-				font-size: 0.78rem;
-				font-weight: 600;
-			}
-
-			:global(.mermaid-credit a) {
-				color: var(--green-dark);
-				text-decoration: none;
-			}
-
 			:global(.mermaid-actions) {
 				display: flex;
 				align-items: center;
@@ -895,7 +884,6 @@ function navId(value: string): string {
 				card.className = 'mermaid-card';
 				const toolbar = document.createElement('div');
 				toolbar.className = 'mermaid-toolbar';
-				toolbar.innerHTML = '<span class="mermaid-credit">Rendered with <a href="https://agents.craft.do/mermaid" target="_blank" rel="noreferrer">Beautiful Mermaid by Craft</a></span>';
 				const actions = document.createElement('div');
 				actions.className = 'mermaid-actions';
 				const copy = button('Copy Mermaid source', copyIcon);
