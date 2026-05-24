@@ -2,7 +2,7 @@
 id: TICKET-030
 title: Generate sprite sheet entries in asset manifests
 wave: 5
-status: pending
+status: done
 parallel_group: sprite_sheet_030_manifest
 depends_on: [TICKET-026]
 blocked_by: [TICKET-026]

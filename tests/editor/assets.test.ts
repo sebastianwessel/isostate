@@ -5,6 +5,7 @@ import {
 	filterAssetsByGroup,
 	filterAssetsByTag,
 	getMissingAssets,
+	getPlaceableManifestAssets,
 	getUnusedAssets,
 	searchAssets,
 	validateAssetManifest
@@ -53,6 +54,35 @@ describe('validateAssetManifest', () => {
 		if (result.valid) {
 			expect(result.catalog.assetBaseUrl).toBe('./assets');
 			expect(result.catalog.assets.length).toBe(2);
+		}
+	});
+
+	test('accepts sprite sheet manifest entries', () => {
+		const result = validateAssetManifest({
+			...VALID_MANIFEST,
+			assets: [
+				...VALID_MANIFEST.assets,
+				{
+					id: 'sprites-app-icons',
+					type: 'sprite-sheet',
+					path: 'sprites/app-icons.png',
+					group: 'sprites',
+					name: 'app-icons',
+					digest: 'sha256:sprite',
+					sheetSize: [128, 64],
+					tileSize: [32, 32],
+					sprites: {
+						'app-home': [0, 0],
+						'app-alert': { rect: [32, 0, 32, 32] }
+					}
+				}
+			]
+		});
+		expect(result.valid).toBe(true);
+		if (result.valid) {
+			expect(
+				getPlaceableManifestAssets(result.catalog).map((a) => a.id)
+			).toEqual(['servers-api', 'network-lb', 'app-home', 'app-alert']);
 		}
 	});
 
@@ -589,5 +619,69 @@ scenes:
 				(e) => e.asset === 'new-asset'
 			)
 		).toBe(true);
+	});
+
+	test('adds containing sprite sheet and places logical sprite id', () => {
+		const workspace = createEditorWorkspace({
+			sourceYaml: `header:
+  version: "1"
+  assets: []
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+`
+		});
+		const entry = {
+			id: 'app-home',
+			type: 'sprite' as const,
+			path: 'sprites/app-icons.png',
+			group: 'sprites',
+			name: 'app-home',
+			digest: 'sha256:sprite',
+			sheetId: 'sprites-app-icons',
+			sheetSize: [128, 64] as [number, number],
+			tileSize: [32, 32] as [number, number],
+			sheetAnchor: [0.5, 0.9] as [number, number],
+			sprites: {
+				'app-home': [0, 0] as [number, number],
+				'app-alert': {
+					at: [1, 0] as [number, number],
+					label: 'Alert',
+					tags: ['warning']
+				}
+			},
+			sprite: [0, 0] as [number, number]
+		};
+		const command = createAssetPlacementCommand(
+			'scene-1',
+			entry,
+			[2, 4],
+			'/assets'
+		);
+		const result = applyEditorCommand(workspace, command);
+
+		expect(result.changed).toBe(true);
+		expect(result.workspace.document?.header.assets).toEqual([
+			{
+				id: 'sprites-app-icons',
+				type: 'sprite-sheet',
+				path: 'sprites/app-icons.png',
+				sheetSize: [128, 64],
+				tileSize: [32, 32],
+				anchor: [0.5, 0.9],
+				sprites: {
+					'app-home': [0, 0],
+					'app-alert': {
+						at: [1, 0]
+					}
+				}
+			}
+		]);
+		expect(result.workspace.document?.scenes[0].elements?.[0]).toMatchObject({
+			id: 'app-home',
+			asset: 'app-home',
+			at: [2, 4]
+		});
 	});
 });

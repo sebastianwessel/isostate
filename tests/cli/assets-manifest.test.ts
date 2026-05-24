@@ -1,5 +1,14 @@
 import { afterEach, describe, expect, test } from 'bun:test';
-import { lstat, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import {
+	lstat,
+	mkdir,
+	mkdtemp,
+	readFile,
+	readdir,
+	rm,
+	symlink,
+	writeFile
+} from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -68,11 +77,89 @@ describe('isostate assets manifest', () => {
 
 		expect(result.exitCode).toBe(0);
 		const manifest = JSON.parse(await readFile(out, 'utf8'));
-		const api = manifest.assets.find((a: { id: string }) => a.id === 'servers-api');
+		const api = manifest.assets.find(
+			(a: { id: string }) => a.id === 'servers-api'
+		);
 		expect(api).toBeDefined();
 		expect(api.label).toBe('API Server');
 		expect(api.anchor).toEqual([0.5, 0.92]);
 		expect(api.tags).toEqual(['server', 'backend']);
+	});
+
+	test('generates sprite sheet manifest entries from metadata', async () => {
+		const dir = await makeTempDir();
+		await mkdir(join(dir, 'sprites'), { recursive: true });
+		await writeFile(join(dir, 'sprites', 'app-icons.png'), fakePng(128, 64));
+		await writeFile(
+			join(dir, '.isostate-assets.yaml'),
+			`assets:
+  sprites/app-icons.png:
+    type: sprite-sheet
+    label: App Icons
+    tileSize: [32, 32]
+    anchor: [0.5, 0.9]
+    sprites:
+      app-home: [0, 0]
+      app-alert:
+        rect: [32, 0, 32, 32]
+        label: Alert
+        tags: [warning]
+`,
+			'utf8'
+		);
+		const out = join(dir, 'out.json');
+
+		const result = await runCli(['assets', 'manifest', dir, '--out', out]);
+
+		expect(result.exitCode).toBe(0);
+		const manifest = JSON.parse(await readFile(out, 'utf8'));
+		expect(manifest.assets).toHaveLength(1);
+		expect(manifest.assets[0]).toMatchObject({
+			id: 'sprites-app-icons',
+			type: 'sprite-sheet',
+			path: 'sprites/app-icons.png',
+			group: 'sprites',
+			name: 'app-icons',
+			label: 'App Icons',
+			sheetSize: [128, 64],
+			tileSize: [32, 32],
+			anchor: [0.5, 0.9]
+		});
+		expect(manifest.assets[0].sprites).toEqual({
+			'app-home': [0, 0],
+			'app-alert': {
+				rect: [32, 0, 32, 32],
+				label: 'Alert',
+				tags: ['warning']
+			}
+		});
+	});
+
+	test('rejects invalid sprite manifest rectangles', async () => {
+		const dir = await makeTempDir();
+		await writeFile(join(dir, 'icons.png'), fakePng(64, 64));
+		await writeFile(
+			join(dir, '.isostate-assets.yaml'),
+			`assets:
+  icons.png:
+    type: sprite-sheet
+    tileSize: [32, 32]
+    sprites:
+      outside: { rect: [48, 0, 32, 32] }
+`,
+			'utf8'
+		);
+
+		const result = await runCli([
+			'assets',
+			'manifest',
+			dir,
+			'--out',
+			join(dir, 'out.json')
+		]);
+
+		expect(result.exitCode).toBe(1);
+		expect(result.stderr).toContain('ASSET_MANIFEST_INVALID_METADATA');
 	});
 
 	test('digest computation', async () => {
@@ -336,4 +423,12 @@ async function fileExists(path: string): Promise<boolean> {
 	} catch {
 		return false;
 	}
+}
+
+function fakePng(width: number, height: number): Buffer {
+	const bytes = Buffer.alloc(24);
+	bytes.set(Buffer.from([0x89, 0x50, 0x4e, 0x47]), 0);
+	bytes.writeUInt32BE(width, 16);
+	bytes.writeUInt32BE(height, 20);
+	return bytes;
 }

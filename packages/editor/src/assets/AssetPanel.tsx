@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { getMissingAssets, getUnusedAssets, searchAssets } from '../assets.ts';
-import type { EditorAssetCatalog, EditorWorkspace } from '../types.ts';
+import {
+	getMissingAssets,
+	getPlaceableManifestAssets,
+	getUnusedAssets,
+	searchAssets
+} from '../assets.ts';
+import type {
+	EditorAssetCatalog,
+	EditorWorkspace,
+	PlaceableAssetManifestEntry
+} from '../types.ts';
 import { Badge } from '../ui/badge.tsx';
 import { Input } from '../ui/input.tsx';
 import { ScrollArea } from '../ui/scroll-area.tsx';
@@ -85,15 +94,15 @@ export function AssetPanel({
 			.finally(() => setLoading(false));
 	}, [manifestUrl]);
 
-	const allAssets = catalog?.assets ?? [];
+	const allAssets = useMemo(
+		() => (catalog ? getPlaceableManifestAssets(catalog) : []),
+		[catalog]
+	);
 
 	const filteredAssets = useMemo(() => {
 		let result = allAssets;
-		if (searchQuery) {
-			result = searchAssets(
-				catalog ?? { assetBaseUrl: '', assets: result },
-				searchQuery
-			);
+		if (searchQuery && catalog) {
+			result = searchAssets(catalog, searchQuery);
 		}
 		return result;
 	}, [allAssets, searchQuery, catalog]);
@@ -219,7 +228,11 @@ export function AssetPanel({
 									<AssetItem
 										key={asset.id}
 										asset={asset}
-										isDeclared={declaredAssetIds.has(asset.id)}
+										isDeclared={
+											asset.type === 'sprite'
+												? declaredAssetIds.has(asset.sheetId)
+												: declaredAssetIds.has(asset.id)
+										}
 										assetBaseUrl={catalog.assetBaseUrl}
 										assetManifestUrl={manifestUrl}
 										previewUrl={resolveAssetUrl(
@@ -337,7 +350,9 @@ function AssetItem({
 	onDrag,
 	onClick
 }: {
-	asset: { id: string; name: string; label?: string };
+	asset:
+		| PlaceableAssetManifestEntry
+		| { id: string; name: string; label?: string };
 	isDeclared: boolean;
 	isActive?: boolean;
 	assetBaseUrl?: string;

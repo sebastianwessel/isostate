@@ -2,7 +2,7 @@
 id: TICKET-027
 title: Compile sprite sheets into flat runtime asset entries
 wave: 5
-status: pending
+status: done
 parallel_group: sprite_sheet_027_compiler
 depends_on: [TICKET-026]
 blocked_by: [TICKET-026]

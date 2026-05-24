@@ -4,8 +4,19 @@ import type {
 } from '@sebastianwessel/isostate';
 
 /** Asset entry from an external manifest. */
-export interface AssetManifestEntry {
+export type SpriteManifestDefinition =
+	| [number, number]
+	| {
+			at?: [number, number];
+			rect?: [number, number, number, number];
+			anchor?: [number, number];
+			label?: string;
+			tags?: string[];
+	  };
+
+export interface UrlAssetManifestEntry {
 	id: string;
+	type?: 'url';
 	path: string;
 	group: string;
 	name: string;
@@ -16,6 +27,42 @@ export interface AssetManifestEntry {
 	height?: number;
 	digest: string;
 }
+
+export interface SpriteSheetAssetManifestEntry
+	extends Omit<UrlAssetManifestEntry, 'type'> {
+	type: 'sprite-sheet';
+	sheetSize: [number, number];
+	tileSize?: [number, number];
+	sprites: Record<string, SpriteManifestDefinition>;
+}
+
+export interface SpriteAssetManifestEntry {
+	id: string;
+	type: 'sprite';
+	path: string;
+	group: string;
+	name: string;
+	label?: string;
+	anchor?: [number, number];
+	tags?: string[];
+	width?: number;
+	height?: number;
+	digest: string;
+	sheetId: string;
+	sheetSize: [number, number];
+	tileSize?: [number, number];
+	sheetAnchor?: [number, number];
+	sprites: Record<string, SpriteManifestDefinition>;
+	sprite: SpriteManifestDefinition;
+}
+
+export type AssetManifestEntry =
+	| UrlAssetManifestEntry
+	| SpriteSheetAssetManifestEntry;
+
+export type PlaceableAssetManifestEntry =
+	| UrlAssetManifestEntry
+	| SpriteAssetManifestEntry;
 
 /** Editor workspace state. */
 export interface EditorWorkspace {

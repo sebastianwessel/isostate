@@ -2,7 +2,7 @@
 id: TICKET-029
 title: Copy sprite sheet sources in static bundle output
 wave: 5
-status: pending
+status: done
 parallel_group: sprite_sheet_029_static_bundle
 depends_on: [TICKET-027, TICKET-028]
 blocked_by: [TICKET-027, TICKET-028]

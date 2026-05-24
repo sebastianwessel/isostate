@@ -2,7 +2,7 @@
 id: TICKET-025
 title: Add sprite sheet public type contracts and fixtures
 wave: 5
-status: pending
+status: done
 parallel_group: sprite_sheet_025_contracts
 depends_on: []
 blocked_by: []

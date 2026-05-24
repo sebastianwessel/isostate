@@ -14,7 +14,10 @@ import type {
 	EditorCommand,
 	EditorCommandResult,
 	EditorDiagnostic,
-	EditorWorkspace
+	EditorWorkspace,
+	PlaceableAssetManifestEntry,
+	SpriteAssetManifestEntry,
+	SpriteSheetAssetManifestEntry
 } from './types.ts';
 
 export function validateAssetManifest(
@@ -118,6 +121,40 @@ export function validateAssetManifest(
 				severity: 'error'
 			});
 		}
+		if (e.type !== undefined && e.type !== 'sprite-sheet' && e.type !== 'url') {
+			diagnostics.push({
+				code: 'EDITOR_ASSET_MANIFEST_INVALID',
+				message: `Manifest assets[${i}].type must be "url" or "sprite-sheet"`,
+				severity: 'error'
+			});
+		}
+		if (e.type === 'sprite-sheet') {
+			if (!isTuple2(e.sheetSize)) {
+				diagnostics.push({
+					code: 'EDITOR_ASSET_MANIFEST_INVALID',
+					message: `Manifest assets[${i}].sheetSize must be a number tuple`,
+					severity: 'error'
+				});
+			}
+			if (e.tileSize !== undefined && !isTuple2(e.tileSize)) {
+				diagnostics.push({
+					code: 'EDITOR_ASSET_MANIFEST_INVALID',
+					message: `Manifest assets[${i}].tileSize must be a number tuple`,
+					severity: 'error'
+				});
+			}
+			if (
+				!e.sprites ||
+				typeof e.sprites !== 'object' ||
+				Array.isArray(e.sprites)
+			) {
+				diagnostics.push({
+					code: 'EDITOR_ASSET_MANIFEST_INVALID',
+					message: `Manifest assets[${i}].sprites must be an object`,
+					severity: 'error'
+				});
+			}
+		}
 	}
 
 	if (diagnostics.length > 0) {
@@ -181,9 +218,9 @@ export function createManifestAssetProvider(
 export function searchAssets(
 	catalog: EditorAssetCatalog,
 	query: string
-): AssetManifestEntry[] {
+): PlaceableAssetManifestEntry[] {
 	const q = query.toLowerCase();
-	return catalog.assets.filter((asset) => {
+	return getPlaceableManifestAssets(catalog).filter((asset) => {
 		if (asset.id.toLowerCase().includes(q)) return true;
 		if (asset.label?.toLowerCase().includes(q)) return true;
 		if (asset.path.toLowerCase().includes(q)) return true;
@@ -195,15 +232,19 @@ export function searchAssets(
 export function filterAssetsByGroup(
 	catalog: EditorAssetCatalog,
 	group: string
-): AssetManifestEntry[] {
-	return catalog.assets.filter((asset) => asset.group === group);
+): PlaceableAssetManifestEntry[] {
+	return getPlaceableManifestAssets(catalog).filter(
+		(asset) => asset.group === group
+	);
 }
 
 export function filterAssetsByTag(
 	catalog: EditorAssetCatalog,
 	tag: string
-): AssetManifestEntry[] {
-	return catalog.assets.filter((asset) => asset.tags?.includes(tag));
+): PlaceableAssetManifestEntry[] {
+	return getPlaceableManifestAssets(catalog).filter((asset) =>
+		asset.tags?.includes(tag)
+	);
 }
 
 function getDeclaredAssetIds(workspace: EditorWorkspace): string[] {
@@ -243,9 +284,61 @@ export function getUnusedAssets(
 	const declaredIds = new Set(getDeclaredAssetIds(workspace));
 	const catalogIds = new Set(catalog.assets.map((a) => a.id));
 	const usedIds = new Set(getUsedAssetIds(workspace));
-	return Array.from(declaredIds).filter(
-		(id) => catalogIds.has(id) && !usedIds.has(id)
-	);
+	return Array.from(declaredIds).filter((id) => {
+		if (!catalogIds.has(id)) return false;
+		if (usedIds.has(id)) return false;
+		const entry = catalog.assets.find((asset) => asset.id === id);
+		if (entry?.type !== 'sprite-sheet') return true;
+		return !Object.keys(entry.sprites).some((spriteId) =>
+			usedIds.has(spriteId)
+		);
+	});
+}
+
+export function getPlaceableManifestAssets(
+	catalog: EditorAssetCatalog
+): PlaceableAssetManifestEntry[] {
+	const result: PlaceableAssetManifestEntry[] = [];
+	for (const asset of catalog.assets) {
+		if (asset.type !== 'sprite-sheet') {
+			result.push(asset);
+			continue;
+		}
+		for (const [spriteId, sprite] of Object.entries(asset.sprites)) {
+			result.push(createSpriteManifestEntry(asset, spriteId, sprite));
+		}
+	}
+	return result;
+}
+
+function createSpriteManifestEntry(
+	sheet: SpriteSheetAssetManifestEntry,
+	spriteId: string,
+	sprite: SpriteAssetManifestEntry['sprite']
+): SpriteAssetManifestEntry {
+	const label =
+		!Array.isArray(sprite) && 'label' in sprite ? sprite.label : undefined;
+	const tags =
+		!Array.isArray(sprite) && 'tags' in sprite ? sprite.tags : sheet.tags;
+	const anchor =
+		!Array.isArray(sprite) && 'anchor' in sprite ? sprite.anchor : sheet.anchor;
+	return {
+		id: spriteId,
+		type: 'sprite',
+		path: sheet.path,
+		group: sheet.group,
+		name: spriteId,
+		label,
+		anchor,
+		tags,
+		digest: sheet.digest,
+		sheetId: sheet.id,
+		sheetSize: sheet.sheetSize,
+		tileSize: sheet.tileSize,
+		sheetAnchor: sheet.anchor,
+		sprites: sheet.sprites,
+		sprite
+	};
 }
 
 function collectAllElementIds(document: SceneDocument): Set<string> {
@@ -280,7 +373,7 @@ function generateUniqueElementId(
 
 export function createAssetPlacementCommand(
 	sceneId: string,
-	manifestEntry: AssetManifestEntry,
+	manifestEntry: PlaceableAssetManifestEntry,
 	gridPoint: [number, number],
 	assetBaseUrl: string
 ): EditorCommand {
@@ -296,19 +389,19 @@ export function createAssetPlacementCommand(
 					if (!doc.header.assetBaseUrl) {
 						doc.header.assetBaseUrl = assetBaseUrl;
 					}
-					const existingAsset = doc.header.assets.find(
-						(a) => a.id === manifestEntry.id
-					);
+					const assetId =
+						manifestEntry.type === 'sprite'
+							? manifestEntry.sheetId
+							: manifestEntry.id;
+					const existingAsset = doc.header.assets.find((a) => a.id === assetId);
 					if (!existingAsset) {
-						const newAsset: AssetCatalogEntry = {
-							id: manifestEntry.id,
-							path: manifestEntry.path
-						};
-						if (manifestEntry.anchor) {
-							newAsset.anchor = manifestEntry.anchor;
-						}
+						const newAsset = createAssetDeclaration(manifestEntry);
 						doc.header.assets.push(newAsset);
-					} else if (!existingAsset.anchor && manifestEntry.anchor) {
+					} else if (
+						manifestEntry.type !== 'sprite' &&
+						!existingAsset.anchor &&
+						manifestEntry.anchor
+					) {
 						existingAsset.anchor = manifestEntry.anchor;
 					}
 					const elementId = generateUniqueElementId(doc, manifestEntry.id);
@@ -334,4 +427,57 @@ export function createAssetPlacementCommand(
 			);
 		}
 	};
+}
+
+function createAssetDeclaration(
+	manifestEntry: PlaceableAssetManifestEntry
+): AssetCatalogEntry {
+	if (manifestEntry.type !== 'sprite') {
+		const asset: AssetCatalogEntry = {
+			id: manifestEntry.id,
+			path: manifestEntry.path
+		};
+		if (manifestEntry.anchor) asset.anchor = manifestEntry.anchor;
+		return asset;
+	}
+
+	const asset: AssetCatalogEntry = {
+		id: manifestEntry.sheetId,
+		type: 'sprite-sheet',
+		path: manifestEntry.path,
+		sheetSize: manifestEntry.sheetSize,
+		sprites: sanitizeSpriteDefinitions(manifestEntry.sprites)
+	};
+	if (manifestEntry.tileSize) asset.tileSize = manifestEntry.tileSize;
+	if (manifestEntry.sheetAnchor) asset.anchor = manifestEntry.sheetAnchor;
+	return asset;
+}
+
+function sanitizeSpriteDefinitions(
+	sprites: SpriteAssetManifestEntry['sprites']
+): Extract<AssetCatalogEntry, { type: 'sprite-sheet' }>['sprites'] {
+	const result: Extract<
+		AssetCatalogEntry,
+		{ type: 'sprite-sheet' }
+	>['sprites'] = {};
+	for (const [id, sprite] of Object.entries(sprites)) {
+		if (Array.isArray(sprite)) {
+			result[id] = sprite;
+			continue;
+		}
+		const sanitized: Exclude<(typeof result)[string], [number, number]> = {};
+		if (sprite.at) sanitized.at = sprite.at;
+		if (sprite.rect) sanitized.rect = sprite.rect;
+		if (sprite.anchor) sanitized.anchor = sprite.anchor;
+		result[id] = sanitized;
+	}
+	return result;
+}
+
+function isTuple2(value: unknown): value is [number, number] {
+	return (
+		Array.isArray(value) &&
+		value.length === 2 &&
+		value.every((v) => typeof v === 'number' && Number.isFinite(v))
+	);
 }

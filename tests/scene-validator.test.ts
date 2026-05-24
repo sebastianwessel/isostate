@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
 import {
 	parseScene,
 	resolveSceneSnapshots,
@@ -87,7 +88,65 @@ function expectErrorCode(document: SceneDocument, code: string) {
 	expect(report.errors.find((error) => error.code === code)).toBeDefined();
 }
 
+function fixture(name: string): SceneDocument {
+	return parseScene(
+		readFileSync(`tests/fixtures/sprite-sheet-assets/${name}`, 'utf8')
+	);
+}
+
 describe('validateScene', () => {
+	test('validates compact and verbose sprite sheet assets', () => {
+		expect(validateScene(fixture('compact.isostate.yaml')).isValid).toBe(true);
+		expect(validateScene(fixture('verbose-rect.isostate.yaml')).isValid).toBe(
+			true
+		);
+	});
+
+	test('rejects sprite sheet namespace placements and invalid rects', () => {
+		expectErrorCode(
+			fixture('invalid-sheet-id-used.isostate.yaml'),
+			'SPRITE_SHEET_NOT_PLACEABLE'
+		);
+		expectErrorCode(
+			fixture('invalid-rect-outside-sheet.isostate.yaml'),
+			'INVALID_SPRITE_RECT'
+		);
+	});
+
+	test('validates sprite sheet error cases', () => {
+		const unsupportedType = fixture('compact.isostate.yaml');
+		unsupportedType.header.assets[0] = {
+			...unsupportedType.header.assets[0],
+			type: 'icon-atlas'
+		} as never;
+		expectErrorCode(unsupportedType, 'ASSET_TYPE_UNSUPPORTED');
+
+		const missingTile = fixture('compact.isostate.yaml');
+		delete (missingTile.header.assets[0] as { tileSize?: unknown }).tileSize;
+		expectErrorCode(missingTile, 'INVALID_SPRITE_TILE_SIZE');
+
+		const duplicateSprite = fixture('compact.isostate.yaml');
+		duplicateSprite.header.assets.push({
+			id: 'other-icons',
+			type: 'sprite-sheet',
+			path: 'sprites/other-icons.png',
+			sheetSize: [128, 128],
+			tileSize: [64, 64],
+			sprites: { server: [0, 0] }
+		});
+		expectErrorCode(duplicateSprite, 'DUPLICATE_SPRITE_ID');
+
+		const spriteAssetCollision = fixture('compact.isostate.yaml');
+		spriteAssetCollision.header.assets.push({ id: 'server' });
+		expectErrorCode(spriteAssetCollision, 'SPRITE_ASSET_ID_COLLISION');
+
+		const noSprites = fixture('compact.isostate.yaml');
+		(
+			noSprites.header.assets[0] as { sprites: Record<string, unknown> }
+		).sprites = {};
+		expectErrorCode(noSprites, 'NO_SPRITES');
+	});
+
 	test('passes validation on a valid header and scene-delta timeline', () => {
 		const report = validateScene(validDocument());
 

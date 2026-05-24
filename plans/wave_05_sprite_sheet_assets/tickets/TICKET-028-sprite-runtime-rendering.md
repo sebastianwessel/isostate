@@ -2,7 +2,7 @@
 id: TICKET-028
 title: Render compiled sprite assets in the browser runtime
 wave: 5
-status: pending
+status: done
 parallel_group: sprite_sheet_028_renderer
 depends_on: [TICKET-027]
 blocked_by: [TICKET-027]

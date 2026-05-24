@@ -1,5 +1,6 @@
 import type {
 	AmbientAnimation,
+	AssetCatalogEntry,
 	CameraFocus,
 	ConnectionPatch,
 	ConnectionPlacement,
@@ -23,6 +24,7 @@ import type {
 	ValidationReport,
 	ValidationWarning,
 } from "../types/index.ts";
+import type { SpriteDefinition } from "../types/scene.ts";
 
 const BUILT_IN_TEXT_ASSET_ID = "text";
 const BUILT_IN_PRIMITIVE_ASSET_IDS = new Set(["rectangle", "circle", "polygon", "line"]);
@@ -72,6 +74,7 @@ const VALID_CONNECTOR_ROUTING_MODES: ReadonlySet<string> = new Set(["straight", 
 const VALID_CONNECTOR_ROUTING_PREFERENCES: ReadonlySet<string> = new Set(["direct", "fewest-bends", "shortest"]);
 const VALID_CONNECTOR_LANES: ReadonlySet<string> = new Set(["none", "center-dashed"]);
 const VALID_CAMERA_EASINGS: ReadonlySet<string> = new Set(["linear", "ease-in-out", "ease-out"]);
+const VALID_SPRITE_SHEET_EXTENSIONS = new Set([".png", ".webp", ".jpg", ".jpeg", ".svg"]);
 
 const VALID_TEXT_ALIGN: ReadonlySet<string> = new Set(["start", "middle", "end"]);
 const VALID_TEXT_WEIGHT: ReadonlySet<string> = new Set(["normal", "bold"]);
@@ -147,12 +150,11 @@ function defaultConnectorLayer(document: SceneDocument): string {
 	return connectors?.name ?? ground?.name ?? document.header.layers[0]?.name ?? "";
 }
 
-function declaredAssetNames(document: SceneDocument): Set<string> {
-	return new Set(document.header.assets.map((asset) => asset.id));
-}
-
 function hasUrlAssetSource(document: SceneDocument, assetId: string): boolean {
-	return Boolean(document.header.assetBaseUrl && document.header.assets.some((asset) => asset.id === assetId));
+	return Boolean(
+		document.header.assetBaseUrl &&
+			document.header.assets.some((asset) => asset.id === assetId && !isSpriteSheetAsset(asset)),
+	);
 }
 
 function isBuiltInAsset(assetId: string): boolean {
@@ -175,6 +177,37 @@ function hasExternalAssetReferences(document: SceneDocument): boolean {
 	return false;
 }
 
+interface AssetIndex {
+	urlAssetIds: Set<string>;
+	sheetAssetIds: Set<string>;
+	spriteAssetIds: Set<string>;
+	placeableAssetIds: Set<string>;
+}
+
+function isSpriteSheetAsset(asset: AssetCatalogEntry): asset is Extract<AssetCatalogEntry, { type: "sprite-sheet" }> {
+	return "type" in asset && asset.type === "sprite-sheet";
+}
+
+function buildAssetIndex(document: SceneDocument): AssetIndex {
+	const urlAssetIds = new Set<string>();
+	const sheetAssetIds = new Set<string>();
+	const spriteAssetIds = new Set<string>();
+	for (const asset of document.header.assets) {
+		if (isSpriteSheetAsset(asset)) {
+			sheetAssetIds.add(asset.id);
+			for (const spriteId of Object.keys(asset.sprites ?? {})) spriteAssetIds.add(spriteId);
+		} else {
+			urlAssetIds.add(asset.id);
+		}
+	}
+	return {
+		urlAssetIds,
+		sheetAssetIds,
+		spriteAssetIds,
+		placeableAssetIds: new Set([...urlAssetIds, ...spriteAssetIds]),
+	};
+}
+
 function hasBuiltInElements(document: SceneDocument): boolean {
 	for (const scene of document.scenes) {
 		for (const element of [...(scene.elements ?? []), ...(scene.add?.elements ?? [])]) {
@@ -194,7 +227,9 @@ function validateHeader(document: SceneDocument, errors: ValidationError[]): voi
 		errors.push(issue("NO_ASSETS", "Header must declare at least one asset"));
 	}
 
+	const assetIndex = buildAssetIndex(document);
 	const assetNames = new Set<string>();
+	const spriteNames = new Set<string>();
 	for (const asset of assets) {
 		if (!isValidIdentifier(asset.id)) {
 			errors.push(
@@ -211,6 +246,16 @@ function validateHeader(document: SceneDocument, errors: ValidationError[]): voi
 			);
 		}
 		assetNames.add(asset.id);
+		if (spriteNames.has(asset.id)) {
+			errors.push(
+				issue("SPRITE_ASSET_ID_COLLISION", `Asset "${asset.id}" collides with a sprite id`, { assetName: asset.id }),
+			);
+		}
+		if ("type" in asset && asset.type !== "sprite-sheet") {
+			errors.push(
+				issue("ASSET_TYPE_UNSUPPORTED", `Asset "${asset.id}" declares an unsupported type`, { assetName: asset.id }),
+			);
+		}
 		if (isBuiltInAsset(asset.id)) {
 			errors.push(
 				issue("BUILTIN_ASSET_ID_RESERVED", `Asset "${asset.id}" is reserved for a built-in asset`, {
@@ -219,12 +264,23 @@ function validateHeader(document: SceneDocument, errors: ValidationError[]): voi
 			);
 			continue;
 		}
-		if (!hasUrlAssetSource(document, asset.id)) {
-			errors.push(
-				issue("ASSET_URL_REQUIRED", `Asset "${asset.id}" has no URL source`, {
-					assetName: asset.id,
-				}),
-			);
+		if (isSpriteSheetAsset(asset)) {
+			if (!document.header.assetBaseUrl) {
+				errors.push(
+					issue("ASSET_URL_REQUIRED", `Sprite sheet "${asset.id}" has no URL source`, {
+						assetName: asset.id,
+					}),
+				);
+			}
+			validateSpriteSheetAsset(asset, assetNames, spriteNames, errors);
+		} else {
+			if (!hasUrlAssetSource(document, asset.id)) {
+				errors.push(
+					issue("ASSET_URL_REQUIRED", `Asset "${asset.id}" has no URL source`, {
+						assetName: asset.id,
+					}),
+				);
+			}
 		}
 		if (
 			asset.anchor !== undefined &&
@@ -282,8 +338,19 @@ function validateHeader(document: SceneDocument, errors: ValidationError[]): voi
 			);
 		}
 		if (floor.asset !== undefined && !assetNames.has(floor.asset)) {
+			if (assetIndex.spriteAssetIds.has(floor.asset)) {
+				// Sprite ids are placeable through their containing sheet.
+			} else {
+				errors.push(
+					issue("ASSET_NOT_DECLARED", `Floor asset "${floor.asset}" is not declared`, {
+						assetName: floor.asset,
+					}),
+				);
+			}
+		}
+		if (floor.asset !== undefined && assetIndex.sheetAssetIds.has(floor.asset)) {
 			errors.push(
-				issue("ASSET_NOT_DECLARED", `Floor asset "${floor.asset}" is not declared`, {
+				issue("SPRITE_SHEET_NOT_PLACEABLE", `Floor asset "${floor.asset}" is a sprite sheet namespace`, {
 					assetName: floor.asset,
 				}),
 			);
@@ -294,6 +361,132 @@ function validateHeader(document: SceneDocument, errors: ValidationError[]): voi
 			);
 		}
 	}
+}
+
+function validateSpriteSheetAsset(
+	asset: Extract<AssetCatalogEntry, { type: "sprite-sheet" }>,
+	assetNames: Set<string>,
+	spriteNames: Set<string>,
+	errors: ValidationError[],
+): void {
+	if (!hasSupportedSpriteSheetExtension(asset.path)) {
+		errors.push(
+			issue("INVALID_SPRITE_SHEET_PATH", `Sprite sheet "${asset.id}" path is unsupported`, { assetName: asset.id }),
+		);
+	}
+	if (!isPositiveIntegerTuple(asset.sheetSize)) {
+		errors.push(
+			issue("INVALID_SPRITE_SHEET_SIZE", `Sprite sheet "${asset.id}" sheetSize is invalid`, { assetName: asset.id }),
+		);
+	}
+	const sprites = asset.sprites ?? {};
+	if (Object.keys(sprites).length === 0) {
+		errors.push(issue("NO_SPRITES", `Sprite sheet "${asset.id}" must declare sprites`, { assetName: asset.id }));
+	}
+	const needsTileSize = Object.values(sprites).some(
+		(sprite) => Array.isArray(sprite) || (isSpriteObject(sprite) && sprite.at !== undefined),
+	);
+	if (needsTileSize && !isPositiveIntegerTuple(asset.tileSize)) {
+		errors.push(
+			issue("INVALID_SPRITE_TILE_SIZE", `Sprite sheet "${asset.id}" tileSize is required`, { assetName: asset.id }),
+		);
+	}
+	for (const [spriteId, sprite] of Object.entries(sprites)) {
+		if (!isValidIdentifier(spriteId) || isBuiltInAsset(spriteId)) {
+			errors.push(
+				issue("INVALID_SPRITE_ID", `Sprite "${spriteId}" must be kebab-case and not reserved`, { assetName: spriteId }),
+			);
+		}
+		if (spriteNames.has(spriteId)) {
+			errors.push(issue("DUPLICATE_SPRITE_ID", `Duplicate sprite "${spriteId}"`, { assetName: spriteId }));
+		}
+		spriteNames.add(spriteId);
+		if (assetNames.has(spriteId)) {
+			errors.push(
+				issue("SPRITE_ASSET_ID_COLLISION", `Sprite "${spriteId}" collides with an asset id`, { assetName: spriteId }),
+			);
+		}
+		const rect = compileSpriteRectForValidation(sprite, asset.tileSize);
+		if (!rect) {
+			errors.push(
+				issue("INVALID_SPRITE_DEFINITION", `Sprite "${spriteId}" definition is invalid`, { assetName: spriteId }),
+			);
+			continue;
+		}
+		if (!isRectInsideSheet(rect, asset.sheetSize)) {
+			errors.push(
+				issue("INVALID_SPRITE_RECT", `Sprite "${spriteId}" rect is outside sheet bounds`, { assetName: spriteId }),
+			);
+		}
+		const anchor = isSpriteObject(sprite) ? sprite.anchor : undefined;
+		if (anchor !== undefined && (!isValidPosition(anchor) || anchor.some((part) => part < 0 || part > 1))) {
+			errors.push(
+				issue("INVALID_ASSET_ANCHOR", `Sprite "${spriteId}" anchor must use normalized values`, {
+					assetName: spriteId,
+				}),
+			);
+		}
+	}
+}
+
+function hasSupportedSpriteSheetExtension(path: string): boolean {
+	const extension = path.slice(path.lastIndexOf(".")).toLowerCase();
+	return VALID_SPRITE_SHEET_EXTENSIONS.has(extension);
+}
+
+function isPositiveIntegerTuple(value: unknown): value is [number, number] {
+	return Array.isArray(value) && value.length === 2 && value.every((part) => Number.isInteger(part) && part > 0);
+}
+
+function isSpriteObject(value: SpriteDefinition): value is {
+	at?: [number, number];
+	rect?: [number, number, number, number];
+	anchor?: [number, number];
+} {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function compileSpriteRectForValidation(
+	sprite: SpriteDefinition,
+	tileSize: [number, number] | undefined,
+): [number, number, number, number] | undefined {
+	if (Array.isArray(sprite)) {
+		if (!tileSize || !isNonNegativeIntegerTuple(sprite)) return undefined;
+		return [sprite[0] * tileSize[0], sprite[1] * tileSize[1], tileSize[0], tileSize[1]];
+	}
+	const hasAt = sprite.at !== undefined;
+	const hasRect = sprite.rect !== undefined;
+	if (hasAt === hasRect) return undefined;
+	if (hasAt) {
+		if (!tileSize || !isNonNegativeIntegerTuple(sprite.at)) return undefined;
+		return [sprite.at[0] * tileSize[0], sprite.at[1] * tileSize[1], tileSize[0], tileSize[1]];
+	}
+	if (!isSpriteRect(sprite.rect)) return undefined;
+	return sprite.rect;
+}
+
+function isNonNegativeIntegerTuple(value: unknown): value is [number, number] {
+	return Array.isArray(value) && value.length === 2 && value.every((part) => Number.isInteger(part) && part >= 0);
+}
+
+function isSpriteRect(value: unknown): value is [number, number, number, number] {
+	return (
+		Array.isArray(value) &&
+		value.length === 4 &&
+		Number.isInteger(value[0]) &&
+		Number.isInteger(value[1]) &&
+		Number.isInteger(value[2]) &&
+		Number.isInteger(value[3]) &&
+		value[0] >= 0 &&
+		value[1] >= 0 &&
+		value[2] > 0 &&
+		value[3] > 0
+	);
+}
+
+function isRectInsideSheet(rect: [number, number, number, number], sheetSize: [number, number]): boolean {
+	if (!isPositiveIntegerTuple(sheetSize)) return false;
+	return rect[0] + rect[2] <= sheetSize[0] && rect[1] + rect[3] <= sheetSize[1];
 }
 
 function isValidPositiveTuple(value: unknown): value is [number, number] {
@@ -357,7 +550,18 @@ function validatePlacement(
 ): void {
 	validateElementCommon(placement, document, errors, sceneId);
 	validateGeneratedContentForAsset(placement, placement.asset, errors, warnings, sceneId);
-	if (!isBuiltInAsset(placement.asset) && !declaredAssetNames(document).has(placement.asset)) {
+	const assetIndex = buildAssetIndex(document);
+	if (!isBuiltInAsset(placement.asset) && assetIndex.sheetAssetIds.has(placement.asset)) {
+		errors.push(
+			issue("SPRITE_SHEET_NOT_PLACEABLE", `Asset "${placement.asset}" is a sprite sheet namespace`, {
+				sceneId,
+				elementId: placement.id,
+				assetName: placement.asset,
+				field: "asset",
+				value: placement.asset,
+			}),
+		);
+	} else if (!isBuiltInAsset(placement.asset) && !assetIndex.placeableAssetIds.has(placement.asset)) {
 		errors.push(
 			issue("ASSET_NOT_DECLARED", `Asset "${placement.asset}" is not declared`, {
 				sceneId,

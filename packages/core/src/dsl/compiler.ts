@@ -2,6 +2,7 @@ import type {
 	CompiledAsset,
 	CompiledFloor,
 	CompiledLayer,
+	CompiledSprite,
 	LayerDefinition,
 	ResolvedLayoutConfig,
 	RuntimeBundle,
@@ -9,6 +10,7 @@ import type {
 	SceneDocument,
 } from "../types/index.ts";
 import { ValidationErrorClass } from "../types/index.ts";
+import type { SpriteDefinition } from "../types/scene.ts";
 import { sha256 } from "../utils/sha256.ts";
 import { resolveSceneSnapshots } from "./scene-validator.ts";
 
@@ -41,7 +43,7 @@ export function compileScene(document: SceneDocument, options: CompileOptions = 
 		bundleWithoutDigest.className = document.header.className;
 	}
 
-	const assets = compileUrlAssets(document, scenes);
+	const assets = compileExternalAssets(document, scenes);
 	if (Object.keys(assets).length > 0) {
 		bundleWithoutDigest.assets = assets;
 	}
@@ -52,9 +54,28 @@ export function compileScene(document: SceneDocument, options: CompileOptions = 
 	};
 }
 
-function compileUrlAssets(document: SceneDocument, scenes: RuntimeSceneStop[]): Record<string, CompiledAsset> {
+function compileExternalAssets(document: SceneDocument, scenes: RuntimeSceneStop[]): Record<string, CompiledAsset> {
 	const assets: Record<string, CompiledAsset> = {};
 	for (const name of uniqueReferencedAssetNames(document, scenes)) {
+		const sprite = resolveSpriteAsset(document, name);
+		if (sprite) {
+			const url = resolveAssetUrl(document, sprite.sheet.id);
+			if (!url) {
+				throw new ValidationErrorClass(
+					"ASSET_URL_REQUIRED",
+					`Sprite sheet "${sprite.sheet.id}" must resolve through header.assetBaseUrl`,
+					{
+						asset: sprite.sheet.id,
+					},
+				);
+			}
+			assets[name] = normalizeValue({
+				url,
+				sprite: sprite.compiled,
+				anchor: sprite.anchor,
+			});
+			continue;
+		}
 		const url = resolveAssetUrl(document, name);
 		if (!url) {
 			throw new ValidationErrorClass("ASSET_URL_REQUIRED", `Asset "${name}" must resolve through header.assetBaseUrl`, {
@@ -177,8 +198,56 @@ function resolveAssetUrl(document: SceneDocument, assetId: string): string | und
 	if (!base || !entry) return undefined;
 
 	const path = entry.path ?? entry.id;
-	const file = path.endsWith(".svg") ? path : `${path}.svg`;
+	const file = "type" in entry && entry.type === "sprite-sheet" ? path : path.endsWith(".svg") ? path : `${path}.svg`;
 	return `${base.replace(/\/+$/, "")}/${file.replace(/^\/+/, "")}`;
+}
+
+function resolveSpriteAsset(
+	document: SceneDocument,
+	spriteId: string,
+):
+	| {
+			sheet: Extract<SceneDocument["header"]["assets"][number], { type: "sprite-sheet" }>;
+			compiled: CompiledSprite;
+			anchor: [number, number];
+	  }
+	| undefined {
+	for (const asset of document.header.assets) {
+		if (!("type" in asset) || asset.type !== "sprite-sheet") continue;
+		const definition = asset.sprites[spriteId];
+		if (!definition) continue;
+		const rect = compileSpriteRect(definition, asset.tileSize);
+		if (!rect) {
+			throw new ValidationErrorClass("INVALID_SPRITE_DEFINITION", `Sprite "${spriteId}" cannot be compiled`, {
+				asset: spriteId,
+			});
+		}
+		const anchor = !Array.isArray(definition) && definition.anchor ? definition.anchor : (asset.anchor ?? [0.5, 1]);
+		return {
+			sheet: asset,
+			compiled: {
+				sheetSize: asset.sheetSize,
+				rect,
+			},
+			anchor,
+		};
+	}
+	return undefined;
+}
+
+function compileSpriteRect(
+	sprite: SpriteDefinition,
+	tileSize: [number, number] | undefined,
+): [number, number, number, number] | undefined {
+	if (Array.isArray(sprite)) {
+		if (!tileSize) return undefined;
+		return [sprite[0] * tileSize[0], sprite[1] * tileSize[1], tileSize[0], tileSize[1]];
+	}
+	if (sprite.rect) return sprite.rect;
+	if (sprite.at && tileSize) {
+		return [sprite.at[0] * tileSize[0], sprite.at[1] * tileSize[1], tileSize[0], tileSize[1]];
+	}
+	return undefined;
 }
 
 function uniqueReferencedAssetNames(document: SceneDocument, scenes: RuntimeSceneStop[]): string[] {

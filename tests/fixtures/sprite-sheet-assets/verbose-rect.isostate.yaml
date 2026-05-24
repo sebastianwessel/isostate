@@ -1,0 +1,28 @@
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: sprites/app-icons.webp
+      sheetSize: [512, 256]
+      tileSize: [64, 64]
+      anchor: [0.5, 0.95]
+      sprites:
+        server:
+          at: [0, 0]
+        wide-service:
+          rect: [128, 0, 96, 64]
+          anchor: [0.5, 1]
+  floor:
+    size: [4, 3]
+    asset: wide-service
+  layers:
+    - name: ground
+    - name: structures
+scenes:
+  - id: initial
+    elements:
+      - id: api-server
+        asset: server
+        at: [1, 1]
+        layer: structures

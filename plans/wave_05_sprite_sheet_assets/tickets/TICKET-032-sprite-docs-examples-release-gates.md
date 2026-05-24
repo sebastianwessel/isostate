@@ -2,7 +2,7 @@
 id: TICKET-032
 title: Complete sprite sheet docs examples and release gates
 wave: 5
-status: pending
+status: done
 parallel_group: sprite_sheet_032_finish
 depends_on: [TICKET-025, TICKET-026, TICKET-027, TICKET-028, TICKET-029, TICKET-030, TICKET-031]
 blocked_by: [TICKET-025, TICKET-026, TICKET-027, TICKET-028, TICKET-029, TICKET-030, TICKET-031]

@@ -40,12 +40,12 @@ deterministic_check:
 confidence: high
 feature_readiness:
   sprite_sheet_assets:
-    status: approved_for_implementation_planning
+    status: implemented
     human_approval:
       status: approved
       source: user approved the recommended flat sprite-id DSL and requested implementation-ready specs on 2026-05-23
     summary:
-      reason: Sprite sheet assets are now specified in canonical specs with authored DSL shape, validation errors, compiler output, runtime bundle metadata, renderer viewport behavior, CLI/static bundle handling, asset manifest/editor behavior, docs, authoring skill guidance, and public type contracts.
+      reason: Sprite sheet assets are now implemented across public types, parser, validator, compiler, runtime rendering, static bundle output, asset manifest generation, editor placement, docs, authoring skill guidance, and focused tests.
       domains: updated
       contracts: updated
       capabilities: updated
@@ -54,12 +54,14 @@ feature_readiness:
       public_types: updated
     blocking_gaps: []
     planning_gate:
-      status: passed_internal_simulation
-      reason: Implementation tickets can be derived for public types, parser/schema handling, validator, compiler asset expansion, renderer sprite viewport, CLI/static bundle copying, asset manifest generation, editor asset browser behavior, docs, and focused tests without inventing DSL or runtime semantics.
+      status: complete
+      reason: Wave 05 implementation tickets are done and covered by focused parser, validator, compiler, runtime, CLI, editor, and contract tests.
     deterministic_check:
       command: node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
       status: passed
     verification:
+      - command: bun test tests/cli/assets-manifest.test.ts tests/cli/bundle.test.ts tests/editor/assets.test.ts tests/editor/canvas.test.tsx tests/scene-parser.test.ts tests/scene-validator.test.ts tests/compiler.test.ts tests/runtime/rendering-engine.test.ts tests/contracts/types.test.ts
+        status: passed
       - command: bun test tests/nfr/docs-paths.test.ts
         status: passed
       - command: bun test tests/contracts/package-exports.test.ts tests/contracts/dist-entrypoints.test.ts
@@ -69,7 +71,7 @@ feature_readiness:
     risks:
       - The top-level readiness report remains needs_human_review because unrelated visual editor specs in this worktree were already pending review before this sprite-sheet change.
 risks:
-  - This change specifies a new public package but does not implement code, docs examples, or tests.
+  - The visual editor public package was implemented in a prior wave, but the top-level readiness status still reflects the original human-review gate for that broader editor spec package.
   - The editor necessarily uses heavier browser authoring dependencies; implementation must keep them isolated from the core runtime graph.
   - The visual editor must round-trip YAML deterministically without introducing editor-only authored fields.
   - Browser-safe DSL export requires careful module boundaries so parser/compiler code can be used by the editor without pulling local-process CLI or filesystem code into browser bundles.

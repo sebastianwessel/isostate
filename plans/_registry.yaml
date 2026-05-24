@@ -171,55 +171,55 @@ tickets:
     title: Add sprite sheet public type contracts and fixtures
     wave: 5
     file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-025-sprite-type-contracts-fixtures.md
-    status: pending
+    status: done
     depends_on: []
     blocked_by: []
   TICKET-026:
     title: Implement sprite sheet parser and validator semantics
     wave: 5
     file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-026-sprite-parser-validator.md
-    status: pending
+    status: done
     depends_on: [TICKET-025]
     blocked_by: [TICKET-025]
   TICKET-027:
     title: Compile sprite sheets into flat runtime asset entries
     wave: 5
     file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-027-sprite-compiler-runtime-bundle.md
-    status: pending
+    status: done
     depends_on: [TICKET-026]
     blocked_by: [TICKET-026]
   TICKET-028:
     title: Render compiled sprite assets in the browser runtime
     wave: 5
     file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-028-sprite-runtime-rendering.md
-    status: pending
+    status: done
     depends_on: [TICKET-027]
     blocked_by: [TICKET-027]
   TICKET-029:
     title: Copy sprite sheet sources in static bundle output
     wave: 5
     file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-029-sprite-static-bundle-cli.md
-    status: pending
+    status: done
     depends_on: [TICKET-027, TICKET-028]
     blocked_by: [TICKET-027, TICKET-028]
   TICKET-030:
     title: Generate sprite sheet entries in asset manifests
     wave: 5
     file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-030-sprite-asset-manifest.md
-    status: pending
+    status: done
     depends_on: [TICKET-026]
     blocked_by: [TICKET-026]
   TICKET-031:
     title: Support sprite sheets in editor asset browser and placement
     wave: 5
     file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-031-sprite-editor-asset-browser.md
-    status: pending
+    status: done
     depends_on: [TICKET-030]
     blocked_by: [TICKET-030]
   TICKET-032:
     title: Complete sprite sheet docs examples and release gates
     wave: 5
     file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-032-sprite-docs-examples-release-gates.md
-    status: pending
+    status: done
     depends_on: [TICKET-025, TICKET-026, TICKET-027, TICKET-028, TICKET-029, TICKET-030, TICKET-031]
     blocked_by: [TICKET-025, TICKET-026, TICKET-027, TICKET-028, TICKET-029, TICKET-030, TICKET-031]

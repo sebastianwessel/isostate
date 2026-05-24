@@ -81,7 +81,7 @@ function getEditorGridBounds(
 
 function parseManifestDrop(dataTransfer: DataTransfer):
 	| {
-			entry: import('../types.ts').AssetManifestEntry;
+			entry: import('../types.ts').PlaceableAssetManifestEntry;
 			assetBaseUrl: string;
 	  }
 	| undefined {
@@ -89,7 +89,7 @@ function parseManifestDrop(dataTransfer: DataTransfer):
 	if (!raw) return undefined;
 	try {
 		const parsed = JSON.parse(raw) as {
-			entry?: import('../types.ts').AssetManifestEntry;
+			entry?: import('../types.ts').PlaceableAssetManifestEntry;
 			assetBaseUrl?: string;
 		};
 		if (

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
 import {
 	compileScene,
 	fromJs,
@@ -6,6 +7,7 @@ import {
 	toJs,
 	toJson
 } from '../packages/core/src/dsl/compiler';
+import { parseScene } from '../packages/core/src/dsl/scene-parser';
 import type { SceneDocument } from '../packages/core/src/types/index';
 
 function createDocument(overrides: Partial<SceneDocument> = {}): SceneDocument {
@@ -103,6 +105,28 @@ function createDocument(overrides: Partial<SceneDocument> = {}): SceneDocument {
 }
 
 describe('compileScene', () => {
+	test('compiles sprite sheets into flat runtime asset entries', () => {
+		const document = parseScene(
+			readFileSync(
+				'tests/fixtures/sprite-sheet-assets/compact.isostate.yaml',
+				'utf8'
+			)
+		);
+		const expectedAssets = JSON.parse(
+			readFileSync(
+				'tests/fixtures/sprite-sheet-assets/expected-compact-assets.json',
+				'utf8'
+			)
+		);
+
+		const bundle = compileScene(document);
+
+		expect(bundle.assets).toEqual(expectedAssets);
+		expect(toJson(bundle)).toContain('"sprite"');
+		expect(fromJson(toJson(bundle))).toEqual(bundle);
+		expect(fromJs(toJs(bundle))).toEqual(bundle);
+	});
+
 	test('emits deterministic runtime bundles with canonical scenes and URL assets', () => {
 		const first = compileScene(createDocument());
 		const second = compileScene(createDocument());

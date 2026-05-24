@@ -2,7 +2,7 @@
 id: TICKET-031
 title: Support sprite sheets in editor asset browser and placement
 wave: 5
-status: pending
+status: done
 parallel_group: sprite_sheet_031_editor
 depends_on: [TICKET-030]
 blocked_by: [TICKET-030]

@@ -14,6 +14,14 @@ import { formatThrownError } from './diagnostics.js';
 import { sha256Hex } from './runtime-digest.js';
 
 const MAX_SVG_SIZE = 512 * 1024;
+const MAX_SPRITE_SHEET_SIZE = 2 * 1024 * 1024;
+const SPRITE_SHEET_EXTENSIONS = new Set([
+	'.png',
+	'.webp',
+	'.jpg',
+	'.jpeg',
+	'.svg'
+]);
 const RESERVED_IDS = new Set([
 	'text',
 	'rectangle',
@@ -31,8 +39,9 @@ interface AssetManifestArgs {
 	pretty: boolean;
 }
 
-interface AssetManifestEntry {
+interface UrlAssetManifestEntry {
 	id: string;
+	type?: 'url';
 	path: string;
 	group: string;
 	name: string;
@@ -41,6 +50,25 @@ interface AssetManifestEntry {
 	tags?: string[];
 	digest: string;
 }
+
+type SpriteManifestDefinition =
+	| [number, number]
+	| {
+			at?: [number, number];
+			rect?: [number, number, number, number];
+			anchor?: [number, number];
+			label?: string;
+			tags?: string[];
+	  };
+
+interface SpriteSheetManifestEntry extends Omit<UrlAssetManifestEntry, 'type'> {
+	type: 'sprite-sheet';
+	sheetSize: [number, number];
+	tileSize?: [number, number];
+	sprites: Record<string, SpriteManifestDefinition>;
+}
+
+type AssetManifestEntry = UrlAssetManifestEntry | SpriteSheetManifestEntry;
 
 interface AssetManifest {
 	format: 'isostate.asset-manifest';
@@ -51,9 +79,13 @@ interface AssetManifest {
 }
 
 interface MetadataEntry {
+	type?: 'sprite-sheet';
 	label?: string;
 	anchor?: [number, number];
 	tags?: string[];
+	sheetSize?: [number, number];
+	tileSize?: [number, number];
+	sprites?: Record<string, SpriteManifestDefinition>;
 }
 
 export async function assetsManifestCommand(
@@ -163,16 +195,19 @@ async function generateManifest(
 	args: AssetManifestArgs
 ): Promise<AssetManifest> {
 	const assetDir = resolve(args.assetDir);
-	const svgFiles = await scanSvgFiles(assetDir);
+	const assetFiles = await scanAssetFiles(assetDir);
 	const metadata = await readMetadata(args, assetDir);
 	const seenIds = new Map<string, string>();
 	const seenPaths = new Set<string>();
 	const seenLowerPaths = new Set<string>();
 	const entries: AssetManifestEntry[] = [];
 
-	for (const fullPath of svgFiles) {
+	for (const fullPath of assetFiles) {
 		const relativePath = slashPath(relative(assetDir, fullPath));
 		const lowerPath = relativePath.toLowerCase();
+		const extension = extensionOf(relativePath);
+		const meta = metadata[relativePath];
+		const isSpriteSheet = meta?.type === 'sprite-sheet';
 
 		if (seenLowerPaths.has(lowerPath)) {
 			throw codedError(
@@ -183,10 +218,32 @@ async function generateManifest(
 		seenLowerPaths.add(lowerPath);
 
 		const stats = await lstat(fullPath);
-		if (stats.size > MAX_SVG_SIZE) {
+		if (extension === '.svg' && stats.size > MAX_SVG_SIZE) {
 			throw codedError(
 				'ASSET_MANIFEST_OVERSIZED',
 				`SVG file "${relativePath}" exceeds 512KB limit`
+			);
+		}
+		if (
+			isSpriteSheet &&
+			extension !== '.svg' &&
+			stats.size > MAX_SPRITE_SHEET_SIZE
+		) {
+			throw codedError(
+				'ASSET_MANIFEST_OVERSIZED',
+				`Sprite sheet "${relativePath}" exceeds 2MB limit`
+			);
+		}
+		if (extension !== '.svg' && !isSpriteSheet) {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Raster asset "${relativePath}" must be declared as a sprite-sheet in metadata`
+			);
+		}
+		if (isSpriteSheet && !SPRITE_SHEET_EXTENSIONS.has(extension)) {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Sprite sheet "${relativePath}" must use .png, .webp, .jpg, .jpeg, or .svg`
 			);
 		}
 
@@ -207,18 +264,23 @@ async function generateManifest(
 		seenIds.set(id, relativePath);
 
 		const bytes = await readFile(fullPath);
-		const content = Buffer.from(bytes).toString('utf-8');
-		checkSvgSafety(relativePath, content);
+		if (extension === '.svg') {
+			const content = Buffer.from(bytes).toString('utf-8');
+			checkSvgSafety(relativePath, content);
+		}
 
 		const { group, name } = deriveGroupAndName(relativePath);
-		const meta = metadata[relativePath];
-		const entry: AssetManifestEntry = {
+		const common = {
 			id,
 			path: relativePath,
 			group,
 			name,
 			digest: `sha256:${sha256Hex(bytes)}`
 		};
+
+		const entry: AssetManifestEntry = isSpriteSheet
+			? await createSpriteSheetEntry(common, meta, relativePath, bytes, seenIds)
+			: common;
 
 		if (meta?.label !== undefined) entry.label = meta.label;
 		if (meta?.anchor !== undefined) entry.anchor = meta.anchor;
@@ -252,7 +314,7 @@ async function generateManifest(
 	};
 }
 
-async function scanSvgFiles(dir: string): Promise<string[]> {
+async function scanAssetFiles(dir: string): Promise<string[]> {
 	const results: string[] = [];
 	const entries = await readdir(dir, { withFileTypes: true });
 	for (const entry of entries) {
@@ -261,12 +323,17 @@ async function scanSvgFiles(dir: string): Promise<string[]> {
 		const stats = await lstat(fullPath);
 		if (stats.isSymbolicLink()) continue;
 		if (stats.isDirectory()) {
-			results.push(...(await scanSvgFiles(fullPath)));
-		} else if (stats.isFile() && entry.name.toLowerCase().endsWith('.svg')) {
+			results.push(...(await scanAssetFiles(fullPath)));
+		} else if (stats.isFile() && isManifestAssetFile(entry.name)) {
 			results.push(fullPath);
 		}
 	}
 	return results;
+}
+
+function isManifestAssetFile(path: string): boolean {
+	const extension = extensionOf(path);
+	return extension === '.svg' || SPRITE_SHEET_EXTENSIONS.has(extension);
 }
 
 async function readMetadata(
@@ -320,11 +387,85 @@ async function readMetadata(
 	return result;
 }
 
+async function createSpriteSheetEntry(
+	common: Omit<SpriteSheetManifestEntry, 'type' | 'sheetSize' | 'sprites'>,
+	meta: MetadataEntry,
+	relativePath: string,
+	bytes: Buffer,
+	seenIds: Map<string, string>
+): Promise<SpriteSheetManifestEntry> {
+	if (!meta.sprites || Object.keys(meta.sprites).length === 0) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Sprite sheet "${relativePath}" must declare at least one sprite`
+		);
+	}
+
+	const sheetSize =
+		meta.sheetSize ?? (await readImageSize(relativePath, bytes));
+	if (!isPositiveIntegerTuple(sheetSize)) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Sprite sheet "${relativePath}" must declare a valid sheetSize`
+		);
+	}
+	if (meta.tileSize && !isPositiveIntegerTuple(meta.tileSize)) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Sprite sheet "${relativePath}" must declare a valid tileSize`
+		);
+	}
+
+	const sprites: Record<string, SpriteManifestDefinition> = {};
+	for (const [spriteId, sprite] of Object.entries(meta.sprites)) {
+		if (!IDENTIFIER_PATTERN.test(spriteId) || RESERVED_IDS.has(spriteId)) {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Invalid sprite id "${spriteId}" in "${relativePath}"`
+			);
+		}
+		if (seenIds.has(spriteId)) {
+			throw codedError(
+				'ASSET_MANIFEST_ID_COLLISION',
+				`Sprite id "${spriteId}" from "${relativePath}" collides with "${seenIds.get(spriteId)}"`
+			);
+		}
+		const validated = validateSpriteDefinition(
+			relativePath,
+			spriteId,
+			sprite,
+			sheetSize,
+			meta.tileSize
+		);
+		seenIds.set(spriteId, relativePath);
+		sprites[spriteId] = validated;
+	}
+
+	const entry: SpriteSheetManifestEntry = {
+		...common,
+		type: 'sprite-sheet',
+		sheetSize,
+		sprites
+	};
+	if (meta.tileSize) entry.tileSize = meta.tileSize;
+	return entry;
+}
+
 function validateMetadataEntry(
 	path: string,
 	entry: Record<string, unknown>
 ): MetadataEntry {
 	const result: MetadataEntry = {};
+
+	if ('type' in entry) {
+		if (entry.type !== 'sprite-sheet') {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Metadata type for "${path}" must be "sprite-sheet"`
+			);
+		}
+		result.type = 'sprite-sheet';
+	}
 
 	if ('label' in entry) {
 		const label = entry.label;
@@ -377,7 +518,339 @@ function validateMetadataEntry(
 		result.tags = tags;
 	}
 
+	if ('sheetSize' in entry) {
+		result.sheetSize = validateTuple2(path, 'sheetSize', entry.sheetSize);
+	}
+	if ('tileSize' in entry) {
+		result.tileSize = validateTuple2(path, 'tileSize', entry.tileSize);
+	}
+	if ('sprites' in entry) {
+		const sprites = entry.sprites;
+		if (!sprites || typeof sprites !== 'object' || Array.isArray(sprites)) {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Metadata sprites for "${path}" must be an object`
+			);
+		}
+		result.sprites = {};
+		for (const [id, sprite] of Object.entries(sprites)) {
+			result.sprites[id] = parseSpriteMetadata(path, id, sprite);
+		}
+	}
+
 	return result;
+}
+
+function parseSpriteMetadata(
+	path: string,
+	id: string,
+	value: unknown
+): SpriteManifestDefinition {
+	if (Array.isArray(value)) {
+		return validateTuple2(path, `sprite ${id}`, value);
+	}
+	if (!value || typeof value !== 'object') {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Sprite "${id}" in "${path}" must be a tuple or object`
+		);
+	}
+	const raw = value as Record<string, unknown>;
+	const allowed = new Set(['at', 'rect', 'anchor', 'label', 'tags']);
+	for (const key of Object.keys(raw)) {
+		if (!allowed.has(key)) {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Unknown sprite metadata field "${key}" for "${id}" in "${path}"`
+			);
+		}
+	}
+	const result: Exclude<SpriteManifestDefinition, [number, number]> = {};
+	if ('at' in raw) result.at = validateTuple2(path, `sprite ${id}.at`, raw.at);
+	if ('rect' in raw)
+		result.rect = validateTuple4(path, `sprite ${id}.rect`, raw.rect);
+	if ('anchor' in raw)
+		result.anchor = validateAnchor(path, `sprite ${id}.anchor`, raw.anchor);
+	if ('label' in raw) {
+		if (
+			typeof raw.label !== 'string' ||
+			raw.label.length === 0 ||
+			raw.label.length > 80
+		) {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Sprite label for "${id}" in "${path}" must be a non-empty string at most 80 characters`
+			);
+		}
+		result.label = raw.label;
+	}
+	if ('tags' in raw)
+		result.tags = validateTags(path, `sprite ${id}.tags`, raw.tags);
+	return result;
+}
+
+function validateSpriteDefinition(
+	path: string,
+	id: string,
+	sprite: SpriteManifestDefinition,
+	sheetSize: [number, number],
+	tileSize: [number, number] | undefined
+): SpriteManifestDefinition {
+	if (Array.isArray(sprite)) {
+		if (!tileSize) {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Sprite "${id}" in "${path}" uses grid coordinates without tileSize`
+			);
+		}
+		assertSpriteRect(
+			path,
+			id,
+			[
+				sprite[0] * tileSize[0],
+				sprite[1] * tileSize[1],
+				tileSize[0],
+				tileSize[1]
+			],
+			sheetSize
+		);
+		return sprite;
+	}
+	const hasAt = sprite.at !== undefined;
+	const hasRect = sprite.rect !== undefined;
+	if (hasAt === hasRect) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Sprite "${id}" in "${path}" must declare exactly one of at or rect`
+		);
+	}
+	if (sprite.at) {
+		if (!tileSize) {
+			throw codedError(
+				'ASSET_MANIFEST_INVALID_METADATA',
+				`Sprite "${id}" in "${path}" uses grid coordinates without tileSize`
+			);
+		}
+		assertSpriteRect(
+			path,
+			id,
+			[
+				sprite.at[0] * tileSize[0],
+				sprite.at[1] * tileSize[1],
+				tileSize[0],
+				tileSize[1]
+			],
+			sheetSize
+		);
+	}
+	if (sprite.rect) assertSpriteRect(path, id, sprite.rect, sheetSize);
+	return sprite;
+}
+
+function assertSpriteRect(
+	path: string,
+	id: string,
+	rect: [number, number, number, number],
+	sheetSize: [number, number]
+): void {
+	const [x, y, width, height] = rect;
+	if (
+		x < 0 ||
+		y < 0 ||
+		width <= 0 ||
+		height <= 0 ||
+		x + width > sheetSize[0] ||
+		y + height > sheetSize[1]
+	) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Sprite "${id}" in "${path}" must stay inside sheetSize`
+		);
+	}
+}
+
+function validateTuple2(
+	path: string,
+	field: string,
+	value: unknown
+): [number, number] {
+	if (
+		!Array.isArray(value) ||
+		value.length !== 2 ||
+		!value.every((v): v is number => Number.isInteger(v) && v >= 0)
+	) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Metadata ${field} for "${path}" must be a non-negative integer tuple`
+		);
+	}
+	return value as [number, number];
+}
+
+function validateTuple4(
+	path: string,
+	field: string,
+	value: unknown
+): [number, number, number, number] {
+	if (
+		!Array.isArray(value) ||
+		value.length !== 4 ||
+		!value.every((v): v is number => Number.isInteger(v) && v >= 0) ||
+		value[2] <= 0 ||
+		value[3] <= 0
+	) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Metadata ${field} for "${path}" must be a non-negative integer rect with positive size`
+		);
+	}
+	return value as [number, number, number, number];
+}
+
+function validateAnchor(
+	path: string,
+	field: string,
+	value: unknown
+): [number, number] {
+	if (
+		!Array.isArray(value) ||
+		value.length !== 2 ||
+		!value.every(
+			(v): v is number =>
+				typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 1
+		)
+	) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Metadata ${field} for "${path}" must be a [0..1] tuple`
+		);
+	}
+	return value as [number, number];
+}
+
+function validateTags(path: string, field: string, value: unknown): string[] {
+	if (
+		!Array.isArray(value) ||
+		!value.every(
+			(t): t is string => typeof t === 'string' && IDENTIFIER_PATTERN.test(t)
+		)
+	) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Metadata ${field} for "${path}" must be unique kebab-case strings`
+		);
+	}
+	if (new Set(value).size !== value.length) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Metadata ${field} for "${path}" must be unique`
+		);
+	}
+	return value;
+}
+
+function isPositiveIntegerTuple(value: unknown): value is [number, number] {
+	return (
+		Array.isArray(value) &&
+		value.length === 2 &&
+		value.every((v) => Number.isInteger(v) && v > 0)
+	);
+}
+
+async function readImageSize(
+	path: string,
+	bytes: Buffer
+): Promise<[number, number]> {
+	const extension = extensionOf(path);
+	if (extension === '.png') return readPngSize(path, bytes);
+	if (extension === '.jpg' || extension === '.jpeg')
+		return readJpegSize(path, bytes);
+	if (extension === '.webp') return readWebpSize(path, bytes);
+	if (extension === '.svg') return readSvgSize(path, bytes.toString('utf8'));
+	throw codedError(
+		'ASSET_MANIFEST_INVALID_METADATA',
+		`Unsupported sprite sheet extension for "${path}"`
+	);
+}
+
+function readPngSize(path: string, bytes: Buffer): [number, number] {
+	if (bytes.length < 24 || bytes.toString('ascii', 1, 4) !== 'PNG') {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Unable to read PNG dimensions for "${path}"`
+		);
+	}
+	return [bytes.readUInt32BE(16), bytes.readUInt32BE(20)];
+}
+
+function readJpegSize(path: string, bytes: Buffer): [number, number] {
+	let offset = 2;
+	while (offset + 9 < bytes.length) {
+		if (bytes[offset] !== 0xff) break;
+		const marker = bytes[offset + 1];
+		const length = bytes.readUInt16BE(offset + 2);
+		if (
+			marker >= 0xc0 &&
+			marker <= 0xcf &&
+			![0xc4, 0xc8, 0xcc].includes(marker)
+		) {
+			return [bytes.readUInt16BE(offset + 7), bytes.readUInt16BE(offset + 5)];
+		}
+		offset += 2 + length;
+	}
+	throw codedError(
+		'ASSET_MANIFEST_INVALID_METADATA',
+		`Unable to read JPEG dimensions for "${path}"`
+	);
+}
+
+function readWebpSize(path: string, bytes: Buffer): [number, number] {
+	if (
+		bytes.toString('ascii', 0, 4) !== 'RIFF' ||
+		bytes.toString('ascii', 8, 12) !== 'WEBP'
+	) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Unable to read WebP dimensions for "${path}"`
+		);
+	}
+	const chunk = bytes.toString('ascii', 12, 16);
+	if (chunk === 'VP8X' && bytes.length >= 30) {
+		return [1 + bytes.readUIntLE(24, 3), 1 + bytes.readUIntLE(27, 3)];
+	}
+	if (chunk === 'VP8L' && bytes.length >= 25) {
+		const b0 = bytes[21];
+		const b1 = bytes[22];
+		const b2 = bytes[23];
+		const b3 = bytes[24];
+		return [
+			1 + (((b1 & 0x3f) << 8) | b0),
+			1 + ((b3 << 6) | (b2 << 2) | ((b1 & 0xc0) >> 6))
+		];
+	}
+	if (chunk === 'VP8 ' && bytes.length >= 30) {
+		return [bytes.readUInt16LE(26) & 0x3fff, bytes.readUInt16LE(28) & 0x3fff];
+	}
+	throw codedError(
+		'ASSET_MANIFEST_INVALID_METADATA',
+		`Unable to read WebP dimensions for "${path}"`
+	);
+}
+
+function readSvgSize(path: string, content: string): [number, number] {
+	const width = content.match(/\bwidth=["']([0-9]+(?:\.[0-9]+)?)["']/i)?.[1];
+	const height = content.match(/\bheight=["']([0-9]+(?:\.[0-9]+)?)["']/i)?.[1];
+	if (width && height)
+		return [Math.round(Number(width)), Math.round(Number(height))];
+	const viewBox = content.match(
+		/\bviewBox=["']\s*[-0-9.]+\s+[-0-9.]+\s+([0-9.]+)\s+([0-9.]+)\s*["']/i
+	);
+	if (viewBox)
+		return [Math.round(Number(viewBox[1])), Math.round(Number(viewBox[2]))];
+	throw codedError(
+		'ASSET_MANIFEST_INVALID_METADATA',
+		`Unable to read SVG dimensions for "${path}"`
+	);
 }
 
 function checkSvgSafety(path: string, content: string): void {
@@ -431,8 +904,9 @@ function deriveGroupAndName(relativePath: string): {
 }
 
 function normalizePathSegments(relativePath: string): string[] {
-	const withoutExt = relativePath.toLowerCase().endsWith('.svg')
-		? relativePath.slice(0, -4)
+	const extension = extensionOf(relativePath);
+	const withoutExt = extension
+		? relativePath.slice(0, -extension.length)
 		: relativePath;
 	const segments = withoutExt.split('/');
 	const normalized = segments.map(normalizeIdentifier);
@@ -443,6 +917,13 @@ function normalizePathSegments(relativePath: string): string[] {
 		);
 	}
 	return normalized;
+}
+
+function extensionOf(path: string): string {
+	const name = path.toLowerCase();
+	const slash = name.lastIndexOf('/');
+	const dot = name.lastIndexOf('.');
+	return dot > slash ? name.slice(dot) : '';
 }
 
 function normalizeIdentifier(input: string): string {

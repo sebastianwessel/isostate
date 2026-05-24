@@ -24,9 +24,11 @@ import type {
 	SceneStep,
 	TextContent,
 } from "../types/index.ts";
+import type { SpriteDefinition } from "../types/scene.ts";
 
 const IDENTIFIER_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const ASSET_PATH_PATTERN = /^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*(?:\.svg)?$/;
+const SPRITE_SHEET_PATH_PATTERN = /^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*\.(?:png|webp|jpe?g|svg)$/;
 
 function fail(code: string, message: string): never {
 	throw new ParseError(code, message, { line: 0, column: 0 });
@@ -94,13 +96,75 @@ function parseTuple2(value: unknown, context: string): [number, number] {
 	return [requireNumber(value[0], `${context}[0]`), requireNumber(value[1], `${context}[1]`)];
 }
 
+function parseTuple4(value: unknown, context: string): [number, number, number, number] {
+	if (!Array.isArray(value) || value.length !== 4) {
+		fail("DSL_SCHEMA_TYPE_ERROR", `${context} must be a four-number tuple`);
+	}
+	return [
+		requireNumber(value[0], `${context}[0]`),
+		requireNumber(value[1], `${context}[1]`),
+		requireNumber(value[2], `${context}[2]`),
+		requireNumber(value[3], `${context}[3]`),
+	];
+}
+
+function parseSpriteDefinition(value: unknown, context: string): SpriteDefinition {
+	if (Array.isArray(value)) {
+		return parseTuple2(value, context);
+	}
+	const sprite = requireObject(value, context);
+	assertKnownFields(sprite, new Set(["at", "rect", "anchor"]), context);
+	const parsed: {
+		at?: [number, number];
+		rect?: [number, number, number, number];
+		anchor?: [number, number];
+	} = {};
+	if (sprite.at !== undefined) parsed.at = parseTuple2(sprite.at, `${context}.at`);
+	if (sprite.rect !== undefined) parsed.rect = parseTuple4(sprite.rect, `${context}.rect`);
+	if (sprite.anchor !== undefined) parsed.anchor = parseTuple2(sprite.anchor, `${context}.anchor`);
+	return parsed;
+}
+
 function parseAssets(raw: unknown): AssetCatalogEntry[] {
 	return requireArray(raw, "header.assets").map((item, index) => {
 		const asset = requireObject(item, `header.assets[${index}]`);
+		const assetType = asset.type === undefined ? undefined : requireString(asset.type, `header.assets[${index}].type`);
+		if (assetType !== undefined && assetType !== "sprite-sheet") {
+			fail("ASSET_TYPE_UNSUPPORTED", `Unsupported asset type "${assetType}" in header.assets[${index}]`);
+		}
+		const id = requireIdentifier(asset.id, `header.assets[${index}].id`);
+		if (assetType === "sprite-sheet") {
+			assertKnownFields(
+				asset,
+				new Set(["id", "type", "path", "sheetSize", "tileSize", "anchor", "sprites"]),
+				`header.assets[${index}]`,
+			);
+			const path = requireString(asset.path, `header.assets[${index}].path`);
+			if (!SPRITE_SHEET_PATH_PATTERN.test(path)) {
+				fail("INVALID_SPRITE_SHEET_PATH", `header.assets[${index}].path must include a supported image extension`);
+			}
+			const sprites = requireObject(asset.sprites, `header.assets[${index}].sprites`);
+			const parsedSprites: Record<string, SpriteDefinition> = {};
+			for (const [spriteId, spriteValue] of Object.entries(sprites)) {
+				if (!IDENTIFIER_PATTERN.test(spriteId)) {
+					fail("INVALID_SPRITE_ID", `Sprite id "${spriteId}" must be kebab-case`);
+				}
+				parsedSprites[spriteId] = parseSpriteDefinition(spriteValue, `header.assets[${index}].sprites.${spriteId}`);
+			}
+			const parsed: AssetCatalogEntry = {
+				id,
+				type: "sprite-sheet",
+				path,
+				sheetSize: parseTuple2(asset.sheetSize, `header.assets[${index}].sheetSize`),
+				sprites: parsedSprites,
+			};
+			if (asset.tileSize !== undefined)
+				parsed.tileSize = parseTuple2(asset.tileSize, `header.assets[${index}].tileSize`);
+			if (asset.anchor !== undefined) parsed.anchor = parseTuple2(asset.anchor, `header.assets[${index}].anchor`);
+			return parsed;
+		}
 		assertKnownFields(asset, new Set(["id", "path", "anchor"]), `header.assets[${index}]`);
-		const parsed: AssetCatalogEntry = {
-			id: requireIdentifier(asset.id, `header.assets[${index}].id`),
-		};
+		const parsed: AssetCatalogEntry = { id };
 		if (asset.path !== undefined) {
 			const path = requireString(asset.path, `header.assets[${index}].path`);
 			if (!ASSET_PATH_PATTERN.test(path)) {

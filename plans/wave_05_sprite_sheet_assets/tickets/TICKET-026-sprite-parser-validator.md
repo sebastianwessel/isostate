@@ -2,7 +2,7 @@
 id: TICKET-026
 title: Implement sprite sheet parser and validator semantics
 wave: 5
-status: pending
+status: done
 parallel_group: sprite_sheet_026_validator
 depends_on: [TICKET-025]
 blocked_by: [TICKET-025]

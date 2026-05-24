@@ -120,42 +120,42 @@ tickets:
     depends_on: [TICKET-015, TICKET-016, TICKET-017, TICKET-018, TICKET-019, TICKET-020, TICKET-021, TICKET-022, TICKET-023]
     blocked_by: [TICKET-015, TICKET-016, TICKET-017, TICKET-018, TICKET-019, TICKET-020, TICKET-021, TICKET-022, TICKET-023]
   TICKET-025:
-    status: pending
+    status: done
     wave: wave_05_sprite_sheet_assets
     depends_on: []
     blocked_by: []
   TICKET-026:
-    status: pending
+    status: done
     wave: wave_05_sprite_sheet_assets
     depends_on: [TICKET-025]
     blocked_by: [TICKET-025]
   TICKET-027:
-    status: pending
+    status: done
     wave: wave_05_sprite_sheet_assets
     depends_on: [TICKET-026]
     blocked_by: [TICKET-026]
   TICKET-028:
-    status: pending
+    status: done
     wave: wave_05_sprite_sheet_assets
     depends_on: [TICKET-027]
     blocked_by: [TICKET-027]
   TICKET-029:
-    status: pending
+    status: done
     wave: wave_05_sprite_sheet_assets
     depends_on: [TICKET-027, TICKET-028]
     blocked_by: [TICKET-027, TICKET-028]
   TICKET-030:
-    status: pending
+    status: done
     wave: wave_05_sprite_sheet_assets
     depends_on: [TICKET-026]
     blocked_by: [TICKET-026]
   TICKET-031:
-    status: pending
+    status: done
     wave: wave_05_sprite_sheet_assets
     depends_on: [TICKET-030]
     blocked_by: [TICKET-030]
   TICKET-032:
-    status: pending
+    status: done
     wave: wave_05_sprite_sheet_assets
     depends_on: [TICKET-025, TICKET-026, TICKET-027, TICKET-028, TICKET-029, TICKET-030, TICKET-031]
     blocked_by: [TICKET-025, TICKET-026, TICKET-027, TICKET-028, TICKET-029, TICKET-030, TICKET-031]
