@@ -91,6 +91,12 @@ Operation rules:
 - `remove.elements` and `remove.connections` remove present ids.
 - The same id cannot be both updated and removed for the same object kind in one scene.
 - Omitted objects persist unchanged from the previous resolved scene.
+- Omitted fields inside `update.elements[].text`,
+  `update.elements[].primitive.<kind>`, and `update.connections[].style`
+  persist unchanged too; nested patches are merged field-by-field.
+- Validator diagnostics identify the scene/object/field when possible. Use
+  `scene=...`, `element=...` or `connection=...`, `field=...`, and `value=...`
+  in CLI output to fix the exact authored field rather than guessing.
 
 ## Camera Focus
 
@@ -186,7 +192,9 @@ Rules:
 - `layer` defaults to `structures` if present, otherwise first declared layer.
 - `asset` must be declared in `header.assets`, except built-in generated assets:
   `text`, `rectangle`, `circle`, `polygon`, and `line`.
-- `size` defaults to `1` and must be a positive whole-grid-cell count.
+- `size` defaults to `1` and placements must use a positive whole-grid-cell
+  count. `update.elements[].size: 0` is allowed to scale an existing element to
+  zero without removing it.
 
 ## Generated Built-Ins
 
@@ -223,3 +231,8 @@ Primitive ids are `rectangle`, `circle`, `polygon`, and `line`. The
 `primitive` object must contain exactly one child matching the asset id.
 `polygon.points` and `line.points` use normalized local coordinates from `0` to
 `1`.
+
+When updating text or primitive elements, author only the nested fields that
+change. For example, `text: { fill: "#eeeeee" }` keeps the previous
+`text.value`, and `primitive.rectangle.opacity` keeps the previous rectangle
+fill/stroke fields.

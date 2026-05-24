@@ -1,8 +1,6 @@
 header:
   version: "0.1"
   name: aws-network-3d-flow
-  className: demo-surface
-  theme: light
   assetBaseUrl: ../../assets/aws-3d
   assets:
     - id: aws-end-user
@@ -54,8 +52,8 @@ scenes:
         size: 2
         primitive:
           rectangle:
-            fill: "#2563eb"
-            stroke: "#2563eb"
+            fill: var(--iso-zone-public-fill)
+            stroke: var(--iso-zone-public-stroke)
             strokeWidth: 1
             opacity: 0.08
       - id: user
@@ -82,7 +80,7 @@ scenes:
           fontSize: 12
           fontWeight: 700
           lineHeight: 1.2
-          fill: "#111111"
+          fill: var(--iso-label)
     connections:
       - id: user-to-client
         from:
@@ -93,7 +91,7 @@ scenes:
           side: auto
         style:
           pattern: solid
-          stroke: "#111111"
+          stroke: var(--iso-route)
           strokeWidth: 4
         start: dot
         end: arrow
@@ -109,7 +107,7 @@ scenes:
           avoid: objects
         style:
           pattern: dotted
-          stroke: "#2563eb"
+          stroke: var(--iso-flow)
           strokeWidth: 4
         end: arrow
         ambient:
@@ -125,8 +123,8 @@ scenes:
           size: 2
           primitive:
             rectangle:
-              fill: "#fbbf24"
-              stroke: "#f59e0b"
+              fill: var(--iso-zone-private-fill)
+              stroke: var(--iso-zone-private-stroke)
               strokeWidth: 1
               opacity: 0.12
         - id: vpc-gateway
@@ -145,7 +143,7 @@ scenes:
             fontSize: 12
             fontWeight: 700
             lineHeight: 1.2
-            fill: "#111111"
+            fill: var(--iso-label)
       connections:
         - id: edge-to-vpc
           from:
@@ -159,7 +157,7 @@ scenes:
             avoid: objects
           style:
             pattern: dashed
-            stroke: "#2563eb"
+            stroke: var(--iso-flow)
             strokeWidth: 4
           end: arrow
           ambient:
@@ -175,7 +173,7 @@ scenes:
             fontSize: 12
             fontWeight: 700
             lineHeight: 1.2
-            fill: "#111111"
+            fill: var(--iso-label)
 
   - id: compute-tier
     camera:
@@ -215,7 +213,7 @@ scenes:
             fontSize: 12
             fontWeight: 700
             lineHeight: 1.2
-            fill: "#111111"
+            fill: var(--iso-label)
       connections:
         - id: vpc-to-load-balancer
           from:
@@ -230,7 +228,8 @@ scenes:
           style:
             variant: road
             lane: center-dashed
-            stroke: "#fbbf24"
+            outline: var(--iso-road-outline)
+            stroke: var(--iso-road)
             strokeWidth: 12
           start: none
           end: none
@@ -246,7 +245,7 @@ scenes:
             avoid: objects
           style:
             pattern: dotted
-            stroke: "#2563eb"
+            stroke: var(--iso-flow)
             strokeWidth: 4
           end: arrow
           ambient:
@@ -279,7 +278,7 @@ scenes:
             fontSize: 12
             fontWeight: 700
             lineHeight: 1.2
-            fill: "#111111"
+            fill: var(--iso-label)
       connections:
         - id: apps-to-database
           from:
@@ -293,7 +292,7 @@ scenes:
             avoid: objects
           style:
             pattern: dashed
-            stroke: "#111111"
+            stroke: var(--iso-route)
             strokeWidth: 4
           end: arrow
         - id: lambda-to-object-store
@@ -308,7 +307,7 @@ scenes:
             avoid: objects
           style:
             pattern: dotted
-            stroke: "#2563eb"
+            stroke: var(--iso-flow)
             strokeWidth: 4
           end: arrow
           ambient:

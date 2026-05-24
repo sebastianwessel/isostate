@@ -19,12 +19,20 @@ async function listFiles(dir: string): Promise<string[]> {
 }
 
 async function ensureWebsiteBuilt(): Promise<void> {
-	const index = join(root, 'website/dist/index.html');
+	const requiredOutputs = [
+		join(root, 'website/dist/index.html'),
+		join(root, 'website/dist/apple-touch-icon.png'),
+		join(root, 'website/dist/icon-192.png'),
+		join(root, 'website/dist/icon-512.png'),
+		join(root, 'website/dist/site.webmanifest'),
+		join(root, 'website/dist/docs/concepts/how-isostate-works.md/index.html'),
+		join(root, 'website/dist/docs/guides/plan-a-scene.md/index.html')
+	];
 	try {
-		await stat(index);
+		await Promise.all(requiredOutputs.map((path) => stat(path)));
 		return;
 	} catch {
-		const result = spawnSync('bun', ['run', 'site:build'], {
+		const result = spawnSync(process.execPath, ['run', 'site:build'], {
 			cwd: root,
 			encoding: 'utf8',
 			timeout: websiteBuildTimeoutMs
@@ -39,13 +47,34 @@ describe('Astro website', () => {
 	test('uses existing markdown docs and publishes static Pages output', async () => {
 		const packageJson = JSON.parse(
 			await readFile(join(root, 'package.json'), 'utf8')
-		) as { devDependencies?: Record<string, string>; scripts?: Record<string, string> };
-		const config = await readFile(join(root, 'website/astro.config.mjs'), 'utf8');
+		) as {
+			devDependencies?: Record<string, string>;
+			scripts?: Record<string, string>;
+		};
+		const config = await readFile(
+			join(root, 'website/astro.config.mjs'),
+			'utf8'
+		);
 		const docs = await readFile(join(root, 'website/src/docs.ts'), 'utf8');
 		const index = await readFile(
 			join(root, 'website/src/pages/index.astro'),
 			'utf8'
 		);
+		const layout = await readFile(
+			join(root, 'website/src/layouts/SiteLayout.astro'),
+			'utf8'
+		);
+		const ogRoute = await readFile(
+			join(root, 'website/src/pages/og/[...route].ts'),
+			'utf8'
+		);
+		const webManifest = JSON.parse(
+			await readFile(join(root, 'website/public/site.webmanifest'), 'utf8')
+		) as {
+			name?: string;
+			start_url?: string;
+			icons?: Array<{ src: string; sizes: string; type: string }>;
+		};
 		const route = await readFile(
 			join(root, 'website/src/pages/docs/[...slug].astro'),
 			'utf8'
@@ -54,6 +83,7 @@ describe('Astro website', () => {
 		expect(packageJson.devDependencies?.astro).toBe('6.3.7');
 		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.2');
 		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.11.1');
+		expect(packageJson.devDependencies?.['beautiful-mermaid']).toBe('1.1.3');
 		expect(packageJson.scripts?.['site:build']).toBe(
 			'astro build --root website'
 		);
@@ -61,13 +91,18 @@ describe('Astro website', () => {
 		expect(config).toContain("base: '/isostate'");
 		expect(config).toContain("import sitemap from '@astrojs/sitemap'");
 		expect(config).toContain('integrations: [sitemap()]');
+		expect(docs).toContain("from '../../docs/concepts/how-isostate-works.md'");
 		expect(docs).toContain("from '../../docs/getting-started.md'");
+		expect(docs).toContain("from '../../docs/guides/plan-a-scene.md'");
 		expect(docs).toContain(
 			"from '../../docs/guides/install-authoring-skill.md'"
 		);
 		expect(docs).toContain("from '../../docs/guides/use-the-cli.md'");
 		expect(docs).toContain("from '../../docs/guides/deploy-static-bundle.md'");
 		expect(docs).toContain("from '../../docs/reference/public-api.md'");
+		expect(docs).toContain('docNav');
+		expect(docs).toContain("title: 'Visual Language'");
+		expect(docs).toContain("title: 'Ship'");
 		expect(index).toContain('Isometric 3D scenes from YAML');
 		expect(index).toContain('id="isostate-demo"');
 		expect(index).toContain('mountScene');
@@ -76,41 +111,99 @@ describe('Astro website', () => {
 		expect(index).toContain('route-car');
 		expect(index).toContain('Scroll to watch a route come to life');
 		expect(index).not.toContain('PUBLIC_ISOSTATE_VERSION');
+		expect(layout).toContain(
+			"import { renderMermaidSVGAsync } from 'beautiful-mermaid'"
+		);
+		expect(layout).not.toContain('Rendered with');
+		expect(layout).not.toContain('Beautiful Mermaid by Craft');
+		expect(layout).toContain('requestFullscreen');
+		expect(layout).toContain('Copy Mermaid source');
+		expect(layout).toContain('pre[data-language="mermaid"] code');
+		expect(layout).toContain('rel="apple-touch-icon"');
+		expect(layout).toContain('rel="manifest"');
+		expect(layout).toContain('class="topbar-project"');
+		expect(layout).toContain('https://sebastianwessel.de/projects/isostate/');
+		expect(layout).toContain('https://sebastianwessel.de/projects/');
+		expect(ogRoute).toContain('./assets/isostate-story/editor-overview.png');
+		expect(ogRoute).toContain(
+			'./assets/isostate-story/hero-tilt-shift-city.png'
+		);
+		expect(webManifest.name).toBe('isostate');
+		expect(webManifest.start_url).toBe('/isostate/');
+		expect(webManifest.icons).toContainEqual({
+			src: '/isostate/icon-192.png',
+			sizes: '192x192',
+			type: 'image/png'
+		});
+		expect(webManifest.icons).toContainEqual({
+			src: '/isostate/icon-512.png',
+			sizes: '512x512',
+			type: 'image/png'
+		});
 		expect(route).toContain('getStaticPaths');
 		expect(route).toContain('ogImage');
 		expect(route).toContain('<Content />');
 	});
 
-	test('built website contains home and docs pages', async () => {
-		await ensureWebsiteBuilt();
+	test(
+		'built website contains home and docs pages',
+		async () => {
+			await ensureWebsiteBuilt();
 
-		const dist = join(root, 'website/dist');
-		await expect(stat(dist)).resolves.toBeDefined();
+			const dist = join(root, 'website/dist');
+			await expect(stat(dist)).resolves.toBeDefined();
 
-		const files = await listFiles(dist);
-		const relativeFiles = files.map((file) => file.slice(dist.length + 1));
+			const files = await listFiles(dist);
+			const relativeFiles = files.map((file) => file.slice(dist.length + 1));
 
-		expect(relativeFiles).toContain('index.html');
-		expect(relativeFiles).toContain('sitemap-index.xml');
-		expect(relativeFiles).toContain('sitemap-0.xml');
-		expect(relativeFiles).toContain('og/index.png');
-		expect(relativeFiles).toContain('og/docs/getting-started.png');
-		expect(relativeFiles).toContain('docs/getting-started.md/index.html');
-		expect(relativeFiles).toContain(
-			'docs/guides/install-authoring-skill.md/index.html'
-		);
-		expect(relativeFiles).toContain('docs/guides/use-the-cli.md/index.html');
-		expect(relativeFiles).toContain('og/docs/guides/use-the-cli.png');
-		expect(relativeFiles).toContain(
-			'docs/guides/deploy-static-bundle.md/index.html'
-		);
-		expect(relativeFiles).toContain('docs/reference/public-api.md/index.html');
+			expect(relativeFiles).toContain('index.html');
+			expect(relativeFiles).toContain('sitemap-index.xml');
+			expect(relativeFiles).toContain('sitemap-0.xml');
+			expect(relativeFiles).toContain('apple-touch-icon.png');
+			expect(relativeFiles).toContain('icon-192.png');
+			expect(relativeFiles).toContain('icon-512.png');
+			expect(relativeFiles).toContain('site.webmanifest');
+			expect(relativeFiles).toContain('og/index.png');
+			expect(relativeFiles).toContain('docs/README.md/index.html');
+			expect(relativeFiles).toContain(
+				'docs/concepts/how-isostate-works.md/index.html'
+			);
+			expect(relativeFiles).toContain('og/docs/getting-started.png');
+			expect(relativeFiles).toContain('docs/getting-started.md/index.html');
+			expect(relativeFiles).toContain('docs/guides/plan-a-scene.md/index.html');
+			expect(relativeFiles).toContain(
+				'docs/guides/install-authoring-skill.md/index.html'
+			);
+			expect(relativeFiles).toContain('docs/guides/use-the-cli.md/index.html');
+			expect(relativeFiles).toContain('og/docs/guides/use-the-cli.png');
+			expect(relativeFiles).toContain(
+				'docs/guides/deploy-static-bundle.md/index.html'
+			);
+			expect(relativeFiles).toContain(
+				'docs/reference/public-api.md/index.html'
+			);
 
-		const home = await readFile(join(dist, 'index.html'), 'utf8');
-		expect(home).toContain('property="og:image"');
-		expect(home).toContain(
-			'https://sebastianwessel.github.io/isostate/og/index.png'
-		);
-		expect(home).toContain('name="twitter:card" content="summary_large_image"');
-	}, websiteBuildTimeoutMs);
+			const home = await readFile(join(dist, 'index.html'), 'utf8');
+			expect(home).toContain('property="og:image"');
+			expect(home).toContain(
+				'https://sebastianwessel.github.io/isostate/og/index.png'
+			);
+			expect(home).toContain(
+				'name="twitter:card" content="summary_large_image"'
+			);
+			expect(home).toContain('rel="manifest"');
+			expect(home).toContain('class="topbar-project"');
+			expect(home).toContain('Project page');
+			expect(home).toContain('More projects');
+			expect(home).toContain('sebastianwessel.de/projects/isostate/');
+			const docsIndex = await readFile(
+				join(dist, 'docs/README.md/index.html'),
+				'utf8'
+			);
+			expect(docsIndex).toContain('Plan A Scene');
+			expect(docsIndex).toContain('understand the boundary');
+			expect(docsIndex).toContain('data-language="mermaid"');
+		},
+		websiteBuildTimeoutMs
+	);
 });

@@ -9,11 +9,16 @@ const docs = [
 	'packages/core/README.md',
 	'packages/cli/README.md',
 	'docs/README.md',
+	'docs/concepts/how-isostate-works.md',
 	'docs/getting-started.md',
 	'docs/guides/install-authoring-skill.md',
+	'docs/guides/plan-a-scene.md',
 	'docs/guides/author-scene-deltas.md',
+	'docs/guides/assets-workflow.md',
+	'docs/guides/animation-and-connections.md',
 	'docs/guides/use-the-cli.md',
 	'docs/guides/deploy-static-bundle.md',
+	'docs/guides/use-editor-in-astro.md',
 	'docs/examples/README.md',
 	'docs/examples/runtime-basic.md',
 	'docs/examples/controller-scroll.md',
@@ -22,10 +27,15 @@ const docs = [
 	'docs/examples/custom-assets.md',
 	'docs/examples/custom-theme.md',
 	'docs/examples/inspect-bundle.md',
+	'docs/examples/editor-basic.md',
+	'docs/examples/editor-react.md',
+	'docs/examples/editor-export.md',
+	'docs/examples/asset-manifest.md',
 	'docs/reference/public-api.md',
 	'docs/reference/runtime-bundle.md',
 	'docs/reference/errors.md',
-	'docs/reference/types.md'
+	'docs/reference/types.md',
+	'docs/reference/editor.md'
 ] as const;
 
 describe('public docs inventory', () => {
@@ -52,6 +62,58 @@ describe('public docs inventory', () => {
 			expect(text).toContain('mountScene');
 			expect(text).toContain("from '@sebastianwessel/isostate'");
 		}
+	});
+
+	test('docs expose the story-first workflow with visual diagrams', async () => {
+		const docsIndex = await readFile(join(root, 'docs/README.md'), 'utf8');
+		const concept = await readFile(
+			join(root, 'docs/concepts/how-isostate-works.md'),
+			'utf8'
+		);
+		const plan = await readFile(
+			join(root, 'docs/guides/plan-a-scene.md'),
+			'utf8'
+		);
+		const assets = await readFile(
+			join(root, 'docs/guides/assets-workflow.md'),
+			'utf8'
+		);
+		const animation = await readFile(
+			join(root, 'docs/guides/animation-and-connections.md'),
+			'utf8'
+		);
+		const siteDocs = await readFile(join(root, 'website/src/docs.ts'), 'utf8');
+		const normalizedDocsIndex = docsIndex.replace(/\s+/g, ' ');
+
+		for (const fragment of [
+			'understand the boundary',
+			'plan the story',
+			'choose an authoring mode',
+			'build the visual language',
+			'verify it',
+			'publish it'
+		]) {
+			expect(normalizedDocsIndex).toContain(fragment);
+		}
+
+		expect(docsIndex).toContain('./concepts/how-isostate-works.md');
+		expect(docsIndex).toContain('./guides/plan-a-scene.md');
+		expect(concept).toContain('Development and CI');
+		expect(concept).toContain('Browser runtime');
+		expect(plan).toContain('The Storyboard');
+		expect(plan).toContain('Choose The Authoring Mode');
+		expect(assets).toContain('Sprite Sheets');
+		expect(assets).toContain('Generate Assets With OpenAI');
+		expect(animation).toContain('Scene Timeline');
+
+		for (const text of [docsIndex, concept, plan, assets, animation]) {
+			expect(text).toContain('```mermaid');
+		}
+
+		expect(siteDocs).toContain('docNav');
+		expect(siteDocs).toContain("title: 'Create'");
+		expect(siteDocs).toContain("title: 'Visual Language'");
+		expect(siteDocs).toContain("title: 'Ship'");
 	});
 
 	test('dev-time examples use the DSL entrypoint', async () => {
@@ -101,10 +163,14 @@ describe('public docs inventory', () => {
 		expect(text).toMatch(/does not include\s+authored YAML/);
 		expect(rootReadme).toContain('./docs/guides/deploy-static-bundle.md');
 		expect(rootReadme).toContain('bun run examples:basic:bundle');
-		expect(rootReadme).toContain('bunx --package @sebastianwessel/isostate-cli isostate bundle');
+		expect(rootReadme).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate bundle'
+		);
 		expect(docsIndex).toContain('./guides/install-authoring-skill.md');
 		expect(docsIndex).toContain('./guides/deploy-static-bundle.md');
-		expect(gettingStarted).toContain('bunx skills add sebastianwessel/isostate');
+		expect(gettingStarted).toContain(
+			'bunx skills add sebastianwessel/isostate'
+		);
 		expect(skillsGuide).toContain('bunx skills add sebastianwessel/isostate');
 		expect(skillsGuide).toContain('--skill authoring-isostate-scenes');
 		expect(skillsGuide).toContain('--agent codex');
@@ -154,15 +220,25 @@ describe('public docs inventory', () => {
 		);
 
 		expect(skill).toContain('references/deployment.md');
+		expect(skill).toContain('docs/guides/plan-a-scene.md');
+		expect(skill).toContain('docs/guides/assets-workflow.md');
 		expect(skill).toContain('isostate validate');
 		expect(skill).toContain('isostate compile');
 		expect(skill).toContain('isostate bundle');
 		expect(skill).toContain('isostate inspect');
 		expect(reference).toContain('CLI Command Surface');
-		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate validate');
-		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate compile');
-		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate bundle');
-		expect(reference).toContain('bunx --package @sebastianwessel/isostate-cli isostate inspect');
+		expect(reference).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate validate'
+		);
+		expect(reference).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate compile'
+		);
+		expect(reference).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate bundle'
+		);
+		expect(reference).toContain(
+			'bunx --package @sebastianwessel/isostate-cli isostate inspect'
+		);
 		expect(reference).toContain('isostate.runtime.js');
 		expect(reference).toContain('manifest.json');
 		expect(reference).toContain('yaml` package');
@@ -225,5 +301,36 @@ describe('public docs inventory', () => {
 		expect(main).not.toContain('getResolvedConfig().states');
 		expect(main).not.toContain('scrollProgress');
 		expect(main).not.toContain('sceneBundle.elements');
+	});
+
+	test('basic example uses CSS variables with a shadcn-compatible dark class', async () => {
+		const source = await readFile(
+			join(root, 'examples/basic/source.isostate.yaml'),
+			'utf8'
+		);
+		const bundle = await readFile(
+			join(root, 'examples/basic/scene.isostate.js'),
+			'utf8'
+		);
+		const styles = await readFile(
+			join(root, 'examples/basic/styles.css'),
+			'utf8'
+		);
+
+		expect(source).toContain('fill: var(--iso-label)');
+		expect(source).toContain('stroke: var(--iso-flow)');
+		expect(source).not.toContain('theme: light');
+		expect(source).not.toContain('className:');
+		expect(source).not.toMatch(/(?:fill|stroke|outline): "#/);
+		expect(bundle).not.toMatch(/"#[0-9a-fA-F]{6}"/);
+		expect(bundle).not.toContain('"className":');
+
+		expect(styles).toContain(':root {');
+		expect(styles).toContain('.dark {');
+		expect(styles).toContain('.stage .iso-scene');
+		expect(styles).toContain('--iso-label:');
+		expect(styles).toContain('--iso-flow:');
+		expect(styles).not.toContain('demo-surface');
+		expect(styles).not.toContain('[data-theme="dark"]');
 	});
 });

@@ -8,7 +8,11 @@ The DSL is intentionally organized for authors:
 
 - `header` declares the document catalog and global settings.
 - `header.assets` lists the asset ids this document is allowed to use.
-- `header.floor`, `header.grid`, `header.layers`, `header.theme`, and optional `header.className` define required render settings.
+- `header.floor`, `header.grid`, and `header.layers` define required render
+  settings.
+- `header.theme` and `header.className` are optional compatibility/styling
+  hooks. Do not add `theme: light` or `className` just for light/dark mode;
+  prefer host CSS variables and the built-in `.iso-scene` root class.
 - `scenes` declares the timeline.
 - The first scene is a complete placement snapshot.
 - Every later scene is a delta from the previous scene.
@@ -23,7 +27,6 @@ Per-element authored `keyframes` are not allowed in `.isostate.yaml`. The compil
 header:
   version: "0.1"
   name: basic-infrastructure
-  theme: light
   assetBaseUrl: ./assets
   assets:
     - id: platform
@@ -40,7 +43,6 @@ header:
     visible: true
     layer: ground
     asset: iso-platform
-  className: demo-surface
   layers:
     - name: ground
     - name: structures
@@ -121,7 +123,8 @@ The header is the document-level contract. It prevents examples from scattering 
 
 ### Assets
 
-`header.assets` is a local id catalog, not SVG content. With `assetBaseUrl`, the compiler emits browser-loadable SVG URLs from each asset `path`.
+`header.assets` is a local id catalog, not asset content. With `assetBaseUrl`,
+the compiler emits browser-loadable URLs from each asset declaration.
 
 ```yaml
 assets:
@@ -141,6 +144,45 @@ URL-loaded files must be standalone SVG documents with `xmlns="http://www.w3.org
 inside the square runtime SVG image viewport that the renderer places on the
 projected footprint anchor. Shared asset catalogs should declare it explicitly
 for every asset so unchecked imported SVG geometry does not drift from the grid.
+
+Sprite sheets expose multiple logical asset ids from one image URL while keeping
+scene elements simple:
+
+```yaml
+assets:
+  - id: app-icons
+    type: sprite-sheet
+    path: app-icons.png
+    sheetSize: [512, 256]
+    tileSize: [64, 64]
+    anchor: [0.5, 1]
+    sprites:
+      server: [0, 0]
+      database:
+        at: [1, 0]
+        anchor: [0.5, 0.92]
+      wide-service:
+        rect: [128, 0, 96, 64]
+```
+
+Elements reference sprite ids directly:
+
+```yaml
+- id: api
+  asset: server
+  layer: structures
+  at: [2, 2]
+```
+
+Rules:
+
+- `app-icons` is only a sheet namespace and is not placeable.
+- `server`, `database`, and `wide-service` are placeable asset ids.
+- `sheetSize`, `tileSize`, and `rect` use source-image pixels.
+- `tileSize` is required for tuple and `at` sprites.
+- `rect` sprites do not require `tileSize`.
+- Sprite ids share the same global asset id namespace as standalone assets and
+  built-ins.
 
 ### Built-In Text
 
@@ -420,6 +462,17 @@ fails with `CONNECTION_ENDPOINT_REMOVED`.
   at: [2, 1]
   size: 2
 ```
+
+Element update patches are sparse at every supported level:
+
+- omitted top-level fields retain the previous resolved element value;
+- `text` patches merge field-by-field, so changing only `text.fill` preserves
+  `text.value`, alignment, font size, and other text style fields;
+- `primitive.<kind>` patches merge field-by-field, so changing only
+  `primitive.rectangle.opacity` preserves fill, stroke, and stroke width;
+- `size: 0` is valid only in `update.elements[]` and scales the present element
+  to zero. Initial placements and `add.elements[]` still require positive
+  whole-cell `size` values.
 
 ### Remove
 

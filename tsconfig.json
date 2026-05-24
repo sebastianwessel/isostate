@@ -4,6 +4,7 @@
 		"module": "ESNext",
 		"moduleResolution": "bundler",
 		"lib": ["ES2022", "DOM", "DOM.Iterable"],
+		"jsx": "react-jsx",
 		"types": ["bun", "node"],
 		"declaration": true,
 		"declarationMap": true,
@@ -19,6 +20,7 @@
 		"baseUrl": ".",
 		"ignoreDeprecations": "6.0",
 		"paths": {
+			"@/*": ["./*"],
 			"@sebastianwessel/isostate": ["packages/core/src/index.ts"],
 			"@sebastianwessel/isostate/*": ["packages/core/src/*"]
 		},
@@ -26,6 +28,6 @@
 		"outDir": "dist",
 		"rootDir": "packages"
 	},
-	"include": ["packages/**/*.ts"],
+	"include": ["packages/**/*.ts", "packages/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"],
 	"exclude": ["node_modules", "dist", "tests"]
 }

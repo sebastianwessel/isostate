@@ -6,8 +6,18 @@ in_scope:
   - Referenced docs/examples and NFR verification scripts/tests.
   - `@sebastianwessel/isostate-cli` package for validate, compile, bundle, and inspect.
   - Static deployment bundles containing runtime, optimized scene data, copied assets, and manifest.
+  - `@sebastianwessel/isostate-editor` browser authoring package.
+  - Browser-safe DSL export for editor authoring.
+  - Core editor-support APIs for projection, pointer conversion, hit testing, and runtime object metadata.
+  - CLI asset manifest generation for static asset discovery.
+  - Astro/static editor embedding workflow.
+  - Sprite sheet assets across authored YAML, validation, runtime bundle
+    compilation, SVG runtime rendering, CLI static bundles, asset manifests,
+    editor placement, docs, examples, and authoring skill guidance.
 out_of_scope:
   - Mermaid converter implementation.
-  - Visual drag-and-drop editor.
   - Server-side rendering.
   - Three.js or CSS 3D transforms.
+  - Animated sprite playback.
+  - GIF sprite sheets.
+  - Runtime image-dimension inspection.

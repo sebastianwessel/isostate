@@ -15,7 +15,7 @@ describe('NFR package scripts', () => {
 
 		expect(packageJson.scripts?.size).toBe('tsx scripts/check-size.ts');
 		expect(packageJson.scripts?.publint).toBe(
-			'publint run packages/core && publint run packages/cli'
+			'publint run packages/core && publint run packages/cli && publint run packages/editor'
 		);
 		expect(packageJson.scripts?.['site:build']).toBe(
 			'astro build --root website'
@@ -72,6 +72,24 @@ describe('NFR package scripts', () => {
 			scripts?: Record<string, string>;
 			types?: string;
 		};
+		const editorPackage = JSON.parse(
+			await readFile(join(process.cwd(), 'packages/editor/package.json'), 'utf8')
+		) as {
+			author?: string;
+			exports?: Record<string, { import?: string; types?: string } | string>;
+			files?: string[];
+			homepage?: string;
+			bugs?: { url?: string };
+			keywords?: string[];
+			license?: string;
+			version?: string;
+			name?: string;
+			publishConfig?: { access?: string; registry?: string };
+			repository?: { directory?: string; type?: string; url?: string };
+			scripts?: Record<string, string>;
+			types?: string;
+			sideEffects?: string[];
+		};
 
 		expect(rootPackage.name).toBe('@sebastianwessel/isostate-workspace');
 		expect(rootPackage.private).toBe(true);
@@ -89,14 +107,20 @@ describe('NFR package scripts', () => {
 		});
 		expect(corePackage.name).toBe('@sebastianwessel/isostate');
 		expect(cliPackage.name).toBe('@sebastianwessel/isostate-cli');
+		expect(editorPackage.name).toBe('@sebastianwessel/isostate-editor');
 		expect(corePackage.version).toBe(cliPackage.version);
+		expect(editorPackage.version).toBe(corePackage.version);
 		expect(cliPackage.dependencies?.['@sebastianwessel/isostate']).toBe(
+			corePackage.version
+		);
+		expect(editorPackage.dependencies?.['@sebastianwessel/isostate']).toBe(
 			corePackage.version
 		);
 		expect(cliPackage.version).toBeDefined();
 		expect(corePackage.files).toEqual(['dist']);
 		expect(cliPackage.files).toEqual(['dist']);
-		for (const pkg of [corePackage, cliPackage]) {
+		expect(editorPackage.files).toEqual(['dist']);
+		for (const pkg of [corePackage, cliPackage, editorPackage]) {
 			expect(pkg.author).toBe('Sebastian Wessel');
 			expect(pkg.license).toBe('MIT');
 			expect(pkg.homepage).toBe(
@@ -117,6 +141,7 @@ describe('NFR package scripts', () => {
 		}
 		expect(corePackage.repository?.directory).toBe('packages/core');
 		expect(cliPackage.repository?.directory).toBe('packages/cli');
+		expect(editorPackage.repository?.directory).toBe('packages/editor');
 		expect(corePackage.scripts?.build).toBe('cd ../.. && bun run build');
 		expect(corePackage.scripts?.prepublishOnly).toBe(
 			'cd ../.. && bun run build && bun run lint'
@@ -125,10 +150,21 @@ describe('NFR package scripts', () => {
 		expect(cliPackage.scripts?.prepublishOnly).toBe(
 			'cd ../.. && bun run build && bun run lint'
 		);
+		expect(editorPackage.scripts?.build).toBe('cd ../.. && bun run build');
+		expect(editorPackage.scripts?.prepublishOnly).toBe(
+			'cd ../.. && bun run build && bun run lint'
+		);
 		expect(cliPackage.bin?.isostate).toBe('./dist/bin.js');
 		expect(cliPackage.exports?.['.']?.import).toBe('./dist/index.js');
 		expect(cliPackage.exports?.['.']?.types).toBe('./dist/index.d.ts');
 		expect(cliPackage.types).toBe('./dist/index.d.ts');
+		expect(editorPackage.exports?.['.']?.import).toBe('./dist/index.js');
+		expect(editorPackage.exports?.['.']?.types).toBe('./dist/index.d.ts');
+		expect(editorPackage.exports?.['./react']?.import).toBe('./dist/react.js');
+		expect(editorPackage.exports?.['./react']?.types).toBe('./dist/react.d.ts');
+		expect(editorPackage.exports?.['./style.css']).toBe('./dist/style.css');
+		expect(editorPackage.types).toBe('./dist/index.d.ts');
+		expect(editorPackage.sideEffects).toContain('*.css');
 	});
 
 	test('basic static bundle generation script is exposed', async () => {

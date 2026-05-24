@@ -13,7 +13,11 @@ interface IsostateErrorShape {
 }
 ```
 
-Validation reports use the same `code` strings but return plain objects instead of throwing.
+Validation reports use the same `code` strings but return plain objects instead
+of throwing. Validator findings should include contextual fields whenever the
+validator can determine them: `sceneId`, `elementId`, `connectionId`,
+`assetName`, `layerName`, `field`, and a safe `value` sample. CLI diagnostics
+print these as compact key/value pairs before the message.
 
 ## Error Classes
 
@@ -43,8 +47,19 @@ Validation reports use the same `code` strings but return plain objects instead 
 | `ASSET_URL_REQUIRED` | Declared external asset cannot resolve to a URL from `assetBaseUrl`. | Add `assetBaseUrl`, add `path`, or use `asset: text` for generated text. |
 | `ASSET_NOT_FOUND` | Runtime bundle does not contain a URL for a referenced external asset. | Recompile from valid YAML or fix reference. |
 | `ASSET_NOT_DECLARED` | Element references an asset not listed in `header.assets`. | Add asset to header or fix reference. |
+| `ASSET_TYPE_UNSUPPORTED` | `header.assets[]` declares an unsupported asset `type`. | Use no `type` for normal SVG URL assets or `type: sprite-sheet`. |
 | `BUILTIN_ASSET_ID_RESERVED` | `header.assets` declares a reserved built-in asset id such as `text`. | Remove the declaration and use the built-in element contract. |
 | `DUPLICATE_ASSET_ID` | Duplicate asset id in `header.assets`. | Rename or remove duplicate. |
+| `SPRITE_SHEET_NOT_PLACEABLE` | An element or floor references a sprite sheet namespace id instead of a sprite id. | Reference one of the sheet's `sprites` ids. |
+| `INVALID_SPRITE_SHEET_PATH` | A sprite sheet path is missing, lacks an explicit supported extension, uses `.gif`, or uses an unsupported extension. | Use a relative `.png`, `.webp`, `.jpg`, `.jpeg`, or `.svg` path. |
+| `INVALID_SPRITE_SHEET_SIZE` | `sheetSize` is missing or is not a positive whole-pixel `[width, height]` tuple. | Add a valid source image size. |
+| `INVALID_SPRITE_TILE_SIZE` | `tileSize` is required, malformed, or not a positive whole-pixel `[width, height]` tuple. | Add a valid tile size or use only `rect` sprites. |
+| `NO_SPRITES` | A sprite sheet declares no sprites. | Add at least one sprite or remove the sheet. |
+| `INVALID_SPRITE_ID` | A sprite id is not kebab-case or uses a reserved built-in id. | Rename the sprite. |
+| `DUPLICATE_SPRITE_ID` | A sprite id is repeated across sheets. | Rename one sprite. |
+| `SPRITE_ASSET_ID_COLLISION` | A sprite id collides with a normal asset id or sprite sheet namespace id. | Rename either the sprite or the colliding asset. |
+| `INVALID_SPRITE_DEFINITION` | A sprite definition has both `at` and `rect`, neither `at` nor `rect`, an invalid tuple, or unknown fields. | Use `[column, row]`, `{ at: [column, row] }`, or `{ rect: [x, y, width, height] }`. |
+| `INVALID_SPRITE_RECT` | A compiled or authored sprite rectangle is malformed or outside `sheetSize`. | Use whole positive dimensions inside the sheet bounds. |
 | `LAYER_NOT_FOUND` | Element, floor, or patch references missing layer. | Add layer or fix reference. |
 | `DUPLICATE_ELEMENT_ID` | Duplicate element ID. | Rename one element. |
 | `DUPLICATE_CONNECTOR_ID` | Duplicate connector ID. | Rename one connector. |
@@ -67,15 +82,15 @@ Validation reports use the same `code` strings but return plain objects instead 
 | `CONNECTION_ENDPOINT_REMOVED` | A present connection references an element removed by the same scene and was not removed explicitly. | Add the connection id to `remove.connections` in the same scene, or remove/update the connection earlier. |
 | `CONNECTOR_ROUTE_BLOCKED` | Auto routing cannot find an allowed path around required obstacles. | Move objects, reduce clearance, use `avoid: none`, or author a manual route. |
 | `INVALID_POSITION` | Position tuple is malformed or negative. | Fix `at`. |
-| `INVALID_SIZE` | Size is missing/invalid where required. | Use a positive number. |
+| `INVALID_SIZE` | Size is missing/invalid where required. | Use a positive whole-cell number for placements; update patches may use `0` to scale an existing element to zero. |
 | `INVALID_CONNECTOR_ROUTE` | Connector route has fewer than two points, invalid coordinates, fractional manual coordinates, or manual segments that change both grid axes. | Provide at least two finite non-negative whole-grid route points with one-axis segments, or use `from`/`to` routing for side ports. |
 | `INVALID_CONNECTOR_STYLE` | Connector style field is unsupported, unsafe, or out of range. | Use supported style values. |
 | `INVALID_CONNECTOR_ENDPOINT` | Connector start/end endpoint is unsupported. | Use `none`, `arrow`, `dot`, `circle`, `diamond`, or `bar`. |
 | `INVALID_CONNECTOR_DIRECTION` | Connector direction is unsupported. | Use `route` or `reverse`. |
 | `INVALID_CONNECTOR_ROUTING` | Connector routing config is malformed or unsupported. | Fix `routing` fields or use manual `route`. |
-| `TEXT_CONTENT_REQUIRED` | `asset: text` is missing `text.value`. | Add a `text` object with a non-empty `value`. |
+| `TEXT_CONTENT_REQUIRED` | `asset: text` is missing `text.value`. | Add a `text` object with a `value` field. Use `value: ""` only when the invisible label is intentional. |
 | `TEXT_CONTENT_FOR_NON_TEXT_ASSET` | A non-text asset defines `text`. | Remove `text` or change `asset` to `text`. |
-| `INVALID_TEXT_CONTENT` | Text is empty, too long, or has too many lines. | Keep text non-empty, ≤1000 characters, and ≤20 lines. |
+| `INVALID_TEXT_CONTENT` | Text is too long or has too many lines. | Keep text ≤1000 characters and ≤20 lines. Empty text is a warning, not an error. |
 | `INVALID_TEXT_STYLE` | A text style field has an invalid or unsafe value. | Use supported text style values. |
 | `UNKNOWN_ANIMATION` | Entry/exit animation is unknown. | Use a built-in value or `none`. |
 | `UNKNOWN_AMBIENT_ANIMATION` | Ambient name is unknown and no custom CSS is registered. | Define CSS or fix name. |
@@ -121,6 +136,7 @@ successfully when no errors are present.
 |---|---|
 | `UNREFERENCED_LAYER` | Layer has no elements. |
 | `UNREFERENCED_ASSET` | Asset is declared but never used. |
+| `EMPTY_TEXT_CONTENT` | Text value is empty or whitespace-only and will render no visible label. |
 | `ELEMENT_OUTSIDE_FLOOR` | Element lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_OUTSIDE_FLOOR` | Connector route lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_INTERSECTS_OBJECT` | Manual connector route crosses an unrelated visible object. |

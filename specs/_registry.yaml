@@ -15,9 +15,13 @@ artifacts:
     layer: domain
   - path: 01-domains/connector.md
     layer: domain
+  - path: 01-domains/editor-workspace.md
+    layer: domain
   - path: 02-capabilities/rendering/connector-routing.md
     layer: capability
   - path: 02-capabilities/camera.md
+    layer: capability
+  - path: 02-capabilities/editor.md
     layer: capability
   - path: 03-contracts/scene-schema.md
     layer: contract
@@ -25,7 +29,15 @@ artifacts:
     layer: contract
   - path: 03-contracts/cli.md
     layer: contract
+  - path: 03-contracts/asset-manifest.md
+    layer: contract
+  - path: 03-contracts/editor-support-api.md
+    layer: contract
+  - path: 03-contracts/editor.md
+    layer: contract
   - path: 03-contracts/static-bundle.md
     layer: contract
   - path: 03-flows/static-deploy.md
+    layer: flow
+  - path: 03-flows/editor-authoring.md
     layer: flow

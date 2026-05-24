@@ -2,23 +2,35 @@
 
 ## Overview
 
-Assets are reusable SVG building blocks. An asset is a single SVG graphic that fills its own canvas with no padding or margins — every pixel in the SVG contributes to the shape. Assets are decoupled from grid positioning and animation; they only define what the element looks like.
+Assets are reusable visual building blocks. An asset is either a standalone
+URL-loaded SVG graphic or a logical sprite cropped from a URL-loaded sprite
+sheet. Assets are decoupled from grid positioning and animation; they only
+define what the element looks like.
 
-External SVG assets are rendered into a square runtime image viewport for each
-grid cell with `preserveAspectRatio="xMidYMax meet"`. `anchor` is normalized
-against that square runtime viewport, not against path geometry inspected by the
-browser. The renderer never infers a better anchor from SVG contents.
+Standalone SVG assets are rendered into a square runtime image viewport for each
+grid cell with `preserveAspectRatio="xMidYMax meet"`. Sprite assets are rendered
+through a nested SVG viewport cropped to the compiled sprite rectangle. `anchor`
+is normalized against the square runtime viewport, not against path geometry or
+image pixels inspected by the browser. The renderer never infers a better
+anchor from asset contents.
 
-Authored YAML references external SVG assets through document-local ids in `header.assets[]`. Those ids resolve to browser-loaded SVG files through `header.assetBaseUrl`.
+Authored YAML references external assets through document-local ids in
+`header.assets[]`. Normal URL asset ids resolve to browser-loaded SVG files
+through `header.assetBaseUrl`. Sprite sheet entries expose nested sprite ids as
+the element-facing asset ids; the sheet id is only a namespace.
 
 The reserved id `text` is the only built-in generic asset. It is not an SVG source, is not declared in `header.assets[]`, and is rendered from an element-level `text` payload.
 
 ## Asset Definition
 
-An asset is a standalone SVG file that fills its canvas with no empty margins. Assets scale to grid cells via the DSL `size` property: size 1 fills 1 cell, size 2 fills a 2×2 area, etc.
+Normal URL assets are standalone SVG files that fill their canvas with no empty
+margins. Assets scale to grid cells via the DSL `size` property: size 1 fills 1
+cell, size 2 fills a 2×2 area, etc.
 
 ```ts
-interface AssetDefinition {
+type AssetDefinition = UrlAssetDefinition | SpriteSheetAssetDefinition;
+
+interface UrlAssetDefinition {
   /** Unique asset id used by authored YAML and runtime elements. */
   id: string;
   /** Optional relative SVG path. Defaults to id when omitted. */
@@ -28,15 +40,88 @@ interface AssetDefinition {
   /** Optional category for authoring tooling. */
   category?: AssetCategory;
 }
+
+interface SpriteSheetAssetDefinition {
+  /** Namespace id for the sheet. This id is not placeable. */
+  id: string;
+  type: 'sprite-sheet';
+  /** Relative image path with explicit .png, .webp, .jpg, .jpeg, or .svg extension. */
+  path: string;
+  /** Source image size in pixels. Required because runtime does not inspect images. */
+  sheetSize: [number, number];
+  /** Regular tile size in pixels for grid-addressed sprites. */
+  tileSize?: [number, number];
+  /** Default normalized anchor inherited by sprites. */
+  anchor?: [number, number];
+  /** Logical placeable asset ids exposed by this sheet. */
+  sprites: Record<string, SpriteDefinition>;
+}
+
+type SpriteDefinition =
+  | [number, number]
+  | {
+      at?: [number, number];
+      rect?: [number, number, number, number];
+      anchor?: [number, number];
+    };
 ```
 
-Asset files must be standalone SVG documents with `xmlns="http://www.w3.org/2000/svg"` and a valid `viewBox`. Asset SVG should use semantic CSS classes or CSS variables inside the file when theming is needed.
+Normal URL asset files must be standalone SVG documents with
+`xmlns="http://www.w3.org/2000/svg"` and a valid `viewBox`. Asset SVG should
+use semantic CSS classes or CSS variables inside the file when theming is
+needed.
 
 `anchor` defaults to `[0.5, 1]`, the bottom-center of the normalized square
 runtime viewport.
 Shared asset sets should declare an anchor for every SVG. Use `[0.5, 1]` for
 checked centered assets, and use an off-center value when the imported SVG's real
 ground contact point is intentionally not centered in its runtime viewport.
+
+## Sprite Sheet Assets
+
+Sprite sheets let one image file provide many logical asset ids:
+
+```yaml
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: app-icons.png
+      sheetSize: [512, 256]
+      tileSize: [64, 64]
+      anchor: [0.5, 1]
+      sprites:
+        server: [0, 0]
+        database:
+          at: [1, 0]
+          anchor: [0.5, 0.92]
+        wide-service:
+          rect: [128, 0, 96, 64]
+
+scenes:
+  - id: initial
+    elements:
+      - id: api
+        asset: server
+        at: [1, 1]
+```
+
+Rules:
+
+- `asset: server` references the logical sprite id, not the sheet id.
+- The sheet id, such as `app-icons`, is not placeable and cannot be used by
+  scene elements or the floor.
+- `sheetSize` is required for all sprite sheets and uses source-image pixels.
+- `tileSize` is required for `[column, row]` and `at: [column, row]` sprites.
+- `rect` is `[x, y, width, height]` in whole source-image pixels and must fit
+  within `sheetSize`.
+- Sprite ids share the global asset id namespace with standalone assets and
+  built-ins.
+- Sprite anchors inherit from the sheet-level `anchor`, then default to
+  `[0.5, 1]`; per-sprite `anchor` overrides both.
+- Sprite sheet paths must include `.png`, `.webp`, `.jpg`, `.jpeg`, or `.svg`.
+  `.gif` is not supported.
 
 ## SVG Blueprint
 
@@ -184,6 +269,13 @@ const customTheme = composeTheme('dark', {
   '--color-leaf': '#166534',
 });
 ```
+
+Scene YAML should reference semantic CSS variables such as `var(--iso-label)`
+or `var(--iso-flow)` for generated text, primitives, and connectors when colors
+need to react to light/dark mode. The recommended host-page convention is
+shadcn-compatible: define default variables under `:root` and dark overrides
+under `.dark`. The DSL should not duplicate one set of scene objects for light
+mode and another for dark mode.
 
 ## Depth Shading
 

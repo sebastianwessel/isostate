@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
 import {
 	compileScene,
 	fromJs,
@@ -6,6 +7,7 @@ import {
 	toJs,
 	toJson
 } from '../packages/core/src/dsl/compiler';
+import { parseScene } from '../packages/core/src/dsl/scene-parser';
 import type { SceneDocument } from '../packages/core/src/types/index';
 
 function createDocument(overrides: Partial<SceneDocument> = {}): SceneDocument {
@@ -103,6 +105,28 @@ function createDocument(overrides: Partial<SceneDocument> = {}): SceneDocument {
 }
 
 describe('compileScene', () => {
+	test('compiles sprite sheets into flat runtime asset entries', () => {
+		const document = parseScene(
+			readFileSync(
+				'tests/fixtures/sprite-sheet-assets/compact.isostate.yaml',
+				'utf8'
+			)
+		);
+		const expectedAssets = JSON.parse(
+			readFileSync(
+				'tests/fixtures/sprite-sheet-assets/expected-compact-assets.json',
+				'utf8'
+			)
+		);
+
+		const bundle = compileScene(document);
+
+		expect(bundle.assets).toEqual(expectedAssets);
+		expect(toJson(bundle)).toContain('"sprite"');
+		expect(fromJson(toJson(bundle))).toEqual(bundle);
+		expect(fromJs(toJs(bundle))).toEqual(bundle);
+	});
+
 	test('emits deterministic runtime bundles with canonical scenes and URL assets', () => {
 		const first = compileScene(createDocument());
 		const second = compileScene(createDocument());
@@ -110,7 +134,7 @@ describe('compileScene', () => {
 		expect(first).toEqual(second);
 		expect(toJson(first)).toBe(toJson(second));
 		expect(first._format).toBe('isostate-runtime-bundle');
-		expect(first._version).toBe('0.2.0');
+		expect(first._version).toBe('0.3.0');
 		expect(first._digest).toMatch(/^[a-f0-9]{64}$/);
 		expect(first.className).toBe('demo-surface');
 		expect(first.grid).toEqual({ cellSize: 72 });
@@ -501,6 +525,63 @@ describe('compileScene', () => {
 				asset: 'rectangle',
 				primitive: {
 					rectangle: expect.objectContaining({ fill: '#2563eb' })
+				}
+			})
+		);
+	});
+
+	test('compiles sparse nested update deltas and zero-size patches', () => {
+		const baseDocument = createDocument();
+		const bundle = compileScene(
+			createDocument({
+				header: {
+					...baseDocument.header,
+					assets: [],
+					floor: { visible: true },
+					layers: [{ name: 'labels' }]
+				},
+				scenes: [
+					{
+						id: 'initial',
+						elements: [
+							{
+								id: 'label-1',
+								asset: 'text',
+								at: [1, 1],
+								layer: 'labels',
+								text: {
+									value: 'Checkout',
+									align: 'middle',
+									fill: '#111111'
+								}
+							}
+						]
+					},
+					{
+						id: 'updated',
+						update: {
+							elements: [
+								{
+									id: 'label-1',
+									at: [2, 1],
+									size: 0,
+									text: { fill: '#eeeeee' }
+								}
+							]
+						}
+					}
+				]
+			})
+		);
+
+		expect(bundle.scenes[1].elements[0]).toEqual(
+			expect.objectContaining({
+				pos: [2, 1],
+				size: 0,
+				text: {
+					value: 'Checkout',
+					align: 'middle',
+					fill: '#eeeeee'
 				}
 			})
 		);

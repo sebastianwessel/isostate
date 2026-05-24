@@ -1,0 +1,5 @@
+assets:
+  servers/api.svg:
+    label: API Server
+    anchor: [0.5, 0.92]
+    tags: [server, backend]

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="isostate">
+	<path fill="#0f5f4f" d="M32 4 58 18.5 32 33 6 18.5 32 4Z" />
+	<path fill="#78d9ba" d="M6 18.5 32 33v27L6 45.5v-27Z" />
+	<path fill="#e7bd45" d="M58 18.5 32 33v27l26-14.5v-27Z" />
+	<path fill="none" stroke="#101415" stroke-linejoin="round" stroke-width="3" d="M32 4 58 18.5v27L32 60 6 45.5v-27L32 4Zm0 29v27m0-27L6 18.5m26 14.5 26-14.5" />
+</svg>

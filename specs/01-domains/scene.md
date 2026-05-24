@@ -153,9 +153,17 @@ SVG viewBox.
 
 ## Surface Styling
 
-The renderer does not own page backgrounds. `header.className`, when present, is
-added to the root SVG so applications can style the scene surface with normal
-CSS, for example gradients, transparent backgrounds, or shadows.
+The renderer does not own page backgrounds. The root SVG always includes the
+built-in `iso-scene` class so applications can style the scene surface with
+normal CSS, for example gradients, transparent backgrounds, or shadows.
+`header.className`, when present, adds extra classes to that same root SVG for
+applications that need a document-specific hook.
+
+For light/dark mode, applications should use the standard shadcn-compatible
+root `.dark` class and CSS variables. Scene definitions may reference semantic
+tokens such as `var(--iso-label)`; the host CSS owns the light and dark values.
+Authored YAML should not add `theme: light` or `className` only to enable
+light/dark switching.
 
 ## Theme
 

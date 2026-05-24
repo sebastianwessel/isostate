@@ -10,12 +10,14 @@ SVG with an embedded head across long distances.
 
 ## Header
 
-The header declares assets, floor, theme, layers, and an optional root
-SVG `className` for page-owned CSS styling.
+The header declares assets, floor, grid, and layers. Prefer semantic CSS
+variables in text, primitive, and connector color fields. Let the host page
+switch light/dark mode with the shadcn-compatible `.dark` class on a root
+element; do not duplicate light and dark color values in scene YAML and do not
+add `theme: light` or `className` just for theming.
 
 ```yaml
 header:
-  theme: light
   assetBaseUrl: ./assets
   assets:
     - id: iso-server
@@ -28,9 +30,10 @@ header:
     - name: structures
 ```
 
-`header.assets` is the catalog of local ids the document may reference. When
-`assetBaseUrl` is set, `path` is combined with that base URL and `.svg` is added
-when omitted.
+`header.assets` is the catalog of local ids the document may reference. Normal
+URL assets combine `assetBaseUrl` with `path` and add `.svg` when omitted.
+Sprite sheets expose nested sprite ids from one explicitly extensioned image
+path.
 
 `asset: text` is reserved for generated labels and is not listed in
 `header.assets`.
@@ -72,7 +75,7 @@ connections:
     route: [[1, 5], [3, 5], [3, 4], [5, 4]]
     style:
       pattern: dashed
-      stroke: "#2563eb"
+      stroke: var(--iso-flow)
       strokeWidth: 3
     start: dot
     end: arrow
@@ -136,15 +139,18 @@ plain text.
     fill: "#111111"
 ```
 
-`text.value` supports line breaks. Updates replace the whole text payload:
+`text.value` supports line breaks. Updates may change only the nested text
+fields that differ; omitted text fields keep their previous resolved values:
 
 ```yaml
 update:
   elements:
     - id: auth-gateway-label
       text:
-        value: "Auth\nGateway"
+        fill: "#eeeeee"
 ```
+
+Use `text.value` in an update only when the label text itself changes.
 
 ## Primitive Underlays And Markers
 
@@ -168,6 +174,10 @@ declared in `header.assets`.
 Available primitive asset ids are `rectangle`, `circle`, `polygon`, and `line`.
 `polygon.points` and `line.points` use normalized local coordinates from `0` to
 `1`. Use whole-cell `size` values to scale primitives over the grid.
+
+Primitive updates are also nested sparse patches. Changing only
+`primitive.rectangle.opacity` preserves the rectangle's previous fill, stroke,
+stroke width, and other fields.
 
 ## Later Scenes
 
@@ -206,6 +216,11 @@ Every later scene is a delta from the previous resolved scene.
 - `update.elements` and `update.connections` change existing objects.
 - `remove.elements` and `remove.connections` exit existing objects.
 - Omitted elements and connections persist unchanged.
+- Omitted fields inside `update.elements[].text`,
+  `update.elements[].primitive.<kind>`, and `update.connections[].style` also
+  persist unchanged.
+- `update.elements[].size` may be `0` to scale an existing element down without
+  removing it. New placements still require positive whole-cell `size` values.
 - Added elements/connections default to `enter: fade-in`; removed
   elements/connections default to
   `exit: fade-out`. Use `none` to disable either animation.
@@ -234,6 +249,7 @@ Common validation failures:
 | `ASSET_URL_REQUIRED` | Add `assetBaseUrl` or fix the asset `path`. |
 | `ASSET_NOT_FOUND` | Recompile so every external asset has a URL entry. |
 | `TEXT_CONTENT_REQUIRED` | Add `text.value` to an `asset: text` element. |
+| `EMPTY_TEXT_CONTENT` | Empty text is allowed but invisible; keep it only when intentional. |
 | `INVALID_TEXT_STYLE` | Use supported text style values. |
 | `INVALID_CONNECTOR_ROUTE` | Provide at least two valid route points. |
 | `INVALID_CONNECTOR_STYLE` | Use supported connector style values. |

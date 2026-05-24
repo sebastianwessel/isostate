@@ -22,7 +22,17 @@ const forbiddenRuntimeFragments = [
 	'compiler.ts',
 	'compileScene',
 	'parseScene',
-	'validateScene'
+	'validateScene',
+	'@sebastianwessel/isostate-editor',
+	"from 'react'",
+	'from "react"',
+	"from 'react-dom'",
+	'from "react-dom"',
+	"from 'react-dom/client'",
+	'from "react-dom/client"',
+	'@codemirror/',
+	'@lezer/',
+	'editor-support'
 ] as const;
 
 function ensureDistBuilt(): void {
@@ -82,6 +92,52 @@ describe('runtime/dev-time boundary', () => {
 			'fromJson'
 		]) {
 			expect(dsl).toContain(symbol);
+		}
+	});
+
+	test('standalone browser runtime excludes editor-only dependencies', async () => {
+		ensureDistBuilt();
+
+		const runtime = await readFile(
+			join(root, 'packages/core/dist/browser/isostate.runtime.js'),
+			'utf8'
+		);
+
+		for (const fragment of [
+			'@sebastianwessel/isostate-editor',
+			"from 'react'",
+			'from "react"',
+			"from 'react-dom'",
+			'from "react-dom"',
+			"from 'react-dom/client'",
+			'from "react-dom/client"',
+			'@codemirror/',
+			'@lezer/',
+			'editor-support'
+		]) {
+			expect(runtime).not.toContain(fragment);
+		}
+	});
+
+	test('editor-support source does not import YAML or DSL modules', async () => {
+		const editorSupport = await readFile(
+			join(root, 'packages/core/src/editor-support/index.ts'),
+			'utf8'
+		);
+
+		for (const fragment of [
+			"from 'yaml'",
+			'from "yaml"',
+			'./dsl/',
+			'../dsl/',
+			'scene-parser',
+			'scene-validator',
+			'compiler.ts',
+			'compileScene',
+			'parseScene',
+			'validateScene'
+		]) {
+			expect(editorSupport).not.toContain(fragment);
 		}
 	});
 });

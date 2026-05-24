@@ -1,5 +1,5 @@
 ---
-import { docGroups, docs } from '../docs';
+import { docNav, docs } from '../docs';
 
 type Props = {
 	title: string;
@@ -20,13 +20,21 @@ const site = Astro.site ?? new URL('https://sebastianwessel.github.io');
 const pageTitle = `${title} | isostate`;
 const canonicalUrl = new URL(Astro.url.pathname, site).toString();
 const ogImageUrl = new URL(`${base}${ogImage}`, site).toString();
+const docBySlug = new Map(docs.map((doc) => [doc.slug, doc] as const));
 
 function href(path: string): string {
 	return `${base}${path}`;
 }
 
 function isActive(path: string): boolean {
-	return currentPath === `${base}${path}` || currentPath.startsWith(`${base}${path}/`);
+	return (
+		currentPath === `${base}${path}` ||
+		currentPath.startsWith(`${base}${path}/`)
+	);
+}
+
+function navId(value: string): string {
+	return `nav-${value.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
 }
 ---
 
@@ -49,7 +57,12 @@ function isActive(path: string): boolean {
 		<meta name="twitter:title" content={pageTitle} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImageUrl} />
+		<meta name="author" content="Sebastian Wessel" />
 		<title>{pageTitle}</title>
+		<link rel="icon" type="image/svg+xml" href={href('/favicon.svg')} />
+		<link rel="apple-touch-icon" sizes="180x180" href={href('/apple-touch-icon.png')} />
+		<link rel="manifest" href={href('/site.webmanifest')} />
+		<link rel="author" href="https://sebastianwessel.de/projects/isostate/" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -121,9 +134,9 @@ function isActive(path: string): boolean {
 				position: sticky;
 				top: 0;
 				z-index: 50;
-				display: grid;
-				grid-template-columns: minmax(150px, 1fr) auto minmax(150px, 1fr);
+				display: flex;
 				align-items: center;
+				gap: 16px;
 				min-height: 64px;
 				padding: 10px clamp(20px, 4vw, 56px);
 				border-bottom: 1px solid rgba(16, 20, 21, 0.1);
@@ -161,59 +174,113 @@ function isActive(path: string): boolean {
 				display: flex;
 				align-items: center;
 				justify-content: center;
-				gap: 2px;
-				padding: 3px;
-				border: 1px solid rgba(16, 20, 21, 0.12);
-				background: rgba(255, 253, 245, 0.9);
-				border-radius: 10px;
+				gap: clamp(14px, 2vw, 24px);
+				margin: 0 auto;
+				padding: 0;
 			}
 
 			.nav-links a {
+				position: relative;
 				display: inline-flex;
 				align-items: center;
-				min-height: 32px;
-				padding: 6px 13px;
-				color: var(--muted);
+				min-height: 36px;
+				padding: 6px 0;
+				color: var(--soft-ink);
 				font-size: 0.875rem;
-				font-weight: 500;
-				border-radius: 7px;
+				font-weight: 600;
 				text-decoration: none;
+				transition: color 140ms ease;
+			}
+
+			.nav-links a::after {
+				position: absolute;
+				right: 0;
+				bottom: 2px;
+				left: 0;
+				height: 2px;
+				border-radius: 999px;
+				background: currentColor;
+				opacity: 0;
+				transform: scaleX(0.4);
+				transform-origin: center;
 				transition:
-					background-color 140ms ease,
-					color 140ms ease;
+					opacity 140ms ease,
+					transform 140ms ease;
+				content: "";
 			}
 
 			.nav-links a[aria-current="page"] {
-				background: var(--ink);
-				color: #fffdf7;
-				font-weight: 600;
+				color: var(--green-dark);
+				font-weight: 700;
+			}
+
+			.nav-links a[aria-current="page"]::after {
+				opacity: 1;
+				transform: scaleX(1);
 			}
 
 			.nav-links a:hover:not([aria-current="page"]) {
-				background: rgba(16, 20, 21, 0.06);
-				color: var(--ink);
+				color: var(--green-dark);
+			}
+
+			.nav-links a:hover:not([aria-current="page"])::after {
+				opacity: 0.45;
+				transform: scaleX(1);
+			}
+
+			.topbar-project {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+				min-height: 36px;
+				padding: 6px 10px;
+				border: 1px solid rgba(16, 20, 21, 0.1);
+				border-radius: 999px;
+				color: var(--soft-ink);
+				font-size: 0.82rem;
+				font-weight: 650;
+				text-decoration: none;
+				transition:
+					background-color 140ms ease,
+					border-color 140ms ease,
+					color 140ms ease;
+			}
+
+			.topbar-project:hover {
+				border-color: rgba(15, 95, 79, 0.28);
+				background: rgba(15, 95, 79, 0.06);
+				color: var(--green-dark);
 			}
 
 			.topbar-meta {
 				justify-self: end;
 				display: inline-flex;
 				align-items: center;
-				height: 34px;
-				padding: 0 16px;
-				border: none;
-				border-radius: 8px;
-				background: var(--green);
-				color: #fffdf5;
+				justify-content: center;
+				flex-shrink: 0;
+				width: 36px;
+				height: 36px;
+				padding: 0;
+				border-radius: 999px;
+				color: var(--soft-ink);
 				font-size: 0.85rem;
 				font-weight: 600;
 				letter-spacing: 0.01em;
 				text-decoration: none;
-				transition: background 140ms ease, transform 140ms ease;
+				transition:
+					background-color 140ms ease,
+					color 140ms ease;
 			}
 
 			.topbar-meta:hover {
-				background: var(--green-dark);
-				transform: translateY(-1px);
+				background: rgba(16, 20, 21, 0.06);
+				color: var(--ink);
+			}
+
+			.topbar-meta svg {
+				width: 18px;
+				height: 18px;
 			}
 
 			main {
@@ -222,6 +289,47 @@ function isActive(path: string): boolean {
 
 			.page-shell {
 				min-height: calc(100vh - 64px);
+			}
+
+			.site-footer {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 18px;
+				padding: 28px clamp(20px, 4vw, 56px);
+				border-top: 1px solid rgba(16, 20, 21, 0.1);
+				color: var(--muted);
+				font-size: 0.84rem;
+				background: rgba(246, 243, 234, 0.74);
+			}
+
+			.site-footer p {
+				margin: 0;
+			}
+
+			.site-footer strong {
+				color: var(--soft-ink);
+				font-weight: 650;
+			}
+
+			.footer-links {
+				display: flex;
+				align-items: center;
+				justify-content: flex-end;
+				flex-wrap: wrap;
+				gap: 14px;
+			}
+
+			.footer-links a {
+				color: var(--soft-ink);
+				font-weight: 600;
+				text-decoration: none;
+			}
+
+			.footer-links a:hover {
+				color: var(--green-dark);
+				text-decoration: underline;
+				text-underline-offset: 0.18em;
 			}
 
 			.docs-shell {
@@ -311,6 +419,25 @@ function isActive(path: string): boolean {
 				border-color: rgba(15, 95, 79, 0.2);
 			}
 
+			.nav-subgroup {
+				margin-top: 8px;
+			}
+
+			.nav-subgroup h3 {
+				margin: 8px 0 2px;
+				padding: 0 12px 0 22px;
+				color: var(--faint);
+				font-size: 0.68rem;
+				font-weight: 700;
+				letter-spacing: 0.05em;
+				text-transform: uppercase;
+			}
+
+			.nav-subgroup a {
+				padding-left: 28px;
+				font-size: 0.84rem;
+			}
+
 			.docs-content {
 				min-width: 0;
 				max-width: 860px;
@@ -318,6 +445,132 @@ function isActive(path: string): boolean {
 				border: 1px solid rgba(15, 95, 79, 0.1);
 				border-radius: 12px;
 				background: rgba(255, 255, 255, 0.82);
+			}
+
+			:global(.code-frame),
+			:global(.mermaid-frame) {
+				position: relative;
+				margin: 22px 0;
+			}
+
+			:global(.code-frame pre),
+			:global(.mermaid-frame pre) {
+				margin: 0;
+			}
+
+			:global(.docs-tool) {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				width: 32px;
+				height: 32px;
+				border: 1px solid rgba(15, 95, 79, 0.14);
+				border-radius: 8px;
+				background: rgba(255, 253, 245, 0.92);
+				color: var(--green-dark);
+				cursor: pointer;
+				transition:
+					background-color 140ms ease,
+					border-color 140ms ease,
+					color 140ms ease;
+			}
+
+			:global(.docs-tool:hover) {
+				border-color: rgba(15, 95, 79, 0.34);
+				background: #fffdf5;
+				color: var(--ink);
+			}
+
+			:global(.docs-tool svg) {
+				width: 16px;
+				height: 16px;
+				pointer-events: none;
+			}
+
+			:global(.code-copy) {
+				position: absolute;
+				top: 10px;
+				right: 10px;
+				z-index: 2;
+			}
+
+			:global(.mermaid-card) {
+				border: 1px solid rgba(15, 95, 79, 0.14);
+				border-radius: 10px;
+				background: #fffdf5;
+				overflow: hidden;
+			}
+
+			:global(.mermaid-toolbar) {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 12px;
+				padding: 10px 12px;
+				border-bottom: 1px solid rgba(15, 95, 79, 0.1);
+				background: rgba(15, 95, 79, 0.04);
+			}
+
+			:global(.mermaid-actions) {
+				display: flex;
+				align-items: center;
+				gap: 6px;
+				flex-shrink: 0;
+			}
+
+			:global(.mermaid-viewport) {
+				position: relative;
+				min-height: 260px;
+				max-height: 520px;
+				overflow: hidden;
+				touch-action: none;
+				cursor: grab;
+				background:
+					linear-gradient(90deg, rgba(15, 95, 79, 0.045) 1px, transparent 1px) 0 0 / 28px 28px,
+					linear-gradient(rgba(15, 95, 79, 0.04) 1px, transparent 1px) 0 0 / 28px 28px,
+					#fffdf5;
+			}
+
+			:global(.mermaid-viewport.is-dragging) {
+				cursor: grabbing;
+			}
+
+			:global(.mermaid-stage) {
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				min-width: 100%;
+				min-height: 320px;
+				padding: 24px;
+				transform-origin: 0 0;
+				will-change: transform;
+			}
+
+			:global(.mermaid-stage svg) {
+				max-width: min(100%, 920px);
+				height: auto;
+			}
+
+			:global(.mermaid-error) {
+				padding: 18px 20px;
+				color: #8a3428;
+				font-family: "SFMono-Regular", Consolas, monospace;
+				font-size: 0.84rem;
+				white-space: pre-wrap;
+			}
+
+			:global(.mermaid-frame:fullscreen) {
+				padding: 24px;
+				background: var(--paper);
+			}
+
+			:global(.mermaid-frame:fullscreen .mermaid-card) {
+				height: calc(100vh - 48px);
+			}
+
+			:global(.mermaid-frame:fullscreen .mermaid-viewport) {
+				height: calc(100vh - 112px);
+				max-height: none;
 			}
 
 			@media (prefers-reduced-motion: reduce) {
@@ -455,17 +708,24 @@ function isActive(path: string): boolean {
 
 			@media (max-width: 900px) {
 				.site-topbar {
-					grid-template-columns: 1fr;
+					flex-wrap: wrap;
 					gap: 10px;
 				}
 
 				.nav-links {
+					order: 3;
+					width: 100%;
 					justify-content: flex-start;
+					gap: 18px;
 					overflow-x: auto;
 				}
 
+				.topbar-project {
+					margin-left: auto;
+				}
+
 				.topbar-meta {
-					display: none;
+					margin-left: 0;
 				}
 
 				.docs-shell {
@@ -478,6 +738,15 @@ function isActive(path: string): boolean {
 					top: auto;
 					max-height: none;
 					margin-bottom: 22px;
+				}
+
+				.site-footer {
+					align-items: flex-start;
+					flex-direction: column;
+				}
+
+				.footer-links {
+					justify-content: flex-start;
 				}
 			}
 		</style>
@@ -499,10 +768,15 @@ function isActive(path: string): boolean {
 			<nav class="nav-links" aria-label="Primary navigation">
 				<a href={href('/')} aria-current={currentPath === base || currentPath === `${base}/` ? 'page' : undefined}>Overview</a>
 				<a href={href('/#story')}>Demo</a>
-				<a href={href('/docs/getting-started.md')} aria-current={isActive('/docs') ? 'page' : undefined}>Docs</a>
-				<a href="https://github.com/sebastianwessel/isostate">GitHub</a>
+				<a href={href('/docs/README.md')} aria-current={isActive('/docs') ? 'page' : undefined}>Docs</a>
+				<a href={href('/editor')} aria-current={isActive('/editor') ? 'page' : undefined}>Editor</a>
 			</nav>
-			<a class="topbar-meta" href={href('/docs/getting-started.md')}>Get started →</a>
+			<a class="topbar-project" href="https://sebastianwessel.de/projects/isostate/">Project page</a>
+			<a class="topbar-meta" href="https://github.com/sebastianwessel/isostate" aria-label="Open GitHub repository" title="GitHub">
+				<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
+					<path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 .1 1.7 1.5 3.4 1.1.1-.8.4-1.3.7-1.6-2.8-.3-5.8-1.4-5.8-6.1 0-1.3.5-2.4 1.2-3.3-.1-.3-.5-1.6.1-3.3 0 0 1-.3 3.4 1.2a11.8 11.8 0 0 1 6.2 0c2.4-1.6 3.4-1.2 3.4-1.2.6 1.7.2 3 .1 3.3.8.9 1.2 2 1.2 3.3 0 4.7-2.9 5.8-5.7 6.1.5.4.9 1.1.9 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/>
+				</svg>
+			</a>
 		</header>
 
 		<main class={docsShell ? 'docs-shell' : 'page-shell'}>
@@ -511,24 +785,46 @@ function isActive(path: string): boolean {
 					<>
 						<aside class="docs-sidebar" aria-label="Documentation navigation">
 							<p class="docs-kicker">Documentation</p>
-							{docGroups.map((group) => (
-								<nav class="nav-group" aria-labelledby={`nav-${group}`}>
-									<h2 id={`nav-${group}`}>{group}</h2>
-									<ul>
-										{docs
-											.filter((doc) => doc.group === group)
-											.map((doc) => {
-												const path = `/docs/${doc.slug}`;
-												const active = currentPath === `${base}${path}`;
-												return (
+							{docNav.map((section) => (
+								<nav class="nav-group" aria-labelledby={navId(section.title)}>
+									<h2 id={navId(section.title)}>{section.title}</h2>
+									{section.items.map((item) => {
+										if (item.type === 'doc') {
+											const doc = docBySlug.get(item.slug);
+											if (!doc) return null;
+											const path = `/docs/${doc.slug}`;
+											const active = currentPath === `${base}${path}`;
+											return (
+												<ul>
 													<li>
 														<a href={href(path)} aria-current={active ? 'page' : undefined}>
 															{doc.title}
 														</a>
 													</li>
-												);
-											})}
-									</ul>
+												</ul>
+											);
+										}
+										return (
+											<div class="nav-subgroup">
+												<h3>{item.title}</h3>
+												<ul>
+													{item.items.map((slug) => {
+														const doc = docBySlug.get(slug);
+														if (!doc) return null;
+														const path = `/docs/${doc.slug}`;
+														const active = currentPath === `${base}${path}`;
+														return (
+															<li>
+																<a href={href(path)} aria-current={active ? 'page' : undefined}>
+																	{doc.title}
+																</a>
+															</li>
+														);
+													})}
+												</ul>
+											</div>
+										);
+									})}
 								</nav>
 							))}
 						</aside>
@@ -541,5 +837,190 @@ function isActive(path: string): boolean {
 				)
 			}
 		</main>
+		<footer class="site-footer">
+			<p>
+				A project by <strong>Sebastian Wessel</strong>.
+			</p>
+			<nav class="footer-links" aria-label="Project links">
+				<a href="https://sebastianwessel.de/projects/isostate/">Project page</a>
+				<a href="https://sebastianwessel.de/projects/">More projects</a>
+				<a href="https://github.com/sebastianwessel/isostate">GitHub</a>
+			</nav>
+		</footer>
+	<script>
+		import { renderMermaidSVGAsync } from 'beautiful-mermaid';
+
+		const copyIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2" stroke="currentColor" stroke-width="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+		const checkIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m20 6-11 11-5-5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+		const zoomInIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M11 8v6M8 11h6M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+		const zoomOutIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"/><path d="M8 11h6M16.5 16.5 21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+		const fitIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+		const fullscreenIcon = '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M8 21H5a2 2 0 0 1-2-2v-3M16 21h3a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+
+		function button(label, icon, className = '') {
+			const control = document.createElement('button');
+			control.type = 'button';
+			control.className = `docs-tool ${className}`.trim();
+			control.innerHTML = icon;
+			control.setAttribute('aria-label', label);
+			control.title = label;
+			return control;
+		}
+
+		async function copyText(text, control) {
+			await navigator.clipboard.writeText(text);
+			const previous = control.innerHTML;
+			control.innerHTML = checkIcon;
+			window.setTimeout(() => {
+				control.innerHTML = previous;
+			}, 900);
+		}
+
+		function enhanceCodeBlocks() {
+			for (const pre of document.querySelectorAll('article pre')) {
+				if (pre.closest('.code-frame') || pre.closest('.mermaid-frame')) continue;
+				const code = pre.querySelector('code');
+				if (!code) continue;
+				if (
+					code.className.includes('language-mermaid') ||
+					pre.dataset.language === 'mermaid'
+				) continue;
+				const frame = document.createElement('div');
+				frame.className = 'code-frame';
+				pre.replaceWith(frame);
+				frame.append(pre);
+				const copy = button('Copy code', copyIcon, 'code-copy');
+				copy.addEventListener('click', () => copyText(code.textContent ?? '', copy));
+				frame.append(copy);
+			}
+		}
+
+		function setMermaidTransform(stage, state) {
+			stage.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+		}
+
+		function enhanceMermaidPanZoom(frame, viewport, stage) {
+			const state = { x: 0, y: 0, scale: 1 };
+			const apply = () => setMermaidTransform(stage, state);
+			frame.querySelector('[data-action="zoom-in"]')?.addEventListener('click', () => {
+				state.scale = Math.min(3, state.scale + 0.15);
+				apply();
+			});
+			frame.querySelector('[data-action="zoom-out"]')?.addEventListener('click', () => {
+				state.scale = Math.max(0.4, state.scale - 0.15);
+				apply();
+			});
+			frame.querySelector('[data-action="fit"]')?.addEventListener('click', () => {
+				state.x = 0;
+				state.y = 0;
+				state.scale = 1;
+				apply();
+			});
+			frame.querySelector('[data-action="fullscreen"]')?.addEventListener('click', () => {
+				if (document.fullscreenElement) document.exitFullscreen();
+				else frame.requestFullscreen?.();
+			});
+
+			let pointerId = null;
+			let startX = 0;
+			let startY = 0;
+			let originX = 0;
+			let originY = 0;
+			viewport.addEventListener('pointerdown', (event) => {
+				pointerId = event.pointerId;
+				startX = event.clientX;
+				startY = event.clientY;
+				originX = state.x;
+				originY = state.y;
+				viewport.setPointerCapture(event.pointerId);
+				viewport.classList.add('is-dragging');
+			});
+			viewport.addEventListener('pointermove', (event) => {
+				if (pointerId !== event.pointerId) return;
+				state.x = originX + event.clientX - startX;
+				state.y = originY + event.clientY - startY;
+				apply();
+			});
+			viewport.addEventListener('pointerup', (event) => {
+				if (pointerId !== event.pointerId) return;
+				pointerId = null;
+				viewport.classList.remove('is-dragging');
+			});
+			viewport.addEventListener(
+				'wheel',
+				(event) => {
+					event.preventDefault();
+					const delta = event.deltaY > 0 ? -0.1 : 0.1;
+					state.scale = Math.min(3, Math.max(0.4, state.scale + delta));
+					apply();
+				},
+				{ passive: false }
+			);
+			apply();
+		}
+
+		async function enhanceMermaidBlocks() {
+			const mermaidBlocks = Array.from(
+				new Set([
+					...document.querySelectorAll('article pre code.language-mermaid'),
+					...document.querySelectorAll('article pre[data-language="mermaid"] code')
+				])
+			);
+			if (mermaidBlocks.length === 0) return;
+
+			for (const code of mermaidBlocks) {
+				const source = code.textContent ?? '';
+				const pre = code.closest('pre');
+				if (!pre) continue;
+				const frame = document.createElement('div');
+				frame.className = 'mermaid-frame';
+				const card = document.createElement('div');
+				card.className = 'mermaid-card';
+				const toolbar = document.createElement('div');
+				toolbar.className = 'mermaid-toolbar';
+				const actions = document.createElement('div');
+				actions.className = 'mermaid-actions';
+				const copy = button('Copy Mermaid source', copyIcon);
+				copy.addEventListener('click', () => copyText(source, copy));
+				for (const [label, icon, action] of [
+					['Zoom in', zoomInIcon, 'zoom-in'],
+					['Zoom out', zoomOutIcon, 'zoom-out'],
+					['Reset view', fitIcon, 'fit'],
+					['Fullscreen', fullscreenIcon, 'fullscreen']
+				]) {
+					const control = button(label, icon);
+					control.dataset.action = action;
+					actions.append(control);
+				}
+				actions.prepend(copy);
+				toolbar.append(actions);
+				const viewport = document.createElement('div');
+				viewport.className = 'mermaid-viewport';
+				const stage = document.createElement('div');
+				stage.className = 'mermaid-stage';
+				viewport.append(stage);
+				card.append(toolbar, viewport);
+				pre.replaceWith(frame);
+				frame.append(card);
+
+				try {
+					stage.innerHTML = await renderMermaidSVGAsync(source, {
+						bg: '#fffdf5',
+						fg: '#101415'
+					});
+				} catch (error) {
+					const message = error instanceof Error ? error.message : String(error);
+					const errorElement = document.createElement('div');
+					errorElement.className = 'mermaid-error';
+					errorElement.textContent = message;
+					stage.replaceChildren(errorElement);
+				}
+				enhanceMermaidPanZoom(frame, viewport, stage);
+			}
+		}
+
+		enhanceCodeBlocks();
+		enhanceMermaidBlocks();
+	</script>
 	</body>
 </html>

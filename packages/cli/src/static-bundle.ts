@@ -49,6 +49,8 @@ interface AssetPlan {
 	url: string;
 }
 
+type SceneAsset = SceneDocument['header']['assets'][number];
+
 interface StaticBundleManifest {
 	format: 'isostate-static-bundle';
 	version: string;
@@ -205,12 +207,17 @@ async function planAssets(
 ): Promise<AssetPlan[]> {
 	const assetIds = Object.keys(bundle.assets ?? {}).sort();
 	const usedFiles = new Set<string>();
+	const sourceFiles = new Map<string, string>();
 	const plans: AssetPlan[] = [];
 
 	for (const id of assetIds) {
 		const source = resolveAssetSource(document, id, args.assetDir);
-		await assertSvgFile(id, source);
-		const file = uniqueAssetFile(id, basename(source), usedFiles);
+		await assertAssetFile(id, source);
+		let file = sourceFiles.get(source);
+		if (!file) {
+			file = uniqueAssetFile(id, basename(source), usedFiles);
+			sourceFiles.set(source, file);
+		}
 		plans.push({
 			id,
 			source,
@@ -227,23 +234,49 @@ function resolveAssetSource(
 	id: string,
 	assetDir: string
 ): string {
-	const entry = document.header.assets.find((asset) => asset.id === id);
+	const entry = resolveAssetEntry(document, id);
 	if (!entry) {
 		throw codedError('ASSET_SOURCE_MISSING', `Asset "${id}" is not declared`);
 	}
 
-	const rawPath = entry.path ?? entry.id;
+	const rawPath = isSpriteSheetAsset(entry)
+		? entry.path
+		: (entry.path ?? entry.id);
 	const withExtension = extname(rawPath) ? rawPath : `${rawPath}.svg`;
 	return isAbsolute(withExtension)
 		? withExtension
 		: resolve(assetDir, withExtension);
 }
 
-async function assertSvgFile(id: string, source: string): Promise<void> {
-	if (extname(source).toLowerCase() !== '.svg') {
+function resolveAssetEntry(
+	document: SceneDocument,
+	id: string
+): SceneAsset | undefined {
+	const direct = document.header.assets.find((asset) => asset.id === id);
+	if (direct) return direct;
+	return document.header.assets.find(
+		(asset) => isSpriteSheetAsset(asset) && id in asset.sprites
+	);
+}
+
+function isSpriteSheetAsset(
+	asset: SceneAsset
+): asset is Extract<SceneAsset, { type: 'sprite-sheet' }> {
+	return 'type' in asset && asset.type === 'sprite-sheet';
+}
+
+async function assertAssetFile(id: string, source: string): Promise<void> {
+	const extension = extname(source).toLowerCase();
+	if (
+		extension !== '.svg' &&
+		extension !== '.png' &&
+		extension !== '.webp' &&
+		extension !== '.jpg' &&
+		extension !== '.jpeg'
+	) {
 		throw codedError(
-			'ASSET_NOT_SVG',
-			`Asset "${id}" must resolve to an SVG file: ${source}`
+			'ASSET_UNSUPPORTED_FILE',
+			`Asset "${id}" must resolve to an SVG, PNG, WebP, or JPEG file: ${source}`
 		);
 	}
 
@@ -392,8 +425,12 @@ async function copyAssets(
 	assetPlan: AssetPlan[],
 	outDir: string
 ): Promise<void> {
+	const copied = new Set<string>();
 	for (const asset of assetPlan) {
-		await copyFile(asset.source, join(outDir, 'assets', asset.file));
+		const target = join(outDir, 'assets', asset.file);
+		if (copied.has(target)) continue;
+		await copyFile(asset.source, target);
+		copied.add(target);
 	}
 }
 

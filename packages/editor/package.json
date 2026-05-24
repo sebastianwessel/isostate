@@ -1,0 +1,67 @@
+{
+	"name": "@sebastianwessel/isostate-editor",
+	"version": "0.3.0",
+	"description": "Browser-based visual editor for Isostate scene documents.",
+	"keywords": [
+		"isostate",
+		"isometric",
+		"editor",
+		"svg",
+		"yaml",
+		"scrollytelling"
+	],
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js"
+		},
+		"./react": {
+			"types": "./dist/react.d.ts",
+			"import": "./dist/react.js"
+		},
+		"./style.css": "./dist/style.css"
+	},
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"publishConfig": {
+		"access": "public",
+		"registry": "https://registry.npmjs.org/"
+	},
+	"sideEffects": [
+		"*.css"
+	],
+	"scripts": {
+		"build": "cd ../.. && bun run build",
+		"prepublishOnly": "cd ../.. && bun run build && bun run lint"
+	},
+	"dependencies": {
+		"@sebastianwessel/isostate": "0.3.0",
+		"class-variance-authority": "^0.7.1",
+		"clsx": "^2.1.1",
+		"lucide-react": "^1.16.0",
+		"radix-ui": "^1.4.3",
+		"react-resizable-panels": "^4",
+		"tailwind-merge": "^3.6.0"
+	},
+	"peerDependencies": {
+		"react": ">=19",
+		"react-dom": ">=19"
+	},
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"author": "Sebastian Wessel",
+	"license": "MIT",
+	"homepage": "https://sebastianwessel.github.io/isostate",
+	"bugs": {
+		"url": "https://github.com/sebastianwessel/isostate/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/sebastianwessel/isostate.git",
+		"directory": "packages/editor"
+	}
+}

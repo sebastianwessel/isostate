@@ -1,11 +1,11 @@
 import { RenderError } from "../types/errors.ts";
 import type { LinePrimitive, PrimitiveContent, PrimitiveStyle, TextAlign, TextContent } from "../types/node.ts";
-import type { RuntimeBundle } from "../types/runtime-bundle.ts";
+import type { CompiledSprite, RuntimeBundle } from "../types/runtime-bundle.ts";
 import { projectToRaw } from "../utils/projection.ts";
 
 const NS = "http://www.w3.org/2000/svg";
 
-type ResolvedAsset = { url: string; anchor?: [number, number] };
+type ResolvedAsset = { url: string; anchor?: [number, number]; sprite?: CompiledSprite };
 
 export type AssetResolver = (name: string) => ResolvedAsset | undefined;
 
@@ -16,7 +16,7 @@ export function createAssetResolver(bundle?: RuntimeBundle): AssetResolver {
 	if (bundleAssets && typeof bundleAssets === "object") {
 		for (const [name, asset] of Object.entries(bundleAssets)) {
 			if (asset && typeof asset === "object" && typeof asset.url === "string") {
-				embedded.set(name, { url: asset.url, anchor: asset.anchor });
+				embedded.set(name, { url: asset.url, anchor: asset.anchor, sprite: asset.sprite });
 			}
 		}
 	}
@@ -25,6 +25,9 @@ export function createAssetResolver(bundle?: RuntimeBundle): AssetResolver {
 }
 
 export function createAssetNode(asset: ResolvedAsset, assetName: string, cellSize: number): SVGGElement {
+	if (asset.sprite) {
+		return createSpriteAssetNode(asset.url, assetName, cellSize, asset.sprite, asset.anchor);
+	}
 	return createUrlAssetNode(asset.url, assetName, cellSize, asset.anchor);
 }
 
@@ -194,6 +197,41 @@ function createUrlAssetNode(url: string, assetName: string, cellSize: number, an
 	image.setAttribute("height", String(cellSize));
 	image.setAttribute("preserveAspectRatio", "xMidYMax meet");
 	group.appendChild(image);
+	return group;
+}
+
+function createSpriteAssetNode(
+	url: string,
+	assetName: string,
+	cellSize: number,
+	sprite: CompiledSprite,
+	anchor?: [number, number],
+): SVGGElement {
+	if (!isSafeAssetUrl(url)) {
+		throw new RenderError("INVALID_ASSET_URL", `Asset URL is unsafe: ${assetName}`, { asset: assetName });
+	}
+	const group = document.createElementNS(NS, "g") as SVGGElement;
+	const viewport = document.createElementNS(NS, "svg") as SVGSVGElement;
+	const image = document.createElementNS(NS, "image") as SVGImageElement;
+	const resolvedUrl = resolveBrowserAssetUrl(url);
+	const [anchorX, anchorY] = anchor ?? [0.5, 1];
+	const [rectX, rectY, rectWidth, rectHeight] = sprite.rect;
+
+	viewport.setAttribute("x", String(-cellSize * anchorX));
+	viewport.setAttribute("y", String(-cellSize * anchorY));
+	viewport.setAttribute("width", String(cellSize));
+	viewport.setAttribute("height", String(cellSize));
+	viewport.setAttribute("viewBox", `${rectX} ${rectY} ${rectWidth} ${rectHeight}`);
+	viewport.setAttribute("preserveAspectRatio", "xMidYMax meet");
+
+	image.setAttribute("href", resolvedUrl);
+	image.setAttributeNS("http://www.w3.org/1999/xlink", "href", resolvedUrl);
+	image.setAttribute("x", "0");
+	image.setAttribute("y", "0");
+	image.setAttribute("width", String(sprite.sheetSize[0]));
+	image.setAttribute("height", String(sprite.sheetSize[1]));
+	viewport.appendChild(image);
+	group.appendChild(viewport);
 	return group;
 }
 

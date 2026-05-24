@@ -1,7 +1,7 @@
 export default {
-  "_digest": "88568656afbc2745d84c2ce6496a0caa255106226a93c315a97ddd80d491e2c4",
+  "_digest": "5ae2443352e90d3c3cf62d5131efaac62d036e003d75e649b195bf01ddfe9463",
   "_format": "isostate-runtime-bundle",
-  "_version": "0.2.0",
+  "_version": "0.3.0",
   "assets": {
     "aws-app-server": {
       "anchor": [
@@ -67,7 +67,6 @@ export default {
       "url": "../../assets/aws-3d/vpc-gateway.svg"
     }
   },
-  "className": "demo-surface",
   "floor": {
     "layer": "ground",
     "origin": [
@@ -148,7 +147,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "solid",
-            "stroke": "#111111",
+            "stroke": "var(--iso-route)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -190,7 +189,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dotted",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -208,9 +207,9 @@ export default {
           "presence": "present",
           "primitive": {
             "rectangle": {
-              "fill": "#2563eb",
+              "fill": "var(--iso-zone-public-fill)",
               "opacity": 0.08,
-              "stroke": "#2563eb",
+              "stroke": "var(--iso-zone-public-stroke)",
               "strokeWidth": 1
             }
           },
@@ -261,7 +260,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -302,7 +301,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "solid",
-            "stroke": "#111111",
+            "stroke": "var(--iso-route)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -344,7 +343,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dotted",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -382,7 +381,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dashed",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -400,9 +399,9 @@ export default {
           "presence": "present",
           "primitive": {
             "rectangle": {
-              "fill": "#2563eb",
+              "fill": "var(--iso-zone-public-fill)",
               "opacity": 0.08,
-              "stroke": "#2563eb",
+              "stroke": "var(--iso-zone-public-stroke)",
               "strokeWidth": 1
             }
           },
@@ -453,7 +452,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -472,9 +471,9 @@ export default {
           "presence": "entering",
           "primitive": {
             "rectangle": {
-              "fill": "#fbbf24",
+              "fill": "var(--iso-zone-private-fill)",
               "opacity": 0.12,
-              "stroke": "#f59e0b",
+              "stroke": "var(--iso-zone-private-stroke)",
               "strokeWidth": 1
             }
           },
@@ -505,7 +504,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -561,7 +560,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "solid",
-            "stroke": "#111111",
+            "stroke": "var(--iso-route)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -603,7 +602,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dotted",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -641,7 +640,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dashed",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -668,10 +667,10 @@ export default {
           "style": {
             "lane": "center-dashed",
             "opacity": 1,
-            "outline": "#ffffff",
+            "outline": "var(--iso-road-outline)",
             "outlineWidth": 2,
             "pattern": "solid",
-            "stroke": "#fbbf24",
+            "stroke": "var(--iso-road)",
             "strokeWidth": 12,
             "variant": "road"
           }
@@ -721,7 +720,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dotted",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -739,9 +738,9 @@ export default {
           "presence": "present",
           "primitive": {
             "rectangle": {
-              "fill": "#2563eb",
+              "fill": "var(--iso-zone-public-fill)",
               "opacity": 0.08,
-              "stroke": "#2563eb",
+              "stroke": "var(--iso-zone-public-stroke)",
               "strokeWidth": 1
             }
           },
@@ -792,7 +791,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -810,9 +809,9 @@ export default {
           "presence": "present",
           "primitive": {
             "rectangle": {
-              "fill": "#fbbf24",
+              "fill": "var(--iso-zone-private-fill)",
               "opacity": 0.12,
-              "stroke": "#f59e0b",
+              "stroke": "var(--iso-zone-private-stroke)",
               "strokeWidth": 1
             }
           },
@@ -841,7 +840,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -909,7 +908,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -957,7 +956,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "solid",
-            "stroke": "#111111",
+            "stroke": "var(--iso-route)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -999,7 +998,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dotted",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -1037,7 +1036,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dashed",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -1064,10 +1063,10 @@ export default {
           "style": {
             "lane": "center-dashed",
             "opacity": 1,
-            "outline": "#ffffff",
+            "outline": "var(--iso-road-outline)",
             "outlineWidth": 2,
             "pattern": "solid",
-            "stroke": "#fbbf24",
+            "stroke": "var(--iso-road)",
             "strokeWidth": 12,
             "variant": "road"
           }
@@ -1109,7 +1108,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dotted",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -1142,7 +1141,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dashed",
-            "stroke": "#111111",
+            "stroke": "var(--iso-route)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -1180,7 +1179,7 @@ export default {
             "opacity": 1,
             "outlineWidth": 0,
             "pattern": "dotted",
-            "stroke": "#2563eb",
+            "stroke": "var(--iso-flow)",
             "strokeWidth": 4,
             "variant": "line"
           }
@@ -1198,9 +1197,9 @@ export default {
           "presence": "present",
           "primitive": {
             "rectangle": {
-              "fill": "#2563eb",
+              "fill": "var(--iso-zone-public-fill)",
               "opacity": 0.08,
-              "stroke": "#2563eb",
+              "stroke": "var(--iso-zone-public-stroke)",
               "strokeWidth": 1
             }
           },
@@ -1251,7 +1250,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -1269,9 +1268,9 @@ export default {
           "presence": "present",
           "primitive": {
             "rectangle": {
-              "fill": "#fbbf24",
+              "fill": "var(--iso-zone-private-fill)",
               "opacity": 0.12,
-              "stroke": "#f59e0b",
+              "stroke": "var(--iso-zone-private-stroke)",
               "strokeWidth": 1
             }
           },
@@ -1300,7 +1299,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -1363,7 +1362,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,
@@ -1407,7 +1406,7 @@ export default {
           "size": 1,
           "text": {
             "align": "middle",
-            "fill": "#111111",
+            "fill": "var(--iso-label)",
             "fontSize": 12,
             "fontWeight": 700,
             "lineHeight": 1.2,

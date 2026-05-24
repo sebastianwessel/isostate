@@ -1,10 +1,18 @@
 # Getting Started
 
-Use isostate in two steps:
+This page gets one scene mounted in a browser. It is intentionally small; the
+full creation workflow starts in [Plan A Scene](./guides/plan-a-scene.md).
 
-1. Compile `.isostate.yaml` during development or CI.
-2. Import the compiled `.isostate.js` bundle in browser code and call
-   `mountScene`.
+You will run the demo, compile YAML, and mount the compiled bundle.
+
+```mermaid
+flowchart TD
+  Install[Install dependencies] --> Build[Build packages]
+  Build --> Demo[Open the demo]
+  Demo --> Validate[Validate YAML]
+  Validate --> Compile[Compile]
+  Compile --> Mount[mountScene in browser]
+```
 
 If you want an AI assistant to help author scenes, install the project skill
 first:
@@ -16,7 +24,7 @@ bunx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
 See [Install The Authoring Skill](./guides/install-authoring-skill.md) for
 agent-specific setup and verification.
 
-## Run The Demo
+## 1. Run The Demo
 
 From the repository root:
 
@@ -33,8 +41,9 @@ http://localhost:4173/examples/basic/
 ```
 
 The browser loads `examples/basic/scene.isostate.js`. It does not parse YAML.
+That compiled file is generated from `examples/basic/source.isostate.yaml`.
 
-## CLI Usage
+## 2. Validate And Compile
 
 Use the CLI when you want repeatable validation and generated browser assets:
 
@@ -46,7 +55,7 @@ bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yam
 See [Use The CLI](./guides/use-the-cli.md) for all commands, including
 `bundle` and `inspect`.
 
-## Runtime Usage
+## 3. Mount The Runtime
 
 ```ts
 import { mountScene, type RuntimeBundle } from '@sebastianwessel/isostate';
@@ -63,7 +72,7 @@ const mounted = mountScene(target, sceneBundle as RuntimeBundle, {
 mounted.engine.setProgress(0.5);
 ```
 
-## Dev-Time Compile
+## 4. Compile In A Script
 
 ```ts
 import {
@@ -81,7 +90,10 @@ const bundle = compileScene(document);
 const moduleText = toJs(bundle);
 ```
 
-## Authoring Shape
+Do not import `@sebastianwessel/isostate/dsl` from browser code. It is
+development tooling.
+
+## 5. Read The YAML Shape
 
 YAML starts with a `header`, then defines ordered `scenes`.
 
@@ -121,4 +133,10 @@ scenes:
 The first scene is the full placement snapshot. Later scenes define only deltas.
 `asset: text` is built in and is not declared in `header.assets`.
 
-Next: [Author Scene Deltas](./guides/author-scene-deltas.md).
+Next, follow the full authoring path:
+
+- [Plan A Scene](./guides/plan-a-scene.md)
+- [Author Scene Deltas](./guides/author-scene-deltas.md)
+- [Assets Workflow](./guides/assets-workflow.md)
+- [Animation And Connections](./guides/animation-and-connections.md)
+- [Deploy Static Bundle](./guides/deploy-static-bundle.md)

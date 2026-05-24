@@ -7,7 +7,12 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["**", "!**/dist/**", "!**/node_modules/**"]
+		"includes": [
+			"**",
+			"!**/dist/**",
+			"!**/node_modules/**",
+			"!packages/editor/src/style.css"
+		]
 	},
 	"formatter": {
 		"enabled": true,

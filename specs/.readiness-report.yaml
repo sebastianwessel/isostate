@@ -1,10 +1,10 @@
 status: needs_human_review
-generated_at: 2026-05-22
+generated_at: 2026-05-23
 human_approval:
   status: pending
   required_for: implementation planning and parallel agent execution
 summary:
-  reason: Issue #5 camera focus has been integrated into the spec stack with authored DSL, runtime bundle, renderer bounds, controller API, flow, errors, docs, examples, and authoring skill guidance. The spec is internally ready for review; implementation planning should wait for explicit human approval.
+  reason: Browser visual editor package specs have been added and tightened for workspace domain, v1 UI scope, Astro/static embedding, browser-safe DSL boundary, core runtime reuse, editor-support geometry APIs, pointer coordinate conversion, asset manifest discovery, CLI manifest generation, SVG safety, deterministic delta generation, command model, canonical serialization, package API, persistence boundary, and authoring flow. The spec is internally drafted for review; implementation planning should wait for explicit human approval.
   foundation: updated
   domains: updated
   contracts: updated
@@ -12,25 +12,68 @@ summary:
   nfrs: updated
 blocking_gaps: []
 resolved_gaps:
-  - Added `02-capabilities/camera.md` as the canonical feature spec for scene camera metadata and runtime zoom methods.
-  - Defined authored `scenes[].camera` with exact target, padding, duration, easing, validation, and non-persistence rules.
-  - Defined normalized runtime `RuntimeCameraFocus` metadata and digest participation.
-  - Defined controller methods `zoomToElement`, `zoomToArea`, `resetZoom`, `getCameraState`, camera events, cancellation, pause interaction, and error behavior.
-  - Defined effective camera timeline inheritance and symmetric progress-based interpolation so scroll down/up and forward/backward playback use one camera path.
-  - Defined renderer-owned camera bounds helpers and exact element/area projection math.
-  - Updated DSL-to-runtime and controller-runtime flows so validation, compilation, automatic scene camera application, direct zoom APIs, and cleanup are specified.
-  - Updated public API, runtime bundle, error, type, docs example, and authoring skill guidance so implementers have one vocabulary and no hidden behavior choices.
+  - Added `01-domains/editor-workspace.md` for editor workspace, scenes, layers, selection, viewport, and diagnostics state.
+  - Added `02-capabilities/editor.md` for topbar, split canvas/YAML UI, drag-and-drop, multi-selection, layers, visibility, camera authoring, asset management, undo/redo, and accessibility.
+  - Added `03-contracts/editor.md` for the new `@sebastianwessel/isostate-editor` package, `mountEditor`, `IsostateEditor`, package exports, events, export artifacts, asset provider, persistence boundary, and editor error codes.
+  - Added `03-contracts/asset-manifest.md` and `isostate assets manifest` so the CLI can scan an `assets/group-folder/asset.svg` tree, read optional metadata, reject unsafe SVGs, compute digests, and publish a browser-readable manifest URL for the editor.
+  - Added `03-flows/editor-authoring.md` for import, visual editing, YAML editing, validation, preview, export, failure paths, and cleanup.
+  - Updated foundation and public API specs to keep editor dependencies isolated from the dependency-free core runtime.
+  - Split browser editor parsing from local-process DSL tooling through `@sebastianwessel/isostate/dsl/browser`.
+  - Added `03-contracts/editor-support-api.md` so the editor can reuse core projection, hit testing, bounds, runtime object metadata, camera, and layer behavior without duplicating renderer logic.
+  - Defined v1 scope: visual asset/element/layer/scene/camera editing, inspector-based connection editing, YAML-backed manual routes and advanced animation editing, and no custom visual route dragging.
+  - Defined YAML round-trip behavior, canonical serializer rules, exact later-scene delta generation rules, remount-after-commit preview refresh, edit/runtime preview modes, and asset reconciliation.
+  - Defined the editor command model so UI components dispatch pure semantic commands instead of mutating YAML, history, or DOM directly.
+  - Added pointer coordinate conversion rules through `clientPointToSvgPoint()` and the SVG screen CTM inverse.
+  - Defined the editor UI stack as React plus Radix/shadcn-inspired component patterns with shipped CSS variables, no Tailwind or shadcn setup required for consumers.
+  - Selected CodeMirror 6 as the preferred YAML editor for v1 instead of Monaco to keep the static Astro embedding footprint smaller and more modular.
+  - Removed browser automation from v1 acceptance; default verification uses unit and component-level tests.
+  - Added `docs/guides/use-editor-in-astro.md` for the static Astro asset manifest and React island workflow.
 planning_gate:
-  status: passed_internal_simulation
-  reason: Parser, validator, compiler, runtime bundle, renderer, controller, docs, examples, skill guidance, and verification work can be split into disjoint implementation tickets from the updated specs.
+  status: needs_review
+  reason: Editor implementation can be split into browser-safe DSL export, editor-support core helpers, CLI manifest generation, package scaffold, workspace and command model, canonical serializer, YAML editor, canvas overlays/interactions, inspector scene/connection controls, asset browser, export, docs, and tests after human review.
 gate_simulation:
   status: passed_internal_simulation
-  reason: Each camera implementation slice has explicit public inputs/outputs, error codes, target math, defaults, tests, and artifact ownership.
+  reason: Each editor implementation slice has explicit UI behavior, public inputs/outputs, package boundary rules, diagnostics, and verification expectations.
 deterministic_check:
   command: node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
   status: passed
 confidence: high
+feature_readiness:
+  sprite_sheet_assets:
+    status: implemented
+    human_approval:
+      status: approved
+      source: user approved the recommended flat sprite-id DSL and requested implementation-ready specs on 2026-05-23
+    summary:
+      reason: Sprite sheet assets are now implemented across public types, parser, validator, compiler, runtime rendering, static bundle output, asset manifest generation, editor placement, docs, authoring skill guidance, and focused tests.
+      domains: updated
+      contracts: updated
+      capabilities: updated
+      flows: updated
+      docs: updated
+      public_types: updated
+    blocking_gaps: []
+    planning_gate:
+      status: complete
+      reason: Wave 05 implementation tickets are done and covered by focused parser, validator, compiler, runtime, CLI, editor, and contract tests.
+    deterministic_check:
+      command: node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
+      status: passed
+    verification:
+      - command: bun test tests/cli/assets-manifest.test.ts tests/cli/bundle.test.ts tests/editor/assets.test.ts tests/editor/canvas.test.tsx tests/scene-parser.test.ts tests/scene-validator.test.ts tests/compiler.test.ts tests/runtime/rendering-engine.test.ts tests/contracts/types.test.ts
+        status: passed
+      - command: bun test tests/nfr/docs-paths.test.ts
+        status: passed
+      - command: bun test tests/contracts/package-exports.test.ts tests/contracts/dist-entrypoints.test.ts
+        status: passed
+      - command: bunx tsc --noEmit
+        status: passed
+    risks:
+      - The top-level readiness report remains needs_human_review because unrelated visual editor specs in this worktree were already pending review before this sprite-sheet change.
 risks:
-  - This change specifies new public DSL/runtime/API behavior but does not implement code or regenerate demo bundles.
-  - Runtime bundle compatibility changes once implementation emits `scene.camera`; generated bundles using camera metadata must be compiled with the matching runtime.
-  - The runtime size budget has little headroom, so implementation should keep camera logic compact and avoid browser dependencies.
+  - The visual editor public package was implemented in a prior wave, but the top-level readiness status still reflects the original human-review gate for that broader editor spec package.
+  - The editor necessarily uses heavier browser authoring dependencies; implementation must keep them isolated from the core runtime graph.
+  - The visual editor must round-trip YAML deterministically without introducing editor-only authored fields.
+  - Browser-safe DSL export requires careful module boundaries so parser/compiler code can be used by the editor without pulling local-process CLI or filesystem code into browser bundles.
+  - Editor-support APIs must stay runtime-safe and covered by focused geometry/hit-test tests because editor interaction accuracy depends on them.
+  - Without browser automation in v1, visual interaction regressions require careful manual review until a later UI test suite is added.

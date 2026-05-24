@@ -94,10 +94,46 @@ Published packages:
 |---|---|---|
 | `@sebastianwessel/isostate` | yes | Browser runtime and dev-time DSL entrypoint |
 | `@sebastianwessel/isostate-cli` | approved next wave | Local process CLI for validation, compilation, static bundling, and inspection |
+| `@sebastianwessel/isostate-editor` | planned | Browser authoring UI for visual editing, YAML editing, validation, preview, and export |
 
 The repository root remains private. Browser runtime artifacts must continue to
 exclude `@sebastianwessel/isostate-cli`, `yaml`, parser, validator, compiler, and filesystem
 code.
+
+## Editor Package Stack
+
+`@sebastianwessel/isostate-editor` is a separate authoring package under
+`packages/editor`. It may use browser UI dependencies that are not allowed in
+the core runtime package:
+
+| Dependency Family | Purpose |
+|---|---|
+| React | Component runtime for the editor package and Astro React islands |
+| Radix primitives | Accessible controls used directly or through copied shadcn/ui component patterns |
+| CodeMirror 6 | YAML code editing, folding, diagnostics, search, and formatting actions |
+| YAML language tooling | Browser authoring parse/format support inside the editor package only |
+
+These dependencies are editor-only. They must not be imported by
+`@sebastianwessel/isostate`, included in static runtime bundles, or counted
+against the core browser runtime size budget.
+
+The editor may use shadcn/ui component source as implementation scaffolding, but
+published consumers must not need Tailwind, a shadcn project, or generated
+component files. The editor ships compiled CSS through
+`@sebastianwessel/isostate-editor/style.css` using CSS variables and ordinary
+CSS selectors. Light/dark mode follows a root `.dark` class plus editor CSS
+variables.
+
+CodeMirror 6 is the preferred YAML editor because it is modular, browser-first,
+and better suited to static Astro embedding than Monaco. Monaco is not part of
+the v1 dependency plan.
+
+The editor imports browser-safe DSL APIs from
+`@sebastianwessel/isostate/dsl/browser`. That entrypoint may include YAML
+parsing and pure validation/compilation code for authoring UI use, but it must
+not import `fs`, `path`, Bun APIs, Node-only modules, CLI code, or static bundle
+filesystem helpers. The existing `@sebastianwessel/isostate/dsl` entrypoint
+remains the local-process build/CLI entrypoint.
 
 ## Architecture Decision: SVG + CSS over Three.js
 

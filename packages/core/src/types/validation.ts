@@ -6,6 +6,8 @@ export interface ValidationError {
 	message: string;
 	/** Element ID involved (if applicable) */
 	elementId?: string;
+	/** Connection ID involved (if applicable) */
+	connectionId?: string;
 	/** State name involved (if applicable) */
 	stateName?: string;
 	/** Scene ID involved (if applicable) */
@@ -14,6 +16,10 @@ export interface ValidationError {
 	assetName?: string;
 	/** Layer name involved (if applicable) */
 	layerName?: string;
+	/** Dot-path field involved (if applicable) */
+	field?: string;
+	/** Offending value involved (if safe and applicable) */
+	value?: unknown;
 	/** Source location (if applicable) */
 	location?: {
 		file?: string;

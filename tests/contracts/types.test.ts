@@ -8,8 +8,10 @@ import type {
 	RuntimeBundle,
 	RuntimeConnectorState,
 	RuntimeConnectorStyle,
+	CompiledSprite,
 	PrimitiveContent,
 	SceneDocument,
+	SpriteSheetAssetCatalogEntry,
 	SceneStep,
 	TextContent
 } from '../../packages/core/src/types/index.ts';
@@ -19,6 +21,28 @@ import type {
 } from '../../packages/core/src/dsl/index.ts';
 
 describe('public type contracts', () => {
+	test('sprite sheet asset contracts expose placeable nested sprite ids', () => {
+		const sheet = {
+			id: 'app-icons',
+			type: 'sprite-sheet',
+			path: 'sprites/app-icons.png',
+			sheetSize: [512, 256],
+			tileSize: [64, 64],
+			sprites: {
+				server: [0, 0],
+				database: { at: [1, 0], anchor: [0.5, 0.92] },
+				'wide-service': { rect: [128, 0, 96, 64] }
+			}
+		} satisfies SpriteSheetAssetCatalogEntry;
+		const compiled = {
+			sheetSize: [512, 256],
+			rect: [64, 0, 64, 64]
+		} satisfies CompiledSprite;
+
+		expect(sheet.sprites.server).toEqual([0, 0]);
+		expect(compiled.rect).toEqual([64, 0, 64, 64]);
+	});
+
 	test('LifecycleStatus excludes internal absent sentinel', () => {
 		const statuses = [
 			'entering',
@@ -122,7 +146,9 @@ describe('public type contracts', () => {
 			},
 			remove: {
 				elements: [{ id: 'old-cache', exit: 'fade-out' }],
-				connections: [{ id: 'old-link', exit: 'fade-out' } satisfies ConnectionRemoval]
+				connections: [
+					{ id: 'old-link', exit: 'fade-out' } satisfies ConnectionRemoval
+				]
 			}
 		} satisfies SceneStep;
 

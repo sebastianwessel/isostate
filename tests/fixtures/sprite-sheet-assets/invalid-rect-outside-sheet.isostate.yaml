@@ -1,0 +1,19 @@
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: sprites/app-icons.png
+      sheetSize: [128, 64]
+      sprites:
+        server:
+          rect: [96, 0, 64, 64]
+  layers:
+    - name: structures
+scenes:
+  - id: initial
+    elements:
+      - id: api-server
+        asset: server
+        at: [1, 1]
+        layer: structures

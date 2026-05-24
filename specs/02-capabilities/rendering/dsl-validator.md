@@ -15,12 +15,20 @@ The validator runs after parsing and before compilation. It never runs in the br
 | Asset catalog exists | `header.assets` contains at least one entry unless every placement uses built-in generated assets | `NO_ASSETS` |
 | Duplicate asset ids | `header.assets[].id` values are unique | `DUPLICATE_ASSET_ID` |
 | Reserved built-in ids | `header.assets[].id` must not be `text`, `rectangle`, `circle`, `polygon`, or `line` | `BUILTIN_ASSET_ID_RESERVED` |
+| Supported asset type | `header.assets[].type`, when supplied, is `sprite-sheet`; omitted means normal URL asset | `ASSET_TYPE_UNSUPPORTED` |
 | Asset URL source | Each declared external asset can resolve to a URL through `header.assetBaseUrl` plus asset `path` or `id` | `ASSET_URL_REQUIRED` |
 | Asset anchor | `header.assets[].anchor`, when supplied, is a normalized `[x, y]` tuple where both values are `0..1` | `INVALID_ASSET_ANCHOR` |
+| Sprite sheet path | Sprite sheet `path` is present and has explicit `.png`, `.webp`, `.jpg`, `.jpeg`, or `.svg`; `.gif` is rejected | `INVALID_SPRITE_SHEET_PATH` |
+| Sprite sheet size | Sprite sheet `sheetSize` is a positive whole-pixel `[width, height]` tuple | `INVALID_SPRITE_SHEET_SIZE` |
+| Sprite tile size | `tileSize` is a positive whole-pixel tuple when any sprite uses tuple or `at` addressing | `INVALID_SPRITE_TILE_SIZE` |
+| Sprite list | Sprite sheet `sprites` contains at least one entry | `NO_SPRITES` |
+| Sprite ids | Sprite ids are kebab-case, not reserved, and globally unique across normal asset ids, sheet namespace ids, and all sprites | `INVALID_SPRITE_ID`, `DUPLICATE_SPRITE_ID`, `SPRITE_ASSET_ID_COLLISION` |
+| Sprite definitions | Each sprite uses exactly one of tuple, `at`, or `rect`, with no unknown fields | `INVALID_SPRITE_DEFINITION` |
+| Sprite rectangles | Authored or tile-derived sprite rectangles use whole pixels and fit inside `sheetSize` | `INVALID_SPRITE_RECT` |
 | Floor config | `header.floor`, when present, is a mapping | `DSL_SCHEMA_TYPE_ERROR` |
 | Floor size | `header.floor.size`, when present, is a positive `[columns, rows]` tuple | `INVALID_FLOOR_SIZE` |
 | Floor layer | `header.floor.layer`, when supplied, references a declared layer | `LAYER_NOT_FOUND` |
-| Floor asset | `header.floor.asset`, when supplied, is declared in `header.assets` | `ASSET_NOT_DECLARED` |
+| Floor asset | `header.floor.asset`, when supplied, is a placeable normal URL asset id or sprite id | `ASSET_NOT_DECLARED`, `SPRITE_SHEET_NOT_PLACEABLE` |
 | Layers exist | `header.layers` contains at least one layer | `NO_LAYERS` |
 | Duplicate layer names | `header.layers[].name` values are unique | `DUPLICATE_LAYER_NAME` |
 
@@ -48,18 +56,21 @@ The validator walks scenes in order and maintains a resolved presence map.
 | Update id is present | `update.elements[].id` is currently present | `ELEMENT_NOT_PRESENT` |
 | Remove id is present | `remove.elements[].id` is currently present | `ELEMENT_NOT_PRESENT` |
 | Update/remove conflict | Same id is not both updated and removed in one scene | `ELEMENT_DELTA_CONFLICT` |
-| Declared asset | Placement `asset` exists in `header.assets` | `ASSET_NOT_DECLARED` |
-| Built-in text payload | `asset: text` has valid `text.value`; non-text assets do not define `text` | `TEXT_CONTENT_REQUIRED`, `TEXT_CONTENT_FOR_NON_TEXT_ASSET`, `INVALID_TEXT_CONTENT`, `INVALID_TEXT_STYLE` |
-| Built-in primitive payload | `asset: rectangle`, `circle`, `polygon`, or `line` has exactly one matching `primitive` payload; external assets do not define `primitive` | `PRIMITIVE_CONTENT_REQUIRED`, `PRIMITIVE_CONTENT_MISMATCH`, `INVALID_PRIMITIVE_POINTS`, `INVALID_PRIMITIVE_STYLE`, `GENERATED_CONTENT_FOR_EXTERNAL_ASSET` |
+| Declared asset | Placement `asset` is a normal URL asset id, a sprite id, or a built-in generated id; sprite sheet namespace ids are rejected | `ASSET_NOT_DECLARED`, `SPRITE_SHEET_NOT_PLACEABLE` |
+| Built-in text payload | Text placements define a `text.value`; empty values warn, oversized values error; text updates may provide sparse nested text fields; non-text assets do not define `text` | `TEXT_CONTENT_REQUIRED`, `TEXT_CONTENT_FOR_NON_TEXT_ASSET`, `EMPTY_TEXT_CONTENT`, `INVALID_TEXT_CONTENT`, `INVALID_TEXT_STYLE` |
+| Built-in primitive payload | Primitive placements define exactly one matching `primitive` payload; primitive updates may provide sparse nested primitive fields; external assets do not define `primitive` | `PRIMITIVE_CONTENT_REQUIRED`, `PRIMITIVE_CONTENT_MISMATCH`, `INVALID_PRIMITIVE_POINTS`, `INVALID_PRIMITIVE_STYLE`, `GENERATED_CONTENT_FOR_EXTERNAL_ASSET` |
 | Declared layer | Placement/patch `layer` exists in `header.layers` | `LAYER_NOT_FOUND` |
 | Valid position | `at` tuple contains finite non-negative numbers | `INVALID_POSITION` |
-| Valid size | `size` is a positive whole-grid-cell count | `INVALID_SIZE` |
+| Valid size | Placement `size` is a positive whole-grid-cell count; update patch `size` is a whole-grid-cell count and may be `0` | `INVALID_SIZE` |
 | Known animation | `enter` and `exit` values are built-ins or registered custom names | `UNKNOWN_ANIMATION` |
 | Known ambient | `ambient[].name` is built-in or registered custom CSS | `UNKNOWN_AMBIENT_ANIMATION` |
 
 The authored DSL must not use `pos`, `states`, `keyframes`, or `lifecycle.status`. The parser should reject these as `UNKNOWN_FIELD` before semantic validation.
 
-For patches, `text` is legal only when the target element is already a text element. Patch text payloads replace the previous payload in full. `primitive` follows the same rule for primitive elements.
+For patches, `text` is legal only when the target element is already a text
+element. Patch text payloads merge field-by-field with the previous resolved
+text payload. `primitive` follows the same rule for primitive elements, using
+the child key that matches the element's primitive asset id.
 
 When an element is removed, the validator must inspect the resolved connection
 map before applying removals. Any present connection that references the removed
@@ -101,6 +112,7 @@ map independently from elements.
 | Unused declared asset | Asset declared but never used by any placement | `UNREFERENCED_ASSET` warning |
 | Unused layer | Layer has no element in any resolved scene | `UNREFERENCED_LAYER` warning |
 | Floor/content outside bounds | Element or connector route lies outside `floor.size` when `layout.bounds` is `floor` | `ELEMENT_OUTSIDE_FLOOR` or `CONNECTOR_OUTSIDE_FLOOR` warning |
+| Empty text value | `asset: text` has `text.value` that is empty or whitespace-only | `EMPTY_TEXT_CONTENT` warning |
 
 ## Validation Report
 
@@ -116,8 +128,11 @@ interface ValidationIssue {
   message: string;
   sceneId?: string;
   elementId?: string;
+  connectionId?: string;
   assetName?: string;
   layerName?: string;
+  field?: string;
+  value?: unknown;
   location?: {
     file?: string;
     line?: number;

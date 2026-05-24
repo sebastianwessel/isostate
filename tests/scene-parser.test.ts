@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
 import { parseScene } from '../packages/core/src/dsl/scene-parser';
 import { ParseError } from '../packages/core/src/types/errors';
 
@@ -13,6 +14,28 @@ function expectParseErrorCode(dsl: string, code: string) {
 }
 
 describe('parseScene', () => {
+	test('parses sprite sheet asset declarations', () => {
+		const scene = parseScene(
+			readFileSync(
+				'tests/fixtures/sprite-sheet-assets/verbose-rect.isostate.yaml',
+				'utf8'
+			)
+		);
+
+		expect(scene.header.assets[0]).toEqual({
+			id: 'app-icons',
+			type: 'sprite-sheet',
+			path: 'sprites/app-icons.webp',
+			sheetSize: [512, 256],
+			tileSize: [64, 64],
+			anchor: [0.5, 0.95],
+			sprites: {
+				server: { at: [0, 0] },
+				'wide-service': { rect: [128, 0, 96, 64], anchor: [0.5, 1] }
+			}
+		});
+	});
+
 	test('parses a header plus scene-delta document', () => {
 		const scene = parseScene(`
 header:
@@ -186,6 +209,39 @@ scenes:
 		expect(scene.scenes[2].camera).toEqual({
 			target: { reset: true },
 			duration: 300
+		});
+	});
+
+	test('parses sparse nested update deltas and zero-size patches', () => {
+		const scene = parseScene(`
+header:
+  assets: []
+  layers:
+    - name: labels
+scenes:
+  - id: start
+    elements:
+      - id: title
+        asset: text
+        at: [1, 1]
+        text:
+          value: Checkout
+          fill: "#111111"
+  - id: move-title
+    update:
+      elements:
+        - id: title
+          at: [2, 1]
+          size: 0
+          text:
+            fill: "#eeeeee"
+`);
+
+		expect(scene.scenes[1].update?.elements?.[0]).toEqual({
+			id: 'title',
+			at: [2, 1],
+			size: 0,
+			text: { fill: '#eeeeee' }
 		});
 	});
 

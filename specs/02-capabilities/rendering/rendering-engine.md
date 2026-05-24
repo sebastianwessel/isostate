@@ -24,7 +24,8 @@ The engine builds the SVG DOM from the scene definition:
 1. Creates the root `<svg>` element with a viewport sized to fit the isometric grid.
 2. Creates a `<g>` container for each layer, ordered by layer order (lowest first).
 3. Builds generated connector paths from compiled connector states.
-4. For each element, instantiates a URL-loaded SVG image or built-in asset node and places it in the correct layer container.
+4. For each element, instantiates a URL-loaded image, a sprite viewport, or a
+   built-in asset node and places it in the correct layer container.
 5. Applies theme CSS variables to all elements and connectors.
 6. Calculates initial screen positions using the isometric diamond projection formula.
 7. Applies CSS classes for built-in entry/exit and ambient animations.
@@ -100,7 +101,8 @@ uses equal point counts, endpoints are sufficient for linear interpolation.
 ## Camera Bounds Helpers
 
 The renderer owns the canonical helpers for camera bounds. Controller code must
-call these helpers instead of duplicating projection math.
+call these helpers instead of duplicating projection math. The editor-support
+API may wrap or re-export these helpers for editor overlay and hit-test use.
 
 ```ts
 interface ViewBoxRect {
@@ -465,7 +467,16 @@ When a state change applies a CSS property or animation class to a layer, the re
 
 ## Asset Canvas Requirement
 
-Assets should fill their own canvas — no padding, no empty margins. URL and inline SVG assets are rendered into a normalized square allocation with `preserveAspectRatio="xMidYMax meet"`. By default, the runtime aligns the normalized bottom-center point `[0.5, 1]` to the projected footprint anchor. Asset catalogs may declare `anchor: [x, y]` with normalized `0..1` viewport coordinates to align imported SVGs whose real ground contact is left or right of center. The renderer does not infer anchors from SVG path geometry.
+Assets should fill their own canvas — no padding, no empty margins. Normal URL
+assets are rendered into a normalized square allocation with
+`preserveAspectRatio="xMidYMax meet"`. Sprite assets are rendered as nested SVG
+viewports whose `viewBox` is the compiled sprite rectangle and whose child
+`<image>` uses the compiled sheet size. By default, the runtime aligns the
+normalized bottom-center point `[0.5, 1]` to the projected footprint anchor.
+Asset catalogs may declare `anchor: [x, y]` with normalized `0..1` viewport
+coordinates to align imported visuals whose real ground contact is left or
+right of center. The renderer does not infer anchors from SVG path geometry or
+image pixels.
 
 Assets are **pre-rendered 2D isometric illustrations** — drawn to look 3D from a single fixed perspective angle (the same angle used for the diamond grid projection). They are not true 3D objects; they are flat SVGs with shading, perspective, and depth cues that simulate isometric depth.
 

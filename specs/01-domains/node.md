@@ -21,6 +21,7 @@ interface ElementPlacement {
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
   text?: TextContent;
+  primitive?: PrimitiveContent;
 }
 ```
 
@@ -29,7 +30,7 @@ interface ElementPlacement {
 - `id`: unique kebab-case element id across the resolved timeline.
 - `asset`: document-local external asset id declared in `header.assets`, or the reserved built-in id `text`.
 - `at`: grid coordinate `[x, y]`. Use this in authored YAML. The older `pos` name is runtime/internal only.
-- `size`: positive grid-cell scale. Defaults to `1`.
+- `size`: positive whole-cell grid scale. Defaults to `1`.
 - `layer`: render layer. Defaults to `structures` when that layer exists, otherwise the first declared layer.
 - `enter`: entry animation used when the element is added.
 - `exit`: default exit animation used when the element is removed.
@@ -49,13 +50,22 @@ interface ElementPatch {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
-  text?: TextContent;
+  text?: TextContentPatch;
+  primitive?: PrimitiveContentPatch;
 }
 ```
 
 Omitted fields retain the previous resolved value.
 
-For an existing text element, `update.elements[].text` replaces the previous text payload. It is not merged field-by-field.
+Nested update payloads are sparse patches. `update.elements[].text` merges
+field-by-field into the previous resolved text payload, and
+`update.elements[].primitive.<kind>` merges field-by-field into the previous
+matching primitive payload. Updating only `text.fill` preserves `text.value`,
+`align`, `fontSize`, and other text fields.
+
+`update.elements[].size` may be `0` to scale an already-present element to zero
+without removing it from the resolved scene. Initial placements and
+`add.elements[]` placements must still use positive whole-cell `size` values.
 
 ## Text Content
 
@@ -68,13 +78,22 @@ interface TextContent {
   lineHeight?: number;
   fill?: string;
 }
+
+type TextContentPatch = Partial<TextContent>;
 ```
 
 `text.value` supports explicit line breaks. YAML authors may use either escaped `\n` in a quoted string or a block scalar. The renderer creates one SVG `<tspan>` per line and assigns each line through `textContent`.
 
+`PrimitiveContentPatch` is the sparse update counterpart for generated
+primitive payloads. It uses the same child key as the element's primitive asset
+id and may include only the primitive fields that change. Polygon and line
+patches may omit `points` when only style changes.
+
 Validation constraints:
 
-- `value`: non-empty, at most `1000` characters, at most `20` lines, and at least one non-whitespace line.
+- `value`: required for placements. Empty or whitespace-only values are valid
+  but emit `EMPTY_TEXT_CONTENT` because they render no visible label. Values
+  over `1000` characters or `20` lines emit `INVALID_TEXT_CONTENT`.
 - `align`: `start`, `middle`, or `end`; default `middle`.
 - `fontSize`: positive finite number; default `12`.
 - `fontWeight`: `normal`, `bold`, or a positive finite number; default `700`.
@@ -99,10 +118,12 @@ After removal, the element is absent from later scenes until a later `add.elemen
 The compiler resolves scene deltas into complete scene snapshots. The runtime interpolates between adjacent snapshots:
 
 - `at`: linearly interpolated in projected space through the element's grid coordinates.
-- `size`: linearly interpolated.
+- `size`: linearly interpolated. A destination patch value of `0` scales the
+  element to zero while keeping it present.
 - `layer`: discrete switch at the destination scene boundary unless a future layer-transition contract changes this.
 - `ambient`: discrete set applied at the destination scene boundary.
-- `text`: discrete replacement at the destination scene boundary.
+- `text` and `primitive`: resolved by sparse patch merge during compilation,
+  then applied discretely at the destination scene boundary.
 - `add`: element is absent before the destination scene and enters using `enter`.
 - `remove`: element exits using `exit` and is absent after the destination scene.
 

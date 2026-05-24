@@ -79,6 +79,18 @@ Supported:
 - `ambient: [{ name: flow }]` for dashed/dotted flow animation
 - road paths may use `style.lane: center-dashed`
 
+## Animation And Camera
+
+Use scene deltas for animation. Do not write keyframes.
+
+- Move elements by updating `at`.
+- Scale existing elements by updating `size`; `size: 0` is update-only.
+- Animate connection flow with `ambient: [{ name: flow }]`.
+- Use `enter`/`exit` for meaningful add/remove transitions.
+- Use scene `camera` metadata when the narrative should zoom to an element or
+  grid area. Stops without camera metadata inherit the previous camera focus;
+  use `target.reset: true` to return to the full compiled view.
+
 ## Endpoint Removal Rule
 
 Connections do not auto-disappear. If a scene removes an endpoint element, remove every present connection that references it in the same scene:
@@ -93,4 +105,3 @@ Connections do not auto-disappear. If a scene removes an endpoint element, remov
 ```
 
 Leaving a connection attached to a removed endpoint is invalid and should produce `CONNECTION_ENDPOINT_REMOVED`.
-

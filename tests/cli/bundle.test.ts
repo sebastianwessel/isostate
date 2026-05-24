@@ -123,7 +123,7 @@ describe('isostate bundle', () => {
 		expect(scene.assets?.text).toBeUndefined();
 		expect(scene.assets?.rectangle).toBeUndefined();
 		expect(manifest.format).toBe('isostate-static-bundle');
-		expect(manifest.version).toBe('0.2.0');
+		expect(manifest.version).toBe('0.3.0');
 		expect(manifest.runtime).toEqual({
 			mode: 'copy',
 			file: 'isostate.runtime.js'
@@ -164,6 +164,76 @@ describe('isostate bundle', () => {
 		expect(result.exitCode).toBe(1);
 		expect(result.stderr).toContain('ERROR ASSET_RESOLUTION_FAILED');
 		expect(await readFile(join(out, 'existing.txt'), 'utf8')).toBe('keep me');
+	});
+
+	test('copies sprite sheet sources once and rewrites logical sprite URLs', async () => {
+		const dir = await makeTempDir();
+		const input = join(dir, 'scene.isostate.yaml');
+		const assetDir = join(dir, 'source-assets');
+		const out = join(dir, 'public', 'isostate');
+		await mkdir(assetDir, { recursive: true });
+		await writeFile(
+			input,
+			`header:
+  version: "0.1"
+  assetBaseUrl: ./source-assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: app-icons.png
+      sheetSize: [128, 64]
+      tileSize: [32, 32]
+      sprites:
+        app-home: [0, 0]
+        app-alert: [1, 0]
+  layers:
+    - name: default
+scenes:
+  - id: initial
+    elements:
+      - id: home
+        asset: app-home
+        at: [0, 0]
+      - id: alert
+        asset: app-alert
+        at: [1, 0]
+`,
+			'utf8'
+		);
+		await writeFile(join(assetDir, 'app-icons.png'), fakePng(128, 64));
+
+		const result = await runCli([
+			'bundle',
+			input,
+			'--out',
+			out,
+			'--asset-dir',
+			assetDir,
+			'--public-asset-base',
+			'/cdn/assets'
+		]);
+
+		expect(result.exitCode).toBe(0);
+		expect((await readdir(join(out, 'assets'))).sort()).toEqual([
+			'app-icons.png'
+		]);
+		const scene = fromJs(
+			await readFile(join(out, 'scene.isostate.js'), 'utf8')
+		);
+		expect(scene.assets?.['app-home']?.url).toBe('/cdn/assets/app-icons.png');
+		expect(scene.assets?.['app-alert']?.url).toBe('/cdn/assets/app-icons.png');
+		expect(scene.assets?.['app-home']?.sprite?.rect).toEqual([0, 0, 32, 32]);
+		expect(scene.assets?.['app-alert']?.sprite?.rect).toEqual([32, 0, 32, 32]);
+		const manifest = JSON.parse(
+			await readFile(join(out, 'manifest.json'), 'utf8')
+		);
+		expect(manifest.assets.map((asset: { id: string }) => asset.id)).toEqual([
+			'app-alert',
+			'app-home'
+		]);
+		expect(
+			new Set(manifest.assets.map((asset: { file: string }) => asset.file))
+		).toEqual(new Set(['assets/app-icons.png']));
 	});
 
 	test('rejects extra input paths', async () => {
@@ -225,4 +295,12 @@ async function runCli(args: string[]) {
 	]);
 
 	return { stdout, stderr, exitCode };
+}
+
+function fakePng(width: number, height: number): Buffer {
+	const bytes = Buffer.alloc(24);
+	bytes.set(Buffer.from([0x89, 0x50, 0x4e, 0x47]), 0);
+	bytes.writeUInt32BE(width, 16);
+	bytes.writeUInt32BE(height, 20);
+	return bytes;
 }

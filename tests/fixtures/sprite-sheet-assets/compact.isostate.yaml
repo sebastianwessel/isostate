@@ -1,0 +1,27 @@
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: sprites/app-icons.png
+      sheetSize: [512, 256]
+      tileSize: [64, 64]
+      sprites:
+        server: [0, 0]
+        database: [1, 0]
+  floor:
+    size: [4, 3]
+  layers:
+    - name: ground
+    - name: structures
+scenes:
+  - id: initial
+    elements:
+      - id: api-server
+        asset: server
+        at: [1, 1]
+        layer: structures
+      - id: db-node
+        asset: database
+        at: [2, 1]
+        layer: structures

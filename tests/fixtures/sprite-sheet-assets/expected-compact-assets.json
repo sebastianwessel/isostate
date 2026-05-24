@@ -1,0 +1,18 @@
+{
+  "database": {
+    "anchor": [0.5, 1],
+    "sprite": {
+      "rect": [64, 0, 64, 64],
+      "sheetSize": [512, 256]
+    },
+    "url": "./assets/sprites/app-icons.png"
+  },
+  "server": {
+    "anchor": [0.5, 1],
+    "sprite": {
+      "rect": [0, 0, 64, 64],
+      "sheetSize": [512, 256]
+    },
+    "url": "./assets/sprites/app-icons.png"
+  }
+}

@@ -2,6 +2,7 @@
 import SiteLayout from '../layouts/SiteLayout.astro';
 import { Code } from 'astro:components';
 import heroBackgroundUrl from '../../../assets/isostate-story/hero-tilt-shift-city.png?url';
+import editorScreenshotUrl from '../../../assets/isostate-story/editor-overview.png?url';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -132,7 +133,7 @@ scenes:
 				</p>
 				<div class="hero-ctas">
 					<a class="cta-primary" href="#story">See it in action</a>
-					<a class="cta-ghost" href={href('/docs/getting-started.md')}>Read the docs →</a>
+					<a class="cta-ghost" href={href('/docs/README.md')}>Read the docs →</a>
 				</div>
 				<ul class="hero-pills" aria-label="Key facts">
 					<li><strong>YAML</strong> scene authoring</li>
@@ -372,7 +373,28 @@ scenes:
 			</div>
 		</section>
 
-		<!-- ④ USE CASES ─────────────────────────────────────────── -->
+		<!-- ④ EDITOR ───────────────────────────────────────────── -->
+		<section class="editor-section" aria-label="isostate editor">
+			<div class="editor-copy">
+				<p class="eyebrow green">Visual authoring</p>
+				<h2>Start visually, keep the YAML.</h2>
+				<p>
+					Use the editor to place assets, tune scenes, and export the same
+					`.isostate.yaml` that the CLI validates and compiles. It is the faster
+					way to find anchors, object positions, and scene timing without giving
+					up source-controlled text.
+				</p>
+				<div class="editor-actions">
+					<a class="cta-primary" href={href('/editor')}>Open the editor</a>
+					<a class="cta-ghost" href={href('/docs/guides/use-editor-in-astro.md')}>Editor docs →</a>
+				</div>
+			</div>
+			<a class="editor-shot" href={href('/editor')} aria-label="Open the isostate editor">
+				<img src={editorScreenshotUrl} alt="isostate editor showing the canvas, YAML editor, and asset browser" loading="lazy" decoding="async" />
+			</a>
+		</section>
+
+		<!-- ⑤ USE CASES ─────────────────────────────────────────── -->
 		<section class="use-cases" aria-label="What you can build">
 			<div class="section-inner">
 				<header class="section-header">
@@ -418,7 +440,7 @@ scenes:
 			</div>
 		</section>
 
-		<!-- ⑤ FEATURES ──────────────────────────────────────────── -->
+		<!-- ⑥ FEATURES ──────────────────────────────────────────── -->
 		<section class="features" aria-label="Key features">
 			<div class="section-inner">
 				<header class="section-header centered">
@@ -458,17 +480,17 @@ scenes:
 			</div>
 		</section>
 
-		<!-- ⑥ GET STARTED ───────────────────────────────────────── -->
+		<!-- ⑦ GET STARTED ───────────────────────────────────────── -->
 		<section class="cta-section" aria-label="Get started with isostate">
 			<div class="cta-inner">
 				<p class="eyebrow light">Ready to start?</p>
 				<h2>Make your docs come&nbsp;alive.</h2>
 				<p class="cta-sub">
 					You'll have your first scene running in minutes.
-					Start with the getting-started guide or browse the examples to see what's possible.
+					Start with the story-first docs or browse the examples to see what's possible.
 				</p>
 				<div class="cta-actions">
-					<a class="cta-primary" href={href('/docs/getting-started.md')}>Get started</a>
+					<a class="cta-primary" href={href('/docs/README.md')}>Get started</a>
 					<a class="cta-ghost-inv" href={href('/docs/examples/runtime-basic.md')}>Browse examples</a>
 					<a class="cta-link" href="https://github.com/sebastianwessel/isostate">View on GitHub →</a>
 				</div>
@@ -1201,10 +1223,74 @@ scenes:
 			transform: translateY(-1px);
 		}
 
+		/* ── EDITOR ──────────────────────────────────────────── */
+		.editor-section {
+			display: grid;
+			grid-template-columns: minmax(280px, 0.78fr) minmax(420px, 1.22fr);
+			gap: clamp(28px, 5vw, 72px);
+			align-items: center;
+			padding: clamp(72px, 10vw, 128px) clamp(24px, 5vw, 80px);
+			background: #fffdf5;
+			border-top: 1px solid rgba(15, 95, 79, 0.08);
+		}
+
+		.editor-copy {
+			max-width: 520px;
+		}
+
+		.editor-copy h2 {
+			margin: 0;
+			font-family: var(--font-display);
+			font-size: clamp(2.3rem, 4vw, 4.4rem);
+			line-height: 0.95;
+			color: var(--ink);
+		}
+
+		.editor-copy p:not(.eyebrow) {
+			margin: 20px 0 0;
+			color: var(--soft-ink);
+			font-size: 1.05rem;
+			line-height: 1.7;
+		}
+
+		.editor-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 12px;
+			margin-top: 30px;
+		}
+
+		.editor-shot {
+			display: block;
+			overflow: hidden;
+			border: 1px solid rgba(16, 20, 21, 0.12);
+			border-radius: 10px;
+			background: #eef1f4;
+			box-shadow: 0 24px 70px rgba(16, 20, 21, 0.16);
+			text-decoration: none;
+			transform: rotate(-1deg);
+			transition:
+				transform 180ms ease,
+				box-shadow 180ms ease;
+		}
+
+		.editor-shot:hover {
+			transform: rotate(0deg) translateY(-3px);
+			box-shadow: 0 30px 90px rgba(16, 20, 21, 0.2);
+		}
+
+		.editor-shot img {
+			display: block;
+			width: 100%;
+			height: auto;
+			aspect-ratio: 16 / 10;
+			object-fit: cover;
+			object-position: 50% 50%;
+		}
+
 		/* ── USE CASES ───────────────────────────────────────── */
 		.use-cases {
 			background: #fffdf5;
-			border-top: 1px solid rgba(15, 95, 79, 0.08);
 			padding: clamp(64px, 9vw, 110px) clamp(24px, 5vw, 80px);
 		}
 
@@ -1461,6 +1547,14 @@ scenes:
 
 			.step-arrow {
 				display: none;
+			}
+
+			.editor-section {
+				grid-template-columns: 1fr;
+			}
+
+			.editor-shot {
+				transform: none;
 			}
 
 			.features-grid {

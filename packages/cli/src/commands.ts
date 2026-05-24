@@ -7,6 +7,7 @@ import {
 	toJson,
 	validateScene
 } from '@sebastianwessel/isostate/dsl';
+import { assetsManifestCommand } from './assets-manifest.js';
 import {
 	formatThrownError,
 	formatValidationError,
@@ -44,6 +45,8 @@ export async function runCli(
 				return await bundleCommand(rest, io);
 			case 'inspect':
 				return await inspectCommand(rest, io);
+			case 'assets':
+				return await assetsCommand(rest, io);
 			case undefined:
 				io.stderr.error('ERROR MISSING_COMMAND Expected a command');
 				return { exitCode: 1 };
@@ -54,6 +57,24 @@ export async function runCli(
 	} catch (error) {
 		io.stderr.error(formatThrownError(error));
 		return { exitCode: 1 };
+	}
+}
+
+async function assetsCommand(args: string[], io: CliIo): Promise<CliResult> {
+	const [subcommand, ...rest] = args;
+	switch (subcommand) {
+		case 'manifest':
+			return await assetsManifestCommand(rest, io);
+		case undefined:
+			io.stderr.error(
+				'ERROR MISSING_SUBCOMMAND Expected a subcommand for assets'
+			);
+			return { exitCode: 1 };
+		default:
+			io.stderr.error(
+				`ERROR UNKNOWN_SUBCOMMAND Unknown subcommand "${subcommand}" for assets`
+			);
+			return { exitCode: 1 };
 	}
 }
 

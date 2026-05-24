@@ -1,0 +1,1083 @@
+@import "tailwindcss" prefix(iso);
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *, [data-theme="dark"] *));
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--background);
+	--color-card-foreground: var(--foreground);
+	--color-popover: var(--background);
+	--color-popover-foreground: var(--foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--error);
+	--color-destructive-foreground: var(--primary-foreground);
+	--color-border: var(--border);
+	--color-input: var(--border);
+	--color-ring: var(--ring);
+	--radius-sm: calc(var(--radius) - 4px);
+	--radius-md: calc(var(--radius) - 2px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+	--background: #ffffff;
+	--foreground: #0a0a0a;
+	--border: #e4e4e7;
+	--ring: #18181b;
+	--primary: #18181b;
+	--primary-foreground: #fafafa;
+	--secondary: #f4f4f5;
+	--secondary-foreground: #18181b;
+	--muted: #f4f4f5;
+	--muted-foreground: #71717a;
+	--accent: #f4f4f5;
+	--accent-foreground: #18181b;
+	--radius: 0.375rem;
+	--error: #ef4444;
+	--warning: #f59e0b;
+	--success: #22c55e;
+}
+
+.isostate-editor {
+	--background: #ffffff;
+	--foreground: #0a0a0a;
+	--border: #e4e4e7;
+	--ring: #18181b;
+	--primary: #18181b;
+	--primary-foreground: #fafafa;
+	--secondary: #f4f4f5;
+	--secondary-foreground: #18181b;
+	--muted: #f4f4f5;
+	--muted-foreground: #71717a;
+	--accent: #f4f4f5;
+	--accent-foreground: #18181b;
+	--radius: 0.375rem;
+	--error: #ef4444;
+	--warning: #f59e0b;
+	--success: #22c55e;
+}
+
+.isostate-editor[data-theme="dark"] {
+	--background: #09090b;
+	--foreground: #fafafa;
+	--border: #27272a;
+	--ring: #d4d4d8;
+	--primary: #fafafa;
+	--primary-foreground: #18181b;
+	--secondary: #27272a;
+	--secondary-foreground: #fafafa;
+	--muted: #27272a;
+	--muted-foreground: #a1a1aa;
+	--accent: #27272a;
+	--accent-foreground: #fafafa;
+}
+
+.isostate-editor {
+	display: flex;
+	flex-direction: column;
+	width: 100%;
+	height: 100%;
+	background: var(--background);
+	color: var(--foreground);
+	font-family:
+		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+		Roboto, "Helvetica Neue", Arial, sans-serif;
+	font-size: 14px;
+	line-height: 1.5;
+}
+
+.isostate-editor-topbar {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.5rem 1rem;
+	min-height: 52px;
+	border-bottom: 1px solid var(--border);
+	background: var(--background);
+	flex-shrink: 0;
+	flex-wrap: wrap;
+}
+
+.isostate-editor-title {
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--foreground);
+}
+
+.isostate-editor-toolbar {
+	display: flex;
+	gap: 0.5rem;
+	margin-left: auto;
+	align-items: center;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.isostate-editor-toolbar button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.25rem;
+	background: var(--secondary);
+	color: var(--secondary-foreground);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	padding: 0.25rem 0.5rem;
+	font-size: 12px;
+	cursor: pointer;
+	line-height: 1.5;
+}
+
+.isostate-editor-toolbar button:hover {
+	background: var(--accent);
+}
+
+.isostate-editor-toolbar button:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+[data-slot="select-trigger"] {
+	background: var(--background);
+}
+
+[data-slot="select-content"] {
+	background: var(--background);
+	color: var(--foreground);
+	border-color: var(--border);
+}
+
+.isostate-icon {
+	width: 1rem;
+	height: 1rem;
+	flex: 0 0 auto;
+}
+
+.isostate-editor-body {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	min-width: 0;
+	overflow: hidden;
+	background: var(--background);
+}
+
+.isostate-editor-main {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.isostate-editor-canvas {
+	position: relative;
+	flex: 0 0 var(--isostate-canvas-pane, 58%);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 240px;
+	min-height: 0;
+	overflow: hidden;
+	background: var(--muted);
+}
+
+.isostate-editor-canvas--invalid {
+	pointer-events: none;
+}
+
+.isostate-editor-canvas-overlay {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(0, 0, 0, 0.04);
+	pointer-events: none;
+	z-index: 10;
+}
+
+.isostate-editor-canvas-overlay span {
+	font-size: 12px;
+	color: var(--muted-foreground);
+	background: var(--background);
+	padding: 0.375rem 0.75rem;
+	border-radius: var(--radius);
+	border: 1px solid var(--border);
+}
+
+.isostate-editor-canvas-view {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	touch-action: none;
+	cursor: grab;
+	--isostate-editor-grid-opacity: 0.7;
+	--isostate-editor-grid-line: #2563eb;
+	--isostate-editor-grid-boundary: #1d4ed8;
+	--isostate-editor-grid-fill: #dbeafe;
+}
+
+.isostate-editor[data-theme="dark"] .isostate-editor-canvas-view {
+	--isostate-editor-grid-line: #93c5fd;
+	--isostate-editor-grid-boundary: #bfdbfe;
+	--isostate-editor-grid-fill: #1e3a8a;
+}
+
+.isostate-editor-canvas-view--panning {
+	cursor: grabbing;
+}
+
+.isostate-editor-canvas-view .iso-floor-grid {
+	opacity: 1;
+}
+
+.isostate-editor-canvas-view .iso-floor-grid .iso-floor-slab {
+	fill: var(--isostate-editor-grid-fill);
+	fill-opacity: 0.12;
+	stroke: var(--isostate-editor-grid-boundary);
+	stroke-opacity: calc(var(--isostate-editor-grid-opacity) * 0.85);
+	stroke-width: 1.25;
+}
+
+.isostate-editor-canvas-view .iso-floor-grid line {
+	stroke: var(--isostate-editor-grid-line);
+	stroke-opacity: var(--isostate-editor-grid-opacity);
+	stroke-width: 1.35;
+	vector-effect: non-scaling-stroke;
+}
+
+.isostate-canvas-controls {
+	position: absolute;
+	top: 0.75rem;
+	right: 0.75rem;
+	z-index: 4;
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	padding: 0.25rem;
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: color-mix(in srgb, var(--background) 92%, transparent);
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.isostate-canvas-zoom {
+	min-width: 3rem;
+	color: var(--muted-foreground);
+	font-size: 11px;
+	text-align: center;
+}
+
+.isostate-grid-opacity-control {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.375rem;
+	padding: 0 0.25rem;
+	color: var(--muted-foreground);
+	font-size: 11px;
+}
+
+.isostate-grid-opacity {
+	width: 5rem;
+	accent-color: var(--primary);
+}
+
+.isostate-grid-opacity-native {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.isostate-grid-opacity-slider {
+	width: 5rem;
+}
+
+.isostate-editor-overlay {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+}
+
+.isostate-editor-selection-cell {
+	fill: color-mix(in srgb, var(--ring) 18%, transparent);
+	stroke: var(--ring);
+	stroke-width: 1.25;
+	stroke-dasharray: 3 2;
+}
+
+.isostate-editor-selection-bounds {
+	fill: none;
+	stroke: var(--ring);
+	stroke-width: 1.5;
+	stroke-dasharray: 4 2;
+}
+
+.isostate-editor-selection-handle {
+	fill: var(--background);
+	stroke: var(--ring);
+	stroke-width: 1;
+}
+
+.isostate-editor-drag-ghost {
+	fill: var(--primary);
+	opacity: 0.25;
+	stroke: var(--primary);
+	stroke-width: 1;
+	stroke-dasharray: 4 2;
+	pointer-events: none;
+}
+
+.isostate-editor-yaml {
+	flex: 1 1 auto;
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: stretch;
+	min-width: 240px;
+	min-height: 0;
+	overflow: hidden;
+	background: var(--background);
+}
+
+.isostate-editor-yaml-body {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.isostate-editor-footer {
+	flex: 0 0 auto;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 0.5rem;
+	padding: 0.5rem;
+	border-top: 1px solid var(--border);
+	background: var(--background);
+}
+
+.isostate-pane-resizer {
+	flex: 0 0 7px;
+	margin: 0;
+	border: 0;
+	background: linear-gradient(
+		90deg,
+		transparent 0 3px,
+		var(--border) 3px 4px,
+		transparent 4px
+	);
+	cursor: col-resize;
+}
+
+.isostate-pane-resizer:hover {
+	background: linear-gradient(
+		90deg,
+		transparent 0 2px,
+		var(--primary) 2px 5px,
+		transparent 5px
+	);
+}
+
+.isostate-editor-yaml-editor {
+	flex: 1;
+	width: 100%;
+	height: 100%;
+	min-height: 0;
+	overflow: auto;
+}
+
+.isostate-editor-yaml-editor .cm-editor {
+	width: 100%;
+	height: 100%;
+}
+
+.isostate-editor-yaml-editor .cm-scroller {
+	font-family:
+		ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+		"Courier New", monospace;
+	font-size: 13px;
+	line-height: 1.5;
+}
+
+.isostate-editor-sidebar {
+	width: var(--isostate-sidebar-pane, 360px);
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	background: var(--background);
+	overflow: hidden;
+	border-right: 1px solid var(--border);
+}
+
+.isostate-sidebar-tabs-host {
+	flex: 1 1 auto;
+	min-height: 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
+@media (max-width: 900px) {
+	.isostate-editor-body {
+		flex-direction: column;
+		overflow: hidden;
+	}
+
+	.isostate-editor-main {
+		flex: 1 1 auto;
+		flex-direction: column;
+		height: auto;
+		min-height: 0;
+		overflow: hidden;
+	}
+
+	.isostate-editor-canvas,
+	.isostate-editor-yaml {
+		min-width: 0;
+		min-height: 0;
+	}
+
+	.isostate-editor-canvas {
+		--isostate-canvas-pane: 28%;
+	}
+
+	.isostate-pane-resizer {
+		flex-basis: 7px;
+		cursor: row-resize;
+		background: linear-gradient(
+			0deg,
+			transparent 0 3px,
+			var(--border) 3px 4px,
+			transparent 4px
+		);
+	}
+
+	.isostate-editor-sidebar {
+		width: 100%;
+		flex: 0 0 190px;
+		min-height: 0;
+		border-top: 1px solid var(--border);
+		border-right: 0;
+	}
+
+	.isostate-pane-resizer--sidebar {
+		display: none;
+	}
+
+	.isostate-editor-yaml {
+		flex: 1 1 0;
+	}
+}
+
+.isostate-sidebar-tabs {
+	display: flex;
+	border-bottom: 1px solid var(--border);
+	flex-shrink: 0;
+}
+
+.isostate-sidebar-tab {
+	flex: 1;
+	padding: 0.5rem 0.25rem;
+	font-size: 12px;
+	font-weight: 500;
+	background: var(--background);
+	color: var(--muted-foreground);
+	border: none;
+	border-bottom: 2px solid transparent;
+	cursor: pointer;
+	transition: color 0.15s;
+}
+
+.isostate-sidebar-tab:hover {
+	color: var(--foreground);
+}
+
+.isostate-sidebar-tab--active {
+	color: var(--foreground);
+	border-bottom-color: var(--ring);
+}
+
+.isostate-sidebar-content {
+	flex: 1;
+	display: flex;
+	min-height: 0;
+	overflow: hidden;
+	padding: 0;
+}
+
+.isostate-sidebar-content--disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.isostate-editor-placeholder {
+	color: var(--muted-foreground);
+	font-size: 13px;
+	padding: 1rem;
+}
+
+.isostate-attributes-panel {
+	display: flex;
+	flex: 1 1 auto;
+	flex-direction: column;
+	min-height: 0;
+	min-width: 0;
+	overflow: hidden;
+}
+
+.isostate-attributes-tree {
+	flex: 0 0 var(--isostate-attribute-tree-pane, 56%);
+	min-height: 120px;
+	overflow-y: auto;
+	padding: 0.75rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.isostate-attributes-inspector {
+	flex: 1 1 auto;
+	min-height: 120px;
+	overflow-y: auto;
+	padding: 0.75rem;
+}
+
+.isostate-attribute-split-resizer {
+	flex: 0 0 7px;
+	margin: 0;
+	border: 0;
+	background: linear-gradient(
+		0deg,
+		transparent 0 3px,
+		var(--border) 3px 4px,
+		transparent 4px
+	);
+	cursor: row-resize;
+}
+
+.isostate-attribute-split-resizer:hover {
+	background: linear-gradient(
+		0deg,
+		transparent 0 2px,
+		var(--primary) 2px 5px,
+		transparent 5px
+	);
+}
+
+/* Inspector */
+.isostate-inspector {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.isostate-inspector-section {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--muted-foreground);
+	padding: 0.5rem 0 0.25rem;
+	border-bottom: 1px solid var(--border);
+	margin-top: 0.25rem;
+}
+
+.isostate-inspector-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.25rem 0;
+	min-height: 28px;
+}
+
+.isostate-inspector-label {
+	width: 80px;
+	font-size: 12px;
+	color: var(--muted-foreground);
+	flex-shrink: 0;
+}
+
+.isostate-inspector-control {
+	flex: 1;
+	min-width: 0;
+}
+
+.isostate-input,
+.isostate-select,
+.isostate-textarea {
+	width: 100%;
+	padding: 0.25rem 0.375rem;
+	font-size: 12px;
+	background: var(--background);
+	color: var(--foreground);
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	outline: none;
+}
+
+.isostate-input:focus,
+.isostate-select:focus,
+.isostate-textarea:focus {
+	border-color: var(--ring);
+	box-shadow: 0 0 0 1px var(--ring);
+}
+
+.isostate-textarea {
+	min-height: 72px;
+	resize: vertical;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
+	line-height: 1.35;
+}
+
+.isostate-toggle-row,
+.isostate-grid-pair {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.375rem;
+}
+
+.isostate-grid-pair {
+	flex-wrap: nowrap;
+}
+
+.isostate-input--readonly {
+	background: var(--muted);
+	color: var(--muted-foreground);
+}
+
+.isostate-input--sm {
+	padding: 0.125rem 0.25rem;
+	font-size: 11px;
+}
+
+.isostate-readonly-value {
+	font-size: 12px;
+	color: var(--muted-foreground);
+}
+
+.isostate-nudge-row {
+	justify-content: center;
+	gap: 0.25rem;
+	padding: 0.5rem 0;
+}
+
+.isostate-inspector-empty {
+	padding-bottom: 0.5rem;
+}
+
+.isostate-inspector-actions {
+	display: flex;
+	gap: 0.5rem;
+	padding: 0.5rem 0.75rem;
+}
+
+.isostate-panel-header {
+	display: flex;
+	gap: 0.5rem;
+	flex-wrap: wrap;
+}
+
+.isostate-scene-tree {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.isostate-layer-add-row {
+	display: flex;
+	gap: 0.5rem;
+}
+
+.isostate-tree-list {
+	display: flex;
+	flex-direction: column;
+	gap: 0.5rem;
+}
+
+.isostate-tree-scene {
+	border: 1px solid var(--border);
+	border-radius: var(--radius);
+	background: var(--background);
+	overflow: hidden;
+}
+
+.isostate-tree-scene--active {
+	border-color: var(--ring);
+	box-shadow: inset 3px 0 0 var(--ring);
+}
+
+.isostate-tree-scene-header,
+.isostate-tree-layer-header {
+	display: flex;
+	align-items: center;
+	gap: 0.375rem;
+	min-height: 30px;
+	padding: 0.25rem 0.5rem;
+}
+
+.isostate-tree-scene-header {
+	background: var(--muted);
+}
+
+.isostate-tree-disclosure,
+.isostate-layer-toggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 1.5rem;
+	height: 1.5rem;
+	background: none;
+	border: none;
+	cursor: pointer;
+	font-size: 12px;
+	padding: 0;
+	color: var(--foreground);
+	opacity: 0.8;
+}
+
+.isostate-tree-disclosure:hover,
+.isostate-layer-toggle:hover {
+	opacity: 1;
+}
+
+.isostate-tree-name {
+	flex: 1;
+	min-width: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--foreground);
+	font-weight: 600;
+	font-size: 13px;
+	text-align: left;
+	cursor: pointer;
+}
+
+.isostate-tree-count {
+	min-width: 1.5rem;
+	padding: 0 0.25rem;
+	border-radius: 999px;
+	background: var(--background);
+	color: var(--muted-foreground);
+	font-size: 11px;
+	text-align: center;
+}
+
+.isostate-tree-layers {
+	display: flex;
+	flex-direction: column;
+}
+
+.isostate-tree-layer {
+	border-top: 1px solid var(--border);
+}
+
+.isostate-tree-layer--hidden .isostate-tree-elements {
+	opacity: 0.45;
+}
+
+.isostate-tree-layer-header {
+	padding-left: 1rem;
+}
+
+.isostate-tree-layer-name {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--muted-foreground);
+}
+
+.isostate-tree-row-icon {
+	width: 0.875rem;
+	height: 0.875rem;
+	flex: 0 0 auto;
+	color: var(--muted-foreground);
+}
+
+.isostate-tree-elements {
+	display: flex;
+	flex-direction: column;
+	padding: 0 0.375rem 0.375rem 2.25rem;
+	gap: 0.25rem;
+}
+
+.isostate-tree-element {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 0.5rem;
+	width: 100%;
+	min-height: 28px;
+	padding: 0.25rem 0.5rem;
+	border: 1px solid transparent;
+	border-radius: var(--radius);
+	background: transparent;
+	color: var(--foreground);
+	cursor: grab;
+	text-align: left;
+}
+
+.isostate-tree-element:hover,
+.isostate-tree-element--selected {
+	border-color: var(--border);
+	background: var(--accent);
+}
+
+.isostate-tree-id-input {
+	flex: 1 1 auto;
+	min-width: 0;
+	width: 100%;
+	border: 1px solid transparent;
+	border-radius: calc(var(--radius) - 2px);
+	background: transparent;
+	color: var(--foreground);
+	font: inherit;
+	font-size: 12px;
+	font-weight: 600;
+	padding: 0.125rem 0.25rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.isostate-tree-id-input:focus {
+	background: var(--background);
+	border-color: var(--ring);
+	outline: none;
+	box-shadow: 0 0 0 1px var(--ring);
+}
+
+/* Asset Panel */
+.isostate-asset-panel {
+	display: flex;
+	flex-direction: column;
+	gap: 0.75rem;
+}
+
+.isostate-asset-manifest-input {
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid var(--border);
+}
+
+.isostate-asset-loading {
+	font-size: 12px;
+	color: var(--muted-foreground);
+	padding: 0.5rem;
+}
+
+.isostate-asset-error {
+	font-size: 12px;
+	color: var(--error);
+	padding: 0.5rem;
+	background: rgba(239, 68, 68, 0.08);
+	border-radius: var(--radius);
+}
+
+.isostate-asset-filters {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+
+.isostate-asset-warnings {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+
+.isostate-asset-warning {
+	font-size: 11px;
+	padding: 0.375rem 0.5rem;
+	background: rgba(239, 68, 68, 0.06);
+	color: var(--error);
+	border-radius: var(--radius);
+}
+
+.isostate-asset-warning--unused {
+	background: rgba(245, 158, 11, 0.06);
+	color: var(--warning);
+}
+
+.isostate-asset-section {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+
+.isostate-asset-section-title {
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	color: var(--muted-foreground);
+}
+
+.isostate-asset-group {
+	display: flex;
+	flex-direction: column;
+	gap: 0.375rem;
+}
+
+.isostate-asset-group-title {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	width: 100%;
+	border: 0;
+	background: transparent;
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--foreground);
+	padding-top: 0.25rem;
+	cursor: pointer;
+	text-align: left;
+}
+
+.isostate-asset-group-title:hover {
+	color: var(--primary);
+}
+
+.isostate-asset-group-disclosure {
+	width: 1rem;
+	color: var(--muted-foreground);
+	text-align: center;
+}
+
+.isostate-asset-group-count {
+	margin-left: auto;
+	min-width: 1.25rem;
+	border-radius: 999px;
+	background: var(--muted);
+	color: var(--muted-foreground);
+	text-align: center;
+	padding: 0 0.25rem;
+	font-size: 11px;
+}
+
+.isostate-asset-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
+	gap: 0.25rem;
+}
+
+.isostate-asset-item {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 0;
+	aspect-ratio: 1;
+	padding: 0.1875rem;
+	border: 1px solid transparent;
+	border-radius: calc(var(--radius) - 2px);
+	cursor: grab;
+	background: transparent;
+	position: relative;
+}
+
+.isostate-asset-item:hover {
+	border-color: var(--ring);
+	background: var(--accent);
+	background: color-mix(in srgb, var(--accent) 70%, transparent);
+}
+
+.isostate-asset-item--builtin {
+	background: transparent;
+}
+
+.isostate-asset-item--active {
+	border-color: var(--primary);
+	box-shadow: 0 0 0 2px var(--primary);
+}
+
+.isostate-asset-thumb {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	background: transparent;
+	border-radius: calc(var(--radius) - 3px);
+	overflow: hidden;
+}
+
+.isostate-asset-thumb img {
+	display: block;
+	max-width: 100%;
+	max-height: 100%;
+	object-fit: contain;
+}
+
+.isostate-asset-sprite-window {
+	position: relative;
+	width: 100%;
+	max-width: 100%;
+	max-height: 100%;
+	overflow: hidden;
+}
+
+.isostate-asset-sprite-window img {
+	max-width: none;
+	max-height: none;
+	transform-origin: top left;
+}
+
+.isostate-asset-thumb--builtin {
+	background: transparent;
+	color: var(--foreground);
+}
+
+.isostate-asset-thumb--builtin svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
+.isostate-asset-thumb--builtin rect,
+.isostate-asset-thumb--builtin circle,
+.isostate-asset-thumb--builtin polygon,
+.isostate-asset-thumb--builtin path {
+	fill: color-mix(in srgb, var(--primary) 14%, transparent);
+	stroke: var(--primary);
+	stroke-width: 2;
+}
+
+.isostate-asset-thumb--builtin text {
+	fill: var(--primary);
+	font-family:
+		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+		sans-serif;
+	font-size: 18px;
+	font-weight: 700;
+}
+
+.isostate-asset-drag-image {
+	width: 40px;
+	height: 40px;
+	padding: 2px;
+	background: transparent;
+	border: 0;
+	border-radius: calc(var(--radius) - 2px);
+	overflow: hidden;
+}
+
+.isostate-sidebar-content > .isostate-asset-panel,
+.isostate-sidebar-content > .isostate-inspector {
+	flex: 1 1 auto;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 0.75rem;
+}

@@ -18,14 +18,17 @@ import type {
 	LayerDefinition,
 	LinePrimitive,
 	PrimitiveContent,
+	PrimitiveContentPatch,
 	SceneDocument,
 	SceneHeader,
 	SceneStep,
 	TextContent,
 } from "../types/index.ts";
+import type { SpriteDefinition } from "../types/scene.ts";
 
 const IDENTIFIER_PATTERN = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/;
 const ASSET_PATH_PATTERN = /^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*(?:\.svg)?$/;
+const SPRITE_SHEET_PATH_PATTERN = /^[a-z0-9][a-z0-9-]*(?:\/[a-z0-9][a-z0-9-]*)*\.(?:png|webp|jpe?g|svg)$/;
 
 function fail(code: string, message: string): never {
 	throw new ParseError(code, message, { line: 0, column: 0 });
@@ -93,13 +96,75 @@ function parseTuple2(value: unknown, context: string): [number, number] {
 	return [requireNumber(value[0], `${context}[0]`), requireNumber(value[1], `${context}[1]`)];
 }
 
+function parseTuple4(value: unknown, context: string): [number, number, number, number] {
+	if (!Array.isArray(value) || value.length !== 4) {
+		fail("DSL_SCHEMA_TYPE_ERROR", `${context} must be a four-number tuple`);
+	}
+	return [
+		requireNumber(value[0], `${context}[0]`),
+		requireNumber(value[1], `${context}[1]`),
+		requireNumber(value[2], `${context}[2]`),
+		requireNumber(value[3], `${context}[3]`),
+	];
+}
+
+function parseSpriteDefinition(value: unknown, context: string): SpriteDefinition {
+	if (Array.isArray(value)) {
+		return parseTuple2(value, context);
+	}
+	const sprite = requireObject(value, context);
+	assertKnownFields(sprite, new Set(["at", "rect", "anchor"]), context);
+	const parsed: {
+		at?: [number, number];
+		rect?: [number, number, number, number];
+		anchor?: [number, number];
+	} = {};
+	if (sprite.at !== undefined) parsed.at = parseTuple2(sprite.at, `${context}.at`);
+	if (sprite.rect !== undefined) parsed.rect = parseTuple4(sprite.rect, `${context}.rect`);
+	if (sprite.anchor !== undefined) parsed.anchor = parseTuple2(sprite.anchor, `${context}.anchor`);
+	return parsed;
+}
+
 function parseAssets(raw: unknown): AssetCatalogEntry[] {
 	return requireArray(raw, "header.assets").map((item, index) => {
 		const asset = requireObject(item, `header.assets[${index}]`);
+		const assetType = asset.type === undefined ? undefined : requireString(asset.type, `header.assets[${index}].type`);
+		if (assetType !== undefined && assetType !== "sprite-sheet") {
+			fail("ASSET_TYPE_UNSUPPORTED", `Unsupported asset type "${assetType}" in header.assets[${index}]`);
+		}
+		const id = requireIdentifier(asset.id, `header.assets[${index}].id`);
+		if (assetType === "sprite-sheet") {
+			assertKnownFields(
+				asset,
+				new Set(["id", "type", "path", "sheetSize", "tileSize", "anchor", "sprites"]),
+				`header.assets[${index}]`,
+			);
+			const path = requireString(asset.path, `header.assets[${index}].path`);
+			if (!SPRITE_SHEET_PATH_PATTERN.test(path)) {
+				fail("INVALID_SPRITE_SHEET_PATH", `header.assets[${index}].path must include a supported image extension`);
+			}
+			const sprites = requireObject(asset.sprites, `header.assets[${index}].sprites`);
+			const parsedSprites: Record<string, SpriteDefinition> = {};
+			for (const [spriteId, spriteValue] of Object.entries(sprites)) {
+				if (!IDENTIFIER_PATTERN.test(spriteId)) {
+					fail("INVALID_SPRITE_ID", `Sprite id "${spriteId}" must be kebab-case`);
+				}
+				parsedSprites[spriteId] = parseSpriteDefinition(spriteValue, `header.assets[${index}].sprites.${spriteId}`);
+			}
+			const parsed: AssetCatalogEntry = {
+				id,
+				type: "sprite-sheet",
+				path,
+				sheetSize: parseTuple2(asset.sheetSize, `header.assets[${index}].sheetSize`),
+				sprites: parsedSprites,
+			};
+			if (asset.tileSize !== undefined)
+				parsed.tileSize = parseTuple2(asset.tileSize, `header.assets[${index}].tileSize`);
+			if (asset.anchor !== undefined) parsed.anchor = parseTuple2(asset.anchor, `header.assets[${index}].anchor`);
+			return parsed;
+		}
 		assertKnownFields(asset, new Set(["id", "path", "anchor"]), `header.assets[${index}]`);
-		const parsed: AssetCatalogEntry = {
-			id: requireIdentifier(asset.id, `header.assets[${index}].id`),
-		};
+		const parsed: AssetCatalogEntry = { id };
 		if (asset.path !== undefined) {
 			const path = requireString(asset.path, `header.assets[${index}].path`);
 			if (!ASSET_PATH_PATTERN.test(path)) {
@@ -218,12 +283,13 @@ function parsePointArray(raw: unknown, context: string): [number, number][] {
 	return requireArray(raw, context).map((point, index) => parseTuple2(point, `${context}[${index}]`));
 }
 
-function parseTextContent(raw: unknown, context: string): TextContent {
+function parseTextContent(raw: unknown, context: string, requireValue = true): TextContent {
 	const text = requireObject(raw, context);
 	assertKnownFields(text, new Set(["value", "align", "fontSize", "fontWeight", "lineHeight", "fill"]), context);
-	const parsed: TextContent = {
-		value: requireString(text.value, `${context}.value`),
-	};
+	const parsed: Partial<TextContent> = {};
+	if (requireValue || text.value !== undefined) {
+		parsed.value = requireString(text.value, `${context}.value`);
+	}
 	if (text.align !== undefined) {
 		parsed.align = requireString(text.align, `${context}.align`) as never;
 	}
@@ -243,7 +309,7 @@ function parseTextContent(raw: unknown, context: string): TextContent {
 	if (text.fill !== undefined) {
 		parsed.fill = requireString(text.fill, `${context}.fill`);
 	}
-	return parsed;
+	return parsed as TextContent;
 }
 
 function parsePrimitiveStyle(
@@ -265,10 +331,10 @@ function parsePrimitiveStyle(
 	return parsed;
 }
 
-function parsePrimitiveContent(raw: unknown, context: string): PrimitiveContent {
+function parsePrimitiveContent(raw: unknown, context: string, requireGeometry = true): PrimitiveContent {
 	const primitive = requireObject(raw, context);
 	assertKnownFields(primitive, new Set(["rectangle", "circle", "polygon", "line"]), context);
-	const parsed: PrimitiveContent = {};
+	const parsed: PrimitiveContentPatch = {};
 	if (primitive.rectangle !== undefined) {
 		const rectangle = requireObject(primitive.rectangle, `${context}.rectangle`);
 		parsed.rectangle = parsePrimitiveStyle(rectangle, `${context}.rectangle`, [
@@ -303,12 +369,14 @@ function parsePrimitiveContent(raw: unknown, context: string): PrimitiveContent 
 				"opacity",
 				"dash",
 			]),
-			points: parsePointArray(polygon.points, `${context}.polygon.points`),
 		};
+		if (requireGeometry || polygon.points !== undefined) {
+			parsed.polygon.points = parsePointArray(polygon.points, `${context}.polygon.points`);
+		}
 	}
 	if (primitive.line !== undefined) {
 		const line = requireObject(primitive.line, `${context}.line`);
-		const parsedLine: LinePrimitive = {
+		const parsedLine: Partial<LinePrimitive> = {
 			...parsePrimitiveStyle(line, `${context}.line`, [
 				"points",
 				"stroke",
@@ -318,17 +386,19 @@ function parsePrimitiveContent(raw: unknown, context: string): PrimitiveContent 
 				"lineCap",
 				"lineJoin",
 			]),
-			points: parsePointArray(line.points, `${context}.line.points`),
 		};
+		if (requireGeometry || line.points !== undefined) {
+			parsedLine.points = parsePointArray(line.points, `${context}.line.points`);
+		}
 		if (line.lineCap !== undefined) {
 			parsedLine.lineCap = requireString(line.lineCap, `${context}.line.lineCap`) as never;
 		}
 		if (line.lineJoin !== undefined) {
 			parsedLine.lineJoin = requireString(line.lineJoin, `${context}.line.lineJoin`) as never;
 		}
-		parsed.line = parsedLine;
+		parsed.line = parsedLine as LinePrimitive;
 	}
-	return parsed;
+	return parsed as PrimitiveContent;
 }
 
 function parsePlacement(raw: unknown, context: string): ElementPlacement {
@@ -396,10 +466,10 @@ function parsePatch(raw: unknown, context: string): ElementPatch {
 		parsed.ambient = parseAmbient(patch.ambient, `${context}.ambient`);
 	}
 	if (patch.text !== undefined) {
-		parsed.text = parseTextContent(patch.text, `${context}.text`);
+		parsed.text = parseTextContent(patch.text, `${context}.text`, false);
 	}
 	if (patch.primitive !== undefined) {
-		parsed.primitive = parsePrimitiveContent(patch.primitive, `${context}.primitive`);
+		parsed.primitive = parsePrimitiveContent(patch.primitive, `${context}.primitive`, false);
 	}
 	return parsed;
 }

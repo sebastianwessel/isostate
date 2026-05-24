@@ -15,7 +15,7 @@
 - `yaml` is a dev-time optional peer dependency and must not appear in runtime chunks.
 - Parser, validator, compiler, CLI, and converter code are excluded from runtime browser bundles.
 - Static deployment bundles copy only the standalone browser runtime artifact,
-  compiled scene data, copied external SVG assets, and manifest metadata.
+  compiled scene data, copied external asset source files, and manifest metadata.
 - Animation CSS is first-party library code. Asset SVG files are loaded by URL and are not parsed or injected by the runtime.
 
 ## Security

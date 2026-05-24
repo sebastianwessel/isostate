@@ -1,4 +1,5 @@
 import { OGImageRoute } from 'astro-og-canvas';
+import { existsSync } from 'node:fs';
 import { docs } from '../../docs';
 
 type OgPage = {
@@ -7,7 +8,7 @@ type OgPage = {
 };
 
 const homeDescription =
-	'Compile YAML into lightweight SVG scenes for scroll-driven product stories, documentation, and technical explainers.';
+	'YAML-authored isometric visual stories for documentation, product tours, and technical explainers.';
 
 const pages: Record<string, OgPage> = {
 	index: {
@@ -25,14 +26,26 @@ const pages: Record<string, OgPage> = {
 	)
 };
 
+const localFontCandidates = [
+	'/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf',
+	'/usr/share/fonts/truetype/liberation2/LiberationSans-Regular.ttf',
+	'/System/Library/Fonts/Supplemental/Arial.ttf',
+	'/System/Library/Fonts/SFNS.ttf'
+];
+
+const localFont = localFontCandidates.find((fontPath) => existsSync(fontPath));
+
 export const { getStaticPaths, GET } = await OGImageRoute({
 	param: 'route',
 	pages,
-	getImageOptions: (_path, page) => ({
+	getImageOptions: (path, page) => ({
 		title: page.title,
 		description: page.description,
 		bgImage: {
-			path: './assets/isostate-story/hero-tilt-shift-city.png',
+			path:
+				path === 'index'
+					? './assets/isostate-story/editor-overview.png'
+					: './assets/isostate-story/hero-tilt-shift-city.png',
 			fit: 'cover'
 		},
 		bgGradient: [
@@ -48,13 +61,14 @@ export const { getStaticPaths, GET } = await OGImageRoute({
 			title: {
 				color: [255, 253, 245],
 				size: 82,
-				weight: 'bold'
+				weight: 'normal'
 			},
 			description: {
 				color: [236, 230, 215],
 				size: 36
 			}
 		},
+		fonts: localFont ? [localFont] : undefined,
 		padding: 72
 	})
 });

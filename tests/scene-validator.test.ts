@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test';
+import { readFileSync } from 'node:fs';
 import {
 	parseScene,
 	resolveSceneSnapshots,
@@ -87,7 +88,65 @@ function expectErrorCode(document: SceneDocument, code: string) {
 	expect(report.errors.find((error) => error.code === code)).toBeDefined();
 }
 
+function fixture(name: string): SceneDocument {
+	return parseScene(
+		readFileSync(`tests/fixtures/sprite-sheet-assets/${name}`, 'utf8')
+	);
+}
+
 describe('validateScene', () => {
+	test('validates compact and verbose sprite sheet assets', () => {
+		expect(validateScene(fixture('compact.isostate.yaml')).isValid).toBe(true);
+		expect(validateScene(fixture('verbose-rect.isostate.yaml')).isValid).toBe(
+			true
+		);
+	});
+
+	test('rejects sprite sheet namespace placements and invalid rects', () => {
+		expectErrorCode(
+			fixture('invalid-sheet-id-used.isostate.yaml'),
+			'SPRITE_SHEET_NOT_PLACEABLE'
+		);
+		expectErrorCode(
+			fixture('invalid-rect-outside-sheet.isostate.yaml'),
+			'INVALID_SPRITE_RECT'
+		);
+	});
+
+	test('validates sprite sheet error cases', () => {
+		const unsupportedType = fixture('compact.isostate.yaml');
+		unsupportedType.header.assets[0] = {
+			...unsupportedType.header.assets[0],
+			type: 'icon-atlas'
+		} as never;
+		expectErrorCode(unsupportedType, 'ASSET_TYPE_UNSUPPORTED');
+
+		const missingTile = fixture('compact.isostate.yaml');
+		delete (missingTile.header.assets[0] as { tileSize?: unknown }).tileSize;
+		expectErrorCode(missingTile, 'INVALID_SPRITE_TILE_SIZE');
+
+		const duplicateSprite = fixture('compact.isostate.yaml');
+		duplicateSprite.header.assets.push({
+			id: 'other-icons',
+			type: 'sprite-sheet',
+			path: 'sprites/other-icons.png',
+			sheetSize: [128, 128],
+			tileSize: [64, 64],
+			sprites: { server: [0, 0] }
+		});
+		expectErrorCode(duplicateSprite, 'DUPLICATE_SPRITE_ID');
+
+		const spriteAssetCollision = fixture('compact.isostate.yaml');
+		spriteAssetCollision.header.assets.push({ id: 'server' });
+		expectErrorCode(spriteAssetCollision, 'SPRITE_ASSET_ID_COLLISION');
+
+		const noSprites = fixture('compact.isostate.yaml');
+		(
+			noSprites.header.assets[0] as { sprites: Record<string, unknown> }
+		).sprites = {};
+		expectErrorCode(noSprites, 'NO_SPRITES');
+	});
+
 	test('passes validation on a valid header and scene-delta timeline', () => {
 		const report = validateScene(validDocument());
 
@@ -555,6 +614,55 @@ scenes:
 		expect(snapshots[1].elements[0].text?.value).toBe('Auth\nGateway');
 	});
 
+	test('resolves sparse nested text update deltas and zero-size patches', () => {
+		const document = parseScene(`
+header:
+  assets: []
+  floor:
+    size: [4, 4]
+  layers:
+    - name: labels
+scenes:
+  - id: initial
+    elements:
+      - id: label-1
+        asset: text
+        at: [1, 1]
+        layer: labels
+        text:
+          value: Checkout
+          align: middle
+          fontSize: 12
+          fill: "#111111"
+  - id: moved
+    update:
+      elements:
+        - id: label-1
+          at: [2, 1]
+          size: 0
+          text:
+            fill: "#eeeeee"
+`);
+
+		const report = validateScene(document);
+		const snapshots = resolveSceneSnapshots(document);
+
+		expect(report.isValid).toBe(true);
+		expect(report.errors).toEqual([]);
+		expect(snapshots[1].elements[0]).toEqual(
+			expect.objectContaining({
+				pos: [2, 1],
+				size: 0,
+				text: {
+					value: 'Checkout',
+					align: 'middle',
+					fontSize: 12,
+					fill: '#eeeeee'
+				}
+			})
+		);
+	});
+
 	test('validates built-in primitive elements without requiring external assets', () => {
 		const document = parseScene(`
 header:
@@ -603,6 +711,52 @@ scenes:
 		);
 	});
 
+	test('resolves sparse nested primitive update deltas', () => {
+		const document = parseScene(`
+header:
+  assets: []
+  floor:
+    size: [4, 4]
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements:
+      - id: service-zone
+        asset: rectangle
+        at: [1, 1]
+        size: 2
+        layer: ground
+        primitive:
+          rectangle:
+            fill: "#2563eb"
+            stroke: "#1d4ed8"
+            strokeWidth: 1
+            opacity: 0.16
+  - id: dimmed
+    update:
+      elements:
+        - id: service-zone
+          primitive:
+            rectangle:
+              opacity: 0.4
+`);
+
+		const report = validateScene(document);
+		const snapshots = resolveSceneSnapshots(document);
+
+		expect(report.isValid).toBe(true);
+		expect(report.errors).toEqual([]);
+		expect(snapshots[1].elements[0].primitive).toEqual({
+			rectangle: {
+				fill: '#2563eb',
+				stroke: '#1d4ed8',
+				strokeWidth: 1,
+				opacity: 0.4
+			}
+		});
+	});
+
 	test('rejects invalid text asset authoring', () => {
 		const missingText = validDocument();
 		firstInitialElement(missingText).asset = 'text';
@@ -612,11 +766,6 @@ scenes:
 		firstInitialElement(textOnSvgAsset).text = { value: 'Label' };
 		expectErrorCode(textOnSvgAsset, 'TEXT_CONTENT_FOR_NON_TEXT_ASSET');
 
-		const emptyText = validDocument();
-		firstInitialElement(emptyText).asset = 'text';
-		firstInitialElement(emptyText).text = { value: '' };
-		expectErrorCode(emptyText, 'INVALID_TEXT_CONTENT');
-
 		const unsafeFill = validDocument();
 		firstInitialElement(unsafeFill).asset = 'text';
 		firstInitialElement(unsafeFill).text = {
@@ -624,6 +773,45 @@ scenes:
 			fill: 'url(javascript:alert(1))'
 		};
 		expectErrorCode(unsafeFill, 'INVALID_TEXT_STYLE');
+	});
+
+	test('reports text validation context and warns for intentionally empty labels', () => {
+		const invalidStyle = validDocument();
+		firstInitialElement(invalidStyle).asset = 'text';
+		firstInitialElement(invalidStyle).text = {
+			value: 'Label',
+			fontSize: 0
+		};
+
+		const invalidReport = validateScene(invalidStyle);
+
+		expect(invalidReport.errors).toContainEqual(
+			expect.objectContaining({
+				code: 'INVALID_TEXT_STYLE',
+				sceneId: 'initial',
+				elementId: 'office-1',
+				field: 'text.fontSize',
+				value: 0
+			})
+		);
+
+		const emptyText = validDocument();
+		firstInitialElement(emptyText).asset = 'text';
+		firstInitialElement(emptyText).text = { value: '' };
+
+		const emptyReport = validateScene(emptyText);
+
+		expect(emptyReport.isValid).toBe(true);
+		expect(emptyReport.errors).toEqual([]);
+		expect(emptyReport.warnings).toContainEqual(
+			expect.objectContaining({
+				code: 'EMPTY_TEXT_CONTENT',
+				sceneId: 'initial',
+				elementId: 'office-1',
+				field: 'text.value',
+				value: ''
+			})
+		);
 	});
 
 	test('warns for unused declarations and floor-bound content', () => {

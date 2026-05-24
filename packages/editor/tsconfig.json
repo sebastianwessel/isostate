@@ -1,0 +1,16 @@
+{
+	"extends": "../../tsconfig.json",
+	"compilerOptions": {
+		"rootDir": "src",
+		"outDir": "dist",
+		"rewriteRelativeImportExtensions": true,
+		"jsx": "react-jsx",
+		"paths": {
+			"@/*": ["./*"],
+			"@sebastianwessel/isostate": ["../core/dist/index.d.ts"],
+			"@sebastianwessel/isostate/*": ["../core/dist/*"]
+		}
+	},
+	"include": ["src/**/*.ts", "src/**/*.tsx"],
+	"exclude": ["dist", "node_modules"]
+}

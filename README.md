@@ -15,9 +15,15 @@ only loads the runtime, compiled scene data, and referenced SVG assets.
 ## Docs
 
 - [Documentation](./docs/README.md)
+  - Start
+    - [How isostate Works](./docs/concepts/how-isostate-works.md)
   - [Getting Started](./docs/getting-started.md)
-  - Guides
+  - Create
+    - [Plan A Scene](./docs/guides/plan-a-scene.md)
     - [Author Scene Deltas](./docs/guides/author-scene-deltas.md)
+    - [Assets Workflow](./docs/guides/assets-workflow.md)
+    - [Animation And Connections](./docs/guides/animation-and-connections.md)
+  - Ship
     - [Use The CLI](./docs/guides/use-the-cli.md)
     - [Deploy Static Bundle](./docs/guides/deploy-static-bundle.md)
   - Examples

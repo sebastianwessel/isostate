@@ -13,8 +13,9 @@ Developer runs `isostate bundle` against a `.isostate.yaml` source file.
 
 - Dependencies are installed in the development environment.
 - The YAML file validates against the scene schema.
-- External SVG assets referenced by the scene exist under the configured
-  `--asset-dir` or absolute asset paths.
+- External URL assets referenced by the scene exist under the configured
+  `--asset-dir` or absolute asset paths. This includes standalone SVG files and
+  sprite sheet image files referenced by logical sprite ids.
 - The output directory is writable.
 
 ## Happy Path
@@ -33,7 +34,8 @@ Developer runs `isostate bundle` against a `.isostate.yaml` source file.
    `./assets/<file>`.
 6. CLI writes `scene.isostate.js`.
 7. CLI writes or copies `isostate.runtime.js`.
-8. CLI copies external SVG assets into `assets/`.
+8. CLI copies referenced external asset source files into `assets/`, including
+   standalone SVG assets and sprite sheet image files.
 9. CLI writes `manifest.json`.
 10. Website code imports the runtime and scene bundle from the public directory.
 11. Browser calls `mountScene(target, sceneBundle, options)`.

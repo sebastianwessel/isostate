@@ -254,6 +254,35 @@ describe('rendering engine', () => {
 		expect(image?.getAttribute('y')).toBe('-64');
 	});
 
+	test('renders compiled sprite assets as nested SVG viewports', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const bundle = createBundle({
+			assets: {
+				server: {
+					url: './assets/sprites/app-icons.png',
+					anchor: [0.5, 1],
+					sprite: { sheetSize: [512, 256], rect: [64, 0, 64, 64] }
+				}
+			},
+			scenes: [sceneStop([{ id: 'server-a', asset: 'server' }])]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const element = svg.querySelector('[data-id="server-a"]');
+		const viewport = element?.querySelector('svg');
+		const image = viewport?.querySelector('image');
+
+		expect(viewport?.getAttribute('x')).toBe('-32');
+		expect(viewport?.getAttribute('y')).toBe('-64');
+		expect(viewport?.getAttribute('width')).toBe('64');
+		expect(viewport?.getAttribute('height')).toBe('64');
+		expect(viewport?.getAttribute('viewBox')).toBe('64 0 64 64');
+		expect(viewport?.getAttribute('preserveAspectRatio')).toBe('xMidYMax meet');
+		expect(image?.getAttribute('href')).toBe('./assets/sprites/app-icons.png');
+		expect(image?.getAttribute('width')).toBe('512');
+		expect(image?.getAttribute('height')).toBe('256');
+	});
+
 	test('uses compiled asset anchors when resolving content bounds', () => {
 		const container = new MiniElement('div', null) as unknown as HTMLElement;
 		const bundle = createBundle({
@@ -644,15 +673,19 @@ describe('rendering engine', () => {
 
 		expect(before?.getAttribute('class')).toContain('iso-ambient-flow');
 
-		updateElementTransforms(svg, [], [
-			{
-				...flow,
-				route: [
-					[0, 0],
-					[3, 0]
-				]
-			}
-		]);
+		updateElementTransforms(
+			svg,
+			[],
+			[
+				{
+					...flow,
+					route: [
+						[0, 0],
+						[3, 0]
+					]
+				}
+			]
+		);
 
 		const after = svg
 			.querySelector('.iso-connector-navigation-arrow')
@@ -751,9 +784,7 @@ describe('rendering engine', () => {
 				block: { url: './assets/block.svg', anchor: [0.5, 1] }
 			},
 			scenes: [
-				sceneStop([
-					{ id: 'block-a', asset: 'block', pos: [1, 1], size: 1 }
-				])
+				sceneStop([{ id: 'block-a', asset: 'block', pos: [1, 1], size: 1 }])
 			]
 		});
 
@@ -864,17 +895,16 @@ function createBundle(overrides: Record<string, unknown>): RuntimeBundle {
 	} as unknown as RuntimeBundle;
 }
 
-function normalizeTestAssets(
-	raw: unknown
-): Record<string, { url: string; anchor?: [number, number] }> {
+function normalizeTestAssets(raw: unknown): RuntimeBundle['assets'] {
 	if (!raw || typeof raw !== 'object') return {};
-	const assets: Record<string, { url: string; anchor?: [number, number] }> = {};
+	const assets: NonNullable<RuntimeBundle['assets']> = {};
 	for (const [id, value] of Object.entries(raw)) {
 		if (value && typeof value === 'object' && 'url' in value) {
-			const asset = value as { url: unknown; anchor?: [number, number] };
+			const asset = value as NonNullable<RuntimeBundle['assets']>[string];
 			assets[id] = {
 				url: String(asset.url),
-				...(asset.anchor ? { anchor: asset.anchor } : {})
+				...(asset.anchor ? { anchor: asset.anchor } : {}),
+				...(asset.sprite ? { sprite: asset.sprite } : {})
 			};
 		} else {
 			assets[id] = { url: `./assets/${id}.svg` };

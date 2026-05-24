@@ -1,5 +1,10 @@
 # Custom Assets
 
+For the end-to-end asset lifecycle, including sprite sheet sizing, OpenAI
+generation prompts, editor manifests, and publishing checks, start with
+[Assets Workflow](../guides/assets-workflow.md). This page stays focused on the
+copyable YAML shapes.
+
 For browser-loadable SVG files, declare a local id and path in YAML:
 
 ```yaml
@@ -37,6 +42,41 @@ Plain labels do not need custom SVG assets. Use the reserved built-in
 Simple underlays and markers also do not need custom SVG assets. Use reserved
 built-in primitive assets such as `asset: rectangle` with a matching
 `primitive.rectangle` payload.
+
+## Sprite Sheets
+
+Use sprite sheets when one image file should provide many logical asset ids:
+
+```yaml
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: app-icons
+      type: sprite-sheet
+      path: app-icons.png
+      sheetSize: [512, 256]
+      tileSize: [64, 64]
+      anchor: [0.5, 1]
+      sprites:
+        server: [0, 0]
+        database:
+          at: [1, 0]
+          anchor: [0.5, 0.92]
+        wide-service:
+          rect: [128, 0, 96, 64]
+
+scenes:
+  - id: initial
+    elements:
+      - id: api
+        asset: server
+        at: [1, 1]
+```
+
+`sheetSize`, `tileSize`, and `rect` use source-image pixels. Elements reference
+the nested sprite id (`server`), not the sheet namespace id (`app-icons`).
+Sprite sheet paths must include `.png`, `.webp`, `.jpg`, `.jpeg`, or `.svg`;
+`.gif` is not supported.
 
 This also works with path-style libraries such as draw.io SVG sets: set
 `assetBaseUrl` to the library root, then use paths like
@@ -113,6 +153,9 @@ header:
   `--iso-front`, and `--iso-side`.
 - Do not use one asset for long arrows or connections. Use first-class
   connections; stretched SVG arrows distort dash patterns and arrowheads.
+- For AI-generated raster sprites, prefer a transparent `256 x 256` tile per
+  one-cell object and verify the image has a real alpha channel before writing
+  the sprite sheet manifest.
 
 ```svg
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">

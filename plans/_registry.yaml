@@ -97,3 +97,129 @@ tickets:
     status: done
     depends_on: [TICKET-013]
     blocked_by: []
+  TICKET-015:
+    title: Add browser-safe DSL and core editor-support APIs
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-015-browser-safe-dsl-editor-support.md
+    status: pending
+    depends_on: []
+    blocked_by: []
+  TICKET-016:
+    title: Add CLI asset manifest generation
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-016-cli-asset-manifest.md
+    status: pending
+    depends_on: []
+    blocked_by: []
+  TICKET-017:
+    title: Scaffold @sebastianwessel/isostate-editor package
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-017-editor-package-scaffold.md
+    status: pending
+    depends_on: [TICKET-015]
+    blocked_by: [TICKET-015]
+  TICKET-018:
+    title: Implement editor workspace, commands, and canonical serializer
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-018-editor-workspace-commands-serializer.md
+    status: pending
+    depends_on: [TICKET-015, TICKET-017]
+    blocked_by: [TICKET-015, TICKET-017]
+  TICKET-019:
+    title: Implement editor asset provider and manifest browser state
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-019-editor-asset-provider.md
+    status: pending
+    depends_on: [TICKET-016, TICKET-017, TICKET-018]
+    blocked_by: [TICKET-016, TICKET-017, TICKET-018]
+  TICKET-020:
+    title: Implement runtime preview canvas and editor overlays
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-020-runtime-preview-canvas-overlays.md
+    status: pending
+    depends_on: [TICKET-015, TICKET-017, TICKET-018, TICKET-019]
+    blocked_by: [TICKET-015, TICKET-017, TICKET-018, TICKET-019]
+  TICKET-021:
+    title: Implement inspector, scenes, layers, connections, and camera controls
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-021-inspector-scenes-connections-camera.md
+    status: pending
+    depends_on: [TICKET-017, TICKET-018, TICKET-019, TICKET-020]
+    blocked_by: [TICKET-017, TICKET-018, TICKET-019, TICKET-020]
+  TICKET-022:
+    title: Add CodeMirror YAML editor and synchronization
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-022-codemirror-yaml-sync.md
+    status: pending
+    depends_on: [TICKET-017, TICKET-018, TICKET-020, TICKET-021]
+    blocked_by: [TICKET-017, TICKET-018, TICKET-020, TICKET-021]
+  TICKET-023:
+    title: Add Astro/static docs and release wiring
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-023-astro-docs-release-wiring.md
+    status: pending
+    depends_on: [TICKET-016, TICKET-017, TICKET-019, TICKET-022]
+    blocked_by: [TICKET-016, TICKET-017, TICKET-019, TICKET-022]
+  TICKET-024:
+    title: Harden editor verification and dependency boundaries
+    wave: 4
+    file: plans/wave_04_visual_editor/tickets/TICKET-024-editor-verification-hardening.md
+    status: pending
+    depends_on: [TICKET-015, TICKET-016, TICKET-017, TICKET-018, TICKET-019, TICKET-020, TICKET-021, TICKET-022, TICKET-023]
+    blocked_by: [TICKET-015, TICKET-016, TICKET-017, TICKET-018, TICKET-019, TICKET-020, TICKET-021, TICKET-022, TICKET-023]
+  TICKET-025:
+    title: Add sprite sheet public type contracts and fixtures
+    wave: 5
+    file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-025-sprite-type-contracts-fixtures.md
+    status: done
+    depends_on: []
+    blocked_by: []
+  TICKET-026:
+    title: Implement sprite sheet parser and validator semantics
+    wave: 5
+    file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-026-sprite-parser-validator.md
+    status: done
+    depends_on: [TICKET-025]
+    blocked_by: [TICKET-025]
+  TICKET-027:
+    title: Compile sprite sheets into flat runtime asset entries
+    wave: 5
+    file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-027-sprite-compiler-runtime-bundle.md
+    status: done
+    depends_on: [TICKET-026]
+    blocked_by: [TICKET-026]
+  TICKET-028:
+    title: Render compiled sprite assets in the browser runtime
+    wave: 5
+    file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-028-sprite-runtime-rendering.md
+    status: done
+    depends_on: [TICKET-027]
+    blocked_by: [TICKET-027]
+  TICKET-029:
+    title: Copy sprite sheet sources in static bundle output
+    wave: 5
+    file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-029-sprite-static-bundle-cli.md
+    status: done
+    depends_on: [TICKET-027, TICKET-028]
+    blocked_by: [TICKET-027, TICKET-028]
+  TICKET-030:
+    title: Generate sprite sheet entries in asset manifests
+    wave: 5
+    file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-030-sprite-asset-manifest.md
+    status: done
+    depends_on: [TICKET-026]
+    blocked_by: [TICKET-026]
+  TICKET-031:
+    title: Support sprite sheets in editor asset browser and placement
+    wave: 5
+    file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-031-sprite-editor-asset-browser.md
+    status: done
+    depends_on: [TICKET-030]
+    blocked_by: [TICKET-030]
+  TICKET-032:
+    title: Complete sprite sheet docs examples and release gates
+    wave: 5
+    file: plans/wave_05_sprite_sheet_assets/tickets/TICKET-032-sprite-docs-examples-release-gates.md
+    status: done
+    depends_on: [TICKET-025, TICKET-026, TICKET-027, TICKET-028, TICKET-029, TICKET-030, TICKET-031]
+    blocked_by: [TICKET-025, TICKET-026, TICKET-027, TICKET-028, TICKET-029, TICKET-030, TICKET-031]

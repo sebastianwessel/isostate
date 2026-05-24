@@ -48,10 +48,10 @@ Validator responsibilities:
   padding, duration, and easing according to `02-capabilities/camera.md`
 - resolve endpoint-routed connectors (`from`/`to`) into concrete route points
   using the dev-time connector router
-- validate built-in generated elements: `asset: text` requires `text.value`;
-  `asset: rectangle`, `circle`, `polygon`, and `line` require matching
-  `primitive` payloads; generated asset ids are not declared in
-  `header.assets` and bypass URL resolution
+- validate built-in generated elements: text and primitive placements require
+  complete matching payloads, while text and primitive update patches may be
+  sparse nested deltas; generated asset ids are not declared in `header.assets`
+  and bypass URL resolution
 
 ### 3. Expand Deltas
 
@@ -85,8 +85,12 @@ Expansion rules:
 - omitted elements retain previous resolved properties
 - omitted connectors retain previous resolved properties
 - `text` and `primitive` payloads are carried forward like other element
-  properties; `update.elements[].text` or `update.elements[].primitive`
-  replaces the previous payload
+  properties; `update.elements[].text` and
+  `update.elements[].primitive.<kind>` are sparse nested patches that merge
+  field-by-field with the previous resolved payload
+- `update.elements[].size` may be `0`; the resolved runtime snapshot keeps the
+  element present with `size: 0` so interpolation can scale it to zero without
+  using a remove lifecycle transition
 - `camera` is copied only to the resolved snapshot for the authored scene stop;
   it does not carry forward to later snapshots
 - runtime progress values are deterministically derived from ordered scene steps
@@ -141,7 +145,18 @@ interface CompileOptions {
 
 ## Asset URL Compilation
 
-The compiler emits one URL asset entry for every external asset referenced by resolved scene elements and the visible floor asset. URLs are derived from `header.assetBaseUrl` plus each asset `path` or `id`, with `.svg` appended when missing.
+The compiler emits one URL asset entry for every external asset referenced by
+resolved scene elements and the visible floor asset.
+
+For normal URL assets, URLs are derived from `header.assetBaseUrl` plus each
+asset `path` or `id`, with `.svg` appended when missing.
+
+For sprite sheets, the compiler treats nested sprite ids as the referenced
+external asset ids. It emits one flat `CompiledAsset` entry per referenced
+sprite id. Each sprite entry uses the containing sheet URL, the compiled
+`sprite.sheetSize`, the compiled pixel `sprite.rect`, and the inherited or
+overridden anchor. Sprite sheet `path` values must include an explicit
+extension; the compiler must not append `.svg` to sprite sheet paths.
 
 If an external asset cannot resolve to a URL, compilation fails with `ASSET_URL_REQUIRED`.
 
