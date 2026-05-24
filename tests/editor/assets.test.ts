@@ -684,4 +684,78 @@ scenes:
 			at: [2, 4]
 		});
 	});
+
+	test('rebases mixed manifest asset roots to a shared base', () => {
+		const workspace = createEditorWorkspace({
+			sourceYaml: `header:
+  version: "1"
+  assets: []
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+`
+		});
+		const trafficEntry = {
+			id: 'traffic-red-compact-car',
+			type: 'sprite' as const,
+			path: 'traffic-sprites.png',
+			group: 'Traffic',
+			name: 'traffic-red-compact-car',
+			digest: 'sha256:traffic',
+			sheetId: 'traffic-sprites',
+			sheetSize: [1024, 1024] as [number, number],
+			tileSize: [256, 256] as [number, number],
+			sheetAnchor: [0.5, 0.85] as [number, number],
+			sprites: {
+				'traffic-red-compact-car': {
+					at: [0, 0] as [number, number]
+				}
+			},
+			sprite: {
+				at: [0, 0] as [number, number]
+			}
+		};
+		const serverEntry = {
+			id: 's3',
+			path: 's3.svg',
+			group: 'AWS 3D',
+			name: 's3',
+			anchor: [0.5, 0.75] as [number, number],
+			digest: 'sha256:s3'
+		};
+
+		const trafficResult = applyEditorCommand(
+			workspace,
+			createAssetPlacementCommand(
+				'scene-1',
+				trafficEntry,
+				[1, 1],
+				'/isostate/assets/traffic'
+			)
+		);
+		const serverResult = applyEditorCommand(
+			trafficResult.workspace,
+			createAssetPlacementCommand(
+				'scene-1',
+				serverEntry,
+				[2, 2],
+				'/isostate/assets/aws-3d'
+			)
+		);
+
+		expect(serverResult.workspace.document?.header.assetBaseUrl).toBe(
+			'/isostate/assets'
+		);
+		expect(serverResult.workspace.document?.header.assets).toEqual([
+			expect.objectContaining({
+				id: 'traffic-sprites',
+				path: 'traffic/traffic-sprites.png'
+			}),
+			expect.objectContaining({
+				id: 's3',
+				path: 'aws-3d/s3.svg'
+			})
+		]);
+	});
 });

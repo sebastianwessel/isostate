@@ -371,6 +371,89 @@ function generateUniqueElementId(
 	return id;
 }
 
+const REBASE_URL_ORIGIN = 'https://isostate-editor.local';
+
+function directoryUrl(baseUrl: string): URL {
+	const href = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+	return new URL(href, REBASE_URL_ORIGIN);
+}
+
+function serializedBaseUrl(url: URL): string {
+	const path = url.pathname.replace(/\/+$/, '');
+	if (url.origin === REBASE_URL_ORIGIN) return path || '/';
+	return `${url.origin}${path}`;
+}
+
+function commonDirectoryUrl(a: URL, b: URL): URL | undefined {
+	if (a.origin !== b.origin) return undefined;
+	const aParts = a.pathname.split('/').filter(Boolean);
+	const bParts = b.pathname.split('/').filter(Boolean);
+	const common: string[] = [];
+	for (let index = 0; index < Math.min(aParts.length, bParts.length); index++) {
+		if (aParts[index] !== bParts[index]) break;
+		common.push(aParts[index]);
+	}
+	const pathname = common.length > 0 ? `/${common.join('/')}/` : '/';
+	return new URL(pathname, a.origin);
+}
+
+function relativeAssetPath(
+	assetBaseUrl: string,
+	assetPath: string,
+	targetBaseUrl: URL
+): string | undefined {
+	const assetUrl = new URL(assetPath, directoryUrl(assetBaseUrl));
+	if (assetUrl.origin !== targetBaseUrl.origin) return undefined;
+	if (!assetUrl.pathname.startsWith(targetBaseUrl.pathname)) return undefined;
+	return assetUrl.pathname.slice(targetBaseUrl.pathname.length);
+}
+
+function withAssetPath<T extends PlaceableAssetManifestEntry>(
+	entry: T,
+	path: string
+): T {
+	return { ...entry, path };
+}
+
+function normalizePlacementAssetRoots(
+	document: SceneDocument,
+	manifestEntry: PlaceableAssetManifestEntry,
+	assetBaseUrl: string
+): PlaceableAssetManifestEntry {
+	const currentBaseUrl = document.header.assetBaseUrl;
+	if (!currentBaseUrl) {
+		document.header.assetBaseUrl = assetBaseUrl;
+		return manifestEntry;
+	}
+	const currentAssetBaseUrl = currentBaseUrl;
+
+	const current = directoryUrl(currentAssetBaseUrl);
+	const incoming = directoryUrl(assetBaseUrl);
+	if (current.href === incoming.href) return manifestEntry;
+
+	const common = commonDirectoryUrl(current, incoming);
+	if (!common) return manifestEntry;
+	const incomingPath = relativeAssetPath(
+		assetBaseUrl,
+		manifestEntry.path,
+		common
+	);
+	if (!incomingPath || incomingPath.startsWith('../')) return manifestEntry;
+
+	for (const asset of document.header.assets) {
+		const rebasedPath = relativeAssetPath(
+			currentAssetBaseUrl,
+			asset.path ?? asset.id,
+			common
+		);
+		if (!rebasedPath || rebasedPath.startsWith('../')) return manifestEntry;
+		asset.path = rebasedPath;
+	}
+
+	document.header.assetBaseUrl = serializedBaseUrl(common);
+	return withAssetPath(manifestEntry, incomingPath);
+}
+
 export function createAssetPlacementCommand(
 	sceneId: string,
 	manifestEntry: PlaceableAssetManifestEntry,
@@ -386,28 +469,30 @@ export function createAssetPlacementCommand(
 				'asset.place',
 				'Place Asset',
 				(doc) => {
-					if (!doc.header.assetBaseUrl) {
-						doc.header.assetBaseUrl = assetBaseUrl;
-					}
+					const normalizedEntry = normalizePlacementAssetRoots(
+						doc,
+						manifestEntry,
+						assetBaseUrl
+					);
 					const assetId =
-						manifestEntry.type === 'sprite'
-							? manifestEntry.sheetId
-							: manifestEntry.id;
+						normalizedEntry.type === 'sprite'
+							? normalizedEntry.sheetId
+							: normalizedEntry.id;
 					const existingAsset = doc.header.assets.find((a) => a.id === assetId);
 					if (!existingAsset) {
-						const newAsset = createAssetDeclaration(manifestEntry);
+						const newAsset = createAssetDeclaration(normalizedEntry);
 						doc.header.assets.push(newAsset);
 					} else if (
-						manifestEntry.type !== 'sprite' &&
+						normalizedEntry.type !== 'sprite' &&
 						!existingAsset.anchor &&
-						manifestEntry.anchor
+						normalizedEntry.anchor
 					) {
-						existingAsset.anchor = manifestEntry.anchor;
+						existingAsset.anchor = normalizedEntry.anchor;
 					}
-					const elementId = generateUniqueElementId(doc, manifestEntry.id);
+					const elementId = generateUniqueElementId(doc, normalizedEntry.id);
 					const element: ElementPlacement = {
 						id: elementId,
-						asset: manifestEntry.id,
+						asset: normalizedEntry.id,
 						at: gridPoint,
 						size: 1
 					};
