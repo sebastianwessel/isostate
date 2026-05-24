@@ -11,7 +11,7 @@
 			"group": "Traffic",
 			"name": "traffic-sprites",
 			"label": "Traffic",
-			"digest": "sha256:16e8c976360cc96215d0bfa19dbf80136d3bd03b565213373896782e6aeeb42e",
+			"digest": "sha256:632d7b7c1ea259a1e5cce9048b507837f66305864cdf93987fee2bb425a3ea8f",
 			"sheetSize": [1024, 1024],
 			"tileSize": [256, 256],
 			"anchor": [0.5, 0.85],

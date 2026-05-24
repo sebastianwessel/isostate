@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('AssetPanel', () => {
-	test('orders manifest categories alphabetically and opens the first only', async () => {
+	test('orders manifest categories alphabetically and opens all by default', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const workspace = createEditorWorkspace({ sourceYaml: BASE_YAML });
@@ -98,20 +98,20 @@ describe('AssetPanel', () => {
 		) as HTMLButtonElement[];
 		expect(groups.map((group) => group.textContent?.trim())).toEqual([
 			'▾Alpha1',
-			'▸Zebra1'
+			'▾Zebra1'
 		]);
 		expect(container.querySelector('[title="alpha-car"]')).toBeTruthy();
-		expect(container.querySelector('[title="zebra-car"]')).toBeNull();
+		expect(container.querySelector('[title="zebra-car"]')).toBeTruthy();
 		expect(
 			container.querySelector('[title="alpha-car"] img')?.getAttribute('src')
 		).toBe('https://editor.test/alpha-assets/alpha.svg');
 
 		groups[1].click();
-		await waitFor(() => container.querySelector('[title="zebra-car"]'));
-		expect(container.querySelector('[title="zebra-car"]')).toBeTruthy();
+		await waitFor(() => !container.querySelector('[title="zebra-car"]'));
+		expect(container.querySelector('[title="zebra-car"]')).toBeNull();
 		expect(
-			container.querySelector('[title="zebra-car"] img')?.getAttribute('src')
-		).toBe('https://editor.test/zebra-assets/zebra.svg');
+			container.querySelector('[title="alpha-car"] img')?.getAttribute('src')
+		).toBe('https://editor.test/alpha-assets/alpha.svg');
 
 		root.unmount();
 		container.remove();

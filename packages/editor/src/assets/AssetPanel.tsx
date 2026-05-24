@@ -198,7 +198,7 @@ export function AssetPanel({
 				Array.from(current).filter((group) => groupNames.includes(group))
 			);
 			if (next.size === 0 && groupNames[0]) {
-				next.add(groupNames[0]);
+				for (const group of groupNames) next.add(group);
 			}
 			return next;
 		});

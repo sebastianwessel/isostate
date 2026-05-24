@@ -65,4 +65,14 @@ describe('asset manifests', () => {
 		});
 		expect(Object.keys(manifest.assets[0].sprites ?? {})).toHaveLength(16);
 	});
+
+	test('website traffic sprite sheet uses an alpha channel', async () => {
+		const bytes = await readFile(
+			'website/public/assets/traffic/traffic-sprites.png'
+		);
+
+		expect(bytes.subarray(1, 4).toString('ascii')).toBe('PNG');
+		expect(bytes.subarray(12, 16).toString('ascii')).toBe('IHDR');
+		expect(bytes[25]).toBe(6);
+	});
 });
