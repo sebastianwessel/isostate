@@ -1,14 +1,21 @@
 # Public API
 
-isostate has three public entrypoints:
+isostate has four core package entrypoints:
 
 | Entrypoint | Use In | Purpose |
 |---|---|---|
 | `@sebastianwessel/isostate` | browser/runtime code | Mount compiled bundles, control progress, provide assets and themes. |
 | `@sebastianwessel/isostate/runtime` | browser/runtime code | Minimal runtime-only entrypoint for applications that want the smallest import surface. |
 | `@sebastianwessel/isostate/dsl` | build scripts, tests, CI | Parse, validate, compile, and serialize YAML scene documents. |
+| `@sebastianwessel/isostate/dsl/browser` | browser-based authoring tools | Compile already-parsed scene documents without importing the YAML parser. |
+| `@sebastianwessel/isostate/editor-support` | editor and tooling integrations | Shared support utilities for browser authoring surfaces. |
 
 Do not import `@sebastianwessel/isostate/dsl` from browser code.
+
+The website editor lives in a separate internal package,
+`@sebastianwessel/isostate-editor`. It is documented in
+[Editor Reference](./editor.md), but it is not planned for public npm publishing
+in this version.
 
 ## Browser Runtime
 
@@ -118,6 +125,24 @@ Use primitive assets for simple underlays or markers:
 Connections also do not use external asset URLs. They are authored under
 `connections` or nested connection delta fields and render as generated SVG
 connector paths.
+
+See [Assets Workflow](../guides/assets-workflow.md) for anchors, sprite sheet
+sizing, asset manifests, OpenAI generation prompts, and publishing checks.
+
+## Animation And Connections
+
+Scene animation is derived from authored scene stops:
+
+- first scene: full `elements` and optional `connections`
+- later scenes: sparse `add`, `update`, and `remove` deltas
+- element movement: update `at`
+- element scaling: update `size`
+- connection movement/style: update `route`, `from`, `to`, `style`, `start`,
+  `end`, or `ambient`
+- camera movement: scene `camera` metadata or controller camera methods
+
+See [Animation And Connections](../guides/animation-and-connections.md) for the
+full authoring model.
 
 ## Dev-Time DSL
 

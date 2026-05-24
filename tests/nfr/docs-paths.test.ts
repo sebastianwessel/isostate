@@ -12,6 +12,8 @@ const docs = [
 	'docs/getting-started.md',
 	'docs/guides/install-authoring-skill.md',
 	'docs/guides/author-scene-deltas.md',
+	'docs/guides/assets-workflow.md',
+	'docs/guides/animation-and-connections.md',
 	'docs/guides/use-the-cli.md',
 	'docs/guides/deploy-static-bundle.md',
 	'docs/guides/use-editor-in-astro.md',

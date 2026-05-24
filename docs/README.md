@@ -1,63 +1,76 @@
 # isostate Docs
 
-isostate renders compiled isometric scene bundles in the browser. Author YAML at
-build time, compile it into a runtime bundle, then mount that bundle with the
-small browser runtime.
+isostate turns YAML into compiled, browser-safe isometric SVG scenes. You can
+write the YAML by hand, edit it visually, or ask an AI assistant to draft it.
+The browser still receives the same small runtime bundle.
 
-## AI Authoring Skill
-
-Install the isostate authoring skill before asking an AI assistant to write or
-review scene YAML:
-
-```bash
-bunx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
+```mermaid
+flowchart LR
+  Idea[Idea or story] --> Author{Authoring path}
+  Author --> YAML[Write YAML]
+  Author --> Editor[Use the editor]
+  Author --> AI[Ask an AI assistant]
+  YAML --> Validate[Validate]
+  Editor --> Validate
+  AI --> Validate
+  Validate --> Compile[Compile runtime bundle]
+  Compile --> Publish[Publish static assets]
 ```
 
-See [Install The Authoring Skill](./guides/install-authoring-skill.md) for
-package-runner variants, agent-specific installation, and verification.
+## The Flow
+
+1. Decide what the scene should explain.
+2. Choose an authoring path: hand-written YAML, the website editor, or AI with
+   the authoring skill installed.
+3. Add assets, labels, connections, animation, and camera stops.
+4. Validate and compile the YAML during development or CI.
+5. Publish only the compiled bundle, runtime, and referenced assets.
 
 ## Start Here
 
-- [Install The Authoring Skill](./guides/install-authoring-skill.md): give your
-  AI assistant the isostate DSL, asset, connector, and deployment rules.
-- [Getting Started](./getting-started.md): compile the demo and mount it in a
-  browser page.
-- [Author Scene Deltas](./guides/author-scene-deltas.md): write the YAML
-  timeline model.
-- [Use The CLI](./guides/use-the-cli.md): validate, compile, bundle, and inspect
-  scene files from CI or local scripts.
-- [Deploy Static Bundle](./guides/deploy-static-bundle.md): generate
-  public-folder output with the CLI.
-- [Use The Editor In Astro](./guides/use-editor-in-astro.md): host assets in
-  `public/`, generate a manifest, and mount the editor as a React island.
-- [Public API](./reference/public-api.md): runtime and dev-time imports.
+| Goal | Read |
+|---|---|
+| Build the first scene | [Getting Started](./getting-started.md) |
+| Understand scene timelines | [Author Scene Deltas](./guides/author-scene-deltas.md) |
+| Create SVG or sprite assets | [Assets Workflow](./guides/assets-workflow.md) |
+| Add movement, flows, and camera focus | [Animation And Connections](./guides/animation-and-connections.md) |
+| Use the visual editor | [Use The Editor In Astro](./guides/use-editor-in-astro.md) |
+| Validate, compile, bundle, inspect | [Use The CLI](./guides/use-the-cli.md) |
+| Publish static output | [Deploy Static Bundle](./guides/deploy-static-bundle.md) |
+| Let an AI assistant help | [Install The Authoring Skill](./guides/install-authoring-skill.md) |
+
+## Runtime Boundary
+
+The YAML parser, validator, compiler, CLI, editor, and `yaml` package are
+development tools. They do not ship in the normal browser runtime path.
+
+```mermaid
+flowchart LR
+  subgraph DevTime [Development and CI]
+    YAML[scene.isostate.yaml] --> CLI[isostate CLI]
+    CLI --> Bundle[scene.isostate.js or JSON]
+    Assets[SVG and sprite assets] --> CLI
+  end
+  subgraph Browser [Browser]
+    Runtime[isostate runtime] --> SVG[SVG scene]
+    Bundle --> Runtime
+    CopiedAssets[Published assets] --> Runtime
+  end
+```
+
+## References
+
+- [Public API](./reference/public-api.md): runtime, DSL, CLI, and support
+  entrypoints.
+- [Editor Reference](./reference/editor.md): editor embedding API. The editor
+  is its own package internally, but it is not planned as a public npm package
+  for this version.
 - [Runtime Bundle](./reference/runtime-bundle.md): compiled artifact shape.
-- [Errors](./reference/errors.md): structured error classes and common fixes.
 - [Types Reference](./reference/types.md): exported TypeScript contracts.
-- [Editor Reference](./reference/editor.md): editor package API, workspace types,
-  commands, and serialization.
+- [Errors](./reference/errors.md): structured error classes and fixes.
 
 ## Examples
 
-- [Examples Index](./examples/README.md): choose the focused workflow.
-- [Runtime Basic](./examples/runtime-basic.md): mount a precompiled bundle.
-- [Controller Scroll](./examples/controller-scroll.md): drive progress from a
-  scroll container.
-- [Compile YAML](./examples/compile-yaml.md): parse, validate, and compile
-  `.isostate.yaml`.
-- [Custom Assets](./examples/custom-assets.md): create browser-loadable SVG
-  assets and sprite sheets with explicit footprint anchors.
-- [Custom Theme](./examples/custom-theme.md): use CSS variable themes.
-- [Inspect Bundle](./examples/inspect-bundle.md): read compiled bundle metadata.
-- [Low-Level Rendering](./examples/low-level-rendering.md): advanced rendering
-  escape hatch.
-- [Editor Basic](./examples/editor-basic.md): mount the editor with initial YAML.
-- [Editor React](./examples/editor-react.md): controlled React component example.
-- [Editor Export](./examples/editor-export.md): export YAML and runtime bundles.
-- [Asset Manifest](./examples/asset-manifest.md): generate and use an asset
-  manifest with the CLI.
-
-## Browser Demo
-
-The runnable demo lives in [`examples/basic`](../examples/basic/README.md). It
-uses the same public API documented here.
+Use [Examples](./examples/README.md) for focused copyable workflows: runtime
+mounting, scroll control, custom assets, static bundling, editor embedding,
+bundle inspection, and theme customization.

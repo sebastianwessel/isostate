@@ -1,7 +1,10 @@
-# Editor Package Reference
+# Editor Reference
 
-The editor package is `@sebastianwessel/isostate-editor`. It provides a browser
-visual editor for `.isostate.yaml` scene documents.
+The editor is a browser visual editor for `.isostate.yaml` scene documents. It
+is implemented as its own workspace package, `@sebastianwessel/isostate-editor`,
+but this version does not plan to publish that editor package to npm. Treat the
+API below as the website/editor integration contract unless a future release
+explicitly publishes it.
 
 ## Package Exports
 
@@ -94,6 +97,12 @@ interface IsostateEditorProps {
   catalogs. The asset browser merges them only in memory for browsing, preserves
   each manifest's own `assetBaseUrl`, and shows manifest groups as collapsible
   alphabetized categories.
+- The editor opens on the asset tab by default so users can drag assets into the
+  scene without first switching panels.
+- Asset categories are expanded by default, alphabetized, and kept separate by
+  source manifest. The editor may rebase mixed same-origin manifest roots in
+  YAML so SVG assets and sprite sheets can coexist under one `assetBaseUrl`
+  without broken URLs.
 
 ## Workspace Types
 

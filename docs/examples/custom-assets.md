@@ -1,5 +1,10 @@
 # Custom Assets
 
+For the end-to-end asset lifecycle, including sprite sheet sizing, OpenAI
+generation prompts, editor manifests, and publishing checks, start with
+[Assets Workflow](../guides/assets-workflow.md). This page stays focused on the
+copyable YAML shapes.
+
 For browser-loadable SVG files, declare a local id and path in YAML:
 
 ```yaml
@@ -148,6 +153,9 @@ header:
   `--iso-front`, and `--iso-side`.
 - Do not use one asset for long arrows or connections. Use first-class
   connections; stretched SVG arrows distort dash patterns and arrowheads.
+- For AI-generated raster sprites, prefer a transparent `256 x 256` tile per
+  one-cell object and verify the image has a real alpha channel before writing
+  the sprite sheet manifest.
 
 ```svg
 <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">

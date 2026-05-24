@@ -53,6 +53,9 @@ public/isostate/scene/
 - Prefer documenting `bunx --package @sebastianwessel/isostate-cli isostate ...`
   for one-off usage and `isostate ...` after users install the CLI as a dev
   dependency.
+- Generate editor catalogs with
+  `isostate assets manifest <asset-dir> --out <manifest> --asset-base-url <url>`.
+  Keep one manifest per asset family when catalogs have separate source roots.
 - Use `validate` before `compile` or `bundle` in CI examples unless the command
   being documented already validates internally.
 - Use `inspect` when docs describe troubleshooting, cache checks, or generated

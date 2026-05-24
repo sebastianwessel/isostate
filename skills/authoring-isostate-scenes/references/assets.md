@@ -60,6 +60,49 @@ Rules:
   built-ins.
 - Sprite sheet paths must include `.png`, `.webp`, `.jpg`, `.jpeg`, or `.svg`;
   `.gif` is not supported.
+- Prefer `128 x 128` or `256 x 256` pixels per one-cell raster sprite. Use
+  `256 x 256` for detailed skeuomorphic or 3D-looking sprites. Keep full sheets
+  at `2048 x 2048` or smaller when practical, and use WebP for large catalogs.
+- Generated PNG/WebP sprite sheets must have real transparency. If a
+  checkerboard appears in the rendered scene, the image pixels likely contain a
+  checkerboard background instead of alpha.
+
+## AI-Generated Asset Sets
+
+When using OpenAI or another image model to generate assets, ask for a
+consistent transparent sprite sheet instead of unrelated one-off images:
+
+```text
+Create a transparent PNG sprite sheet of 16 isometric traffic assets in a
+consistent skeuomorphic 3D style. Use a 4 by 4 grid, 256 px per tile. Include
+cars, bus, roads, signs, traffic lights, cones, barriers, and street lamps.
+Keep the same camera angle, lighting, scale, and transparent background.
+```
+
+After generation:
+
+- verify the alpha channel is real
+- crop excessive padding without clipping objects
+- write exact `sheetSize`, `tileSize`, and per-sprite anchors
+- use `[0.5, 0.85]` as a starting point for cars and other low objects whose
+  ground contact sits above the tile bottom due to perspective
+- use `[0.5, 0.5]` for flat road tiles
+
+## Asset Manifests
+
+The editor discovers external catalogs through `isostate.asset-manifest` JSON.
+Keep each manifest scoped to one asset family and one `assetBaseUrl`.
+
+```bash
+bunx --package @sebastianwessel/isostate-cli isostate assets manifest assets/traffic \
+  --out public/assets/traffic.manifest.json \
+  --asset-base-url ./traffic
+```
+
+For separate visual families, generate separate manifests and pass all manifest
+URLs to the editor. Do not merge unrelated source folders into one manifest just
+to make browsing easier; the editor can browse multiple manifests while
+preserving their separate URL roots.
 
 ## Text Labels
 
@@ -156,3 +199,5 @@ objects. Do not let those drift against the grid:
 - If splitting is not practical, keep the source asset at `size: 1` and use the
   checked catalog `anchor`.
 - Do not compensate with fractional `at` or fractional `size` values.
+- Do not fix repeated placement drift in scene YAML. Fix the asset catalog
+  `anchor` so every placement behaves the same.
