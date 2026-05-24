@@ -92,20 +92,18 @@ function searchPanelAssets(assets: PanelAsset[], query: string): PanelAsset[] {
 	});
 }
 
-function setTransparentDragImage(event: React.DragEvent): void {
-	const image = document.createElement('img');
-	image.alt = '';
-	image.src =
-		'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
-	image.style.position = 'fixed';
-	image.style.left = '-1px';
-	image.style.top = '-1px';
-	image.style.width = '1px';
-	image.style.height = '1px';
-	image.style.opacity = '0';
-	document.body.appendChild(image);
-	event.dataTransfer.setDragImage(image, 0, 0);
-	const cleanup = () => image.remove();
+function setAssetDragImage(event: React.DragEvent): void {
+	const source = event.currentTarget.querySelector('.isostate-asset-thumb');
+	if (!(source instanceof HTMLElement)) return;
+	const dragImage = source.cloneNode(true) as HTMLElement;
+	dragImage.classList.add('isostate-asset-drag-image');
+	dragImage.style.position = 'fixed';
+	dragImage.style.left = '-1000px';
+	dragImage.style.top = '-1000px';
+	dragImage.style.pointerEvents = 'none';
+	document.body.appendChild(dragImage);
+	event.dataTransfer.setDragImage(dragImage, 20, 20);
+	const cleanup = () => dragImage.remove();
 	if (typeof requestAnimationFrame === 'function') {
 		requestAnimationFrame(cleanup);
 	} else {
@@ -390,7 +388,7 @@ function BuiltInAssetItem({
 			tabIndex={0}
 			onDragStart={(event) => {
 				event.dataTransfer.effectAllowed = 'copy';
-				setTransparentDragImage(event);
+				setAssetDragImage(event);
 				event.dataTransfer.setData('application/x-isostate-asset', id);
 				event.dataTransfer.setData('text/plain', id);
 				onDrag?.();
@@ -407,7 +405,6 @@ function BuiltInAssetItem({
 			<div className="isostate-asset-thumb isostate-asset-thumb--builtin">
 				<BuiltInAssetPreview id={id} />
 			</div>
-			<div className="isostate-asset-name">{id}</div>
 		</div>
 	);
 }
@@ -479,7 +476,7 @@ function AssetItem({
 }) {
 	const handleDragStart = (event: React.DragEvent) => {
 		event.dataTransfer.effectAllowed = 'copy';
-		setTransparentDragImage(event);
+		setAssetDragImage(event);
 		event.dataTransfer.setData('application/x-isostate-asset', asset.id);
 		if (
 			assetBaseUrl &&
@@ -523,7 +520,6 @@ function AssetItem({
 					previewUrl && <img src={previewUrl} alt="" draggable={false} />
 				)}
 			</div>
-			<div className="isostate-asset-name">{asset.label ?? asset.name}</div>
 		</div>
 	);
 }

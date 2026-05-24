@@ -250,13 +250,18 @@ describe('AssetPanel', () => {
 
 		expect(draggedAssetId).toBe('server');
 		expect(dragImages).toHaveLength(1);
-		expect((dragImages[0] as HTMLImageElement).style.opacity).toBe('0');
+		expect(dragImages[0].classList.contains('isostate-asset-drag-image')).toBe(
+			true
+		);
+		expect(dragImages[0].querySelector('img')?.getAttribute('src')).toBe(
+			'https://editor.test/assets/server.svg'
+		);
 
 		root.unmount();
 		container.remove();
 	});
 
-	test('renders preview artwork for built-in assets', async () => {
+	test('renders compact icon-only preview artwork for built-in assets', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const workspace = createEditorWorkspace({ sourceYaml: BASE_YAML });
@@ -285,6 +290,7 @@ describe('AssetPanel', () => {
 			expect(
 				item.querySelector('.isostate-asset-thumb--builtin svg')
 			).toBeTruthy();
+			expect(item.querySelector('.isostate-asset-name')).toBeNull();
 		}
 
 		root.unmount();
