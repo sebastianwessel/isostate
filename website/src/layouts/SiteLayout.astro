@@ -57,8 +57,12 @@ function navId(value: string): string {
 		<meta name="twitter:title" content={pageTitle} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={ogImageUrl} />
+		<meta name="author" content="Sebastian Wessel" />
 		<title>{pageTitle}</title>
 		<link rel="icon" type="image/svg+xml" href={href('/favicon.svg')} />
+		<link rel="apple-touch-icon" sizes="180x180" href={href('/apple-touch-icon.png')} />
+		<link rel="manifest" href={href('/site.webmanifest')} />
+		<link rel="author" href="https://sebastianwessel.de/projects/isostate/" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -260,6 +264,47 @@ function navId(value: string): string {
 
 			.page-shell {
 				min-height: calc(100vh - 64px);
+			}
+
+			.site-footer {
+				display: flex;
+				align-items: center;
+				justify-content: space-between;
+				gap: 18px;
+				padding: 28px clamp(20px, 4vw, 56px);
+				border-top: 1px solid rgba(16, 20, 21, 0.1);
+				color: var(--muted);
+				font-size: 0.84rem;
+				background: rgba(246, 243, 234, 0.74);
+			}
+
+			.site-footer p {
+				margin: 0;
+			}
+
+			.site-footer strong {
+				color: var(--soft-ink);
+				font-weight: 650;
+			}
+
+			.footer-links {
+				display: flex;
+				align-items: center;
+				justify-content: flex-end;
+				flex-wrap: wrap;
+				gap: 14px;
+			}
+
+			.footer-links a {
+				color: var(--soft-ink);
+				font-weight: 600;
+				text-decoration: none;
+			}
+
+			.footer-links a:hover {
+				color: var(--green-dark);
+				text-decoration: underline;
+				text-underline-offset: 0.18em;
 			}
 
 			.docs-shell {
@@ -665,6 +710,15 @@ function navId(value: string): string {
 					max-height: none;
 					margin-bottom: 22px;
 				}
+
+				.site-footer {
+					align-items: flex-start;
+					flex-direction: column;
+				}
+
+				.footer-links {
+					justify-content: flex-start;
+				}
 			}
 		</style>
 	</head>
@@ -753,6 +807,16 @@ function navId(value: string): string {
 				)
 			}
 		</main>
+		<footer class="site-footer">
+			<p>
+				A project by <strong>Sebastian Wessel</strong>.
+			</p>
+			<nav class="footer-links" aria-label="Project links">
+				<a href="https://sebastianwessel.de/projects/isostate/">Project page</a>
+				<a href="https://sebastianwessel.de/projects/">More projects</a>
+				<a href="https://github.com/sebastianwessel/isostate">GitHub</a>
+			</nav>
+		</footer>
 	<script>
 		import { renderMermaidSVGAsync } from 'beautiful-mermaid';
 

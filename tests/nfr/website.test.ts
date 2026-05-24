@@ -21,6 +21,10 @@ async function listFiles(dir: string): Promise<string[]> {
 async function ensureWebsiteBuilt(): Promise<void> {
 	const requiredOutputs = [
 		join(root, 'website/dist/index.html'),
+		join(root, 'website/dist/apple-touch-icon.png'),
+		join(root, 'website/dist/icon-192.png'),
+		join(root, 'website/dist/icon-512.png'),
+		join(root, 'website/dist/site.webmanifest'),
 		join(root, 'website/dist/docs/concepts/how-isostate-works.md/index.html'),
 		join(root, 'website/dist/docs/guides/plan-a-scene.md/index.html')
 	];
@@ -60,6 +64,17 @@ describe('Astro website', () => {
 			join(root, 'website/src/layouts/SiteLayout.astro'),
 			'utf8'
 		);
+		const ogRoute = await readFile(
+			join(root, 'website/src/pages/og/[...route].ts'),
+			'utf8'
+		);
+		const webManifest = JSON.parse(
+			await readFile(join(root, 'website/public/site.webmanifest'), 'utf8')
+		) as {
+			name?: string;
+			start_url?: string;
+			icons?: Array<{ src: string; sizes: string; type: string }>;
+		};
 		const route = await readFile(
 			join(root, 'website/src/pages/docs/[...slug].astro'),
 			'utf8'
@@ -104,6 +119,26 @@ describe('Astro website', () => {
 		expect(layout).toContain('requestFullscreen');
 		expect(layout).toContain('Copy Mermaid source');
 		expect(layout).toContain('pre[data-language="mermaid"] code');
+		expect(layout).toContain('rel="apple-touch-icon"');
+		expect(layout).toContain('rel="manifest"');
+		expect(layout).toContain('https://sebastianwessel.de/projects/isostate/');
+		expect(layout).toContain('https://sebastianwessel.de/projects/');
+		expect(ogRoute).toContain('./assets/isostate-story/editor-overview.png');
+		expect(ogRoute).toContain(
+			'./assets/isostate-story/hero-tilt-shift-city.png'
+		);
+		expect(webManifest.name).toBe('isostate');
+		expect(webManifest.start_url).toBe('/isostate/');
+		expect(webManifest.icons).toContainEqual({
+			src: '/isostate/icon-192.png',
+			sizes: '192x192',
+			type: 'image/png'
+		});
+		expect(webManifest.icons).toContainEqual({
+			src: '/isostate/icon-512.png',
+			sizes: '512x512',
+			type: 'image/png'
+		});
 		expect(route).toContain('getStaticPaths');
 		expect(route).toContain('ogImage');
 		expect(route).toContain('<Content />');
@@ -123,6 +158,10 @@ describe('Astro website', () => {
 			expect(relativeFiles).toContain('index.html');
 			expect(relativeFiles).toContain('sitemap-index.xml');
 			expect(relativeFiles).toContain('sitemap-0.xml');
+			expect(relativeFiles).toContain('apple-touch-icon.png');
+			expect(relativeFiles).toContain('icon-192.png');
+			expect(relativeFiles).toContain('icon-512.png');
+			expect(relativeFiles).toContain('site.webmanifest');
 			expect(relativeFiles).toContain('og/index.png');
 			expect(relativeFiles).toContain('docs/README.md/index.html');
 			expect(relativeFiles).toContain(
@@ -151,6 +190,10 @@ describe('Astro website', () => {
 			expect(home).toContain(
 				'name="twitter:card" content="summary_large_image"'
 			);
+			expect(home).toContain('rel="manifest"');
+			expect(home).toContain('Project page');
+			expect(home).toContain('More projects');
+			expect(home).toContain('sebastianwessel.de/projects/isostate/');
 			const docsIndex = await readFile(
 				join(dist, 'docs/README.md/index.html'),
 				'utf8'

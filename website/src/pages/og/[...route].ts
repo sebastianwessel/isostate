@@ -8,7 +8,7 @@ type OgPage = {
 };
 
 const homeDescription =
-	'Compile YAML into lightweight SVG scenes for scroll-driven product stories, documentation, and technical explainers.';
+	'YAML-authored isometric visual stories for documentation, product tours, and technical explainers.';
 
 const pages: Record<string, OgPage> = {
 	index: {
@@ -38,11 +38,14 @@ const localFont = localFontCandidates.find((fontPath) => existsSync(fontPath));
 export const { getStaticPaths, GET } = await OGImageRoute({
 	param: 'route',
 	pages,
-	getImageOptions: (_path, page) => ({
+	getImageOptions: (path, page) => ({
 		title: page.title,
 		description: page.description,
 		bgImage: {
-			path: './assets/isostate-story/hero-tilt-shift-city.png',
+			path:
+				path === 'index'
+					? './assets/isostate-story/editor-overview.png'
+					: './assets/isostate-story/hero-tilt-shift-city.png',
 			fit: 'cover'
 		},
 		bgGradient: [
