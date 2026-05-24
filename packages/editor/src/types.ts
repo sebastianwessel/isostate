@@ -118,6 +118,7 @@ export interface EditorUiState {
 	sidebarWidth: number;
 	sidebarCollapsed: boolean;
 	sidebarTab: 'assets' | 'attributes' | 'general';
+	yamlCollapsed?: boolean;
 	theme: 'light' | 'dark' | 'system';
 	previewMode: 'edit' | 'runtime';
 	assetBrowser: EditorAssetBrowserState;

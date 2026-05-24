@@ -198,13 +198,14 @@ Text labels use the reserved asset id `text` and an element-level `text` object.
       Authentication
       Gateway
     align: middle
+    placement: cell
     fontSize: 12
     fontWeight: 700
     lineHeight: 1.2
     fill: "#111111"
 ```
 
-`text.value` supports line breaks. The compiler preserves the text payload in runtime scene snapshots and excludes `text` from asset URL generation. The runtime renderer creates SVG text nodes directly; it never treats `text.value` as SVG or HTML.
+`text.value` supports line breaks. `text.placement` defaults to `cell`, which keeps text inside the grid cell; `caption` preserves the legacy top-floating label placement. The compiler preserves the text payload in runtime scene snapshots and excludes `text` from asset URL generation. The runtime renderer creates SVG text nodes directly; it never treats `text.value` as SVG or HTML.
 
 ### Built-In Primitives
 

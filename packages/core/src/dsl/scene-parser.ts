@@ -285,13 +285,20 @@ function parsePointArray(raw: unknown, context: string): [number, number][] {
 
 function parseTextContent(raw: unknown, context: string, requireValue = true): TextContent {
 	const text = requireObject(raw, context);
-	assertKnownFields(text, new Set(["value", "align", "fontSize", "fontWeight", "lineHeight", "fill"]), context);
+	assertKnownFields(
+		text,
+		new Set(["value", "align", "placement", "fontSize", "fontWeight", "lineHeight", "fill"]),
+		context,
+	);
 	const parsed: Partial<TextContent> = {};
 	if (requireValue || text.value !== undefined) {
 		parsed.value = requireString(text.value, `${context}.value`);
 	}
 	if (text.align !== undefined) {
 		parsed.align = requireString(text.align, `${context}.align`) as never;
+	}
+	if (text.placement !== undefined) {
+		parsed.placement = requireString(text.placement, `${context}.placement`) as never;
 	}
 	if (text.fontSize !== undefined) {
 		parsed.fontSize = requireNumber(text.fontSize, `${context}.fontSize`);

@@ -77,6 +77,7 @@ const VALID_CAMERA_EASINGS: ReadonlySet<string> = new Set(["linear", "ease-in-ou
 const VALID_SPRITE_SHEET_EXTENSIONS = new Set([".png", ".webp", ".jpg", ".jpeg", ".svg"]);
 
 const VALID_TEXT_ALIGN: ReadonlySet<string> = new Set(["start", "middle", "end"]);
+const VALID_TEXT_PLACEMENT: ReadonlySet<string> = new Set(["cell", "caption"]);
 const VALID_TEXT_WEIGHT: ReadonlySet<string> = new Set(["normal", "bold"]);
 const VALID_LINE_CAPS: ReadonlySet<string> = new Set(["butt", "round", "square"]);
 const VALID_LINE_JOINS: ReadonlySet<string> = new Set(["miter", "round", "bevel"]);
@@ -975,6 +976,16 @@ function validateTextContent(
 				elementId,
 				field: "text.align",
 				value: text.align,
+			}),
+		);
+	}
+	if (text.placement !== undefined && !VALID_TEXT_PLACEMENT.has(text.placement)) {
+		errors.push(
+			issue("INVALID_TEXT_STYLE", "Text placement must be cell or caption", {
+				sceneId,
+				elementId,
+				field: "text.placement",
+				value: text.placement,
 			}),
 		);
 	}

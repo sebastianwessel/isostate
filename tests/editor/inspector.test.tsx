@@ -94,6 +94,24 @@ function TestWrapper({
 	});
 }
 
+function TextElementTestWrapper({
+	initialWorkspace
+}: {
+	initialWorkspace: EditorWorkspace;
+}) {
+	const [workspace, setWorkspace] = useState(initialWorkspace);
+	return createElement(InspectorPanel, {
+		workspace: {
+			...workspace,
+			selection: { objectIds: ['e2'], connectionIds: [], layerNames: [] }
+		},
+		onCommand: (cmd: EditorCommand) => {
+			const result = applyEditorCommand(workspace, cmd);
+			setWorkspace(result.workspace);
+		}
+	});
+}
+
 function ConnectionTestWrapper({
 	initialWorkspace
 }: {
@@ -160,6 +178,27 @@ describe('InspectorPanel', () => {
 		) as HTMLInputElement;
 		expect(xInput).toBeTruthy();
 		expect(xInput.value).toBe('0');
+		root.unmount();
+		container.remove();
+	});
+
+	test('text element inspector exposes placement control', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeWorkspace();
+		const root = createRoot(container);
+		root.render(
+			createElement(TextElementTestWrapper, { initialWorkspace: workspace })
+		);
+		await new Promise((r) => setTimeout(r, 10));
+		const rows = container.querySelectorAll('.isostate-inspector-row');
+		const placementRow = Array.from(rows).find((row) =>
+			row.textContent?.includes('Placement')
+		);
+		const placementSelect = placementRow?.querySelector('.isostate-select');
+
+		expect(placementSelect).toBeTruthy();
+		expect(placementSelect?.textContent).toContain('cell');
 		root.unmount();
 		container.remove();
 	});

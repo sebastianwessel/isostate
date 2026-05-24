@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" role="img" aria-label="Canal water tile">
+  <path d="M48 8 92 30 48 58 4 36Z" fill="#9ad8e5" stroke="#5bb4c5" stroke-width="2"/>
+  <path d="M17 36c11-8 20-8 31 0s21 8 32 0M22 43c9-5 17-5 26 0s17 5 26 0" fill="none" stroke="#e0fbff" stroke-width="2" opacity=".75"/>
+</svg>

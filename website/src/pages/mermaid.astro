@@ -1,0 +1,553 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { Code } from 'astro:components';
+
+const installSnippet = `npx skills add sebastianwessel/isostate \\
+  --skill authoring-isostate-scenes
+npx skills add sebastianwessel/isostate \\
+  --skill converting-mermaid-to-isostate-stories`;
+
+const promptSnippet = `Use the converting-mermaid-to-isostate-stories skill.
+
+Turn this Mermaid sequence diagram into an isostate story.
+Preserve every participant, message direction, and message label.
+Use cumulative scenes, active connections, muted completed paths,
+and a final overview.
+
+sequenceDiagram
+  participant User
+  participant Web
+  participant API
+  User->>Web: submit request
+  Web->>API: call endpoint
+  API-->>Web: response
+  Web-->>User: render result`;
+
+const validateSnippet = `npx --package @sebastianwessel/isostate-cli \\
+  isostate validate scene.isostate.yaml
+npx --package @sebastianwessel/isostate-cli \\
+  isostate bundle scene.isostate.yaml --out public/isostate/scene`;
+
+const mermaidSnippet = `flowchart TD
+  Request --> Router
+  Router --> Auth
+  Auth -- ok --> App
+  Auth -- denied --> Response
+  App --> Cache
+  Cache -- hit --> Response
+  Cache -- miss --> DB
+  App -. async .-> Queue
+  Queue --> Worker`;
+---
+
+<SiteLayout
+	title="Mermaid to isostate stories"
+	description="Use an AI agent skill to convert Mermaid flowcharts, sequence diagrams, and state diagrams into animated isostate visual stories."
+>
+	<section class="mermaid-page" aria-label="Mermaid to isostate">
+		<div class="mermaid-hero">
+			<div class="visual-panel" aria-label="Mermaid to isostate visual workflow">
+				<div class="diagram-card mermaid-card">
+					<div class="card-label">Mermaid input</div>
+					<pre>{mermaidSnippet}</pre>
+				</div>
+				<div class="flow-bridge" aria-hidden="true">
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+				<div class="diagram-card story-card">
+					<div class="card-label">Isostate story output</div>
+					<div class="iso-board">
+						<div class="iso-node node-request">Request</div>
+						<div class="iso-node node-router">Router</div>
+						<div class="iso-node node-auth">Auth</div>
+						<div class="iso-node node-app">App</div>
+						<div class="iso-route route-main"></div>
+						<div class="iso-route route-branch"></div>
+						<div class="iso-route route-async"></div>
+					</div>
+					<ul class="story-points">
+						<li>labels appear with elements</li>
+						<li>active arrows tell the current beat</li>
+						<li>branches stay reconstructable</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="hero-copy">
+				<p class="eyebrow">Mermaid conversion</p>
+				<h1>Turn diagrams into visual stories with your AI agent.</h1>
+				<p>
+					isostate does not try to be a Mermaid renderer. The skill teaches an
+					AI agent to read Mermaid as structured source material, preserve the
+					data, and author a cumulative isometric scene that explains the flow
+					step by step.
+				</p>
+				<div class="hero-actions">
+					<a class="primary-link" href="#install">Install the skills</a>
+					<a class="secondary-link" href="#workflow">See the workflow</a>
+				</div>
+			</div>
+		</div>
+
+		<section class="workflow-section" id="workflow" aria-label="Mermaid conversion workflow">
+			<div class="section-heading">
+				<p class="eyebrow">How it works</p>
+				<h2>A skill-guided conversion, not a fixed renderer.</h2>
+				<p>
+					The AI keeps Mermaid fidelity as the hard requirement, then chooses a
+					layout, scenes, labels, route styles, and camera focus that make the
+					result easier to understand than a static diagram.
+				</p>
+			</div>
+
+			<div class="workflow-grid">
+				<article>
+					<span>01</span>
+					<h3>Read the Mermaid</h3>
+					<p>
+						The agent inventories participants, states, nodes, connections,
+						message labels, branches, returns, async paths, and groups.
+					</p>
+				</article>
+				<article>
+					<span>02</span>
+					<h3>Plan the story</h3>
+					<p>
+						It builds cumulative scenes: introduce elements with labels first,
+						then activate the connection that explains the next action.
+					</p>
+				</article>
+				<article>
+					<span>03</span>
+					<h3>Author YAML</h3>
+					<p>
+						The output is normal `.isostate.yaml`: grid positions, elements,
+						text labels, connections, scene deltas, and optional camera focus.
+					</p>
+				</article>
+				<article>
+					<span>04</span>
+					<h3>Validate and render</h3>
+					<p>
+						Run the CLI, review each scene stop, and reject any output where a
+						label, direction, branch, or transition is missing or misleading.
+					</p>
+				</article>
+			</div>
+		</section>
+
+		<section class="install-section" id="install" aria-label="Install Mermaid conversion skills">
+			<div class="copy-col">
+				<p class="eyebrow">Install</p>
+				<h2>Add the skills to your agent.</h2>
+				<p>
+					Install both skills: one teaches the isostate DSL, and the other
+					teaches Mermaid-to-story conversion. After that, ask your AI tool to
+					use the Mermaid conversion skill whenever Mermaid is the source.
+				</p>
+				<ul>
+					<li>Flowcharts and `graph` aliases map to flow stories.</li>
+					<li>Sequence diagrams preserve message order, labels, returns, and async tails.</li>
+					<li>State diagrams preserve states, transitions, start/end markers, and alternate paths.</li>
+				</ul>
+			</div>
+			<div class="code-col">
+				<Code code={installSnippet} lang="sh" theme="github-dark" wrap />
+			</div>
+		</section>
+
+		<section class="prompt-section" aria-label="Prompt example">
+			<div class="code-col">
+				<Code code={promptSnippet} lang="text" theme="github-dark" wrap />
+			</div>
+			<div class="copy-col">
+				<p class="eyebrow">Prompt</p>
+				<h2>Give the agent source and constraints.</h2>
+				<p>
+					You do not need to specify every visual detail. Ask for Mermaid
+					fidelity, cumulative scenes, active connections, route labels, and a
+					final overview. The skill handles the conversion workflow and asks
+					for clarification only when the source is ambiguous.
+				</p>
+			</div>
+		</section>
+
+		<section class="quality-section" aria-label="Quality requirements">
+			<div class="section-heading">
+				<p class="eyebrow">Quality bar</p>
+				<h2>Correct data display comes first.</h2>
+				<p>
+					A good-looking scene is not enough. The final visualization must let a
+					viewer reconstruct the original Mermaid information.
+				</p>
+			</div>
+			<div class="quality-grid">
+				<div>
+					<h3>Must preserve</h3>
+					<p>All labels, nodes, participants, states, transition directions, branch labels, and async semantics.</p>
+				</div>
+				<div>
+					<h3>Should improve</h3>
+					<p>Reading order, spacing, camera focus, route lanes, and visual hierarchy where Mermaid is too dense.</p>
+				</div>
+				<div>
+					<h3>Must verify</h3>
+					<p>Validate the YAML, compile the bundle, and review every scene stop for misleading arrows or missing labels.</p>
+				</div>
+			</div>
+			<div class="validate-card">
+				<Code code={validateSnippet} lang="sh" theme="github-dark" wrap />
+			</div>
+		</section>
+	</section>
+
+	<style>
+		.mermaid-page {
+			min-height: calc(100svh - 64px);
+			background: #eef3f2;
+		}
+
+		.mermaid-hero {
+			display: grid;
+			grid-template-columns: minmax(420px, 1.05fr) minmax(320px, 0.95fr);
+			gap: clamp(28px, 5vw, 72px);
+			align-items: center;
+			max-width: 1360px;
+			margin: 0 auto;
+			padding: clamp(36px, 6vw, 92px) clamp(22px, 5vw, 80px);
+		}
+
+		.visual-panel {
+			display: grid;
+			grid-template-columns: 1fr auto 1fr;
+			gap: 16px;
+			align-items: center;
+			min-height: 560px;
+		}
+
+		.diagram-card {
+			min-width: 0;
+			border: 1px solid rgba(15, 95, 79, 0.14);
+			border-radius: 10px;
+			background: rgba(255, 253, 245, 0.92);
+			box-shadow: var(--shadow);
+			overflow: hidden;
+		}
+
+		.card-label {
+			padding: 12px 14px;
+			border-bottom: 1px solid rgba(15, 95, 79, 0.12);
+			color: var(--green-dark);
+			font-size: 0.72rem;
+			font-weight: 800;
+			letter-spacing: 0.06em;
+			text-transform: uppercase;
+		}
+
+		.mermaid-card pre {
+			margin: 0;
+			min-height: 360px;
+			padding: 18px;
+			background: #0f1c18;
+			color: #d6f4e8;
+			font-size: 0.8rem;
+			line-height: 1.7;
+			overflow: auto;
+		}
+
+		.flow-bridge {
+			display: grid;
+			gap: 8px;
+			color: var(--green);
+		}
+
+		.flow-bridge span {
+			display: block;
+			width: 34px;
+			height: 3px;
+			border-radius: 999px;
+			background: currentColor;
+		}
+
+		.flow-bridge span:nth-child(2) {
+			width: 48px;
+		}
+
+		.iso-board {
+			position: relative;
+			height: 360px;
+			background:
+				linear-gradient(30deg, rgba(83, 125, 153, 0.16) 1px, transparent 1px) 0 0 / 52px 52px,
+				linear-gradient(150deg, rgba(83, 125, 153, 0.14) 1px, transparent 1px) 0 0 / 52px 52px,
+				#f8fbfb;
+			overflow: hidden;
+		}
+
+		.iso-board::before {
+			position: absolute;
+			inset: 42px 30px;
+			border: 2px solid rgba(83, 125, 153, 0.22);
+			transform: skewY(-24deg) rotate(0deg);
+			content: "";
+		}
+
+		.iso-node {
+			position: absolute;
+			display: grid;
+			place-items: center;
+			width: 92px;
+			height: 54px;
+			border: 2px solid rgba(8, 63, 53, 0.4);
+			background: linear-gradient(135deg, #78d9ba, #0f5f4f);
+			color: #fffdf5;
+			font-size: 0.78rem;
+			font-weight: 800;
+			box-shadow: 0 12px 0 rgba(8, 63, 53, 0.22);
+			transform: skewY(-18deg);
+		}
+
+		.node-request {
+			top: 46px;
+			left: 28px;
+		}
+
+		.node-router {
+			top: 110px;
+			left: 165px;
+		}
+
+		.node-auth {
+			top: 208px;
+			left: 178px;
+		}
+
+		.node-app {
+			top: 246px;
+			right: 34px;
+		}
+
+		.iso-route {
+			position: absolute;
+			height: 5px;
+			border-radius: 999px;
+			background: #2563eb;
+			transform-origin: left center;
+		}
+
+		.route-main {
+			top: 142px;
+			left: 100px;
+			width: 185px;
+			transform: rotate(18deg);
+		}
+
+		.route-branch {
+			top: 196px;
+			left: 214px;
+			width: 118px;
+			background: #dc2626;
+			opacity: 0.65;
+			transform: rotate(112deg);
+		}
+
+		.route-async {
+			top: 282px;
+			left: 210px;
+			width: 162px;
+			background: repeating-linear-gradient(90deg, #0d9488 0 12px, transparent 12px 22px);
+			transform: rotate(11deg);
+		}
+
+		.story-points {
+			display: grid;
+			gap: 8px;
+			margin: 0;
+			padding: 16px 20px 20px;
+			color: var(--soft-ink);
+			font-size: 0.9rem;
+		}
+
+		.hero-copy {
+			max-width: 620px;
+		}
+
+		.eyebrow {
+			margin: 0 0 12px;
+			color: var(--green-dark);
+			font-size: 0.72rem;
+			font-weight: 800;
+			letter-spacing: 0.07em;
+			text-transform: uppercase;
+		}
+
+		h1,
+		h2 {
+			margin: 0;
+			color: var(--ink);
+			font-family: var(--font-display);
+			letter-spacing: -0.02em;
+		}
+
+		h1 {
+			font-size: clamp(2.8rem, 6vw, 6.4rem);
+			line-height: 0.9;
+		}
+
+		h2 {
+			font-size: clamp(2rem, 4vw, 4rem);
+			line-height: 0.95;
+		}
+
+		h3 {
+			margin: 0 0 10px;
+			color: var(--ink);
+			font-size: 1rem;
+		}
+
+		p,
+		li {
+			color: var(--soft-ink);
+			line-height: 1.7;
+		}
+
+		.hero-copy p:not(.eyebrow),
+		.section-heading p,
+		.copy-col p {
+			font-size: 1.02rem;
+		}
+
+		.hero-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 12px;
+			margin-top: 28px;
+		}
+
+		.primary-link,
+		.secondary-link {
+			display: inline-flex;
+			align-items: center;
+			min-height: 44px;
+			padding: 0 18px;
+			border-radius: 8px;
+			font-weight: 800;
+			text-decoration: none;
+		}
+
+		.primary-link {
+			background: var(--green);
+			color: #fffdf5;
+		}
+
+		.secondary-link {
+			border: 1px solid rgba(16, 20, 21, 0.16);
+			background: rgba(255, 253, 245, 0.78);
+			color: var(--ink);
+		}
+
+		.workflow-section,
+		.install-section,
+		.prompt-section,
+		.quality-section {
+			max-width: 1240px;
+			margin: 0 auto;
+			padding: clamp(36px, 6vw, 78px) clamp(22px, 5vw, 80px);
+		}
+
+		.section-heading {
+			max-width: 780px;
+			margin-bottom: 28px;
+		}
+
+		.workflow-grid,
+		.quality-grid {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: 14px;
+		}
+
+		.workflow-grid article,
+		.quality-grid > div,
+		.validate-card,
+		.code-col {
+			border: 1px solid rgba(15, 95, 79, 0.12);
+			border-radius: 10px;
+			background: rgba(255, 253, 245, 0.76);
+			box-shadow: var(--shadow);
+		}
+
+		.workflow-grid article,
+		.quality-grid > div {
+			padding: 20px;
+		}
+
+		.workflow-grid span {
+			display: inline-flex;
+			margin-bottom: 16px;
+			color: var(--green-dark);
+			font-weight: 900;
+			font-size: 0.82rem;
+		}
+
+		.install-section,
+		.prompt-section {
+			display: grid;
+			grid-template-columns: minmax(280px, 0.85fr) minmax(360px, 1.15fr);
+			gap: 22px;
+			align-items: center;
+		}
+
+		.prompt-section {
+			grid-template-columns: minmax(360px, 1.15fr) minmax(280px, 0.85fr);
+		}
+
+		.copy-col ul {
+			margin: 20px 0 0;
+			padding-left: 20px;
+		}
+
+		.code-col {
+			overflow: hidden;
+		}
+
+		.code-col :global(pre),
+		.validate-card :global(pre) {
+			margin: 0;
+			border-radius: 10px;
+		}
+
+		.quality-grid {
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			margin-bottom: 16px;
+		}
+
+		.validate-card {
+			overflow: hidden;
+		}
+
+		@media (max-width: 980px) {
+			.mermaid-hero,
+			.install-section,
+			.prompt-section {
+				grid-template-columns: 1fr;
+			}
+
+			.visual-panel {
+				grid-template-columns: 1fr;
+				min-height: 0;
+			}
+
+			.flow-bridge {
+				grid-auto-flow: column;
+				justify-content: center;
+			}
+
+			.workflow-grid,
+			.quality-grid {
+				grid-template-columns: 1fr;
+			}
+		}
+	</style>
+</SiteLayout>

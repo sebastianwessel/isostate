@@ -40,7 +40,7 @@ only loads the runtime, compiled scene data, and referenced SVG assets.
 
 ## Quickstart
 
-From the repository root:
+From a source checkout of this repository:
 
 ```bash
 bun install
@@ -73,8 +73,8 @@ examples/basic/static-bundle/
   assets/
 ```
 
-Use the CLI directly for your own scene:
+Use the published CLI directly for your own scene:
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml --out public/isostate/scene
+npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml --out public/isostate/scene
 ```

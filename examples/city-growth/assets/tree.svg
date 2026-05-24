@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 80" role="img" aria-label="Park tree">
+  <ellipse cx="36" cy="70" rx="18" ry="6" fill="#0f172a" opacity=".12"/>
+  <path d="M33 36h7v32h-7Z" fill="#8b5e34"/>
+  <circle cx="27" cy="34" r="15" fill="#5f8f2f" stroke="#3f6f1f" stroke-width="2"/>
+  <circle cx="43" cy="31" r="16" fill="#77a83f" stroke="#3f6f1f" stroke-width="2"/>
+  <circle cx="37" cy="20" r="15" fill="#8fbd4b" stroke="#3f6f1f" stroke-width="2"/>
+  <path d="M29 42c8 5 16 5 24 0" fill="none" stroke="#3f6f1f" stroke-width="2" opacity=".45"/>
+</svg>

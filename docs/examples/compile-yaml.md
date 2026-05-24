@@ -3,8 +3,8 @@
 Prefer the CLI for local build scripts and release workflows:
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
-bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.json --format json
+npx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
+npx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.json --format json
 ```
 
 The CLI validates before writing and keeps YAML parsing, validation, and
@@ -16,6 +16,7 @@ control. This path may use `yaml`; the browser runtime must load only the
 compiled output.
 
 ```ts
+import { readFile, writeFile } from 'node:fs/promises';
 import {
 	compileScene,
 	parseScene,
@@ -24,7 +25,7 @@ import {
 	validateScene
 } from '@sebastianwessel/isostate/dsl';
 
-const yamlText = await Bun.file('scene.isostate.yaml').text();
+const yamlText = await readFile('scene.isostate.yaml', 'utf8');
 const document = parseScene(yamlText);
 const report = validateScene(document);
 
@@ -34,8 +35,8 @@ if (!report.isValid) {
 
 const bundle = compileScene(document);
 
-await Bun.write('scene.isostate.js', toJs(bundle));
-await Bun.write('scene.isostate.json', toJson(bundle));
+await writeFile('scene.isostate.js', toJs(bundle), 'utf8');
+await writeFile('scene.isostate.json', toJson(bundle), 'utf8');
 ```
 
 Keep this compile step in local build or CI processes. The emitted JS or JSON

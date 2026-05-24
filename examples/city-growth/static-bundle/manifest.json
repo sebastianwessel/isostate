@@ -1,0 +1,89 @@
+{
+  "format": "isostate-static-bundle",
+  "version": "0.3.0",
+  "generatedAt": "2026-05-24T13:32:43.794Z",
+  "source": {
+    "file": "examples/city-growth/source.isostate.yaml"
+  },
+  "runtime": {
+    "mode": "copy",
+    "file": "isostate.runtime.js"
+  },
+  "scene": {
+    "file": "scene.isostate.js",
+    "format": "js",
+    "digest": "cfdc90b1a7f11311174bf843f4a874d798c936f634047a913c035929c83985f2"
+  },
+  "assets": [
+    {
+      "id": "bridge",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/bridge.svg",
+      "file": "assets/bridge.svg",
+      "url": "./assets/bridge.svg",
+      "digest": "32bef6d00374c9faa621319c712fc588fbe6107e1e95e4249d99ad97c67e44c6"
+    },
+    {
+      "id": "canal",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/canal.svg",
+      "file": "assets/canal.svg",
+      "url": "./assets/canal.svg",
+      "digest": "6debf8957280abeb1a145d85b85c6c1f348580852b7960236970337ab428dcc8"
+    },
+    {
+      "id": "car",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/car.svg",
+      "file": "assets/car.svg",
+      "url": "./assets/car.svg",
+      "digest": "cc4797616d48ccd57a800610ccf42692485d91bb6dd832c1671e61a399dfc64c"
+    },
+    {
+      "id": "city-office",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/city-office.svg",
+      "file": "assets/city-office.svg",
+      "url": "./assets/city-office.svg",
+      "digest": "5ba9c9eeb050eb5f392c03d9456835303f71af46adda6c07de35f6fc19f2fafa"
+    },
+    {
+      "id": "city-tower",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/city-tower.svg",
+      "file": "assets/city-tower.svg",
+      "url": "./assets/city-tower.svg",
+      "digest": "ab1a3694446b9cdfd1dbc89131dafce5a974b52dc03bb55db9fca62c1de43868"
+    },
+    {
+      "id": "civic-hall",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/civic-hall.svg",
+      "file": "assets/civic-hall.svg",
+      "url": "./assets/civic-hall.svg",
+      "digest": "e2e16b989f693fbac0257303290ae4ccfae2252ee9948874cc6651f53f068880"
+    },
+    {
+      "id": "fountain",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/fountain.svg",
+      "file": "assets/fountain.svg",
+      "url": "./assets/fountain.svg",
+      "digest": "020482d449609acd64041a47cd584e856293365b4402d2200ff41011a6fd39be"
+    },
+    {
+      "id": "road-intersection",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/road-intersection.svg",
+      "file": "assets/road-intersection.svg",
+      "url": "./assets/road-intersection.svg",
+      "digest": "eb89ff053b083ac56707f03b79b7e3f9aa2377e183bbc7a022dd8c1b04818d2a"
+    },
+    {
+      "id": "road-straight",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/road-straight.svg",
+      "file": "assets/road-straight.svg",
+      "url": "./assets/road-straight.svg",
+      "digest": "eba42a65b5f420a145ebd5e1bebff3dc030d3cdd2115ce7cddfc04ad7afb55c0"
+    },
+    {
+      "id": "tree",
+      "source": "/Users/sebastianwessel/projekte/@sebastianwessel/isometric/examples/city-growth/assets/tree.svg",
+      "file": "assets/tree.svg",
+      "url": "./assets/tree.svg",
+      "digest": "1e4a20353cc99b87e00736f863eadb1b4935d1e9128c57f81eb1a22f57c373d0"
+    }
+  ]
+}

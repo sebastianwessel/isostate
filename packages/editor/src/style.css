@@ -49,18 +49,18 @@
 }
 
 .isostate-editor {
-	--background: #ffffff;
-	--foreground: #0a0a0a;
-	--border: #e4e4e7;
-	--ring: #18181b;
-	--primary: #18181b;
+	--background: #fbfcfd;
+	--foreground: #0b1220;
+	--border: #d9e0e7;
+	--ring: #0f766e;
+	--primary: #0f766e;
 	--primary-foreground: #fafafa;
-	--secondary: #f4f4f5;
-	--secondary-foreground: #18181b;
-	--muted: #f4f4f5;
-	--muted-foreground: #71717a;
-	--accent: #f4f4f5;
-	--accent-foreground: #18181b;
+	--secondary: #eef3f7;
+	--secondary-foreground: #172033;
+	--muted: #eef3f7;
+	--muted-foreground: #667085;
+	--accent: #dceeea;
+	--accent-foreground: #0b2f2c;
 	--radius: 0.375rem;
 	--error: #ef4444;
 	--warning: #f59e0b;
@@ -82,12 +82,50 @@
 	--accent-foreground: #fafafa;
 }
 
+.isostate-editor[data-theme="dark"] {
+	background: #080d13;
+}
+
+.isostate-editor[data-theme="dark"] .isostate-editor-body {
+	background: #080d13;
+}
+
+.isostate-editor[data-theme="dark"] .isostate-editor-canvas {
+	background:
+		linear-gradient(90deg, rgba(226, 232, 240, 0.035) 1px, transparent 1px),
+		linear-gradient(0deg, rgba(226, 232, 240, 0.035) 1px, transparent 1px),
+		#0d1218;
+}
+
+.isostate-editor[data-theme="dark"] .isostate-editor-sidebar,
+.isostate-editor[data-theme="dark"] .isostate-editor-yaml {
+	background: #09090b;
+}
+
+.isostate-editor[data-theme="dark"] .isostate-sidebar-tabs {
+	background: #111827;
+}
+
+.isostate-editor[data-theme="dark"] .isostate-sidebar-tab--active {
+	background: #09090b;
+	box-shadow:
+		0 1px 2px rgba(0, 0, 0, 0.32),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+
+.isostate-editor[data-theme="dark"] .isostate-asset-item {
+	border-color: #27272a;
+	background:
+		linear-gradient(180deg, rgba(39, 39, 42, 0.94), rgba(24, 24, 27, 0.94)),
+		#18181b;
+}
+
 .isostate-editor {
 	display: flex;
 	flex-direction: column;
 	width: 100%;
 	height: 100%;
-	background: var(--background);
+	background: #e6ebef;
 	color: var(--foreground);
 	font-family:
 		ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -99,19 +137,27 @@
 .isostate-editor-topbar {
 	display: flex;
 	align-items: center;
-	gap: 0.75rem;
-	padding: 0.5rem 1rem;
-	min-height: 52px;
-	border-bottom: 1px solid var(--border);
-	background: var(--background);
+	gap: 1rem;
+	padding: 0.625rem 0.875rem;
+	min-height: 54px;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.06), transparent),
+		#07131f;
+	box-shadow: none;
 	flex-shrink: 0;
 	flex-wrap: wrap;
+	position: relative;
+	z-index: 5;
 }
 
 .isostate-editor-title {
-	font-weight: 600;
-	font-size: 14px;
-	color: var(--foreground);
+	font-weight: 700;
+	font-size: 15px;
+	color: #f8fafc;
+	letter-spacing: 0;
+	padding-right: 1rem;
+	border-right: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .isostate-editor-toolbar {
@@ -128,9 +174,9 @@
 	align-items: center;
 	justify-content: center;
 	gap: 0.25rem;
-	background: var(--secondary);
-	color: var(--secondary-foreground);
-	border: 1px solid var(--border);
+	background: rgba(255, 255, 255, 0.07);
+	color: #f8fafc;
+	border: 1px solid rgba(255, 255, 255, 0.14);
 	border-radius: var(--radius);
 	padding: 0.25rem 0.5rem;
 	font-size: 12px;
@@ -139,7 +185,14 @@
 }
 
 .isostate-editor-toolbar button:hover {
-	background: var(--accent);
+	background: rgba(255, 255, 255, 0.12);
+}
+
+.isostate-editor-toolbar button[data-variant="default"] {
+	background: #0f9f8f;
+	border-color: #19b8a7;
+	color: #ffffff;
+	box-shadow: none;
 }
 
 .isostate-editor-toolbar button:disabled {
@@ -149,6 +202,12 @@
 
 [data-slot="select-trigger"] {
 	background: var(--background);
+}
+
+.isostate-editor-topbar [data-slot="select-trigger"] {
+	background: rgba(255, 255, 255, 0.07);
+	border-color: rgba(255, 255, 255, 0.14);
+	color: #f8fafc;
 }
 
 [data-slot="select-content"] {
@@ -169,7 +228,7 @@
 	min-height: 0;
 	min-width: 0;
 	overflow: hidden;
-	background: var(--background);
+	background: #e6ebef;
 }
 
 .isostate-editor-main {
@@ -182,14 +241,18 @@
 
 .isostate-editor-canvas {
 	position: relative;
-	flex: 0 0 var(--isostate-canvas-pane, 58%);
+	flex: 1 1 auto;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	min-width: 240px;
 	min-height: 0;
 	overflow: hidden;
-	background: var(--muted);
+	background:
+		linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+		linear-gradient(0deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+		#f8fafb;
+	background-size: 28px 28px;
 }
 
 .isostate-editor-canvas--invalid {
@@ -229,6 +292,10 @@
 	--isostate-editor-grid-fill: #dbeafe;
 }
 
+.isostate-editor-canvas-view[data-preview-mode="runtime"] {
+	cursor: default;
+}
+
 .isostate-editor[data-theme="dark"] .isostate-editor-canvas-view {
 	--isostate-editor-grid-line: #93c5fd;
 	--isostate-editor-grid-boundary: #bfdbfe;
@@ -260,17 +327,74 @@
 
 .isostate-canvas-controls {
 	position: absolute;
-	top: 0.75rem;
-	right: 0.75rem;
+	right: 1rem;
+	bottom: 5rem;
 	z-index: 4;
 	display: flex;
 	align-items: center;
 	gap: 0.25rem;
 	padding: 0.25rem;
-	border: 1px solid var(--border);
+	border: 1px solid rgba(15, 23, 42, 0.08);
 	border-radius: var(--radius);
-	background: color-mix(in srgb, var(--background) 92%, transparent);
-	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+	background: color-mix(in srgb, var(--background) 94%, transparent);
+	box-shadow: 0 14px 34px rgba(15, 23, 42, 0.16);
+	backdrop-filter: blur(12px);
+}
+
+.isostate-preview-player {
+	position: absolute;
+	left: 50%;
+	bottom: 1rem;
+	z-index: 6;
+	display: grid;
+	grid-template-columns: auto auto minmax(8rem, 14rem) auto minmax(5rem, auto);
+	align-items: center;
+	gap: 0.375rem;
+	max-width: calc(100% - 2rem);
+	padding: 0.375rem;
+	border: 1px solid rgba(15, 23, 42, 0.1);
+	border-radius: calc(var(--radius) + 2px);
+	background: color-mix(in srgb, var(--background) 94%, transparent);
+	box-shadow: 0 14px 34px rgba(15, 23, 42, 0.14);
+	backdrop-filter: blur(12px);
+	transform: translateX(-50%);
+}
+
+.isostate-preview-player[data-active="true"] {
+	border-color: rgba(15, 159, 143, 0.32);
+	box-shadow: 0 14px 34px rgba(15, 118, 110, 0.18);
+}
+
+.isostate-preview-player button[aria-pressed="true"] {
+	background: #0f9f8f;
+	color: #ffffff;
+}
+
+.isostate-preview-meter {
+	position: relative;
+	height: 0.375rem;
+	min-width: 8rem;
+	overflow: hidden;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--muted) 85%, var(--foreground) 15%);
+}
+
+.isostate-preview-meter span {
+	position: absolute;
+	inset: 0 auto 0 0;
+	border-radius: inherit;
+	background: #0f9f8f;
+}
+
+.isostate-preview-label {
+	min-width: 0;
+	max-width: 12rem;
+	overflow: hidden;
+	color: var(--muted-foreground);
+	font-size: 11px;
+	font-weight: 650;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .isostate-canvas-zoom {
@@ -344,7 +468,7 @@
 }
 
 .isostate-editor-yaml {
-	flex: 1 1 auto;
+	flex: 0 0 var(--isostate-yaml-pane, 24%);
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
@@ -352,7 +476,8 @@
 	min-width: 240px;
 	min-height: 0;
 	overflow: hidden;
-	background: var(--background);
+	background: #ffffff;
+	border-left: 1px solid var(--border);
 }
 
 .isostate-editor-yaml-body {
@@ -416,12 +541,12 @@
 }
 
 .isostate-editor-sidebar {
-	width: var(--isostate-sidebar-pane, 360px);
-	flex-shrink: 0;
+	width: auto;
+	flex: 0 0 var(--isostate-sidebar-pane, 24%);
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
-	background: var(--background);
+	background: #ffffff;
 	overflow: hidden;
 	border-right: 1px solid var(--border);
 }
@@ -454,7 +579,7 @@
 	}
 
 	.isostate-editor-canvas {
-		--isostate-canvas-pane: 28%;
+		flex: 1 1 320px;
 	}
 
 	.isostate-pane-resizer {
@@ -470,7 +595,7 @@
 
 	.isostate-editor-sidebar {
 		width: 100%;
-		flex: 0 0 190px;
+		flex: 0 0 220px;
 		min-height: 0;
 		border-top: 1px solid var(--border);
 		border-right: 0;
@@ -481,7 +606,16 @@
 	}
 
 	.isostate-editor-yaml {
-		flex: 1 1 0;
+		flex: 0 0 320px;
+	}
+
+	.isostate-preview-player {
+		grid-template-columns: auto auto minmax(5rem, 1fr) auto;
+		width: calc(100% - 2rem);
+	}
+
+	.isostate-preview-label {
+		display: none;
 	}
 }
 
@@ -489,19 +623,25 @@
 	display: flex;
 	border-bottom: 1px solid var(--border);
 	flex-shrink: 0;
+	background: #f7f9fb;
+	padding: 0.375rem;
+	gap: 0.25rem;
 }
 
 .isostate-sidebar-tab {
 	flex: 1;
-	padding: 0.5rem 0.25rem;
+	padding: 0.4375rem 0.25rem;
 	font-size: 12px;
 	font-weight: 500;
-	background: var(--background);
+	background: transparent;
 	color: var(--muted-foreground);
 	border: none;
-	border-bottom: 2px solid transparent;
+	border-radius: var(--radius);
 	cursor: pointer;
-	transition: color 0.15s;
+	transition:
+		color 0.15s,
+		background 0.15s,
+		box-shadow 0.15s;
 }
 
 .isostate-sidebar-tab:hover {
@@ -510,7 +650,10 @@
 
 .isostate-sidebar-tab--active {
 	color: var(--foreground);
-	border-bottom-color: var(--ring);
+	background: #ffffff;
+	box-shadow:
+		0 1px 2px rgba(15, 23, 42, 0.08),
+		inset 0 0 0 1px rgba(15, 23, 42, 0.06);
 }
 
 .isostate-sidebar-content {
@@ -970,8 +1113,8 @@
 
 .isostate-asset-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(38px, 1fr));
-	gap: 0.25rem;
+	grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+	gap: 0.5rem;
 }
 
 .isostate-asset-item {
@@ -980,18 +1123,23 @@
 	justify-content: center;
 	min-width: 0;
 	aspect-ratio: 1;
-	padding: 0.1875rem;
-	border: 1px solid transparent;
-	border-radius: calc(var(--radius) - 2px);
+	padding: 0.375rem;
+	border: 1px solid #dde4ea;
+	border-radius: var(--radius);
 	cursor: grab;
-	background: transparent;
+	background:
+		linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(245, 248, 250, 0.94)),
+		#ffffff;
 	position: relative;
+	box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.04);
 }
 
 .isostate-asset-item:hover {
-	border-color: var(--ring);
-	background: var(--accent);
-	background: color-mix(in srgb, var(--accent) 70%, transparent);
+	border-color: #0f9f8f;
+	background: #f2fbf9;
+	box-shadow:
+		0 6px 16px rgba(15, 118, 110, 0.12),
+		inset 0 0 0 1px rgba(15, 159, 143, 0.18);
 }
 
 .isostate-asset-item--builtin {
@@ -999,16 +1147,18 @@
 }
 
 .isostate-asset-item--active {
-	border-color: var(--primary);
-	box-shadow: 0 0 0 2px var(--primary);
+	border-color: #0f9f8f;
+	box-shadow:
+		0 0 0 2px rgba(15, 159, 143, 0.22),
+		0 8px 20px rgba(15, 118, 110, 0.16);
 }
 
 .isostate-asset-thumb {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	width: 34px;
-	height: 34px;
+	width: 48px;
+	height: 48px;
 	background: transparent;
 	border-radius: calc(var(--radius) - 3px);
 	overflow: hidden;

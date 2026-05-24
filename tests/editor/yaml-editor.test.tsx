@@ -1,13 +1,12 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
-import { Window } from 'happy-dom';
-import { createElement, useRef, useState } from 'react';
-import { createRoot } from 'react-dom/client';
 import type { EditorView } from '@codemirror/view';
+import { Window } from 'happy-dom';
+import { createElement, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 import { IsostateEditor } from '../../packages/editor/src/IsostateEditor.tsx';
-import { YamlEditor } from '../../packages/editor/src/yaml-editor/YamlEditor.tsx';
-import { applyEditorCommand } from '../../packages/editor/src/commands.ts';
+import type { EditorWorkspace } from '../../packages/editor/src/types.ts';
 import { createEditorWorkspace } from '../../packages/editor/src/workspace.ts';
-import type { EditorCommand, EditorWorkspace } from '../../packages/editor/src/types.ts';
+import { YamlEditor } from '../../packages/editor/src/yaml-editor/YamlEditor.tsx';
 
 const VALID_YAML = `header:
   version: "1"
@@ -53,7 +52,10 @@ function TestWrapper({
 		theme: 'light',
 		onWorkspaceChange: (ws: EditorWorkspace) => setWorkspace(ws),
 		onChange: (event: { sourceYaml: string }) => {
-			setWorkspace((prev: EditorWorkspace) => ({ ...prev, sourceYaml: event.sourceYaml }));
+			setWorkspace((prev: EditorWorkspace) => ({
+				...prev,
+				sourceYaml: event.sourceYaml
+			}));
 		}
 	});
 }
@@ -155,7 +157,7 @@ describe('YamlEditor', () => {
 		);
 		await new Promise((r) => setTimeout(r, 50));
 
-		const newValue = VALID_YAML + '\n# updated';
+		const newValue = `${VALID_YAML}\n# updated`;
 		root.render(
 			createElement(YamlEditor, {
 				value: newValue,
@@ -182,11 +184,13 @@ describe('IsostateEditor YAML integration', () => {
 		const root = createRoot(container);
 
 		const workspace = createEditorWorkspace({ sourceYaml: INVALID_YAML });
-			root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
+		root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
 		await new Promise((r) => setTimeout(r, 50));
 
 		const canvas = container.querySelector('.isostate-editor-canvas');
-		expect(canvas?.classList.contains('isostate-editor-canvas--invalid')).toBe(true);
+		expect(canvas?.classList.contains('isostate-editor-canvas--invalid')).toBe(
+			true
+		);
 
 		const overlay = container.querySelector('.isostate-editor-canvas-overlay');
 		expect(overlay).toBeTruthy();
@@ -208,9 +212,9 @@ describe('IsostateEditor YAML integration', () => {
 		let capturedWorkspace: EditorWorkspace | null = null;
 
 		root.render(
-				createElement(IsostateEditor, {
-					value: nonCanonicalYaml,
-					theme: 'light',
+			createElement(IsostateEditor, {
+				value: nonCanonicalYaml,
+				theme: 'light',
 				onWorkspaceChange: (ws: EditorWorkspace) => {
 					capturedWorkspace = ws;
 				}
@@ -238,7 +242,7 @@ describe('IsostateEditor YAML integration', () => {
 		const root = createRoot(container);
 
 		const workspace = createEditorWorkspace({ sourceYaml: VALID_YAML });
-			root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
+		root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
 		await new Promise((r) => setTimeout(r, 50));
 
 		const canvasView = container.querySelector('.isostate-editor-canvas-view');
@@ -246,6 +250,74 @@ describe('IsostateEditor YAML integration', () => {
 
 		const yamlEditor = container.querySelector('.isostate-editor-yaml-editor');
 		expect(yamlEditor).toBeTruthy();
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('preview toggle switches the canvas to runtime preview mode', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+
+		let capturedWorkspace: EditorWorkspace | null = null;
+
+		root.render(
+			createElement(IsostateEditor, {
+				value: VALID_YAML,
+				theme: 'light',
+				onWorkspaceChange: (ws: EditorWorkspace) => {
+					capturedWorkspace = ws;
+				}
+			})
+		);
+		await new Promise((r) => setTimeout(r, 50));
+
+		const previewBtn = container.querySelector(
+			'button[aria-label="Start preview"]'
+		) as HTMLButtonElement | null;
+		expect(previewBtn).toBeTruthy();
+		previewBtn?.click();
+		await new Promise((r) => setTimeout(r, 10));
+
+		expect(capturedWorkspace?.uiState.previewMode).toBe('runtime');
+		expect(
+			container
+				.querySelector('.isostate-editor-canvas-view')
+				?.getAttribute('data-preview-mode')
+		).toBe('runtime');
+		expect(container.querySelector('.isostate-editor-overlay')).toBeNull();
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('YAML toggle hides and shows the YAML editor pane', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+
+		root.render(
+			createElement(IsostateEditor, {
+				value: VALID_YAML,
+				theme: 'light'
+			})
+		);
+		await new Promise((r) => setTimeout(r, 50));
+
+		expect(container.querySelector('.isostate-editor-yaml')).toBeTruthy();
+
+		const hideYamlBtn = container.querySelector(
+			'button[aria-label="Hide YAML editor"]'
+		) as HTMLButtonElement | null;
+		expect(hideYamlBtn).toBeTruthy();
+		hideYamlBtn?.click();
+		await new Promise((r) => setTimeout(r, 10));
+
+		expect(container.querySelector('.isostate-editor-yaml')).toBeNull();
+		expect(
+			container.querySelector('button[aria-label="Show YAML editor"]')
+		).toBeTruthy();
 
 		root.unmount();
 		container.remove();

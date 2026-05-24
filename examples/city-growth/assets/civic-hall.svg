@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" role="img" aria-label="Civic hall">
+  <path d="M48 36 76 50 48 64 20 50Z" fill="#e5e7eb" stroke="#475569" stroke-width="2"/>
+  <path d="M20 50 48 64v22L20 72Z" fill="#f8fafc" stroke="#475569" stroke-width="2"/>
+  <path d="M76 50 48 64v22l28-14Z" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+  <path d="M28 49 48 38l20 11-20 10Z" fill="#94a3b8" stroke="#475569" stroke-width="2"/>
+  <path d="M34 60v13M42 64v13M54 64v13M62 60v13" stroke="#475569" stroke-width="3"/>
+  <path d="M32 73 48 81 64 73" fill="none" stroke="#94a3b8" stroke-width="2"/>
+  <ellipse cx="48" cy="84" rx="32" ry="8" fill="#0f172a" opacity=".12"/>
+</svg>

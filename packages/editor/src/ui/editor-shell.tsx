@@ -13,6 +13,7 @@ interface EditorShellProps {
 	activeTab: EditorSidebarTab;
 	onTabChange: (tab: EditorSidebarTab) => void;
 	canvasInvalid?: boolean;
+	yamlCollapsed?: boolean;
 	canvas: ReactNode;
 	assets: ReactNode;
 	attributes: ReactNode;
@@ -24,6 +25,7 @@ export function EditorShell({
 	activeTab,
 	onTabChange,
 	canvasInvalid = false,
+	yamlCollapsed = false,
 	canvas,
 	assets,
 	attributes,
@@ -36,16 +38,8 @@ export function EditorShell({
 			className="isostate-editor-main"
 		>
 			<ResizablePanel
-				defaultSize={58}
-				minSize={24}
-				className={`isostate-editor-canvas ${canvasInvalid ? 'isostate-editor-canvas--invalid' : ''}`}
-			>
-				{canvas}
-			</ResizablePanel>
-			<ResizableHandle withHandle aria-label="Resize canvas pane" />
-			<ResizablePanel
-				defaultSize={27}
-				minSize={22}
+				defaultSize={24}
+				minSize={18}
 				className="isostate-editor-sidebar"
 			>
 				<Tabs
@@ -72,14 +66,26 @@ export function EditorShell({
 					</TabsContent>
 				</Tabs>
 			</ResizablePanel>
-			<ResizableHandle withHandle aria-label="Resize attributes pane" />
+			<ResizableHandle withHandle aria-label="Resize assets pane" />
 			<ResizablePanel
-				defaultSize={15}
-				minSize={14}
-				className="isostate-editor-yaml"
+				defaultSize={yamlCollapsed ? 76 : 52}
+				minSize={28}
+				className={`isostate-editor-canvas ${canvasInvalid ? 'isostate-editor-canvas--invalid' : ''}`}
 			>
-				{editor}
+				{canvas}
 			</ResizablePanel>
+			{!yamlCollapsed && (
+				<>
+					<ResizableHandle withHandle aria-label="Resize YAML pane" />
+					<ResizablePanel
+						defaultSize={24}
+						minSize={16}
+						className="isostate-editor-yaml"
+					>
+						{editor}
+					</ResizablePanel>
+				</>
+			)}
 		</ResizablePanelGroup>
 	);
 }

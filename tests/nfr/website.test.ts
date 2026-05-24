@@ -122,8 +122,8 @@ describe('Astro website', () => {
 		expect(layout).toContain('rel="apple-touch-icon"');
 		expect(layout).toContain('rel="manifest"');
 		expect(layout).toContain('class="topbar-project"');
-		expect(layout).toContain('https://sebastianwessel.de/projects/isostate/');
 		expect(layout).toContain('https://sebastianwessel.de/projects/');
+		expect(layout).toContain("href={href('/mermaid')}");
 		expect(ogRoute).toContain('./assets/isostate-story/editor-overview.png');
 		expect(ogRoute).toContain(
 			'./assets/isostate-story/hero-tilt-shift-city.png'
@@ -164,6 +164,7 @@ describe('Astro website', () => {
 			expect(relativeFiles).toContain('icon-512.png');
 			expect(relativeFiles).toContain('site.webmanifest');
 			expect(relativeFiles).toContain('og/index.png');
+			expect(relativeFiles).toContain('mermaid/index.html');
 			expect(relativeFiles).toContain('docs/README.md/index.html');
 			expect(relativeFiles).toContain(
 				'docs/concepts/how-isostate-works.md/index.html'
@@ -195,7 +196,7 @@ describe('Astro website', () => {
 			expect(home).toContain('class="topbar-project"');
 			expect(home).toContain('Project page');
 			expect(home).toContain('More projects');
-			expect(home).toContain('sebastianwessel.de/projects/isostate/');
+			expect(home).toContain('sebastianwessel.de/projects/');
 			const docsIndex = await readFile(
 				join(dist, 'docs/README.md/index.html'),
 				'utf8'

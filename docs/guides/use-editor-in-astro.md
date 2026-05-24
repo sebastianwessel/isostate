@@ -18,7 +18,7 @@ If you want the editor to show a browsable asset catalog, generate a manifest
 from your asset directory:
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate assets manifest assets/isostate \
+npx --package @sebastianwessel/isostate-cli isostate assets manifest assets/isostate \
   --out public/isostate-assets.manifest.json \
   --asset-base-url ./assets/isostate
 ```
@@ -115,3 +115,15 @@ application owns persistence:
 
 Editor-only UI state such as pan, zoom, selection, pane sizing, and the active
 sidebar tab is not persisted by v1 APIs.
+
+## Editing Text Labels
+
+The inspector shows text controls when the selected element uses `asset: text`.
+`placement: cell` keeps text centered in its own grid cell and is best for
+standalone labels, group labels, callouts, and labels beside larger assets.
+`placement: caption` keeps a label attached above a one-cell icon and can share
+the icon's `at` position.
+
+Placement changes only the text anchor inside the text element. Move the text
+element's `at` position when switching between standalone labels and icon
+captions.

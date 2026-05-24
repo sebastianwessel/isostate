@@ -773,6 +773,14 @@ scenes:
 			fill: 'url(javascript:alert(1))'
 		};
 		expectErrorCode(unsafeFill, 'INVALID_TEXT_STYLE');
+
+		const invalidPlacement = validDocument();
+		firstInitialElement(invalidPlacement).asset = 'text';
+		firstInitialElement(invalidPlacement).text = {
+			value: 'Label',
+			placement: 'floating'
+		} as never;
+		expectErrorCode(invalidPlacement, 'INVALID_TEXT_STYLE');
 	});
 
 	test('reports text validation context and warns for intentionally empty labels', () => {

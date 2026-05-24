@@ -1,4 +1,15 @@
-import { Grid2X2, Moon, Paintbrush, Sun } from 'lucide-react';
+import {
+	Grid2X2,
+	Moon,
+	Paintbrush,
+	PanelRightClose,
+	PanelRightOpen,
+	Pause,
+	Play,
+	SkipBack,
+	SkipForward,
+	Sun
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { AssetPanel } from './assets/AssetPanel.tsx';
 import { CanvasView } from './canvas/CanvasView.tsx';
@@ -81,7 +92,11 @@ export function IsostateEditor(props: IsostateEditorProps) {
 				...next,
 				selection: prev.selection,
 				viewport: prev.viewport,
-				uiState: { ...next.uiState, theme: prev.uiState.theme },
+				uiState: {
+					...next.uiState,
+					theme: prev.uiState.theme,
+					yamlCollapsed: prev.uiState.yamlCollapsed
+				},
 				editState: {
 					...next.editState,
 					readonly: prev.editState.readonly
@@ -165,6 +180,46 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		});
 	};
 
+	const togglePreviewMode = () => {
+		setWorkspace((prev) => {
+			const previewMode: EditorWorkspace['uiState']['previewMode'] =
+				prev.uiState.previewMode === 'runtime' ? 'edit' : 'runtime';
+			const next = {
+				...prev,
+				selection:
+					previewMode === 'runtime'
+						? {
+								sceneId: prev.activeSceneId,
+								objectIds: [],
+								connectionIds: [],
+								layerNames: []
+							}
+						: prev.selection,
+				editState:
+					previewMode === 'runtime'
+						? { ...prev.editState, dragPayload: undefined, dragging: false }
+						: prev.editState,
+				uiState: { ...prev.uiState, previewMode }
+			};
+			onWorkspaceChange?.(next);
+			return next;
+		});
+	};
+
+	const toggleYamlPanel = () => {
+		setWorkspace((prev) => {
+			const next = {
+				...prev,
+				uiState: {
+					...prev.uiState,
+					yamlCollapsed: !prev.uiState.yamlCollapsed
+				}
+			};
+			onWorkspaceChange?.(next);
+			return next;
+		});
+	};
+
 	const setTheme = (t: 'light' | 'dark' | 'system') => {
 		setWorkspace((prev) => {
 			const next = { ...prev, uiState: { ...prev.uiState, theme: t } };
@@ -202,6 +257,15 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		});
 	};
 
+	const setActiveSceneByOffset = (offset: number) => {
+		const currentIndex = sceneOptions.findIndex(
+			(scene) => scene.id === workspace.activeSceneId
+		);
+		const baseIndex = currentIndex >= 0 ? currentIndex : 0;
+		const nextScene = sceneOptions[baseIndex + offset];
+		if (nextScene) setActiveSceneId(nextScene.id);
+	};
+
 	const clearDragPayload = () => {
 		setWorkspace((prev) => {
 			if (prev.editState.dragPayload === undefined) return prev;
@@ -229,6 +293,16 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		activeTheme === 'dark' ? 'dark' : 'light';
 
 	const sceneOptions = workspace.document?.scenes ?? [];
+	const activeSceneIndex = Math.max(
+		0,
+		sceneOptions.findIndex((scene) => scene.id === workspace.activeSceneId)
+	);
+	const previewProgress =
+		sceneOptions.length > 1
+			? activeSceneIndex / (sceneOptions.length - 1)
+			: sceneOptions.length === 1
+				? 1
+				: 0;
 	const isInvalid = !workspace.document;
 	const canvasContent = (
 		<>
@@ -245,12 +319,67 @@ export function IsostateEditor(props: IsostateEditorProps) {
 					});
 				}}
 				theme={activeTheme}
+				previewMode={workspace.uiState.previewMode}
 			/>
 			{isInvalid && (
 				<div className="isostate-editor-canvas-overlay">
 					<span>YAML invalid - canvas read-only</span>
 				</div>
 			)}
+			<div
+				className="isostate-preview-player"
+				data-active={workspace.uiState.previewMode === 'runtime'}
+				role="toolbar"
+				aria-label="Preview player"
+			>
+				<Button
+					type="button"
+					variant="secondary"
+					size="icon-sm"
+					onClick={togglePreviewMode}
+					aria-label={
+						workspace.uiState.previewMode === 'runtime'
+							? 'Leave preview'
+							: 'Start preview'
+					}
+					aria-pressed={workspace.uiState.previewMode === 'runtime'}
+				>
+					{workspace.uiState.previewMode === 'runtime' ? (
+						<Pause aria-hidden="true" />
+					) : (
+						<Play aria-hidden="true" />
+					)}
+				</Button>
+				<Button
+					type="button"
+					variant="secondary"
+					size="icon-sm"
+					onClick={() => setActiveSceneByOffset(-1)}
+					disabled={activeSceneIndex <= 0}
+					aria-label="Previous scene"
+				>
+					<SkipBack aria-hidden="true" />
+				</Button>
+				<div className="isostate-preview-meter" aria-hidden="true">
+					<span style={{ inlineSize: `${previewProgress * 100}%` }} />
+				</div>
+				<Button
+					type="button"
+					variant="secondary"
+					size="icon-sm"
+					onClick={() => setActiveSceneByOffset(1)}
+					disabled={
+						sceneOptions.length === 0 ||
+						activeSceneIndex >= sceneOptions.length - 1
+					}
+					aria-label="Next scene"
+				>
+					<SkipForward aria-hidden="true" />
+				</Button>
+				<span className="isostate-preview-label">
+					{workspace.activeSceneId ?? 'No scene'}
+				</span>
+			</div>
 		</>
 	);
 	const assetsContent = (
@@ -385,6 +514,24 @@ export function IsostateEditor(props: IsostateEditorProps) {
 					<Button
 						type="button"
 						variant="secondary"
+						size="icon-sm"
+						onClick={toggleYamlPanel}
+						aria-label={
+							workspace.uiState.yamlCollapsed
+								? 'Show YAML editor'
+								: 'Hide YAML editor'
+						}
+						aria-pressed={!workspace.uiState.yamlCollapsed}
+					>
+						{workspace.uiState.yamlCollapsed ? (
+							<PanelRightOpen aria-hidden="true" />
+						) : (
+							<PanelRightClose aria-hidden="true" />
+						)}
+					</Button>
+					<Button
+						type="button"
+						variant="secondary"
 						size="sm"
 						onClick={toggleTheme}
 						aria-label={`Preview ${resolvedTheme === 'dark' ? 'light' : 'dark'} mode`}
@@ -404,6 +551,7 @@ export function IsostateEditor(props: IsostateEditorProps) {
 					activeTab={workspace.uiState.sidebarTab}
 					onTabChange={setSidebarTab}
 					canvasInvalid={isInvalid}
+					yamlCollapsed={workspace.uiState.yamlCollapsed}
 					canvas={canvasContent}
 					assets={assetsContent}
 					attributes={attributesContent}

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" role="img" aria-label="Bridge road tile">
+  <path d="M10 38 48 16l38 22-38 20Z" fill="#6b7280" stroke="#374151" stroke-width="2"/>
+  <path d="M18 39 48 22l30 17" fill="none" stroke="#f8fafc" stroke-width="2" stroke-dasharray="7 5"/>
+  <path d="M20 47 48 62 76 47" fill="none" stroke="#94a3b8" stroke-width="4"/>
+  <path d="M23 27v18M73 27v18" stroke="#cbd5e1" stroke-width="4"/>
+</svg>

@@ -49,6 +49,7 @@ scenes:
             Hello
             World
           align: middle
+          placement: caption
           fontSize: 14
       - id: e2
         asset: rectangle

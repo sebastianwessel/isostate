@@ -97,6 +97,7 @@ export function createEditorWorkspace(
 			sidebarWidth: 360,
 			sidebarCollapsed: false,
 			sidebarTab: 'assets',
+			yamlCollapsed: false,
 			theme: 'system',
 			previewMode: 'edit',
 			assetBrowser: {

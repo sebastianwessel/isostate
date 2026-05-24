@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>isostate city growth demo</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="page-shell">
+      <section class="toolbar" aria-label="Scene controls">
+        <div>
+          <h1>city growth preview</h1>
+          <p>Layered visual-editor style scene with city assets and animated routes.</p>
+        </div>
+        <label class="progress-control">
+          <span>Progress</span>
+          <input id="progress" type="range" min="0" max="100" value="100" />
+        </label>
+      </section>
+
+      <section class="stage-wrap">
+        <div id="scene" class="stage"></div>
+      </section>
+
+      <section class="state-panel" aria-label="Resolved runtime config">
+        <span id="state-label">preview-routes</span>
+        <code id="config-label"></code>
+      </section>
+    </main>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>

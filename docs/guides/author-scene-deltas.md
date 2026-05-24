@@ -133,6 +133,7 @@ plain text.
       Authentication
       Gateway
     align: middle
+    placement: cell
     fontSize: 12
     fontWeight: 700
     lineHeight: 1.2

@@ -7,7 +7,7 @@ populate the asset browser and discover draggable assets.
 ## Generate A Manifest
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate assets manifest assets/isostate \
+npx --package @sebastianwessel/isostate-cli isostate assets manifest assets/isostate \
   --out public/isostate-assets.manifest.json \
   --asset-base-url ./assets/isostate
 ```

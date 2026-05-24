@@ -53,6 +53,7 @@ export type {
 	TextAlign,
 	TextContent,
 	TextContentPatch,
+	TextPlacement,
 } from "./node.ts";
 export {
 	guardEntryAnimation,

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 56" role="img" aria-label="Small isometric car">
+  <ellipse cx="40" cy="45" rx="24" ry="5" fill="#0f172a" opacity=".16"/>
+  <path d="M18 30 40 18l24 12-22 13Z" fill="#f97316" stroke="#7c2d12" stroke-width="2"/>
+  <path d="M29 24 40 18l11 6-11 6Z" fill="#dbeafe" stroke="#7c2d12" stroke-width="1.5"/>
+  <path d="M22 33 42 43 64 30" fill="none" stroke="#fed7aa" stroke-width="2"/>
+  <circle cx="29" cy="39" r="4" fill="#111827"/>
+  <circle cx="55" cy="36" r="4" fill="#111827"/>
+</svg>

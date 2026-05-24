@@ -319,6 +319,7 @@ scenes:
           fontSize: 12
           fontWeight: 700
           lineHeight: 1.2
+          placement: caption
           fill: "#111111"
   - id: renamed
     update:
@@ -339,6 +340,7 @@ scenes:
 				fontSize: 12,
 				fontWeight: 700,
 				lineHeight: 1.2,
+				placement: 'caption',
 				fill: '#111111'
 			}
 		});

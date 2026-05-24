@@ -107,6 +107,7 @@ Reserved built-in generated assets do not use external asset URLs. Use
   at: [2, 1]
   text:
     value: "Service\nAPI"
+    placement: cell
 ```
 
 Use primitive assets for simple underlays or markers:

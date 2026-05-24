@@ -1,0 +1,250 @@
+header:
+  version: "0.1"
+  name: city-growth-preview
+  assetBaseUrl: ./assets
+  assets:
+    - id: city-tower
+      path: city-tower
+      anchor: [0.5, 1]
+    - id: city-office
+      path: city-office
+      anchor: [0.5, 1]
+    - id: civic-hall
+      path: civic-hall
+      anchor: [0.5, 1]
+    - id: road-straight
+      path: road-straight
+      anchor: [0.5, 0.9]
+    - id: road-intersection
+      path: road-intersection
+      anchor: [0.5, 0.9]
+    - id: bridge
+      path: bridge
+      anchor: [0.5, 0.9]
+    - id: canal
+      path: canal
+      anchor: [0.5, 0.9]
+    - id: tree
+      path: tree
+      anchor: [0.5, 1]
+    - id: fountain
+      path: fountain
+      anchor: [0.5, 1]
+    - id: car
+      path: car
+      anchor: [0.5, 1]
+  grid:
+    cellSize: 64
+  floor:
+    visible: true
+    layer: ground
+    size: [12, 9]
+  layers:
+    - name: ground
+    - name: water
+    - name: roads
+    - name: parks
+    - name: structures
+    - name: traffic
+    - name: routes
+    - name: labels
+
+scenes:
+  - id: district-base
+    elements:
+      - id: park-underlay
+        asset: rectangle
+        layer: parks
+        at: [2, 5]
+        size: 3
+        primitive:
+          rectangle:
+            fill: "#86b957"
+            stroke: "#5f8f2f"
+            strokeWidth: 1
+            opacity: 0.28
+      - id: civic-plaza
+        asset: rectangle
+        layer: ground
+        at: [5, 3]
+        size: 2
+        primitive:
+          rectangle:
+            fill: "#d8cfae"
+            stroke: "#b5a36c"
+            strokeWidth: 1
+            opacity: 0.32
+      - id: canal-west
+        asset: canal
+        layer: water
+        at: [8, 5]
+      - id: canal-center
+        asset: canal
+        layer: water
+        at: [9, 5]
+      - id: canal-east
+        asset: canal
+        layer: water
+        at: [10, 5]
+      - id: road-north
+        asset: road-straight
+        layer: roads
+        at: [5, 2]
+      - id: road-center
+        asset: road-intersection
+        layer: roads
+        at: [5, 4]
+      - id: road-south
+        asset: road-straight
+        layer: roads
+        at: [5, 6]
+      - id: road-west
+        asset: road-straight
+        layer: roads
+        at: [3, 4]
+      - id: road-east
+        asset: bridge
+        layer: roads
+        at: [8, 4]
+      - id: civic-anchor
+        asset: civic-hall
+        layer: structures
+        at: [6, 4]
+        enter: rise-from-ground
+      - id: main-label
+        asset: text
+        layer: labels
+        at: [6, 2]
+        text:
+          value: City growth
+          align: middle
+          fontSize: 13
+          fontWeight: 800
+          fill: "#0f172a"
+    connections:
+      - id: primary-avenue
+        layer: routes
+        route: [[3, 4], [5, 4], [8, 4]]
+        style:
+          variant: road
+          lane: center-dashed
+          outline: "#f8fafc"
+          stroke: "#5b6470"
+          strokeWidth: 14
+
+  - id: growth-core
+    camera:
+      target:
+        area:
+          at: [2, 2]
+          size: [7, 6]
+      padding: 44
+      easing: ease-in-out
+    add:
+      elements:
+        - id: north-tower
+          asset: city-tower
+          layer: structures
+          at: [4, 3]
+          enter: rise-from-ground
+        - id: south-tower
+          asset: city-tower
+          layer: structures
+          at: [6, 6]
+          enter: rise-from-ground
+        - id: west-office
+          asset: city-office
+          layer: structures
+          at: [3, 5]
+          enter: fade-in-grow
+        - id: east-office
+          asset: city-office
+          layer: structures
+          at: [8, 3]
+          enter: fade-in-grow
+        - id: fountain
+          asset: fountain
+          layer: parks
+          at: [4, 6]
+          enter: fade-in-grow
+        - id: tree-a
+          asset: tree
+          layer: parks
+          at: [2, 5]
+        - id: tree-b
+          asset: tree
+          layer: parks
+          at: [3, 6]
+        - id: tree-c
+          asset: tree
+          layer: parks
+          at: [4, 5]
+        - id: tree-d
+          asset: tree
+          layer: parks
+          at: [7, 3]
+        - id: car-west
+          asset: car
+          layer: traffic
+          at: [3, 4]
+        - id: car-east
+          asset: car
+          layer: traffic
+          at: [8, 4]
+    update:
+      elements:
+        - id: main-label
+          text:
+            value: Mixed-use core
+            align: middle
+            fontSize: 13
+            fontWeight: 800
+            fill: "#0f172a"
+
+  - id: preview-routes
+    camera:
+      target:
+        reset: true
+      duration: 500
+      easing: ease-out
+    add:
+      connections:
+        - id: walking-loop
+          layer: routes
+          route: [[4, 6], [4, 5], [5, 5], [5, 4], [6, 4], [6, 3], [7, 3]]
+          style:
+            pattern: dotted
+            stroke: "#0f9f8f"
+            strokeWidth: 4
+          start: dot
+          end: arrow
+          ambient:
+            - name: flow
+        - id: growth-link
+          layer: routes
+          from:
+            element: north-tower
+            side: auto
+          to:
+            element: south-tower
+            side: auto
+          routing:
+            mode: orthogonal
+            avoid: objects
+          style:
+            pattern: dashed
+            stroke: "#f59e0b"
+            strokeWidth: 4
+          start: circle
+          end: arrow
+          ambient:
+            - name: flow
+    update:
+      elements:
+        - id: main-label
+          text:
+            value: Preview routes
+            align: middle
+            fontSize: 13
+            fontWeight: 800
+            fill: "#0f172a"

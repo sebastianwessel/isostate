@@ -1,0 +1,300 @@
+---
+import SiteLayout from '../layouts/SiteLayout.astro';
+
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+
+function href(path: string): string {
+	return `${base}${path}`;
+}
+---
+
+<SiteLayout
+	title="City Growth Demo"
+	description="A layered isostate city scene with custom SVG assets, roads, parks, water, buildings, traffic, and animated preview routes."
+>
+	<section class="city-page" aria-label="City growth demo">
+		<header class="city-hero">
+			<div>
+				<p class="eyebrow">New example</p>
+				<h1>City growth scene</h1>
+				<p>
+					A website-ready scene inspired by the visual editor preview: proper
+					layers, custom one-cell SVG assets, a canal bridge, park blocks,
+					buildings, traffic, labels, and animated route connections.
+				</p>
+			</div>
+			<div class="city-actions">
+				<a href={href('/editor')} class="primary-link">Open editor</a>
+				<a href="https://github.com/sebastianwessel/isostate/tree/main/examples/city-growth" class="secondary-link">View source</a>
+			</div>
+		</header>
+
+		<section class="city-demo" aria-label="Interactive city scene">
+			<div class="demo-toolbar">
+				<div>
+					<strong id="city-state-label">preview-routes</strong>
+					<span id="city-config-label"></span>
+				</div>
+				<label>
+					<span>Progress</span>
+					<input id="city-progress" type="range" min="0" max="100" value="100" />
+				</label>
+			</div>
+			<div id="city-scene" class="city-scene" aria-label="City growth isostate scene"></div>
+		</section>
+	</section>
+
+	<script>
+		import { mountScene } from '../../../packages/core/src/index.ts';
+		import sceneBundle from '../../../examples/city-growth/scene.isostate.js';
+		import bridgeUrl from '../../../examples/city-growth/assets/bridge.svg?url';
+		import canalUrl from '../../../examples/city-growth/assets/canal.svg?url';
+		import carUrl from '../../../examples/city-growth/assets/car.svg?url';
+		import cityOfficeUrl from '../../../examples/city-growth/assets/city-office.svg?url';
+		import cityTowerUrl from '../../../examples/city-growth/assets/city-tower.svg?url';
+		import civicHallUrl from '../../../examples/city-growth/assets/civic-hall.svg?url';
+		import fountainUrl from '../../../examples/city-growth/assets/fountain.svg?url';
+		import roadIntersectionUrl from '../../../examples/city-growth/assets/road-intersection.svg?url';
+		import roadStraightUrl from '../../../examples/city-growth/assets/road-straight.svg?url';
+		import treeUrl from '../../../examples/city-growth/assets/tree.svg?url';
+
+		const cityAssetUrls = {
+			bridge: bridgeUrl,
+			canal: canalUrl,
+			car: carUrl,
+			'city-office': cityOfficeUrl,
+			'city-tower': cityTowerUrl,
+			'civic-hall': civicHallUrl,
+			fountain: fountainUrl,
+			'road-intersection': roadIntersectionUrl,
+			'road-straight': roadStraightUrl,
+			tree: treeUrl
+		};
+
+		const target = document.querySelector('#city-scene');
+		const progress = document.querySelector('#city-progress');
+		const stateLabel = document.querySelector('#city-state-label');
+		const configLabel = document.querySelector('#city-config-label');
+
+		if (target instanceof HTMLElement && progress instanceof HTMLInputElement) {
+			initCityScene(target, progress).catch((error) => {
+				target.dataset.error = error instanceof Error ? error.message : String(error);
+			});
+		}
+
+		async function initCityScene(target, progress) {
+			const bundle = structuredClone(sceneBundle);
+			for (const [assetId, url] of Object.entries(cityAssetUrls)) {
+				if (bundle.assets[assetId]) bundle.assets[assetId].url = url;
+			}
+			bundle._digest = await digestBundle(bundle);
+
+			const mounted = mountScene(target, bundle, {
+				label: 'City growth layered isostate scene',
+				controller: { enabled: true, mode: 'manual' },
+				themeVars: {
+					'--isostate-floor-fill': 'rgba(248, 250, 252, 0.8)',
+					'--isostate-floor-stroke': 'rgba(15, 23, 42, 0.16)'
+				}
+			});
+
+			const scenes = mounted.getResolvedConfig().scenes;
+			const elementCount = Math.max(...bundle.scenes.map((scene) => scene.elements.length));
+			if (configLabel) configLabel.textContent = `${scenes.length} scenes, ${elementCount} elements`;
+
+			function nearestScene(value) {
+				return scenes.reduce((best, scene) => {
+					const currentDistance = Math.abs(scene.progress - value);
+					const bestDistance = Math.abs(best.progress - value);
+					return currentDistance < bestDistance ? scene : best;
+				}, scenes[0]);
+			}
+
+			function setProgress(value) {
+				mounted.controller?.setProgress(value);
+				if (stateLabel) stateLabel.textContent = nearestScene(value).id;
+			}
+
+			progress.addEventListener('input', () => setProgress(Number(progress.value) / 100));
+			requestAnimationFrame(() => setProgress(Number(progress.value) / 100));
+			window.addEventListener('pagehide', () => mounted.destroy(), { once: true });
+		}
+
+		async function digestBundle(bundle) {
+			const { _digest, ...unsignedBundle } = bundle;
+			const encoded = new TextEncoder().encode(canonicalStringify(unsignedBundle));
+			const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', encoded));
+			return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+		}
+
+		function canonicalStringify(value) {
+			return JSON.stringify(normalizeValue(value));
+		}
+
+		function normalizeValue(value) {
+			if (Array.isArray(value)) return value.map((item) => (item === undefined ? null : normalizeValue(item)));
+			if (!value || typeof value !== 'object' || Object.getPrototypeOf(value) !== Object.prototype) return value;
+			return Object.fromEntries(
+				Object.keys(value)
+					.sort()
+					.filter((key) => value[key] !== undefined)
+					.map((key) => [key, normalizeValue(value[key])])
+			);
+		}
+	</script>
+
+	<style>
+		.city-page {
+			background: #e8eef2;
+			min-height: calc(100svh - 64px);
+			padding: clamp(24px, 5vw, 72px);
+		}
+
+		.city-hero {
+			display: flex;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: 32px;
+			max-width: 1320px;
+			margin: 0 auto 28px;
+		}
+
+		.eyebrow {
+			margin: 0 0 10px;
+			color: var(--green-dark);
+			font-size: 0.72rem;
+			font-weight: 800;
+			letter-spacing: 0.07em;
+			text-transform: uppercase;
+		}
+
+		h1 {
+			margin: 0;
+			color: #0f172a;
+			font-family: var(--font-display);
+			font-size: clamp(2.2rem, 5vw, 5.2rem);
+			line-height: 0.95;
+			letter-spacing: -0.02em;
+		}
+
+		.city-hero p:not(.eyebrow) {
+			max-width: 760px;
+			margin: 18px 0 0;
+			color: #405063;
+			font-size: 1.02rem;
+			line-height: 1.65;
+		}
+
+		.city-actions {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+
+		.primary-link,
+		.secondary-link {
+			display: inline-flex;
+			align-items: center;
+			min-height: 44px;
+			padding: 0 18px;
+			border-radius: 8px;
+			font-weight: 700;
+			text-decoration: none;
+		}
+
+		.primary-link {
+			background: #0f9f8f;
+			color: #ffffff;
+		}
+
+		.secondary-link {
+			border: 1px solid #c3ced7;
+			background: #ffffff;
+			color: #0f172a;
+		}
+
+		.city-demo {
+			max-width: 1320px;
+			margin: 0 auto;
+			overflow: hidden;
+			border: 1px solid #cfd8df;
+			background: #ffffff;
+			box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+		}
+
+		.demo-toolbar {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 24px;
+			padding: 16px 18px;
+			border-bottom: 1px solid #d7e0e7;
+			background: #ffffff;
+		}
+
+		.demo-toolbar strong {
+			display: block;
+			color: #0f172a;
+			font-size: 1rem;
+		}
+
+		.demo-toolbar span {
+			color: #667085;
+			font-size: 0.82rem;
+		}
+
+		.demo-toolbar label {
+			display: grid;
+			gap: 7px;
+			min-width: min(360px, 42vw);
+			color: #243041;
+			font-size: 0.82rem;
+			font-weight: 700;
+		}
+
+		.demo-toolbar input {
+			width: 100%;
+			accent-color: #0f9f8f;
+		}
+
+		.city-scene {
+			height: min(68svh, 680px);
+			min-height: 420px;
+			background:
+				linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+				linear-gradient(0deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+				#f8fafb;
+			background-size: 28px 28px;
+		}
+
+		.city-scene svg {
+			width: 100%;
+			height: 100%;
+		}
+
+		.city-scene .iso-scene {
+			background: transparent;
+			color: #0f172a;
+		}
+
+		.city-scene .iso-element {
+			width: 82px;
+			height: 82px;
+			overflow: visible;
+			transform-box: fill-box;
+			transform-origin: 0 0;
+		}
+
+		@media (max-width: 760px) {
+			.city-hero,
+			.demo-toolbar {
+				align-items: stretch;
+				flex-direction: column;
+			}
+
+			.demo-toolbar label {
+				min-width: 100%;
+			}
+		}
+	</style>
+</SiteLayout>
