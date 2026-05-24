@@ -224,6 +224,7 @@ export interface MountEditorOptions {
 	initialYaml?: string;
 	initialWorkspace?: EditorWorkspaceInput;
 	assetManifestUrl?: string;
+	assetManifestUrls?: string[];
 	assetProvider?: EditorAssetProvider;
 	theme?: 'light' | 'dark' | 'system';
 	readonly?: boolean;
@@ -250,6 +251,7 @@ export interface IsostateEditorProps {
 	value?: string;
 	defaultValue?: string;
 	assetManifestUrl?: string;
+	assetManifestUrls?: string[];
 	assetProvider?: EditorAssetProvider;
 	theme?: 'light' | 'dark' | 'system';
 	readonly?: boolean;

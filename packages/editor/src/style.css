@@ -933,10 +933,39 @@
 }
 
 .isostate-asset-group-title {
+	display: flex;
+	align-items: center;
+	gap: 0.25rem;
+	width: 100%;
+	border: 0;
+	background: transparent;
 	font-size: 12px;
 	font-weight: 500;
 	color: var(--foreground);
 	padding-top: 0.25rem;
+	cursor: pointer;
+	text-align: left;
+}
+
+.isostate-asset-group-title:hover {
+	color: var(--primary);
+}
+
+.isostate-asset-group-disclosure {
+	width: 1rem;
+	color: var(--muted-foreground);
+	text-align: center;
+}
+
+.isostate-asset-group-count {
+	margin-left: auto;
+	min-width: 1.25rem;
+	border-radius: 999px;
+	background: var(--muted);
+	color: var(--muted-foreground);
+	text-align: center;
+	padding: 0 0.25rem;
+	font-size: 11px;
 }
 
 .isostate-asset-grid {

@@ -1,0 +1,102 @@
+{
+	"format": "isostate.asset-manifest",
+	"version": 1,
+	"generatedAt": "2026-05-24T00:00:00.000Z",
+	"assetBaseUrl": "./traffic",
+	"assets": [
+		{
+			"id": "traffic-sprites",
+			"type": "sprite-sheet",
+			"path": "traffic-sprites.png",
+			"group": "Traffic",
+			"name": "traffic-sprites",
+			"label": "Traffic",
+			"digest": "sha256:16e8c976360cc96215d0bfa19dbf80136d3bd03b565213373896782e6aeeb42e",
+			"sheetSize": [1024, 1024],
+			"tileSize": [256, 256],
+			"anchor": [0.5, 0.85],
+			"sprites": {
+				"traffic-red-compact-car": {
+					"at": [0, 0],
+					"label": "Red Compact Car",
+					"tags": ["traffic", "vehicle", "car"]
+				},
+				"traffic-blue-sedan": {
+					"at": [1, 0],
+					"label": "Blue Sedan",
+					"tags": ["traffic", "vehicle", "car"]
+				},
+				"traffic-yellow-taxi": {
+					"at": [2, 0],
+					"label": "Yellow Taxi",
+					"tags": ["traffic", "vehicle", "taxi"]
+				},
+				"traffic-city-bus": {
+					"at": [3, 0],
+					"label": "City Bus",
+					"tags": ["traffic", "vehicle", "bus"]
+				},
+				"traffic-delivery-van": {
+					"at": [0, 1],
+					"label": "Delivery Van",
+					"tags": ["traffic", "vehicle", "van"]
+				},
+				"traffic-road-straight": {
+					"at": [1, 1],
+					"label": "Straight Road",
+					"tags": ["traffic", "road"]
+				},
+				"traffic-road-curve": {
+					"at": [2, 1],
+					"label": "Curved Road",
+					"tags": ["traffic", "road"]
+				},
+				"traffic-road-intersection": {
+					"at": [3, 1],
+					"label": "Intersection",
+					"tags": ["traffic", "road", "intersection"]
+				},
+				"traffic-crosswalk": {
+					"at": [0, 2],
+					"label": "Crosswalk",
+					"tags": ["traffic", "road", "crosswalk"]
+				},
+				"traffic-light-signal": {
+					"at": [1, 2],
+					"label": "Traffic Light",
+					"tags": ["traffic", "signal"]
+				},
+				"traffic-stop-sign": {
+					"at": [2, 2],
+					"label": "Stop Sign",
+					"tags": ["traffic", "sign"]
+				},
+				"traffic-yield-sign": {
+					"at": [3, 2],
+					"label": "Yield Sign",
+					"tags": ["traffic", "sign"]
+				},
+				"traffic-speed-sign": {
+					"at": [0, 3],
+					"label": "Speed Sign",
+					"tags": ["traffic", "sign"]
+				},
+				"traffic-road-cone": {
+					"at": [1, 3],
+					"label": "Road Cone",
+					"tags": ["traffic", "construction"]
+				},
+				"traffic-pedestrian-barrier": {
+					"at": [2, 3],
+					"label": "Pedestrian Barrier",
+					"tags": ["traffic", "construction"]
+				},
+				"traffic-street-lamp": {
+					"at": [3, 3],
+					"label": "Street Lamp",
+					"tags": ["traffic", "street-furniture"]
+				}
+			}
+		}
+	]
+}

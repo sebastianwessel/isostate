@@ -60,6 +60,18 @@ Import the editor stylesheet once in your Astro layout or page:
 </script>
 ```
 
+For separate catalogs, keep each manifest and asset folder independent and pass
+all manifest URLs:
+
+```js
+const editor = mountEditor(target, {
+  assetManifestUrls: [
+    '/assets/aws-3d.manifest.json',
+    '/assets/traffic.manifest.json'
+  ]
+});
+```
+
 Or use an Astro React island component:
 
 ```astro

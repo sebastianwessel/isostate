@@ -24,6 +24,7 @@ const editor = mountEditor(target, {
   initialYaml?: string;
   initialWorkspace?: EditorWorkspaceInput;
   assetManifestUrl?: string;
+  assetManifestUrls?: string[];
   assetProvider?: EditorAssetProvider;
   theme?: 'light' | 'dark' | 'system';
   readonly?: boolean;
@@ -72,6 +73,7 @@ interface IsostateEditorProps {
   value?: string;
   defaultValue?: string;
   assetManifestUrl?: string;
+  assetManifestUrls?: string[];
   assetProvider?: EditorAssetProvider;
   theme?: 'light' | 'dark' | 'system';
   readonly?: boolean;
@@ -88,6 +90,10 @@ interface IsostateEditorProps {
   left to right. The canvas pane does not scroll; inspector/sidebar and editor
   content scroll independently. The scene tree combines scenes, layers, and
   elements in one collapsible panel.
+- Use `assetManifestUrl` for one catalog or `assetManifestUrls` for separate
+  catalogs. The asset browser merges them only in memory for browsing, preserves
+  each manifest's own `assetBaseUrl`, and shows manifest groups as collapsible
+  alphabetized categories.
 
 ## Workspace Types
 

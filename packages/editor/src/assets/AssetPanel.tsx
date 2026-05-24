@@ -2,8 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import {
 	getMissingAssets,
 	getPlaceableManifestAssets,
-	getUnusedAssets,
-	searchAssets
+	getUnusedAssets
 } from '../assets.ts';
 import type {
 	EditorAssetCatalog,
@@ -18,10 +17,21 @@ import { ScrollArea } from '../ui/scroll-area.tsx';
 interface AssetPanelProps {
 	workspace: EditorWorkspace;
 	assetManifestUrl?: string;
+	assetManifestUrls?: string[];
 	onDragAsset?: (assetId: string) => void;
 	onClickAsset?: (assetId: string) => void;
 	activeAssetId?: string;
 }
+
+interface LoadedAssetCatalog {
+	manifestUrl: string;
+	catalog: EditorAssetCatalog;
+}
+
+type PanelAsset = PlaceableAssetManifestEntry & {
+	__assetBaseUrl: string;
+	__manifestUrl: string;
+};
 
 function resolveAssetUrl(
 	assetBaseUrl: string,
@@ -49,64 +59,109 @@ function serializeAssetBaseUrl(
 	return url.href.replace(/\/+$/, '');
 }
 
+async function loadManifestCatalog(
+	manifestUrl: string
+): Promise<LoadedAssetCatalog> {
+	const res = await fetch(manifestUrl);
+	if (!res.ok) throw new Error(`HTTP ${res.status}`);
+	const data = await res.json();
+	if (
+		data.format === 'isostate.asset-manifest' &&
+		data.version === 1 &&
+		typeof data.assetBaseUrl === 'string' &&
+		Array.isArray(data.assets)
+	) {
+		return {
+			manifestUrl,
+			catalog: {
+				assetBaseUrl: data.assetBaseUrl,
+				assets: data.assets
+			}
+		};
+	}
+	throw new Error('Invalid manifest format');
+}
+
+function searchPanelAssets(assets: PanelAsset[], query: string): PanelAsset[] {
+	const q = query.toLowerCase();
+	return assets.filter((asset) => {
+		if (asset.id.toLowerCase().includes(q)) return true;
+		if (asset.label?.toLowerCase().includes(q)) return true;
+		if (asset.path.toLowerCase().includes(q)) return true;
+		if (asset.tags?.some((tag) => tag.toLowerCase().includes(q))) return true;
+		return false;
+	});
+}
+
 export function AssetPanel({
 	workspace,
 	assetManifestUrl,
+	assetManifestUrls,
 	onDragAsset,
 	onClickAsset,
 	activeAssetId
 }: AssetPanelProps) {
 	const doc = workspace.document;
-	const [catalog, setCatalog] = useState<EditorAssetCatalog | null>(null);
+	const [catalogs, setCatalogs] = useState<LoadedAssetCatalog[]>([]);
 	const [manifestUrl, setManifestUrl] = useState(assetManifestUrl ?? '');
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
+	const [openAssetGroups, setOpenAssetGroups] = useState<Set<string>>(
+		() => new Set()
+	);
 
 	const browserState = workspace.uiState.assetBrowser;
 	const [searchQuery, setSearchQuery] = useState(browserState.searchQuery);
+	const configuredManifestUrls = useMemo(() => {
+		if (assetManifestUrls?.length) return assetManifestUrls;
+		if (assetManifestUrl) return [assetManifestUrl];
+		return manifestUrl ? [manifestUrl] : [];
+	}, [assetManifestUrl, assetManifestUrls, manifestUrl]);
 
 	// Load manifest if URL is provided
 	useEffect(() => {
-		if (!manifestUrl) return;
+		if (configuredManifestUrls.length === 0) {
+			setCatalogs([]);
+			return;
+		}
 		setLoading(true);
 		setError(null);
-		fetch(manifestUrl)
-			.then(async (res) => {
-				if (!res.ok) throw new Error(`HTTP ${res.status}`);
-				const data = await res.json();
-				if (
-					data.format === 'isostate.asset-manifest' &&
-					data.version === 1 &&
-					typeof data.assetBaseUrl === 'string' &&
-					Array.isArray(data.assets)
-				) {
-					setCatalog({
-						assetBaseUrl: data.assetBaseUrl,
-						assets: data.assets
-					});
-				} else {
-					throw new Error('Invalid manifest format');
-				}
-			})
+		Promise.all(configuredManifestUrls.map(loadManifestCatalog))
+			.then(setCatalogs)
 			.catch((err) => {
 				setError(String(err));
-				setCatalog(null);
+				setCatalogs([]);
 			})
 			.finally(() => setLoading(false));
-	}, [manifestUrl]);
+	}, [configuredManifestUrls]);
+
+	const combinedCatalog = useMemo<EditorAssetCatalog | null>(() => {
+		if (catalogs.length === 0) return null;
+		return {
+			assetBaseUrl: '',
+			assets: catalogs.flatMap((entry) => entry.catalog.assets)
+		};
+	}, [catalogs]);
 
 	const allAssets = useMemo(
-		() => (catalog ? getPlaceableManifestAssets(catalog) : []),
-		[catalog]
+		() =>
+			catalogs.flatMap(({ catalog, manifestUrl: sourceManifestUrl }) =>
+				getPlaceableManifestAssets(catalog).map((asset) => ({
+					...asset,
+					__assetBaseUrl: catalog.assetBaseUrl,
+					__manifestUrl: sourceManifestUrl
+				}))
+			),
+		[catalogs]
 	);
 
 	const filteredAssets = useMemo(() => {
 		let result = allAssets;
-		if (searchQuery && catalog) {
-			result = searchAssets(catalog, searchQuery);
+		if (searchQuery) {
+			result = searchPanelAssets(allAssets, searchQuery);
 		}
 		return result;
-	}, [allAssets, searchQuery, catalog]);
+	}, [allAssets, searchQuery]);
 
 	const groupedAssets = useMemo(() => {
 		const map = new Map<string, typeof filteredAssets>();
@@ -118,15 +173,28 @@ export function AssetPanel({
 		return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
 	}, [filteredAssets]);
 
+	useEffect(() => {
+		const groupNames = groupedAssets.map(([group]) => group);
+		setOpenAssetGroups((current) => {
+			const next = new Set(
+				Array.from(current).filter((group) => groupNames.includes(group))
+			);
+			if (next.size === 0 && groupNames[0]) {
+				next.add(groupNames[0]);
+			}
+			return next;
+		});
+	}, [groupedAssets]);
+
 	const missingAssets = useMemo(() => {
-		if (!catalog || !doc) return [];
-		return getMissingAssets(workspace, catalog);
-	}, [catalog, doc, workspace]);
+		if (!combinedCatalog || !doc) return [];
+		return getMissingAssets(workspace, combinedCatalog);
+	}, [combinedCatalog, doc, workspace]);
 
 	const unusedAssets = useMemo(() => {
-		if (!catalog || !doc) return [];
-		return getUnusedAssets(workspace, catalog);
-	}, [catalog, doc, workspace]);
+		if (!combinedCatalog || !doc) return [];
+		return getUnusedAssets(workspace, combinedCatalog);
+	}, [combinedCatalog, doc, workspace]);
 
 	const recentIds = browserState.recentAssetIds;
 	const recentAssets = useMemo(() => {
@@ -140,7 +208,7 @@ export function AssetPanel({
 
 	return (
 		<ScrollArea className="isostate-asset-panel">
-			{!assetManifestUrl && (
+			{!assetManifestUrl && !assetManifestUrls?.length && (
 				<div className="isostate-asset-manifest-input">
 					<FormRow label="Manifest URL">
 						<Input
@@ -191,8 +259,19 @@ export function AssetPanel({
 							<AssetItem
 								key={asset.id}
 								asset={asset}
-								isDeclared={declaredAssetIds.has(asset.id)}
+								isDeclared={
+									asset.type === 'sprite'
+										? declaredAssetIds.has(asset.sheetId)
+										: declaredAssetIds.has(asset.id)
+								}
 								isActive={activeAssetId === asset.id}
+								assetBaseUrl={asset.__assetBaseUrl}
+								assetManifestUrl={asset.__manifestUrl}
+								previewUrl={resolveAssetUrl(
+									asset.__assetBaseUrl,
+									asset.path,
+									asset.__manifestUrl
+								)}
 								onDrag={() => onDragAsset?.(asset.id)}
 								onClick={() => onClickAsset?.(asset.id)}
 							/>
@@ -216,36 +295,64 @@ export function AssetPanel({
 				</div>
 			</div>
 
-			{catalog && (
+			{combinedCatalog && (
 				<div className="isostate-asset-section">
 					<div className="isostate-asset-section-title">
 						Manifest ({filteredAssets.length})
 					</div>
 					{groupedAssets.map(([group, assets]) => (
 						<div key={group} className="isostate-asset-group">
-							<div className="isostate-asset-group-title">{group}</div>
-							<div className="isostate-asset-grid">
-								{assets.map((asset) => (
-									<AssetItem
-										key={asset.id}
-										asset={asset}
-										isDeclared={
-											asset.type === 'sprite'
-												? declaredAssetIds.has(asset.sheetId)
-												: declaredAssetIds.has(asset.id)
+							<button
+								type="button"
+								className="isostate-asset-group-title"
+								aria-expanded={openAssetGroups.has(group)}
+								onClick={() => {
+									setOpenAssetGroups((current) => {
+										const next = new Set(current);
+										if (next.has(group)) {
+											next.delete(group);
+										} else {
+											next.add(group);
 										}
-										assetBaseUrl={catalog.assetBaseUrl}
-										assetManifestUrl={manifestUrl}
-										previewUrl={resolveAssetUrl(
-											catalog.assetBaseUrl,
-											asset.path,
-											manifestUrl
-										)}
-										onDrag={() => onDragAsset?.(asset.id)}
-										onClick={() => onClickAsset?.(asset.id)}
-									/>
-								))}
-							</div>
+										return next;
+									});
+								}}
+							>
+								<span
+									className="isostate-asset-group-disclosure"
+									aria-hidden="true"
+								>
+									{openAssetGroups.has(group) ? '▾' : '▸'}
+								</span>
+								<span>{group}</span>
+								<span className="isostate-asset-group-count">
+									{assets.length}
+								</span>
+							</button>
+							{openAssetGroups.has(group) && (
+								<div className="isostate-asset-grid">
+									{assets.map((asset) => (
+										<AssetItem
+											key={asset.id}
+											asset={asset}
+											isDeclared={
+												asset.type === 'sprite'
+													? declaredAssetIds.has(asset.sheetId)
+													: declaredAssetIds.has(asset.id)
+											}
+											assetBaseUrl={asset.__assetBaseUrl}
+											assetManifestUrl={asset.__manifestUrl}
+											previewUrl={resolveAssetUrl(
+												asset.__assetBaseUrl,
+												asset.path,
+												asset.__manifestUrl
+											)}
+											onDrag={() => onDragAsset?.(asset.id)}
+											onClick={() => onClickAsset?.(asset.id)}
+										/>
+									))}
+								</div>
+							)}
 						</div>
 					))}
 				</div>

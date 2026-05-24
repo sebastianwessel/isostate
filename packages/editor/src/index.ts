@@ -99,6 +99,7 @@ export function mountEditor(
 		theme: currentWorkspace.uiState.theme,
 		readonly: currentWorkspace.editState.readonly,
 		assetManifestUrl: options?.assetManifestUrl,
+		assetManifestUrls: options?.assetManifestUrls,
 		assetProvider: options?.assetProvider,
 		onChange: options?.onChange,
 		onValidate: options?.onValidate,

@@ -30,6 +30,76 @@ beforeEach(() => {
 });
 
 describe('AssetPanel', () => {
+	test('orders manifest categories alphabetically and opens the first only', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = createEditorWorkspace({ sourceYaml: BASE_YAML });
+		const root = createRoot(container);
+		const g = globalThis as unknown as {
+			fetch: (url: string) => Promise<Response>;
+		};
+		g.fetch = async (url) => {
+			const isAlpha = url.endsWith('/alpha.json');
+			return new Response(
+				JSON.stringify({
+					format: 'isostate.asset-manifest',
+					version: 1,
+					assetBaseUrl: isAlpha ? '/alpha-assets' : '/zebra-assets',
+					assets: [
+						isAlpha
+							? {
+									id: 'alpha-car',
+									path: 'alpha.svg',
+									group: 'Alpha',
+									name: 'alpha',
+									digest: 'sha256:alpha'
+								}
+							: {
+									id: 'zebra-car',
+									path: 'zebra.svg',
+									group: 'Zebra',
+									name: 'zebra',
+									digest: 'sha256:zebra'
+								}
+					]
+				}),
+				{ status: 200 }
+			);
+		};
+
+		root.render(
+			createElement(AssetPanel, {
+				workspace,
+				assetManifestUrls: ['/zebra.json', '/alpha.json']
+			})
+		);
+
+		await waitFor(() => container.querySelector('[title="alpha-car"]'));
+
+		const groups = Array.from(
+			container.querySelectorAll('.isostate-asset-group-title')
+		) as HTMLButtonElement[];
+		expect(groups.map((group) => group.textContent?.trim())).toEqual([
+			'▾Alpha1',
+			'▸Zebra1'
+		]);
+		expect(container.querySelector('[title="alpha-car"]')).toBeTruthy();
+		expect(container.querySelector('[title="zebra-car"]')).toBeNull();
+		expect(
+			container.querySelector('[title="alpha-car"] img')?.getAttribute('src')
+		).toBe('https://editor.test/alpha-assets/alpha.svg');
+
+		groups[1].click();
+		await waitFor(() => container.querySelector('[title="zebra-car"]'));
+		expect(container.querySelector('[title="zebra-car"]')).toBeTruthy();
+		expect(
+			container.querySelector('[title="zebra-car"] img')?.getAttribute('src')
+		).toBe('https://editor.test/zebra-assets/zebra.svg');
+
+		root.unmount();
+		container.remove();
+	});
+
 	test('renders sprite manifest entries as cropped logical asset previews', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);

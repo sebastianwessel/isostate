@@ -22,7 +22,10 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 		const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 
 		const editor = mountEditor(target, {
-			assetManifestUrl: `${base}/assets/aws-3d.manifest.json`,
+			assetManifestUrls: [
+				`${base}/assets/aws-3d.manifest.json`,
+				`${base}/assets/traffic.manifest.json`
+			],
 			theme: 'system',
 			onChange(event) {
 				// eslint-disable-next-line no-console

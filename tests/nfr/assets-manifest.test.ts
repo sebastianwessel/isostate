@@ -38,4 +38,31 @@ describe('asset manifests', () => {
 			expect(asset.anchor, asset.id).toEqual([0.5, 0.75]);
 		}
 	});
+
+	test('website traffic sprite sheet stays in its own manifest', async () => {
+		const manifest = JSON.parse(
+			await readFile('website/public/assets/traffic.manifest.json', 'utf8')
+		) as {
+			assetBaseUrl: string;
+			assets: Array<{
+				id: string;
+				type?: string;
+				group?: unknown;
+				sheetSize?: unknown;
+				tileSize?: unknown;
+				sprites?: Record<string, unknown>;
+			}>;
+		};
+
+		expect(manifest.assetBaseUrl).toBe('./traffic');
+		expect(manifest.assets).toHaveLength(1);
+		expect(manifest.assets[0]).toMatchObject({
+			id: 'traffic-sprites',
+			type: 'sprite-sheet',
+			group: 'Traffic',
+			sheetSize: [1024, 1024],
+			tileSize: [256, 256]
+		});
+		expect(Object.keys(manifest.assets[0].sprites ?? {})).toHaveLength(16);
+	});
 });

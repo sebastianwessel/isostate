@@ -60,7 +60,8 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		onChange,
 		onValidate,
 		onWorkspaceChange,
-		assetManifestUrl
+		assetManifestUrl,
+		assetManifestUrls
 	} = props;
 
 	const [workspace, setWorkspace] = useState<EditorWorkspace>(() => {
@@ -256,6 +257,7 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		<AssetPanel
 			workspace={workspace}
 			assetManifestUrl={assetManifestUrl}
+			assetManifestUrls={assetManifestUrls}
 			activeAssetId={
 				workspace.editState.dragPayload?.kind === 'asset'
 					? workspace.editState.dragPayload.assetId
