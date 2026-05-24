@@ -228,6 +228,31 @@ function navId(value: string): string {
 				transform: scaleX(1);
 			}
 
+			.topbar-project {
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+				min-height: 36px;
+				padding: 6px 10px;
+				border: 1px solid rgba(16, 20, 21, 0.1);
+				border-radius: 999px;
+				color: var(--soft-ink);
+				font-size: 0.82rem;
+				font-weight: 650;
+				text-decoration: none;
+				transition:
+					background-color 140ms ease,
+					border-color 140ms ease,
+					color 140ms ease;
+			}
+
+			.topbar-project:hover {
+				border-color: rgba(15, 95, 79, 0.28);
+				background: rgba(15, 95, 79, 0.06);
+				color: var(--green-dark);
+			}
+
 			.topbar-meta {
 				justify-self: end;
 				display: inline-flex;
@@ -695,8 +720,12 @@ function navId(value: string): string {
 					overflow-x: auto;
 				}
 
-				.topbar-meta {
+				.topbar-project {
 					margin-left: auto;
+				}
+
+				.topbar-meta {
+					margin-left: 0;
 				}
 
 				.docs-shell {
@@ -742,6 +771,7 @@ function navId(value: string): string {
 				<a href={href('/docs/README.md')} aria-current={isActive('/docs') ? 'page' : undefined}>Docs</a>
 				<a href={href('/editor')} aria-current={isActive('/editor') ? 'page' : undefined}>Editor</a>
 			</nav>
+			<a class="topbar-project" href="https://sebastianwessel.de/projects/isostate/">Project page</a>
 			<a class="topbar-meta" href="https://github.com/sebastianwessel/isostate" aria-label="Open GitHub repository" title="GitHub">
 				<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
 					<path d="M12 .5a12 12 0 0 0-3.8 23.4c.6.1.8-.3.8-.6v-2.1c-3.3.7-4-1.4-4-1.4-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 .1 1.7 1.5 3.4 1.1.1-.8.4-1.3.7-1.6-2.8-.3-5.8-1.4-5.8-6.1 0-1.3.5-2.4 1.2-3.3-.1-.3-.5-1.6.1-3.3 0 0 1-.3 3.4 1.2a11.8 11.8 0 0 1 6.2 0c2.4-1.6 3.4-1.2 3.4-1.2.6 1.7.2 3 .1 3.3.8.9 1.2 2 1.2 3.3 0 4.7-2.9 5.8-5.7 6.1.5.4.9 1.1.9 2.2v3.3c0 .3.2.7.8.6A12 12 0 0 0 12 .5Z"/>

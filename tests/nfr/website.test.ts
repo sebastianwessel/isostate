@@ -121,6 +121,7 @@ describe('Astro website', () => {
 		expect(layout).toContain('pre[data-language="mermaid"] code');
 		expect(layout).toContain('rel="apple-touch-icon"');
 		expect(layout).toContain('rel="manifest"');
+		expect(layout).toContain('class="topbar-project"');
 		expect(layout).toContain('https://sebastianwessel.de/projects/isostate/');
 		expect(layout).toContain('https://sebastianwessel.de/projects/');
 		expect(ogRoute).toContain('./assets/isostate-story/editor-overview.png');
@@ -191,6 +192,7 @@ describe('Astro website', () => {
 				'name="twitter:card" content="summary_large_image"'
 			);
 			expect(home).toContain('rel="manifest"');
+			expect(home).toContain('class="topbar-project"');
 			expect(home).toContain('Project page');
 			expect(home).toContain('More projects');
 			expect(home).toContain('sebastianwessel.de/projects/isostate/');
