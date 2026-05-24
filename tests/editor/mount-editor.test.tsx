@@ -17,7 +17,10 @@ describe('mountEditor', () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 
-		const editor = mountEditor(container, { initialYaml: 'header:\n  assets: []\n  layers:\n    - name: default\nscenes:\n  - id: scene-1\n' });
+		const editor = mountEditor(container, {
+			initialYaml:
+				'header:\n  assets: []\n  layers:\n    - name: default\nscenes:\n  - id: scene-1\n'
+		});
 
 		await new Promise((r) => setTimeout(r, 10));
 
@@ -35,8 +38,9 @@ describe('mountEditor', () => {
 		document.body.appendChild(container);
 
 		const editor = mountEditor(container, {
-			initialYaml: 'header:\n  assets: []\n  layers:\n    - name: default\nscenes:\n  - id: scene-1\n',
-			theme: 'dark',
+			initialYaml:
+				'header:\n  assets: []\n  layers:\n    - name: default\nscenes:\n  - id: scene-1\n',
+			theme: 'dark'
 		});
 
 		expect(editor.element).toBe(container);
@@ -62,10 +66,13 @@ describe('mountEditor', () => {
 		document.body.appendChild(container);
 
 		const editor = mountEditor(container, {
-			initialYaml: 'header:\n  assets: []\n  layers:\n    - name: default\nscenes:\n  - id: scene-1\n',
+			initialYaml:
+				'header:\n  assets: []\n  layers:\n    - name: default\nscenes:\n  - id: scene-1\n'
 		});
 
-		editor.setYaml('header:\n  assets: []\n  layers:\n    - name: default\nscenes:\n  - id: scene-2\n');
+		editor.setYaml(
+			'header:\n  assets: []\n  layers:\n    - name: default\nscenes:\n  - id: scene-2\n'
+		);
 		expect(editor.getWorkspace().sourceYaml).toContain('scene-2');
 
 		editor.setTheme('light');
@@ -75,7 +82,7 @@ describe('mountEditor', () => {
 		container.remove();
 	});
 
-	test('mounted layout orders canvas, attributes, and editor panes', async () => {
+	test('mounted layout orders canvas, assets, and editor panes', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 
@@ -92,7 +99,7 @@ describe('mountEditor', () => {
 		expect(main?.querySelector('.isostate-editor-yaml')).toBeTruthy();
 		expect(container.querySelector('[role="tablist"]')).toBeTruthy();
 		expect(container.querySelector('[role="separator"]')).toBeTruthy();
-		expect(container.querySelector('.isostate-attributes-panel')).toBeTruthy();
+		expect(container.querySelector('.isostate-asset-panel')).toBeTruthy();
 
 		editor.destroy();
 		container.remove();

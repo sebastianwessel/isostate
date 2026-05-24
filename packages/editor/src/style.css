@@ -991,10 +991,6 @@
 	border-color: var(--ring);
 }
 
-.isostate-asset-item--declared {
-	border-color: var(--success);
-}
-
 .isostate-asset-item--builtin {
 	background: var(--muted);
 }
@@ -1074,17 +1070,6 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	width: 100%;
-}
-
-.isostate-asset-declared-badge {
-	position: absolute;
-	top: 2px;
-	right: 2px;
-	font-size: 8px;
-	padding: 0 0.125rem;
-	background: var(--success);
-	color: #fff;
-	border-radius: 2px;
 }
 
 .isostate-sidebar-content > .isostate-asset-panel,

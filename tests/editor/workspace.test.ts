@@ -75,7 +75,7 @@ describe('createEditorWorkspace', () => {
 		expect(workspace.editState.readonly).toBe(false);
 		expect(workspace.editState.dragging).toBe(false);
 		expect(workspace.uiState.theme).toBe('system');
-		expect(workspace.uiState.sidebarTab).toBe('attributes');
+		expect(workspace.uiState.sidebarTab).toBe('assets');
 		expect(workspace.uiState.sidebarWidth).toBe(360);
 	});
 

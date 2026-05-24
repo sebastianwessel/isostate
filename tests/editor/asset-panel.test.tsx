@@ -14,6 +14,22 @@ scenes:
     elements: []
 `;
 
+const DECLARED_ASSET_YAML = `header:
+  version: "1"
+  assetBaseUrl: "/assets"
+  assets:
+    - id: server
+      path: server.svg
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+    elements:
+      - id: server-1
+        asset: server
+        at: [0, 0]
+`;
+
 function setupHappyDom() {
 	const w = new Window({ url: 'https://editor.test/' });
 	const g = globalThis as unknown as Record<string, unknown>;
@@ -23,6 +39,7 @@ function setupHappyDom() {
 	g.Element = w.Element;
 	g.Node = w.Node;
 	g.SVGElement = w.SVGElement;
+	g.DragEvent = w.DragEvent;
 }
 
 beforeEach(() => {
@@ -160,6 +177,80 @@ describe('AssetPanel', () => {
 		expect(car?.style.transform).toBe('translate(-25%, 0%)');
 		expect(bus?.style.width).toBe('200%');
 		expect(bus?.style.transform).toBe('translate(-50%, 0%)');
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('does not mark manifest assets that are declared or used in YAML', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = createEditorWorkspace({
+			sourceYaml: DECLARED_ASSET_YAML
+		});
+		const root = createRoot(container);
+		let draggedAssetId: string | undefined;
+		const dragImages: Element[] = [];
+		const g = globalThis as unknown as {
+			fetch: (url: string) => Promise<Response>;
+		};
+		g.fetch = async () =>
+			new Response(
+				JSON.stringify({
+					format: 'isostate.asset-manifest',
+					version: 1,
+					assetBaseUrl: '/assets',
+					assets: [
+						{
+							id: 'server',
+							path: 'server.svg',
+							group: 'Servers',
+							name: 'server',
+							digest: 'sha256:server'
+						}
+					]
+				}),
+				{ status: 200 }
+			);
+
+		root.render(
+			createElement(AssetPanel, {
+				workspace,
+				assetManifestUrl: '/manifest.json',
+				onDragAsset: (assetId) => {
+					draggedAssetId = assetId;
+				}
+			})
+		);
+
+		await waitFor(() => container.querySelector('[title="server"]'));
+
+		const item = container.querySelector('[title="server"]') as HTMLElement;
+		expect(item.classList.contains('isostate-asset-item--declared')).toBe(
+			false
+		);
+		expect(
+			container.querySelector('.isostate-asset-declared-badge')
+		).toBeNull();
+
+		const event = new DragEvent('dragstart', {
+			bubbles: true,
+			cancelable: true
+		});
+		Object.defineProperty(event, 'dataTransfer', {
+			value: {
+				effectAllowed: '',
+				setData() {},
+				setDragImage(image: Element) {
+					dragImages.push(image);
+				}
+			}
+		});
+		item.dispatchEvent(event);
+
+		expect(draggedAssetId).toBe('server');
+		expect(dragImages).toHaveLength(1);
+		expect((dragImages[0] as HTMLImageElement).style.opacity).toBe('0');
 
 		root.unmount();
 		container.remove();

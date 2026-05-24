@@ -96,7 +96,7 @@ export function createEditorWorkspace(
 		uiState: {
 			sidebarWidth: 360,
 			sidebarCollapsed: false,
-			sidebarTab: 'attributes',
+			sidebarTab: 'assets',
 			theme: 'system',
 			previewMode: 'edit',
 			assetBrowser: {

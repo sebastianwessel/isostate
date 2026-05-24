@@ -10,7 +10,6 @@ import type {
 	PlaceableAssetManifestEntry,
 	SpriteAssetManifestEntry
 } from '../types.ts';
-import { Badge } from '../ui/badge.tsx';
 import { Input } from '../ui/input.tsx';
 import { ScrollArea } from '../ui/scroll-area.tsx';
 
@@ -91,6 +90,27 @@ function searchPanelAssets(assets: PanelAsset[], query: string): PanelAsset[] {
 		if (asset.tags?.some((tag) => tag.toLowerCase().includes(q))) return true;
 		return false;
 	});
+}
+
+function setTransparentDragImage(event: React.DragEvent): void {
+	const image = document.createElement('img');
+	image.alt = '';
+	image.src =
+		'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+	image.style.position = 'fixed';
+	image.style.left = '-1px';
+	image.style.top = '-1px';
+	image.style.width = '1px';
+	image.style.height = '1px';
+	image.style.opacity = '0';
+	document.body.appendChild(image);
+	event.dataTransfer.setDragImage(image, 0, 0);
+	const cleanup = () => image.remove();
+	if (typeof requestAnimationFrame === 'function') {
+		requestAnimationFrame(cleanup);
+	} else {
+		window.setTimeout(cleanup, 0);
+	}
 }
 
 export function AssetPanel({
@@ -203,7 +223,6 @@ export function AssetPanel({
 			.filter(Boolean) as NonNullable<(typeof allAssets)[number]>[];
 	}, [recentIds, allAssets]);
 
-	const declaredAssetIds = new Set(doc?.header.assets.map((a) => a.id) ?? []);
 	const builtInAssets = ['text', 'rectangle', 'circle', 'polygon', 'line'];
 
 	return (
@@ -259,11 +278,6 @@ export function AssetPanel({
 							<AssetItem
 								key={asset.id}
 								asset={asset}
-								isDeclared={
-									asset.type === 'sprite'
-										? declaredAssetIds.has(asset.sheetId)
-										: declaredAssetIds.has(asset.id)
-								}
 								isActive={activeAssetId === asset.id}
 								assetBaseUrl={asset.__assetBaseUrl}
 								assetManifestUrl={asset.__manifestUrl}
@@ -335,11 +349,6 @@ export function AssetPanel({
 										<AssetItem
 											key={asset.id}
 											asset={asset}
-											isDeclared={
-												asset.type === 'sprite'
-													? declaredAssetIds.has(asset.sheetId)
-													: declaredAssetIds.has(asset.id)
-											}
 											assetBaseUrl={asset.__assetBaseUrl}
 											assetManifestUrl={asset.__manifestUrl}
 											previewUrl={resolveAssetUrl(
@@ -381,6 +390,7 @@ function BuiltInAssetItem({
 			tabIndex={0}
 			onDragStart={(event) => {
 				event.dataTransfer.effectAllowed = 'copy';
+				setTransparentDragImage(event);
 				event.dataTransfer.setData('application/x-isostate-asset', id);
 				event.dataTransfer.setData('text/plain', id);
 				onDrag?.();
@@ -450,7 +460,6 @@ function BuiltInAssetPreview({ id }: { id: string }) {
 
 function AssetItem({
 	asset,
-	isDeclared,
 	isActive,
 	assetBaseUrl,
 	assetManifestUrl,
@@ -461,7 +470,6 @@ function AssetItem({
 	asset:
 		| PlaceableAssetManifestEntry
 		| { id: string; name: string; label?: string };
-	isDeclared: boolean;
 	isActive?: boolean;
 	assetBaseUrl?: string;
 	assetManifestUrl?: string;
@@ -471,6 +479,7 @@ function AssetItem({
 }) {
 	const handleDragStart = (event: React.DragEvent) => {
 		event.dataTransfer.effectAllowed = 'copy';
+		setTransparentDragImage(event);
 		event.dataTransfer.setData('application/x-isostate-asset', asset.id);
 		if (
 			assetBaseUrl &&
@@ -493,7 +502,7 @@ function AssetItem({
 	return (
 		// biome-ignore lint/a11y/useSemanticElements: draggable asset items
 		<div
-			className={`isostate-asset-item ${isDeclared ? 'isostate-asset-item--declared' : ''} ${isActive ? 'isostate-asset-item--active' : ''}`}
+			className={`isostate-asset-item ${isActive ? 'isostate-asset-item--active' : ''}`}
 			role="button"
 			tabIndex={0}
 			draggable
@@ -515,11 +524,6 @@ function AssetItem({
 				)}
 			</div>
 			<div className="isostate-asset-name">{asset.label ?? asset.name}</div>
-			{isDeclared && (
-				<Badge className="isostate-asset-declared-badge" variant="secondary">
-					YAML
-				</Badge>
-			)}
 		</div>
 	);
 }
