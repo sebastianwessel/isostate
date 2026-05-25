@@ -4,10 +4,6 @@ import {
 	Paintbrush,
 	PanelRightClose,
 	PanelRightOpen,
-	Pause,
-	Play,
-	SkipBack,
-	SkipForward,
 	Sun
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -95,7 +91,9 @@ export function IsostateEditor(props: IsostateEditorProps) {
 				uiState: {
 					...next.uiState,
 					theme: prev.uiState.theme,
-					yamlCollapsed: prev.uiState.yamlCollapsed
+					yamlCollapsed: prev.uiState.yamlCollapsed,
+					previewMode: prev.uiState.previewMode,
+					previewProgress: prev.uiState.previewProgress
 				},
 				editState: {
 					...next.editState,
@@ -180,32 +178,6 @@ export function IsostateEditor(props: IsostateEditorProps) {
 		});
 	};
 
-	const togglePreviewMode = () => {
-		setWorkspace((prev) => {
-			const previewMode: EditorWorkspace['uiState']['previewMode'] =
-				prev.uiState.previewMode === 'runtime' ? 'edit' : 'runtime';
-			const next = {
-				...prev,
-				selection:
-					previewMode === 'runtime'
-						? {
-								sceneId: prev.activeSceneId,
-								objectIds: [],
-								connectionIds: [],
-								layerNames: []
-							}
-						: prev.selection,
-				editState:
-					previewMode === 'runtime'
-						? { ...prev.editState, dragPayload: undefined, dragging: false }
-						: prev.editState,
-				uiState: { ...prev.uiState, previewMode }
-			};
-			onWorkspaceChange?.(next);
-			return next;
-		});
-	};
-
 	const toggleYamlPanel = () => {
 		setWorkspace((prev) => {
 			const next = {
@@ -242,6 +214,15 @@ export function IsostateEditor(props: IsostateEditorProps) {
 
 	const setActiveSceneId = (sceneId: string) => {
 		setWorkspace((prev) => {
+			const nextSceneIndex = sceneOptions.findIndex(
+				(scene) => scene.id === sceneId
+			);
+			const nextProgress =
+				sceneOptions.length > 1
+					? Math.max(0, nextSceneIndex) / (sceneOptions.length - 1)
+					: sceneOptions.length === 1
+						? 1
+						: 0;
 			const next = {
 				...prev,
 				activeSceneId: sceneId,
@@ -250,20 +231,16 @@ export function IsostateEditor(props: IsostateEditorProps) {
 					objectIds: [],
 					connectionIds: [],
 					layerNames: []
+				},
+				uiState: {
+					...prev.uiState,
+					previewMode: 'edit' as const,
+					previewProgress: nextProgress
 				}
 			};
 			onWorkspaceChange?.(next);
 			return next;
 		});
-	};
-
-	const setActiveSceneByOffset = (offset: number) => {
-		const currentIndex = sceneOptions.findIndex(
-			(scene) => scene.id === workspace.activeSceneId
-		);
-		const baseIndex = currentIndex >= 0 ? currentIndex : 0;
-		const nextScene = sceneOptions[baseIndex + offset];
-		if (nextScene) setActiveSceneId(nextScene.id);
 	};
 
 	const clearDragPayload = () => {
@@ -303,6 +280,37 @@ export function IsostateEditor(props: IsostateEditorProps) {
 			: sceneOptions.length === 1
 				? 1
 				: 0;
+	const previewScrubProgress = Math.min(
+		1,
+		Math.max(0, workspace.uiState.previewProgress ?? previewProgress)
+	);
+	const previewPercent = Math.round(previewScrubProgress * 100);
+	const setPreviewProgress = (progress: number) => {
+		setWorkspace((prev) => {
+			const clamped = Math.min(1, Math.max(0, progress));
+			const next = {
+				...prev,
+				selection: {
+					sceneId: prev.activeSceneId,
+					objectIds: [],
+					connectionIds: [],
+					layerNames: []
+				},
+				editState: {
+					...prev.editState,
+					dragPayload: undefined,
+					dragging: false
+				},
+				uiState: {
+					...prev.uiState,
+					previewMode: 'runtime' as const,
+					previewProgress: clamped
+				}
+			};
+			onWorkspaceChange?.(next);
+			return next;
+		});
+	};
 	const isInvalid = !workspace.document;
 	const canvasContent = (
 		<>
@@ -320,6 +328,7 @@ export function IsostateEditor(props: IsostateEditorProps) {
 				}}
 				theme={activeTheme}
 				previewMode={workspace.uiState.previewMode}
+				previewProgress={previewScrubProgress}
 			/>
 			{isInvalid && (
 				<div className="isostate-editor-canvas-overlay">
@@ -329,55 +338,31 @@ export function IsostateEditor(props: IsostateEditorProps) {
 			<div
 				className="isostate-preview-player"
 				data-active={workspace.uiState.previewMode === 'runtime'}
-				role="toolbar"
-				aria-label="Preview player"
 			>
-				<Button
-					type="button"
-					variant="secondary"
-					size="icon-sm"
-					onClick={togglePreviewMode}
-					aria-label={
-						workspace.uiState.previewMode === 'runtime'
-							? 'Leave preview'
-							: 'Start preview'
+				<input
+					type="range"
+					min="0"
+					max="1"
+					step="0.001"
+					value={previewScrubProgress}
+					onInput={(event) =>
+						setPreviewProgress(Number(event.currentTarget.value))
 					}
-					aria-pressed={workspace.uiState.previewMode === 'runtime'}
-				>
-					{workspace.uiState.previewMode === 'runtime' ? (
-						<Pause aria-hidden="true" />
-					) : (
-						<Play aria-hidden="true" />
-					)}
-				</Button>
-				<Button
-					type="button"
-					variant="secondary"
-					size="icon-sm"
-					onClick={() => setActiveSceneByOffset(-1)}
-					disabled={activeSceneIndex <= 0}
-					aria-label="Previous scene"
-				>
-					<SkipBack aria-hidden="true" />
-				</Button>
-				<div className="isostate-preview-meter" aria-hidden="true">
-					<span style={{ inlineSize: `${previewProgress * 100}%` }} />
-				</div>
-				<Button
-					type="button"
-					variant="secondary"
-					size="icon-sm"
-					onClick={() => setActiveSceneByOffset(1)}
-					disabled={
-						sceneOptions.length === 0 ||
-						activeSceneIndex >= sceneOptions.length - 1
+					onChange={(event) =>
+						setPreviewProgress(Number(event.currentTarget.value))
 					}
-					aria-label="Next scene"
-				>
-					<SkipForward aria-hidden="true" />
-				</Button>
+					onPointerUp={(event) =>
+						setPreviewProgress(Number(event.currentTarget.value))
+					}
+					onKeyUp={(event) =>
+						setPreviewProgress(Number(event.currentTarget.value))
+					}
+					aria-label="Scene progress"
+				/>
 				<span className="isostate-preview-label">
-					{workspace.activeSceneId ?? 'No scene'}
+					{workspace.uiState.previewMode === 'runtime'
+						? `${previewPercent}%`
+						: (workspace.activeSceneId ?? 'No scene')}
 				</span>
 			</div>
 		</>

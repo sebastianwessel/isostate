@@ -1,0 +1,27 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Visual editor console">
+	<defs>
+		<linearGradient id="top" x1="24" y1="18" x2="104" y2="54" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#f8fafc"/>
+			<stop offset="1" stop-color="#cbd5e1"/>
+		</linearGradient>
+		<linearGradient id="left" x1="22" y1="50" x2="64" y2="110" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#64748b"/>
+			<stop offset="1" stop-color="#334155"/>
+		</linearGradient>
+		<linearGradient id="right" x1="106" y1="50" x2="64" y2="110" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#475569"/>
+			<stop offset="1" stop-color="#0f172a"/>
+		</linearGradient>
+		<filter id="shadow" x="8" y="12" width="112" height="112" filterUnits="userSpaceOnUse">
+			<feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.2"/>
+		</filter>
+	</defs>
+	<g filter="url(#shadow)" stroke="#0f172a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M22 49 64 25l42 24-42 24z" fill="url(#top)"/>
+		<path d="M22 49v37l42 24V73z" fill="url(#left)"/>
+		<path d="M106 49v37l-42 24V73z" fill="url(#right)"/>
+		<path d="M42 49 64 37l22 12-22 13z" fill="#0f172a"/>
+		<path d="M49 49 64 41l15 8-15 9z" fill="#67e8f9"/>
+		<path d="M50 78h18M50 88h28M82 79h8" stroke="#e2e8f0" stroke-width="5"/>
+	</g>
+</svg>

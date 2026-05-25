@@ -255,7 +255,7 @@ describe('IsostateEditor YAML integration', () => {
 		container.remove();
 	});
 
-	test('preview toggle switches the canvas to runtime preview mode', async () => {
+	test('scene progress slider scrubs the canvas to runtime preview mode', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const root = createRoot(container);
@@ -273,14 +273,23 @@ describe('IsostateEditor YAML integration', () => {
 		);
 		await new Promise((r) => setTimeout(r, 50));
 
-		const previewBtn = container.querySelector(
-			'button[aria-label="Start preview"]'
-		) as HTMLButtonElement | null;
-		expect(previewBtn).toBeTruthy();
-		previewBtn?.click();
+		expect(
+			container.querySelector('button[aria-label="Start preview"]')
+		).toBeNull();
+		const progress = container.querySelector(
+			'input[aria-label="Scene progress"]'
+		) as HTMLInputElement | null;
+		expect(progress).toBeTruthy();
+		expect(progress?.step).toBe('0.001');
+		if (progress) {
+			progress.value = '0.42';
+			progress.dispatchEvent(new window.Event('input', { bubbles: true }));
+			progress.dispatchEvent(new window.Event('change', { bubbles: true }));
+		}
 		await new Promise((r) => setTimeout(r, 10));
 
 		expect(capturedWorkspace?.uiState.previewMode).toBe('runtime');
+		expect(capturedWorkspace?.uiState.previewProgress).toBe(0.42);
 		expect(
 			container
 				.querySelector('.isostate-editor-canvas-view')

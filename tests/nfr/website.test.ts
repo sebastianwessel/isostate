@@ -64,6 +64,14 @@ describe('Astro website', () => {
 			join(root, 'website/src/layouts/SiteLayout.astro'),
 			'utf8'
 		);
+		const mermaidPage = await readFile(
+			join(root, 'website/src/pages/mermaid.astro'),
+			'utf8'
+		);
+		const editorPage = await readFile(
+			join(root, 'website/src/pages/editor.astro'),
+			'utf8'
+		);
 		const ogRoute = await readFile(
 			join(root, 'website/src/pages/og/[...route].ts'),
 			'utf8'
@@ -122,8 +130,31 @@ describe('Astro website', () => {
 		expect(layout).toContain('rel="apple-touch-icon"');
 		expect(layout).toContain('rel="manifest"');
 		expect(layout).toContain('class="topbar-project"');
-		expect(layout).toContain('https://sebastianwessel.de/projects/');
+		expect(layout).toContain(
+			'class="topbar-project" href="https://sebastianwessel.de/projects/" target="_blank" rel="noopener noreferrer"'
+		);
 		expect(layout).toContain("href={href('/mermaid')}");
+		expect(layout).not.toContain("href={href('/city-growth')}");
+		expect(layout).not.toContain('City Scene');
+		expect(mermaidPage).toContain('mermaid-workflow.isostate.js');
+		expect(mermaidPage).toContain('mountScene');
+		expect(mermaidPage).not.toContain('pre data-language="mermaid"');
+		expect(mermaidPage).toContain('converting-mermaid-to-isostate-stories');
+		expect(mermaidPage).toContain('npm install @sebastianwessel/isostate');
+		expect(mermaidPage).toContain(
+			'npm install --save-dev @sebastianwessel/isostate-cli yaml'
+		);
+		expect(mermaidPage).toContain(
+			'design a small enterprise-grade 3D isometric SVG asset set'
+		);
+		expect(mermaidPage).toContain(
+			'use camera focus for each story beat so the active region fills the preview'
+		);
+		expect(mermaidPage).toContain('keep canvas labels short');
+		expect(mermaidPage).toContain('Open the editor');
+		expect(editorPage).toContain('hideFooter');
+		expect(editorPage).not.toContain('Text labels:');
+		expect(editorPage).not.toContain('Use <code>cell</code> placement');
 		expect(ogRoute).toContain('./assets/isostate-story/editor-overview.png');
 		expect(ogRoute).toContain(
 			'./assets/isostate-story/hero-tilt-shift-city.png'
@@ -165,6 +196,7 @@ describe('Astro website', () => {
 			expect(relativeFiles).toContain('site.webmanifest');
 			expect(relativeFiles).toContain('og/index.png');
 			expect(relativeFiles).toContain('mermaid/index.html');
+			expect(relativeFiles).not.toContain('city-growth/index.html');
 			expect(relativeFiles).toContain('docs/README.md/index.html');
 			expect(relativeFiles).toContain(
 				'docs/concepts/how-isostate-works.md/index.html'
@@ -197,6 +229,22 @@ describe('Astro website', () => {
 			expect(home).toContain('Project page');
 			expect(home).toContain('More projects');
 			expect(home).toContain('sebastianwessel.de/projects/');
+			expect(home).not.toContain('City Scene');
+			expect(home).not.toContain('View city scene');
+			const mermaid = await readFile(join(dist, 'mermaid/index.html'), 'utf8');
+			expect(mermaid).toContain('Turn existing Mermaid diagrams');
+			expect(mermaid).toContain('mermaid-workflow-scene');
+			expect(mermaid).not.toContain('data-language="mermaid"');
+			expect(mermaid).not.toContain('data-language=mermaid');
+			expect(mermaid).toContain('converting-mermaid-to-isostate-stories');
+			expect(mermaid).toContain('@sebastianwessel/isostate');
+			expect(mermaid).toContain('@sebastianwessel/isostate-cli');
+			expect(mermaid).toContain('yaml');
+			expect(mermaid).toContain('enterprise-grade 3D isometric SVG asset set');
+			const editor = await readFile(join(dist, 'editor/index.html'), 'utf8');
+			expect(editor).not.toContain('Text labels:');
+			expect(editor).not.toContain('Use cell placement');
+			expect(editor).not.toContain('site-footer');
 			const docsIndex = await readFile(
 				join(dist, 'docs/README.md/index.html'),
 				'utf8'

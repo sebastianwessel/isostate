@@ -34,6 +34,7 @@ interface CanvasViewProps {
 	onViewportChange?: (viewport: EditorWorkspace['viewport']) => void;
 	theme: string;
 	previewMode?: EditorWorkspace['uiState']['previewMode'];
+	previewProgress?: number;
 }
 
 const EDITOR_MIN_FLOOR_SIZE: [number, number] = [20, 20];
@@ -80,6 +81,20 @@ function getEditorGridBounds(
 	};
 }
 
+function setAdapterProgress(
+	adapter: EditorRuntimeAdapter,
+	progress: number
+): void {
+	const progressAdapter = adapter as EditorRuntimeAdapter & {
+		setProgress?: (progress: number) => void;
+	};
+	if (typeof progressAdapter.setProgress === 'function') {
+		progressAdapter.setProgress(progress);
+		return;
+	}
+	adapter.mounted.engine.setProgress(progress);
+}
+
 function parseManifestDrop(dataTransfer: DataTransfer):
 	| {
 			entry: import('../types.ts').PlaceableAssetManifestEntry;
@@ -114,7 +129,8 @@ export function CanvasView({
 	onClearDragPayload,
 	onViewportChange,
 	theme,
-	previewMode = 'edit'
+	previewMode = 'edit',
+	previewProgress = 0
 }: CanvasViewProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [adapter, setAdapter] = useState<EditorRuntimeAdapter | null>(null);
@@ -160,7 +176,9 @@ export function CanvasView({
 				themeVars
 			});
 			adpt = createEditorRuntimeAdapter(mounted);
-			if (workspace.activeSceneId) {
+			if (isRuntimePreview) {
+				setAdapterProgress(adpt, previewProgress);
+			} else if (workspace.activeSceneId) {
 				adpt.setActiveScene(workspace.activeSceneId);
 			}
 			setAdapter(adpt);
@@ -175,9 +193,14 @@ export function CanvasView({
 	}, [previewDocument, workspace.sourceYaml, themeVars]);
 
 	useEffect(() => {
-		if (!adapter || !workspace.activeSceneId) return;
+		if (!adapter || isRuntimePreview || !workspace.activeSceneId) return;
 		adapter.setActiveScene(workspace.activeSceneId);
-	}, [adapter, workspace.activeSceneId]);
+	}, [adapter, isRuntimePreview, workspace.activeSceneId]);
+
+	useEffect(() => {
+		if (!adapter || !isRuntimePreview) return;
+		setAdapterProgress(adapter, previewProgress);
+	}, [adapter, isRuntimePreview, previewProgress]);
 
 	const { ghostCell, onPointerDown, onPointerMove, onPointerUp } =
 		useCanvasPointer({

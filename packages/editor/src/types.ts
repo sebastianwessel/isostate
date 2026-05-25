@@ -121,6 +121,7 @@ export interface EditorUiState {
 	yamlCollapsed?: boolean;
 	theme: 'light' | 'dark' | 'system';
 	previewMode: 'edit' | 'runtime';
+	previewProgress: number;
 	assetBrowser: EditorAssetBrowserState;
 	hiddenLayers?: string[];
 }

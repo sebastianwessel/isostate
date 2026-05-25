@@ -100,6 +100,7 @@ export function createEditorWorkspace(
 			yamlCollapsed: false,
 			theme: 'system',
 			previewMode: 'edit',
+			previewProgress: 0,
 			assetBrowser: {
 				recentAssetIds: [],
 				searchQuery: '',

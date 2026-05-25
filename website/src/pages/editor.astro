@@ -7,17 +7,10 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 <SiteLayout
 	title="Scene Editor"
 	description="Build and edit isostate scenes with the visual editor."
+	hideFooter
 >
 	<link rel="stylesheet" href={`${base}/editor-style.css`} />
 	<div class="editor-shell">
-		<div class="editor-note">
-			<strong>Text labels:</strong>
-			<span>
-				Use <code>cell</code> placement for standalone labels and group names.
-				Use <code>caption</code> for one-cell icon labels that share the icon
-				position.
-			</span>
-		</div>
 		<div id="editor-mount" class="editor-target"></div>
 	</div>
 
@@ -53,25 +46,6 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
-	}
-
-	.editor-note {
-		display: flex;
-		gap: 0.5rem;
-		align-items: center;
-		padding: 0.625rem 1rem;
-		border-bottom: 1px solid #dce3ea;
-		background: #f8fafc;
-		color: #334155;
-		font-size: 0.875rem;
-	}
-
-	.editor-note code {
-		border: 1px solid #cbd5e1;
-		border-radius: 4px;
-		background: #fff;
-		padding: 0.0625rem 0.25rem;
-		font-size: 0.8125rem;
 	}
 
 	.editor-target {

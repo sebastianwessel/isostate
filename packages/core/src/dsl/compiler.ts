@@ -19,7 +19,7 @@ export interface CompileOptions {
 	version?: string;
 }
 
-const DEFAULT_VERSION = "0.3.0";
+const DEFAULT_VERSION = "0.4.0";
 const RUNTIME_BUNDLE_FORMAT = "isostate-runtime-bundle";
 const BUILT_IN_TEXT_ASSET_ID = "text";
 const BUILT_IN_PRIMITIVE_ASSET_IDS = new Set(["rectangle", "circle", "polygon", "line"]);

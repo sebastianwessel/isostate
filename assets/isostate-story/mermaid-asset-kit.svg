@@ -1,0 +1,27 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generated enterprise asset kit">
+	<defs>
+		<linearGradient id="top" x1="24" y1="18" x2="102" y2="54" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#fff7ed"/>
+			<stop offset="1" stop-color="#fdba74"/>
+		</linearGradient>
+		<linearGradient id="left" x1="22" y1="50" x2="64" y2="110" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#fb923c"/>
+			<stop offset="1" stop-color="#c2410c"/>
+		</linearGradient>
+		<linearGradient id="right" x1="106" y1="50" x2="64" y2="110" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#ea580c"/>
+			<stop offset="1" stop-color="#7c2d12"/>
+		</linearGradient>
+		<filter id="shadow" x="8" y="12" width="112" height="112" filterUnits="userSpaceOnUse">
+			<feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.18"/>
+		</filter>
+	</defs>
+	<g filter="url(#shadow)" stroke="#431407" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M22 49 64 25l42 24-42 24z" fill="url(#top)"/>
+		<path d="M22 49v37l42 24V73z" fill="url(#left)"/>
+		<path d="M106 49v37l-42 24V73z" fill="url(#right)"/>
+		<path d="M42 49 64 37l22 12-22 13z" fill="#fff7ed"/>
+		<path d="M49 50h30M51 44l-8 6 8 6M77 44l8 6-8 6" fill="none" stroke="#ea580c" stroke-width="3"/>
+		<path d="M40 78h13v11H40zM59 82h13v11H59zM78 75h13v11H78z" fill="#fed7aa"/>
+	</g>
+</svg>

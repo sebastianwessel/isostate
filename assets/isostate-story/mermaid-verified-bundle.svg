@@ -1,0 +1,27 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Validated runtime bundle">
+	<defs>
+		<linearGradient id="top" x1="24" y1="18" x2="104" y2="54" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#f0fdf4"/>
+			<stop offset="1" stop-color="#86efac"/>
+		</linearGradient>
+		<linearGradient id="left" x1="22" y1="50" x2="64" y2="110" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#4ade80"/>
+			<stop offset="1" stop-color="#16a34a"/>
+		</linearGradient>
+		<linearGradient id="right" x1="106" y1="50" x2="64" y2="110" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#22c55e"/>
+			<stop offset="1" stop-color="#14532d"/>
+		</linearGradient>
+		<filter id="shadow" x="8" y="12" width="112" height="112" filterUnits="userSpaceOnUse">
+			<feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.18"/>
+		</filter>
+	</defs>
+	<g filter="url(#shadow)" stroke="#052e16" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M22 49 64 25l42 24-42 24z" fill="url(#top)"/>
+		<path d="M22 49v37l42 24V73z" fill="url(#left)"/>
+		<path d="M106 49v37l-42 24V73z" fill="url(#right)"/>
+		<path d="M47 49 64 39l17 10-17 10z" fill="#ecfdf5"/>
+		<path d="M52 49l8 7 17-18" fill="none" stroke="#16a34a" stroke-width="6"/>
+		<path d="M41 79h19M41 89h27M76 80h14" stroke="#dcfce7" stroke-width="5"/>
+	</g>
+</svg>

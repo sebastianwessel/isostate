@@ -1,0 +1,30 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mermaid source workspace">
+	<defs>
+		<linearGradient id="top" x1="28" y1="20" x2="96" y2="54" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#ffffff"/>
+			<stop offset="1" stop-color="#d8f4ee"/>
+		</linearGradient>
+		<linearGradient id="left" x1="22" y1="51" x2="64" y2="112" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#8ee6d2"/>
+			<stop offset="1" stop-color="#2ba88f"/>
+		</linearGradient>
+		<linearGradient id="right" x1="106" y1="50" x2="64" y2="112" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#57c8b2"/>
+			<stop offset="1" stop-color="#0f6f61"/>
+		</linearGradient>
+		<filter id="shadow" x="8" y="14" width="112" height="110" filterUnits="userSpaceOnUse">
+			<feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.18"/>
+		</filter>
+	</defs>
+	<g filter="url(#shadow)" stroke="#173f3a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M22 47 64 24l42 23-42 24z" fill="url(#top)"/>
+		<path d="M22 47v38l42 24V71z" fill="url(#left)"/>
+		<path d="M106 47v38l-42 24V71z" fill="url(#right)"/>
+		<path d="M43 46 64 35l21 11-21 12z" fill="#ecfeff"/>
+		<path d="M48 47h32M54 40l-8 7 8 8M74 40l8 7-8 8" fill="none" stroke="#0f766e" stroke-width="3"/>
+		<circle cx="50" cy="79" r="3.5" fill="#f7c948" stroke="none"/>
+		<circle cx="64" cy="87" r="3.5" fill="#f7c948" stroke="none"/>
+		<circle cx="79" cy="78" r="3.5" fill="#f7c948" stroke="none"/>
+		<path d="M50 79 64 87 79 78" fill="none" stroke="#f8fafc" stroke-width="4"/>
+	</g>
+</svg>

@@ -1,0 +1,28 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AI generation workbench">
+	<defs>
+		<linearGradient id="top" x1="24" y1="16" x2="104" y2="54" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#f5f3ff"/>
+			<stop offset="1" stop-color="#a78bfa"/>
+		</linearGradient>
+		<linearGradient id="left" x1="20" y1="50" x2="64" y2="112" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#8b5cf6"/>
+			<stop offset="1" stop-color="#5b21b6"/>
+		</linearGradient>
+		<linearGradient id="right" x1="108" y1="50" x2="64" y2="112" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#6d28d9"/>
+			<stop offset="1" stop-color="#312e81"/>
+		</linearGradient>
+		<filter id="shadow" x="8" y="12" width="112" height="112" filterUnits="userSpaceOnUse">
+			<feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.2"/>
+		</filter>
+	</defs>
+	<g filter="url(#shadow)" stroke="#22164f" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M20 49 64 24l44 25-44 25z" fill="url(#top)"/>
+		<path d="M20 49v37l44 24V74z" fill="url(#left)"/>
+		<path d="M108 49v37l-44 24V74z" fill="url(#right)"/>
+		<path d="M44 49 64 38l20 11-20 12z" fill="#f8fafc"/>
+		<path d="M64 38v23M53 44l22 12M75 44 53 56" stroke="#7c3aed" stroke-width="3"/>
+		<circle cx="64" cy="49" r="5" fill="#38bdf8" stroke="#eef2ff"/>
+		<path d="M38 77h14M38 87h24M76 78h17M70 88h23" stroke="#ddd6fe" stroke-width="5"/>
+	</g>
+</svg>

@@ -35,6 +35,7 @@ export interface RuntimeObjectMetadata {
 export interface EditorRuntimeAdapter {
 	mounted: MountedScene;
 	setActiveScene(sceneId: string): boolean;
+	setProgress(progress: number): void;
 	getObjects(sceneId: string): RuntimeObjectMetadata[];
 	getObject(id: string): RuntimeObjectMetadata | undefined;
 	getLayerOrder(): Array<{ name: string; order: number }>;
@@ -69,9 +70,13 @@ export function createEditorRuntimeAdapter(mounted: MountedScene): EditorRuntime
 		setActiveScene(sceneId: string): boolean {
 			const scene = bundle.scenes.find((candidate) => candidate.id === sceneId);
 			if (!scene) return false;
-			mounted.engine.setProgress(scene.progress);
-			applyEditorFrame(mounted);
+			this.setProgress(scene.progress);
 			return true;
+		},
+
+		setProgress(progress: number): void {
+			mounted.engine.setProgress(progress);
+			applyEditorFrame(mounted);
 		},
 
 		getObjects(sceneId: string): RuntimeObjectMetadata[] {
