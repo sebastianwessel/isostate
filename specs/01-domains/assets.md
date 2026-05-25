@@ -211,13 +211,14 @@ The asset's visual size is determined by its `size` property in the DSL: `visual
       Authentication
       Gateway
     align: middle
+    placement: cell
     fontSize: 12
     fontWeight: 700
     lineHeight: 1.2
     fill: "#111111"
 ```
 
-Text elements do not use `assetBaseUrl`, image loading, or SVG parsing. The renderer creates `<text>` and `<tspan>` nodes directly and assigns authored lines through `textContent`. This makes labels safe for untrusted YAML text content and keeps common labels out of the asset catalog.
+Text elements do not use `assetBaseUrl`, image loading, or SVG parsing. The renderer creates `<text>` and `<tspan>` nodes directly and assigns authored lines through `textContent`. `text.placement` defaults to `cell`, which keeps text inside the grid cell; use `caption` for intentional top-floating labels. This makes labels safe for untrusted YAML text content and keeps common labels out of the asset catalog.
 
 The DSL also reserves generated primitive asset ids: `rectangle`, `circle`,
 `polygon`, and `line`. Primitive elements use an element-level `primitive`

@@ -147,8 +147,8 @@ describe('public docs inventory', () => {
 		);
 
 		for (const fragment of [
-			'bunx --package @sebastianwessel/isostate-cli isostate bundle',
-			'bunx --package @sebastianwessel/isostate-cli isostate inspect',
+			'npx --package @sebastianwessel/isostate-cli isostate bundle',
+			'npx --package @sebastianwessel/isostate-cli isostate inspect',
 			'public/isostate/scene/',
 			'isostate.runtime.js',
 			'scene.isostate.js',
@@ -164,14 +164,14 @@ describe('public docs inventory', () => {
 		expect(rootReadme).toContain('./docs/guides/deploy-static-bundle.md');
 		expect(rootReadme).toContain('bun run examples:basic:bundle');
 		expect(rootReadme).toContain(
-			'bunx --package @sebastianwessel/isostate-cli isostate bundle'
+			'npx --package @sebastianwessel/isostate-cli isostate bundle'
 		);
 		expect(docsIndex).toContain('./guides/install-authoring-skill.md');
 		expect(docsIndex).toContain('./guides/deploy-static-bundle.md');
 		expect(gettingStarted).toContain(
-			'bunx skills add sebastianwessel/isostate'
+			'npx skills add sebastianwessel/isostate'
 		);
-		expect(skillsGuide).toContain('bunx skills add sebastianwessel/isostate');
+		expect(skillsGuide).toContain('npx skills add sebastianwessel/isostate');
 		expect(skillsGuide).toContain('--skill authoring-isostate-scenes');
 		expect(skillsGuide).toContain('--agent codex');
 		expect(examplesIndex).toContain('../guides/deploy-static-bundle.md');
@@ -194,10 +194,10 @@ describe('public docs inventory', () => {
 		const rootReadme = await readFile(join(root, 'README.md'), 'utf8');
 
 		for (const fragment of [
-			'bunx --package @sebastianwessel/isostate-cli isostate validate',
-			'bunx --package @sebastianwessel/isostate-cli isostate compile',
-			'bunx --package @sebastianwessel/isostate-cli isostate bundle',
-			'bunx --package @sebastianwessel/isostate-cli isostate inspect',
+			'npx --package @sebastianwessel/isostate-cli isostate validate',
+			'npx --package @sebastianwessel/isostate-cli isostate compile',
+			'npx --package @sebastianwessel/isostate-cli isostate bundle',
+			'npx --package @sebastianwessel/isostate-cli isostate inspect',
 			'npm install --save-dev @sebastianwessel/isostate-cli',
 			'--format json'
 		]) {
@@ -228,16 +228,16 @@ describe('public docs inventory', () => {
 		expect(skill).toContain('isostate inspect');
 		expect(reference).toContain('CLI Command Surface');
 		expect(reference).toContain(
-			'bunx --package @sebastianwessel/isostate-cli isostate validate'
+			'npx --package @sebastianwessel/isostate-cli isostate validate'
 		);
 		expect(reference).toContain(
-			'bunx --package @sebastianwessel/isostate-cli isostate compile'
+			'npx --package @sebastianwessel/isostate-cli isostate compile'
 		);
 		expect(reference).toContain(
-			'bunx --package @sebastianwessel/isostate-cli isostate bundle'
+			'npx --package @sebastianwessel/isostate-cli isostate bundle'
 		);
 		expect(reference).toContain(
-			'bunx --package @sebastianwessel/isostate-cli isostate inspect'
+			'npx --package @sebastianwessel/isostate-cli isostate inspect'
 		);
 		expect(reference).toContain('isostate.runtime.js');
 		expect(reference).toContain('manifest.json');

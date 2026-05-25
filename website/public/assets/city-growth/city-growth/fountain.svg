@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80" role="img" aria-label="Public fountain">
+  <ellipse cx="40" cy="58" rx="26" ry="12" fill="#b7e5ec" stroke="#64748b" stroke-width="3"/>
+  <ellipse cx="40" cy="54" rx="17" ry="7" fill="#e0fbff" stroke="#5bb4c5" stroke-width="2"/>
+  <path d="M40 23v28M31 35c5-10 13-10 18 0M25 45c9-12 21-12 30 0" fill="none" stroke="#38bdf8" stroke-width="3" stroke-linecap="round"/>
+  <ellipse cx="40" cy="68" rx="28" ry="7" fill="#0f172a" opacity=".1"/>
+</svg>

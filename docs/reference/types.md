@@ -121,6 +121,7 @@ interface CameraState {
 interface TextContent {
 	value: string;
 	align?: 'start' | 'middle' | 'end';
+	placement?: 'cell' | 'caption';
 	fontSize?: number;
 	fontWeight?: number | 'normal' | 'bold';
 	lineHeight?: number;
@@ -131,6 +132,9 @@ interface TextContent {
 Text elements do not need `header.assets` or `assetBaseUrl`.
 The runtime renders them as SVG `<text>/<tspan>` nodes and supports line breaks
 in `value`.
+`placement` defaults to `cell`, which centers text in the element's one-cell
+text canvas. Use `caption` only when a label should intentionally float at the
+top of that cell.
 
 `ElementPatch.text` is sparse: an update may provide only changed text fields,
 such as `text.fill`, and omitted fields inherit from the previous resolved

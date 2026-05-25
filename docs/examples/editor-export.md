@@ -5,20 +5,21 @@ Export YAML source and compiled runtime bundles from an editor instance.
 ## Export From `mountEditor`
 
 ```ts
+import { readFile, writeFile } from 'node:fs/promises';
 import { mountEditor } from '@sebastianwessel/isostate-editor';
 
 const editor = mountEditor(document.getElementById('editor')!, {
-  initialYaml: await Bun.file('scene.isostate.yaml').text()
+  initialYaml: await readFile('scene.isostate.yaml', 'utf8')
 });
 
 // Export canonical YAML
 const yaml = editor.exportYaml();
-await Bun.write('scene-exported.isostate.yaml', yaml);
+await writeFile('scene-exported.isostate.yaml', yaml, 'utf8');
 
 // Export compiled JS bundle
 try {
   const jsBundle = editor.exportRuntimeBundle('js');
-  await Bun.write('scene.isostate.js', jsBundle);
+  await writeFile('scene.isostate.js', jsBundle, 'utf8');
 } catch (error) {
   console.error('Compile failed:', (error as Error).message);
 }
@@ -26,7 +27,7 @@ try {
 // Export compiled JSON bundle
 try {
   const jsonBundle = editor.exportRuntimeBundle('json');
-  await Bun.write('scene.isostate.json', jsonBundle);
+  await writeFile('scene.isostate.json', jsonBundle, 'utf8');
 } catch (error) {
   console.error('Compile failed:', (error as Error).message);
 }

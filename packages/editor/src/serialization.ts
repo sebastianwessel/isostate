@@ -107,6 +107,8 @@ function serializeTextToBuf(
 	}
 	if (text.align !== undefined)
 		buf.push(`  align: ${serializeScalarString(text.align)}`);
+	if (text.placement !== undefined)
+		buf.push(`  placement: ${serializeScalarString(text.placement)}`);
 	if (text.fontSize !== undefined) buf.push(`  fontSize: ${text.fontSize}`);
 	if (text.fontWeight !== undefined) {
 		buf.push(

@@ -118,7 +118,7 @@ Modify `packages/editor/package.json` dependencies to include the runtime packag
 
 ```json
 {
-	"@sebastianwessel/isostate": "0.3.0",
+	"@sebastianwessel/isostate": "0.4.0",
 	"class-variance-authority": "^0.7.1",
 	"clsx": "^2.1.1",
 	"lucide-react": "^0.468.0",

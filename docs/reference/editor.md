@@ -104,6 +104,21 @@ interface IsostateEditorProps {
   YAML so SVG assets and sprite sheets can coexist under one `assetBaseUrl`
   without broken URLs.
 
+## Text Editing
+
+When a selected element uses `asset: text`, the inspector exposes content,
+horizontal alignment, placement, font size, and fill controls.
+
+`text.placement` changes how the text sits in its one-cell canvas:
+
+| Placement | Use | Authoring impact |
+|---|---|---|
+| `cell` | standalone labels, group labels, callouts, message captions, larger assets | Give the text its own nearby `at` cell so it does not overlap the icon |
+| `caption` | labels attached to one-cell icons | The text may share the icon's `at`, but verify it does not collide with the icon or routes |
+
+Changing placement does not move the element. If a label overlaps after changing
+between `cell` and `caption`, move the text element or the related asset.
+
 ## Workspace Types
 
 ### `EditorWorkspace`

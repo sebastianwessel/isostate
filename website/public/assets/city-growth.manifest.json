@@ -1,0 +1,78 @@
+{
+  "format": "isostate.asset-manifest",
+  "version": 1,
+  "generatedAt": "2026-05-24T13:58:01.205Z",
+  "assetBaseUrl": "./city-growth",
+  "assets": [
+    {
+      "id": "city-growth-bridge",
+      "path": "city-growth/bridge.svg",
+      "group": "city-growth",
+      "name": "bridge",
+      "digest": "sha256:32bef6d00374c9faa621319c712fc588fbe6107e1e95e4249d99ad97c67e44c6"
+    },
+    {
+      "id": "city-growth-canal",
+      "path": "city-growth/canal.svg",
+      "group": "city-growth",
+      "name": "canal",
+      "digest": "sha256:6debf8957280abeb1a145d85b85c6c1f348580852b7960236970337ab428dcc8"
+    },
+    {
+      "id": "city-growth-car",
+      "path": "city-growth/car.svg",
+      "group": "city-growth",
+      "name": "car",
+      "digest": "sha256:cc4797616d48ccd57a800610ccf42692485d91bb6dd832c1671e61a399dfc64c"
+    },
+    {
+      "id": "city-growth-city-office",
+      "path": "city-growth/city-office.svg",
+      "group": "city-growth",
+      "name": "city-office",
+      "digest": "sha256:5ba9c9eeb050eb5f392c03d9456835303f71af46adda6c07de35f6fc19f2fafa"
+    },
+    {
+      "id": "city-growth-city-tower",
+      "path": "city-growth/city-tower.svg",
+      "group": "city-growth",
+      "name": "city-tower",
+      "digest": "sha256:ab1a3694446b9cdfd1dbc89131dafce5a974b52dc03bb55db9fca62c1de43868"
+    },
+    {
+      "id": "city-growth-civic-hall",
+      "path": "city-growth/civic-hall.svg",
+      "group": "city-growth",
+      "name": "civic-hall",
+      "digest": "sha256:e2e16b989f693fbac0257303290ae4ccfae2252ee9948874cc6651f53f068880"
+    },
+    {
+      "id": "city-growth-fountain",
+      "path": "city-growth/fountain.svg",
+      "group": "city-growth",
+      "name": "fountain",
+      "digest": "sha256:020482d449609acd64041a47cd584e856293365b4402d2200ff41011a6fd39be"
+    },
+    {
+      "id": "city-growth-road-intersection",
+      "path": "city-growth/road-intersection.svg",
+      "group": "city-growth",
+      "name": "road-intersection",
+      "digest": "sha256:eb89ff053b083ac56707f03b79b7e3f9aa2377e183bbc7a022dd8c1b04818d2a"
+    },
+    {
+      "id": "city-growth-road-straight",
+      "path": "city-growth/road-straight.svg",
+      "group": "city-growth",
+      "name": "road-straight",
+      "digest": "sha256:eba42a65b5f420a145ebd5e1bebff3dc030d3cdd2115ce7cddfc04ad7afb55c0"
+    },
+    {
+      "id": "city-growth-tree",
+      "path": "city-growth/tree.svg",
+      "group": "city-growth",
+      "name": "tree",
+      "digest": "sha256:1e4a20353cc99b87e00736f863eadb1b4935d1e9128c57f81eb1a22f57c373d0"
+    }
+  ]
+}

@@ -12,7 +12,7 @@ The skill is published from this repository and can be installed with the
 Use the package runner for your project:
 
 ```bash
-bunx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
+npx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
 ```
 
 Equivalent package-runner forms:
@@ -26,7 +26,7 @@ yarn dlx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
 To install only for a specific agent, add `--agent`:
 
 ```bash
-bunx skills add sebastianwessel/isostate \
+npx skills add sebastianwessel/isostate \
   --skill authoring-isostate-scenes \
   --agent codex
 ```
@@ -34,7 +34,7 @@ bunx skills add sebastianwessel/isostate \
 To inspect the available skills before installing:
 
 ```bash
-bunx skills add sebastianwessel/isostate --list --full-depth
+npx skills add sebastianwessel/isostate --list --full-depth
 ```
 
 ## What It Adds
@@ -55,7 +55,7 @@ rules for:
 List installed project skills:
 
 ```bash
-bunx skills list
+npx skills list
 ```
 
 Then ask your assistant to use the isostate authoring skill when creating or

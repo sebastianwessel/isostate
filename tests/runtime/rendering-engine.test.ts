@@ -16,7 +16,7 @@ class MiniElement {
 	parentElement: MiniElement | null = null;
 	attributes: { id: string; value: string }[] = [];
 	style: Record<string, string | ((id: string, value: string) => void)> = {
-		setProperty(id: string, value: string): void {
+		setProperty(_id: string, value: string): void {
 			this[name] = value;
 		}
 	};
@@ -342,6 +342,42 @@ describe('rendering engine', () => {
 			'Gateway'
 		]);
 		expect(lines[1]?.getAttribute('dy')).toBe('14.399999999999999');
+	});
+
+	test('places built-in text in the grid cell by default and supports caption placement', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const bundle = createBundle({
+			assets: undefined,
+			scenes: [
+				sceneStop([
+					{
+						id: 'cell-label',
+						asset: 'text',
+						text: { value: 'Cell' }
+					},
+					{
+						id: 'caption-label',
+						asset: 'text',
+						text: { value: 'Caption', placement: 'caption' }
+					}
+				])
+			]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const cellText = svg
+			.querySelector('[data-id="cell-label"]')
+			?.querySelector('text');
+		const captionText = svg
+			.querySelector('[data-id="caption-label"]')
+			?.querySelector('text');
+
+		expect(cellText?.getAttribute('y')).toBe('-32');
+		expect(cellText?.getAttribute('dominant-baseline')).toBe('middle');
+		expect(captionText?.getAttribute('y')).toBe('-64');
+		expect(captionText?.getAttribute('dominant-baseline')).toBe(
+			'text-before-edge'
+		);
 	});
 
 	test('renders built-in primitive assets as generated svg nodes', () => {

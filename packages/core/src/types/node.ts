@@ -97,12 +97,17 @@ export interface RuntimeCameraFocus {
 /** Horizontal anchor used by built-in text elements. */
 export type TextAlign = "start" | "middle" | "end";
 
+/** Vertical placement model used by built-in text elements. */
+export type TextPlacement = "cell" | "caption";
+
 /** Content and safe SVG text styling for the built-in `asset: text` element. */
 export interface TextContent {
 	/** Text content. Use newline characters for explicit line breaks. */
 	value: string;
 	/** Horizontal text anchor within the element cell. Defaults to `middle`. */
 	align?: TextAlign;
+	/** Vertical placement within the grid cell. Defaults to `cell`; `caption` preserves the legacy floating label. */
+	placement?: TextPlacement;
 	/** SVG font-size in CSS pixels before element scaling. Defaults to `12`. */
 	fontSize?: number;
 	/** SVG font-weight. Defaults to `700`. */

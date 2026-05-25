@@ -6,7 +6,7 @@ YAML parsing or compilation in the browser.
 ## Generate Public Output
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml --out public/isostate/scene
+npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml --out public/isostate/scene
 ```
 
 Copy or generate the output under the website public folder. The generated
@@ -57,7 +57,7 @@ image extension. Use `--public-asset-base` when the website serves assets from a
 different relative path or CDN prefix.
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml \
+npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml \
   --out public/isostate/scene \
   --public-asset-base /isostate/scene/assets
 ```
@@ -66,7 +66,7 @@ For assets declared with paths that are relative to a shared source directory,
 set `--asset-dir` explicitly:
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate bundle examples/basic/source.isostate.yaml \
+npx --package @sebastianwessel/isostate-cli isostate bundle examples/basic/source.isostate.yaml \
   --out examples/basic/static-bundle \
   --asset-dir assets/aws-3d \
   --public-asset-base ./assets
@@ -78,7 +78,7 @@ That command produces the same static bundle shape shown above, rooted at
 ## Inspect Output
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate inspect public/isostate/scene/scene.isostate.js
+npx --package @sebastianwessel/isostate-cli isostate inspect public/isostate/scene/scene.isostate.js
 ```
 
 Inspection verifies the runtime bundle digest and reports scene, layer, asset,

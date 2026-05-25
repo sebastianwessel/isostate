@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 64" role="img" aria-label="Isometric road intersection">
+  <path d="M48 6 92 30 48 58 4 34Z" fill="#5b6470" stroke="#374151" stroke-width="2"/>
+  <path d="M10 34 48 54 86 30M48 10v44" fill="none" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="7 6"/>
+  <path d="M31 16 65 46M65 16 31 46" stroke="#374151" stroke-width="8" opacity=".28"/>
+</svg>

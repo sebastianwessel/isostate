@@ -1,24 +1,24 @@
 import { describe, expect, test } from 'bun:test';
 import type {
-	LayerDefinition,
-	LifecycleStatus,
-	ConnectionPlacement,
-	ConnectionPatch,
-	ConnectionRemoval,
-	RuntimeBundle,
-	RuntimeConnectorState,
-	RuntimeConnectorStyle,
-	CompiledSprite,
-	PrimitiveContent,
-	SceneDocument,
-	SpriteSheetAssetCatalogEntry,
-	SceneStep,
-	TextContent
-} from '../../packages/core/src/types/index.ts';
-import type {
 	CompiledFloor,
 	CompiledLayout
 } from '../../packages/core/src/dsl/index.ts';
+import type {
+	CompiledSprite,
+	ConnectionPatch,
+	ConnectionPlacement,
+	ConnectionRemoval,
+	LayerDefinition,
+	LifecycleStatus,
+	PrimitiveContent,
+	RuntimeBundle,
+	RuntimeConnectorState,
+	RuntimeConnectorStyle,
+	SceneDocument,
+	SceneStep,
+	SpriteSheetAssetCatalogEntry,
+	TextContent
+} from '../../packages/core/src/types/index.ts';
 
 describe('public type contracts', () => {
 	test('sprite sheet asset contracts expose placeable nested sprite ids', () => {
@@ -78,6 +78,7 @@ describe('public type contracts', () => {
 			fontSize: 12,
 			fontWeight: 700,
 			lineHeight: 1.2,
+			placement: 'cell',
 			fill: '#111111'
 		} satisfies TextContent;
 		const zonePrimitive = {

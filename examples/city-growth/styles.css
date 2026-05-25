@@ -1,0 +1,139 @@
+:root {
+  color-scheme: light;
+  --page-bg: #e8eef2;
+  --panel-bg: #ffffff;
+  --panel-border: #d7e0e7;
+  --stage-bg: #f8fafb;
+  --stage-border: #cfd8df;
+  --text-strong: #0f172a;
+  --text-body: #243041;
+  --text-muted: #667085;
+  --accent: #0f9f8f;
+  --iso-label: #0f172a;
+  font-family:
+    ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: var(--page-bg);
+  color: var(--text-body);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.page-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+}
+
+.toolbar,
+.state-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 18px 24px;
+  border-color: var(--panel-border);
+  background: var(--panel-bg);
+}
+
+.toolbar {
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.state-panel {
+  border-top: 1px solid var(--panel-border);
+  color: var(--text-muted);
+}
+
+h1 {
+  margin: 0;
+  color: var(--text-strong);
+  font-size: 20px;
+  font-weight: 750;
+}
+
+p {
+  margin: 3px 0 0;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.progress-control {
+  display: grid;
+  gap: 7px;
+  min-width: min(360px, 42vw);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.stage-wrap {
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+.stage {
+  width: min(100%, calc((100vh - 150px) * 1.78));
+  height: min(calc(100vh - 150px), calc((100vw - 36px) / 1.78));
+  min-height: 360px;
+  overflow: hidden;
+  border: 1px solid var(--stage-border);
+  background:
+    linear-gradient(90deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    linear-gradient(0deg, rgba(15, 23, 42, 0.04) 1px, transparent 1px),
+    var(--stage-bg);
+  background-size: 28px 28px;
+}
+
+.stage svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.stage .iso-scene {
+  background: transparent;
+  color: var(--iso-label);
+}
+
+.stage .iso-element {
+  width: 82px;
+  height: 82px;
+  overflow: visible;
+  transform-box: fill-box;
+  transform-origin: 0 0;
+}
+
+#state-label {
+  color: var(--text-strong);
+  font-weight: 750;
+}
+
+code {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+}
+
+@media (max-width: 720px) {
+  .toolbar,
+  .state-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .progress-control {
+    min-width: 100%;
+  }
+}

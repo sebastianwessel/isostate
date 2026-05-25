@@ -45,14 +45,16 @@ export function createTextAssetNode(
 	const group = document.createElementNS(NS, "g") as SVGGElement;
 	const text = document.createElementNS(NS, "text") as SVGTextElement;
 	const align = textContent.align ?? "middle";
+	const placement = textContent.placement ?? "cell";
 	const fontSize = textContent.fontSize ?? 12;
 	const lineHeight = textContent.lineHeight ?? 1.2;
 	const anchorX = textAnchorX(align, cellSize);
+	const vertical = textVerticalAnchor(placement, cellSize);
 
 	text.setAttribute("x", String(anchorX));
-	text.setAttribute("y", String(-cellSize));
+	text.setAttribute("y", String(vertical.y));
 	text.setAttribute("text-anchor", align);
-	text.setAttribute("dominant-baseline", "text-before-edge");
+	text.setAttribute("dominant-baseline", vertical.baseline);
 	text.setAttribute("font-family", "Arial, Helvetica, sans-serif");
 	text.setAttribute("font-size", String(fontSize));
 	text.setAttribute("font-weight", String(textContent.fontWeight ?? 700));
@@ -101,6 +103,11 @@ function textAnchorX(align: TextAlign, cellSize: number): number {
 	if (align === "start") return -cellSize / 2;
 	if (align === "end") return cellSize / 2;
 	return 0;
+}
+
+function textVerticalAnchor(placement: TextContent["placement"], cellSize: number): { y: number; baseline: string } {
+	if (placement === "caption") return { y: -cellSize, baseline: "text-before-edge" };
+	return { y: -cellSize / 2, baseline: "middle" };
 }
 
 function normalizeTextLines(value: string): string[] {

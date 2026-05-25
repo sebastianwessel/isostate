@@ -1,6 +1,6 @@
 {
 	"name": "@sebastianwessel/isostate-editor",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "Browser-based visual editor for Isostate scene documents.",
 	"keywords": [
 		"isostate",
@@ -38,7 +38,7 @@
 		"prepublishOnly": "cd ../.. && bun run build && bun run lint"
 	},
 	"dependencies": {
-		"@sebastianwessel/isostate": "0.3.0",
+		"@sebastianwessel/isostate": "0.4.0",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"lucide-react": "^1.16.0",

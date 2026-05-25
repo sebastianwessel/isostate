@@ -7,11 +7,11 @@ browser assets.
 ## CLI Command Surface
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate validate scene.isostate.yaml
-bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
-bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.json --format json
-bunx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml --out public/isostate/scene
-bunx --package @sebastianwessel/isostate-cli isostate inspect public/isostate/scene/scene.isostate.js
+npx --package @sebastianwessel/isostate-cli isostate validate scene.isostate.yaml
+npx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
+npx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.json --format json
+npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml --out public/isostate/scene
+npx --package @sebastianwessel/isostate-cli isostate inspect public/isostate/scene/scene.isostate.js
 ```
 
 - `validate` checks the authored YAML and semantic references.
@@ -22,10 +22,10 @@ bunx --package @sebastianwessel/isostate-cli isostate inspect public/isostate/sc
 - `inspect` reads compiled JS or JSON bundles and reports format, version,
   digest, scene count, layers, assets, and floor size.
 
-For local workspace checks, use:
+After installing the CLI as a dev dependency, use the package binary directly:
 
 ```bash
-bun run isostate -- bundle examples/basic/source.isostate.yaml \
+isostate bundle examples/basic/source.isostate.yaml \
   --out examples/basic/static-bundle \
   --asset-dir examples/basic/assets \
   --public-asset-base ./assets
@@ -50,9 +50,10 @@ public/isostate/scene/
 
 ## Review Rules
 
-- Prefer documenting `bunx --package @sebastianwessel/isostate-cli isostate ...`
-  for one-off usage and `isostate ...` after users install the CLI as a dev
-  dependency.
+- Prefer documenting
+  `npx --package @sebastianwessel/isostate-cli isostate ...` for one-off usage
+  and `isostate ...` after users install the CLI as a dev dependency. Use Bun
+  commands only when documenting this repository's own contributor workflow.
 - Generate editor catalogs with
   `isostate assets manifest <asset-dir> --out <manifest> --asset-base-url <url>`.
   Keep one manifest per asset family when catalogs have separate source roots.

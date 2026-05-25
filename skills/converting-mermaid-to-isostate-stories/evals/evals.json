@@ -1,0 +1,23 @@
+{
+  "skill_name": "converting-mermaid-to-isostate-stories",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Turn this Mermaid sequenceDiagram into an isostate storyboard and YAML draft. The visualization should grow cumulatively and use arrows to show the active sequence: sequenceDiagram\\n  participant User\\n  participant Web\\n  participant API\\n  participant Auth\\n  participant DB\\n  User->>Web: request\\n  Web->>API: call endpoint\\n  API->>Auth: verify token\\n  API->>DB: fetch account\\n  API-->>Web: response",
+      "expected_output": "A cumulative storyboard plus .isostate.yaml draft with a source fidelity map, where every participant has a matching label and visual metaphor, messages preserve direction, participants appear with labels before active messages target them, prior flows are muted, the active flow is highlighted, and a step-by-step rendered verification checks perceived arrow source/target at each scene.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "I have a Mermaid flowchart with a happy path and an error path. Please convert it into an animated isostate story, not a literal graph render: flowchart TD\\n  Start[Request] --> Validate{Valid?}\\n  Validate -- yes --> API[Call API]\\n  API --> DB[(Database)]\\n  Validate -- no --> Error[Show error]\\n  DB --> Done[Return result]",
+      "expected_output": "A flowchart interpretation with a source fidelity map, exact node/edge coverage, correct label and asset semantics, Mermaid edge directions preserved, elements introduced with labels before actions/connections that depend on them, TD/TB respected as upper-to-lower banding without a single diagonal main path, auto-routed from/to connections preferred over manual route points, compact composition, start/end and terminal unhappy states near the perimeter when useful, overlap avoided by spacing and positioning, unhappy/error branch introduced before the happy path when useful, unhappy branches explicitly classified before later scenes, persistent unhappy/optional paths kept visible with reduced emphasis, removal used only for temporary teaching branches or visual obstructions, distinct active/completed/optional/error connection styles with cumulative scene stops, and explicit scene-by-scene rendered verification that fails any edge whose perceived endpoints differ from the Mermaid source/target.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Review this Mermaid-to-isostate plan. It creates one scene for every sequence message and hides the old arrows each time. Is that the right approach?",
+      "expected_output": "A critique explaining that sequence conversions should be cumulative, with stable participants and previous arrows retained in muted form while current/optional/error flows are styled distinctly.",
+      "files": []
+    }
+  ]
+}

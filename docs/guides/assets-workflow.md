@@ -173,7 +173,7 @@ families separate so each catalog owns its base URL and digest.
 Use the CLI manifest command for repeatable digests when possible:
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate assets manifest assets/traffic \
+npx --package @sebastianwessel/isostate-cli isostate assets manifest assets/traffic \
   --out public/assets/traffic.manifest.json \
   --asset-base-url ./traffic
 ```

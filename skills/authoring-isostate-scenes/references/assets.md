@@ -88,13 +88,38 @@ After generation:
   ground contact sits above the tile bottom due to perspective
 - use `[0.5, 0.5]` for flat road tiles
 
+## Enterprise Diagram Asset Quality
+
+For architecture and process diagrams, prefer polished one-cell SVG assets over
+rough placeholders:
+
+- Use one consistent isometric camera angle, light direction, shadow style,
+  edge treatment, and scale across the set.
+- Keep silhouettes legible at one grid cell. A user should recognize browser,
+  router, auth, service, cache, database, queue, worker, and warning assets
+  before reading labels.
+- Use calm enterprise palettes with subtle gradients, bevels, inner panels, and
+  contact shadows. Avoid toy-like saturation, noisy details, or inconsistent
+  icon metaphors.
+- Preserve the checked `anchor` and native one-cell footprint. Split or redraw
+  bad composite assets instead of compensating with oversized `size` values.
+- Let labels and connections remain primary. Asset polish should improve
+  recognition, not compete with route direction or source fidelity.
+- For semantic branch cues, prefer dedicated one-cell marker assets or simple
+  generated primitive shapes. Do not use text markers that duplicate nearby
+  labels, such as `OK` next to an `ok` edge label. Do not use emoji or font
+  glyphs as marker text in generated scene DSL; the text primitive is for
+  labels, not an icon system, and the runtime does not control cross-platform
+  emoji/font fallback or glyph metrics. If a symbol-like marker is required,
+  provide it as a checked SVG/PNG asset or generated primitive.
+
 ## Asset Manifests
 
 The editor discovers external catalogs through `isostate.asset-manifest` JSON.
 Keep each manifest scoped to one asset family and one `assetBaseUrl`.
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate assets manifest assets/traffic \
+npx --package @sebastianwessel/isostate-cli isostate assets manifest assets/traffic \
   --out public/assets/traffic.manifest.json \
   --asset-base-url ./traffic
 ```
@@ -118,6 +143,7 @@ preserving their separate URL roots.
       Public
       API
     align: middle
+    placement: cell
     fontSize: 14
     fontWeight: 700
     lineHeight: 1.2
@@ -130,6 +156,38 @@ Text rules:
 - `text.value: ""` and whitespace-only values are allowed but emit
   `EMPTY_TEXT_CONTENT`; use them only for intentionally invisible labels.
 - Text over `1000` characters or `20` lines is invalid.
+- `text.placement` defaults to `cell`, which keeps the label inside the grid
+  cell. Use `caption` only when an intentional floating label above the cell is
+  wanted.
+- Position text according to that placement. `placement: cell` is a normal
+  in-cell text object and should usually have its own `at` cell. `placement:
+  caption` may share a one-cell icon's `at` when the goal is an attached label.
+  For scaled or visually tall assets, prefer a separate `cell` label next to the
+  asset.
+- Treat text layout as grid layout. Choose cells from the text role: the center
+  cell or center band of a zone for an introductory group label, an edge/corner
+  cell for persistent group context, an adjacent cell for a large asset label,
+  and the route's clear lane cell for a connection caption. The renderer
+  projects grid cells into SVG scene coordinates, then camera focus and
+  responsive scaling change the SVG `viewBox`. Do not solve authored text
+  placement with screen pixels, pixel offsets, fractional nudges, or manual
+  visual drift; those assumptions can break under zoom, camera focus, different
+  containers, or responsive rendering.
+- Text style communicates hierarchy after placement is correct. Larger or
+  heavier text can introduce a region; quieter color or smaller text can demote
+  it later. Style must not be used to hide a label that is in the wrong cell or
+  competing with an active route.
+- Route and condition labels should behave like lane labels. Place them in a
+  clear grid cell beside the route segment they explain. For branch outcome
+  labels, prefer a cell near the receiving element or terminal side of the
+  branch; use branch-source placement only when it clarifies a crowded fan-out.
+  If a label is visually closer to another element, another route, or a group
+  label, move the label, move the route endpoints, or split the branch into a
+  clearer scene.
+- For decision fan-outs, reserve distinct grid lanes or directional ports for
+  semantically different outcomes. Do not send every branch through the same
+  side of the decision and rely only on color or labels. Use separate lanes for
+  failure, success, optional, fallback, and async paths when space allows.
 - Text updates are sparse; changing `text.fill` keeps the previous
   `text.value` and other text style fields.
 - Line breaks are supported.
@@ -183,6 +241,17 @@ Rules:
 - Theme-aware text, primitive, and connector colors should use semantic CSS
   variables in YAML, for example `fill: var(--iso-label)` or
   `stroke: var(--iso-flow)`.
+- For grouped regions or Mermaid subgraphs, use separated primitive rectangles
+  with quiet, distinct semantic variables for fill, stroke, and matching group
+  label text. Leave at least one empty grid cell between subgraph footprints by
+  default, and use more when labels, icons, or routed connections still feel
+  cramped. If those regions define the visual structure, make the host floor
+  grid very light or hide it so the group boundaries stay readable.
+- Region labels can start centered and prominent while the region is being
+  introduced. When contained elements appear, move the region label by whole
+  grid cells toward an edge or corner of that region, keep a clear cell from
+  active elements where possible, and switch it to quieter region-context
+  styling so it no longer competes with the active story.
 - Define light values in host CSS defaults and dark values under the
   shadcn-compatible `.dark` root class. Do not duplicate scene YAML for themes.
 - Do not add `theme: light` or `header.className` only for light/dark mode.

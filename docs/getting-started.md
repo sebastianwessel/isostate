@@ -18,7 +18,7 @@ If you want an AI assistant to help author scenes, install the project skill
 first:
 
 ```bash
-bunx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
+npx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
 ```
 
 See [Install The Authoring Skill](./guides/install-authoring-skill.md) for
@@ -26,7 +26,7 @@ agent-specific setup and verification.
 
 ## 1. Run The Demo
 
-From the repository root:
+From a source checkout of this repository:
 
 ```bash
 bun install
@@ -48,8 +48,8 @@ That compiled file is generated from `examples/basic/source.isostate.yaml`.
 Use the CLI when you want repeatable validation and generated browser assets:
 
 ```bash
-bunx --package @sebastianwessel/isostate-cli isostate validate scene.isostate.yaml
-bunx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
+npx --package @sebastianwessel/isostate-cli isostate validate scene.isostate.yaml
+npx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml --out public/scene.isostate.js
 ```
 
 See [Use The CLI](./guides/use-the-cli.md) for all commands, including

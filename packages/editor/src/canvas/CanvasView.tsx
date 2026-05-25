@@ -33,6 +33,8 @@ interface CanvasViewProps {
 	onClearDragPayload?: () => void;
 	onViewportChange?: (viewport: EditorWorkspace['viewport']) => void;
 	theme: string;
+	previewMode?: EditorWorkspace['uiState']['previewMode'];
+	previewProgress?: number;
 }
 
 const EDITOR_MIN_FLOOR_SIZE: [number, number] = [20, 20];
@@ -79,6 +81,20 @@ function getEditorGridBounds(
 	};
 }
 
+function setAdapterProgress(
+	adapter: EditorRuntimeAdapter,
+	progress: number
+): void {
+	const progressAdapter = adapter as EditorRuntimeAdapter & {
+		setProgress?: (progress: number) => void;
+	};
+	if (typeof progressAdapter.setProgress === 'function') {
+		progressAdapter.setProgress(progress);
+		return;
+	}
+	adapter.mounted.engine.setProgress(progress);
+}
+
 function parseManifestDrop(dataTransfer: DataTransfer):
 	| {
 			entry: import('../types.ts').PlaceableAssetManifestEntry;
@@ -112,7 +128,9 @@ export function CanvasView({
 	onSelect,
 	onClearDragPayload,
 	onViewportChange,
-	theme
+	theme,
+	previewMode = 'edit',
+	previewProgress = 0
 }: CanvasViewProps) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [adapter, setAdapter] = useState<EditorRuntimeAdapter | null>(null);
@@ -125,6 +143,7 @@ export function CanvasView({
 	adapterRef.current = adapter;
 
 	const previewTheme = theme === 'dark' ? 'dark' : 'light';
+	const isRuntimePreview = previewMode === 'runtime';
 	const themeVars = useMemo(
 		() => resolveTheme(previewTheme) ?? {},
 		[previewTheme]
@@ -157,7 +176,9 @@ export function CanvasView({
 				themeVars
 			});
 			adpt = createEditorRuntimeAdapter(mounted);
-			if (workspace.activeSceneId) {
+			if (isRuntimePreview) {
+				setAdapterProgress(adpt, previewProgress);
+			} else if (workspace.activeSceneId) {
 				adpt.setActiveScene(workspace.activeSceneId);
 			}
 			setAdapter(adpt);
@@ -172,9 +193,14 @@ export function CanvasView({
 	}, [previewDocument, workspace.sourceYaml, themeVars]);
 
 	useEffect(() => {
-		if (!adapter || !workspace.activeSceneId) return;
+		if (!adapter || isRuntimePreview || !workspace.activeSceneId) return;
 		adapter.setActiveScene(workspace.activeSceneId);
-	}, [adapter, workspace.activeSceneId]);
+	}, [adapter, isRuntimePreview, workspace.activeSceneId]);
+
+	useEffect(() => {
+		if (!adapter || !isRuntimePreview) return;
+		setAdapterProgress(adapter, previewProgress);
+	}, [adapter, isRuntimePreview, previewProgress]);
 
 	const { ghostCell, onPointerDown, onPointerMove, onPointerUp } =
 		useCanvasPointer({
@@ -288,6 +314,7 @@ export function CanvasView({
 		<div
 			ref={containerRef}
 			className={`isostate-editor-canvas-view ${isPanning ? 'isostate-editor-canvas-view--panning' : ''}`}
+			data-preview-mode={previewMode}
 			style={
 				{
 					'--isostate-editor-grid-opacity': String(effectiveGridOpacity)
@@ -297,6 +324,7 @@ export function CanvasView({
 			aria-label="Scene canvas"
 			onPointerDown={(e) => {
 				if (isCanvasControlEvent(e)) return;
+				if (isRuntimePreview) return;
 				if (shouldStartPan(e)) {
 					startPan(e);
 					return;
@@ -304,6 +332,7 @@ export function CanvasView({
 				onPointerDown(e);
 			}}
 			onPointerMove={(e) => {
+				if (isRuntimePreview) return;
 				const pan = panRef.current;
 				if (pan && baseViewBox) {
 					const rect = e.currentTarget.getBoundingClientRect();
@@ -325,6 +354,7 @@ export function CanvasView({
 				onPointerMove(e);
 			}}
 			onPointerUp={(e) => {
+				if (isRuntimePreview) return;
 				if (panRef.current) {
 					panRef.current = null;
 					setIsPanning(false);
@@ -343,9 +373,11 @@ export function CanvasView({
 				zoomBy(e.deltaY > 0 ? 0.9 : 1.1);
 			}}
 			onDragOver={(e) => {
+				if (isRuntimePreview) return;
 				e.preventDefault();
 			}}
 			onDrop={(e) => {
+				if (isRuntimePreview) return;
 				e.preventDefault();
 				const adapter = adapterRef.current;
 				const manifestDrop = parseManifestDrop(e.dataTransfer);
@@ -470,7 +502,7 @@ export function CanvasView({
 					/>
 				</div>
 			</div>
-			{adapter && vb && viewBoxStr && (
+			{adapter && vb && viewBoxStr && !isRuntimePreview && (
 				<svg
 					aria-label="Editor overlay"
 					className="isostate-editor-overlay"

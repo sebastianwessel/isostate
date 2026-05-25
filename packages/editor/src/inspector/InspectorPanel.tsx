@@ -604,6 +604,18 @@ function ElementInspector({
 							}
 						/>
 					</FormRow>
+					<FormRow label="Placement">
+						<InspectorSelect
+							value={element.text?.placement ?? 'cell'}
+							options={selectOptions(['cell', 'caption'])}
+							onChange={(value) =>
+								onUpdate({
+									id: element.id,
+									text: { placement: value as 'cell' | 'caption' }
+								})
+							}
+						/>
+					</FormRow>
 					<FormRow label="Font Size">
 						<Input
 							type="number"

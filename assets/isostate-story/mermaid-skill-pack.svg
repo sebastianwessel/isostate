@@ -1,0 +1,27 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Installed agent skills">
+	<defs>
+		<linearGradient id="goldTop" x1="28" y1="18" x2="100" y2="52" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#fff7d6"/>
+			<stop offset="1" stop-color="#f5c84b"/>
+		</linearGradient>
+		<linearGradient id="goldLeft" x1="22" y1="50" x2="64" y2="112" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#eeb443"/>
+			<stop offset="1" stop-color="#b7791f"/>
+		</linearGradient>
+		<linearGradient id="goldRight" x1="106" y1="48" x2="64" y2="112" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#d99a18"/>
+			<stop offset="1" stop-color="#7c4a03"/>
+		</linearGradient>
+		<filter id="shadow" x="8" y="12" width="112" height="112" filterUnits="userSpaceOnUse">
+			<feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.18"/>
+		</filter>
+	</defs>
+	<g filter="url(#shadow)" stroke="#3d2a06" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M22 48 64 24l42 24-42 24z" fill="url(#goldTop)"/>
+		<path d="M22 48v37l42 24V72z" fill="url(#goldLeft)"/>
+		<path d="M106 48v37l-42 24V72z" fill="url(#goldRight)"/>
+		<path d="M36 46 64 31l28 15-28 16z" fill="#fffdf2" opacity="0.92"/>
+		<path d="M48 46 60 39l12 7-12 7zM60 53l12-7 9 5-12 7zM47 53l12 7 10-6-12-7z" fill="#d97706"/>
+		<path d="M38 76h17M38 86h26M73 81h17" stroke="#fff8db" stroke-width="5"/>
+	</g>
+</svg>

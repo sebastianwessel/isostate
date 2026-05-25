@@ -73,6 +73,7 @@ without removing it from the resolved scene. Initial placements and
 interface TextContent {
   value: string;
   align?: 'start' | 'middle' | 'end';
+  placement?: 'cell' | 'caption';
   fontSize?: number;
   fontWeight?: number | 'normal' | 'bold';
   lineHeight?: number;
@@ -95,6 +96,9 @@ Validation constraints:
   but emit `EMPTY_TEXT_CONTENT` because they render no visible label. Values
   over `1000` characters or `20` lines emit `INVALID_TEXT_CONTENT`.
 - `align`: `start`, `middle`, or `end`; default `middle`.
+- `placement`: `cell` or `caption`; default `cell`. `cell` centers text inside
+  the element's one-cell text canvas. `caption` preserves the legacy
+  top-floating label position.
 - `fontSize`: positive finite number; default `12`.
 - `fontWeight`: `normal`, `bold`, or a positive finite number; default `700`.
 - `lineHeight`: positive finite number; default `1.2`.

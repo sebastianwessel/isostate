@@ -1,0 +1,27 @@
+<svg viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Generated YAML blueprint">
+	<defs>
+		<linearGradient id="top" x1="24" y1="18" x2="104" y2="54" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#eff6ff"/>
+			<stop offset="1" stop-color="#93c5fd"/>
+		</linearGradient>
+		<linearGradient id="left" x1="22" y1="50" x2="64" y2="110" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#60a5fa"/>
+			<stop offset="1" stop-color="#2563eb"/>
+		</linearGradient>
+		<linearGradient id="right" x1="106" y1="50" x2="64" y2="110" gradientUnits="userSpaceOnUse">
+			<stop stop-color="#3b82f6"/>
+			<stop offset="1" stop-color="#1e3a8a"/>
+		</linearGradient>
+		<filter id="shadow" x="8" y="12" width="112" height="112" filterUnits="userSpaceOnUse">
+			<feDropShadow dx="0" dy="8" stdDeviation="5" flood-color="#0f172a" flood-opacity="0.18"/>
+		</filter>
+	</defs>
+	<g filter="url(#shadow)" stroke="#172554" stroke-width="2" stroke-linejoin="round" stroke-linecap="round">
+		<path d="M22 49 64 25l42 24-42 24z" fill="url(#top)"/>
+		<path d="M22 49v37l42 24V73z" fill="url(#left)"/>
+		<path d="M106 49v37l-42 24V73z" fill="url(#right)"/>
+		<path d="M45 49 64 38l19 11-19 11z" fill="#eff6ff"/>
+		<path d="M51 47h26M51 53h18" stroke="#2563eb" stroke-width="3"/>
+		<path d="M39 78h26M39 88h18M73 78h17M73 88h12" stroke="#dbeafe" stroke-width="5"/>
+	</g>
+</svg>

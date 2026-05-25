@@ -1,0 +1,565 @@
+header:
+  version: "1.0"
+  name: mermaid-workflow-story
+  className: mermaid-workflow-surface
+  theme: light
+  assetBaseUrl: ../../../assets/isostate-story
+  assets:
+    - id: mermaid-source-workspace
+      path: mermaid-source-workspace
+      anchor: [0.5, 1]
+    - id: mermaid-skill-pack
+      path: mermaid-skill-pack
+      anchor: [0.5, 1]
+    - id: mermaid-ai-workbench
+      path: mermaid-ai-workbench
+      anchor: [0.5, 1]
+    - id: mermaid-yaml-blueprint
+      path: mermaid-yaml-blueprint
+      anchor: [0.5, 1]
+    - id: mermaid-asset-kit
+      path: mermaid-asset-kit
+      anchor: [0.5, 1]
+    - id: mermaid-verified-bundle
+      path: mermaid-verified-bundle
+      anchor: [0.5, 1]
+    - id: mermaid-editor-console
+      path: mermaid-editor-console
+      anchor: [0.5, 1]
+  grid:
+    cellSize: 64
+  floor:
+    visible: true
+    layer: ground
+  layers:
+    - name: ground
+    - name: zones
+    - name: routes
+    - name: cards
+    - name: labels
+
+scenes:
+  - id: workspace
+    camera:
+      target:
+        area:
+          at: [0, 3]
+          size: [6, 6]
+      padding: 24
+      duration: 500
+      easing: ease-out
+    elements:
+      - id: workspace-zone
+        asset: rectangle
+        layer: zones
+        at: [1, 4]
+        size: 5
+        enter: fade-in-grow
+        primitive:
+          rectangle:
+            fill: "#ecfdf5"
+            stroke: "#5eead4"
+            strokeWidth: 2
+            opacity: 0.36
+      - id: workspace-label
+        asset: text
+        layer: labels
+        at: [3, 3]
+        enter: fade-in
+        text:
+          value: Workspace
+          placement: cell
+          align: middle
+          fontSize: 18
+          fontWeight: 900
+          fill: "#0f5f4f"
+      - id: mermaid-source
+        asset: mermaid-source-workspace
+        layer: cards
+        at: [3, 7]
+        size: 2
+        enter: rise-from-ground
+      - id: mermaid-source-label
+        asset: text
+        layer: labels
+        at: [3, 5]
+        enter: fade-in
+        text:
+          value: Mermaid
+          placement: cell
+          align: middle
+          fontSize: 18
+          fontWeight: 900
+          fill: "#111827"
+
+  - id: skills-installed
+    camera:
+      target:
+        area:
+          at: [0, 1]
+          size: [10, 8]
+      padding: 28
+      duration: 500
+      easing: ease-in-out
+    add:
+      elements:
+        - id: skills-zone
+          asset: rectangle
+          layer: zones
+          at: [6, 1]
+          size: 5
+          enter: fade-in-grow
+          primitive:
+            rectangle:
+              fill: "#fffbeb"
+              stroke: "#fbbf24"
+              strokeWidth: 2
+              opacity: 0.34
+        - id: skills-label
+          asset: text
+          layer: labels
+          at: [8, 2]
+          enter: fade-in
+          text:
+            value: Skills
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#9a6b00"
+        - id: skill-pack
+          asset: mermaid-skill-pack
+          layer: cards
+          at: [8, 5]
+          size: 2
+          enter: slide-in-right
+      connections:
+        - id: source-to-skills
+          from:
+            element: mermaid-source
+            side: right
+          to:
+            element: skill-pack
+            side: left
+          routing:
+            mode: orthogonal
+            avoid: objects
+            clearance: 1
+          layer: routes
+          enter: slide-in-right
+          style:
+            pattern: dotted
+            stroke: "#0f766e"
+            strokeWidth: 6
+            opacity: 1
+          start: dot
+          end: arrow
+          ambient:
+            - name: flow
+
+  - id: ai-generation
+    camera:
+      target:
+        area:
+          at: [5, 4]
+          size: [8, 9]
+      padding: 28
+      duration: 500
+      easing: ease-in-out
+    add:
+      elements:
+        - id: ai-zone
+          asset: rectangle
+          layer: zones
+          at: [6, 7]
+          size: 5
+          enter: fade-in-grow
+          primitive:
+            rectangle:
+              fill: "#f5f3ff"
+              stroke: "#a78bfa"
+              strokeWidth: 2
+              opacity: 0.32
+        - id: ai-zone-label
+          asset: text
+          layer: labels
+          at: [8, 8]
+          enter: fade-in
+          text:
+            value: AI Pass
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#6d28d9"
+        - id: ai-agent
+          asset: mermaid-ai-workbench
+          layer: cards
+          at: [8, 11]
+          size: 2
+          enter: rise-from-ground
+        - id: ai-agent-label
+          asset: text
+          layer: labels
+          at: [8, 9]
+          enter: fade-in
+          text:
+            value: Plan
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#111827"
+      connections:
+        - id: skills-to-ai
+          from:
+            element: skill-pack
+            side: bottom
+          to:
+            element: ai-agent
+            side: left
+          routing:
+            mode: orthogonal
+            avoid: objects
+            clearance: 1
+          layer: routes
+          enter: rise-from-ground
+          style:
+            pattern: dotted
+            stroke: "#7c3aed"
+            strokeWidth: 6
+            opacity: 1
+          start: none
+          end: arrow
+          ambient:
+            - name: flow
+    update:
+      connections:
+        - id: source-to-skills
+          style:
+            stroke: "#94a3b8"
+            strokeWidth: 3
+            opacity: 0.38
+          ambient: []
+
+  - id: output-created
+    camera:
+      target:
+        area:
+          at: [6, 5]
+          size: [11, 10]
+      padding: 28
+      duration: 500
+      easing: ease-in-out
+    add:
+      elements:
+        - id: output-zone
+          asset: rectangle
+          layer: zones
+          at: [12, 4]
+          size: 5
+          enter: fade-in-grow
+          primitive:
+            rectangle:
+              fill: "#eff6ff"
+              stroke: "#60a5fa"
+              strokeWidth: 2
+              opacity: 0.32
+        - id: output-label
+          asset: text
+          layer: labels
+          at: [14, 5]
+          enter: fade-in
+          text:
+            value: Output
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#2563eb"
+        - id: yaml-file
+          asset: mermaid-yaml-blueprint
+          layer: cards
+          at: [14, 8]
+          size: 2
+          enter: slide-in-right
+        - id: yaml-file-label
+          asset: text
+          layer: labels
+          at: [14, 6]
+          enter: fade-in
+          text:
+            value: YAML
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#111827"
+        - id: asset-kit
+          asset: mermaid-asset-kit
+          layer: cards
+          at: [13, 13]
+          size: 2
+          enter: slide-in-right
+        - id: asset-kit-label
+          asset: text
+          layer: labels
+          at: [13, 11]
+          enter: fade-in
+          text:
+            value: Assets
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#111827"
+      connections:
+        - id: ai-to-yaml
+          from:
+            element: ai-agent
+            side: right
+          to:
+            element: yaml-file
+            side: left
+          routing:
+            mode: orthogonal
+            avoid: objects
+            clearance: 1
+          layer: routes
+          enter: slide-in-right
+          style:
+            pattern: solid
+            stroke: "#2563eb"
+            strokeWidth: 6
+            opacity: 1
+          start: none
+          end: arrow
+          ambient:
+            - name: flow
+        - id: ai-to-assets
+          from:
+            element: ai-agent
+            side: right
+          to:
+            element: asset-kit
+            side: left
+          routing:
+            mode: orthogonal
+            avoid: objects
+            clearance: 1
+          layer: routes
+          enter: fade-in
+          style:
+            pattern: dashed
+            stroke: "#ea580c"
+            strokeWidth: 5
+            opacity: 1
+          start: none
+          end: arrow
+          ambient:
+            - name: flow
+    update:
+      connections:
+        - id: skills-to-ai
+          style:
+            stroke: "#c4b5fd"
+            strokeWidth: 3
+            opacity: 0.44
+          ambient: []
+
+  - id: validated-bundled
+    camera:
+      target:
+        area:
+          at: [10, 2]
+          size: [8, 9]
+      padding: 28
+      duration: 500
+      easing: ease-in-out
+    add:
+      elements:
+        - id: validation-zone
+          asset: rectangle
+          layer: zones
+          at: [11, 1]
+          size: 4
+          enter: fade-in-grow
+          primitive:
+            rectangle:
+              fill: "#f0fdf4"
+              stroke: "#22c55e"
+              strokeWidth: 2
+              opacity: 0.32
+        - id: validation-label
+          asset: text
+          layer: labels
+          at: [13, 2]
+          enter: fade-in
+          text:
+            value: Validated
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#15803d"
+        - id: runtime-bundle
+          asset: mermaid-verified-bundle
+          layer: cards
+          at: [13, 5]
+          size: 2
+          enter: rise-from-ground
+        - id: runtime-bundle-label
+          asset: text
+          layer: labels
+          at: [13, 3]
+          enter: fade-in
+          text:
+            value: Bundle
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#111827"
+      connections:
+        - id: yaml-to-bundle
+          from:
+            element: yaml-file
+            side: right
+          to:
+            element: runtime-bundle
+            side: left
+          routing:
+            mode: orthogonal
+            avoid: objects
+            clearance: 1
+          layer: routes
+          enter: rise-from-ground
+          style:
+            pattern: dotted
+            stroke: "#16a34a"
+            strokeWidth: 6
+            opacity: 1
+          start: none
+          end: arrow
+          ambient:
+            - name: flow
+    update:
+      connections:
+        - id: ai-to-yaml
+          style:
+            stroke: "#bfdbfe"
+            strokeWidth: 3
+            opacity: 0.45
+          ambient: []
+        - id: ai-to-assets
+          style:
+            pattern: dashed
+            stroke: "#fed7aa"
+            strokeWidth: 3
+            opacity: 0.48
+          ambient: []
+
+  - id: editor-finetune
+    camera:
+      target:
+        area:
+          at: [9, 7]
+          size: [9, 10]
+      padding: 28
+      duration: 500
+      easing: ease-in-out
+    add:
+      elements:
+        - id: editor-zone
+          asset: rectangle
+          layer: zones
+          at: [11, 11]
+          size: 5
+          enter: fade-in-grow
+          primitive:
+            rectangle:
+              fill: "#f8fafc"
+              stroke: "#94a3b8"
+              strokeWidth: 2
+              opacity: 0.34
+        - id: editor-label
+          asset: text
+          layer: labels
+          at: [13, 12]
+          enter: fade-in
+          text:
+            value: Editor
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#475569"
+        - id: editor-window
+          asset: mermaid-editor-console
+          layer: cards
+          at: [13, 15]
+          size: 2
+          enter: slide-in-right
+        - id: editor-window-label
+          asset: text
+          layer: labels
+          at: [13, 13]
+          enter: fade-in
+          text:
+            value: Tune
+            placement: cell
+            align: middle
+            fontSize: 16
+            fontWeight: 900
+            fill: "#111827"
+      connections:
+        - id: bundle-to-editor
+          from:
+            element: runtime-bundle
+            side: bottom
+          to:
+            element: editor-window
+            side: top
+          routing:
+            mode: orthogonal
+            avoid: objects
+            clearance: 1
+          layer: routes
+          enter: slide-in-left
+          style:
+            pattern: dotted
+            stroke: "#0f766e"
+            strokeWidth: 6
+            opacity: 1
+          start: none
+          end: arrow
+          ambient:
+            - name: flow
+        - id: assets-to-editor
+          from:
+            element: asset-kit
+            side: right
+          to:
+            element: editor-window
+            side: left
+          routing:
+            mode: orthogonal
+            avoid: objects
+            clearance: 1
+          layer: routes
+          enter: fade-in
+          style:
+            pattern: dashed
+            stroke: "#94a3b8"
+            strokeWidth: 3
+            opacity: 0.7
+          start: none
+          end: arrow
+    update:
+      connections:
+        - id: yaml-to-bundle
+          style:
+            stroke: "#bbf7d0"
+            strokeWidth: 3
+            opacity: 0.46
+          ambient: []

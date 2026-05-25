@@ -40,6 +40,7 @@ scenes:
         text:
           value: Start building
           align: middle
+          placement: cell
           fontSize: 14
 `;
 

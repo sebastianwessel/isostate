@@ -351,6 +351,7 @@ interface ElementRemoval {
 interface TextContent {
   value: string;
   align?: 'start' | 'middle' | 'end';
+  placement?: 'cell' | 'caption';
   fontSize?: number;
   fontWeight?: number | 'normal' | 'bold';
   lineHeight?: number;
@@ -570,6 +571,9 @@ Authoring rules:
   deferred labels. Values longer than `1000` characters or `20` lines emit
   `INVALID_TEXT_CONTENT`.
 - `text.align` defaults to `middle`; valid values are `start`, `middle`, and `end`.
+- `text.placement` defaults to `cell`; valid values are `cell` and `caption`.
+  `cell` centers text inside the element's one-cell text canvas. `caption`
+  preserves the legacy top-floating label position.
 - `text.fontSize` defaults to `12` and must be a positive finite number.
 - `text.fontWeight` defaults to `700`; valid values are `normal`, `bold`, or a positive finite number.
 - `text.lineHeight` defaults to `1.2` and must be a positive finite number.
@@ -580,7 +584,7 @@ Runtime rendering rules:
 - The renderer must create SVG `<text>` and `<tspan>` nodes with DOM APIs and assign each line via `textContent`.
 - The renderer must not use `innerHTML`, parse `text.value` as SVG, or load a browser image for `asset: text`.
 - Each line break creates one `<tspan>`.
-- The text element is anchored inside the same normalized one-cell asset canvas used by SVG assets: `start` maps to `x = -cellSize / 2`, `middle` to `x = 0`, and `end` to `x = cellSize / 2`; `y = -cellSize` with `dominant-baseline="text-before-edge"`.
+- The text element is anchored inside the same normalized one-cell asset canvas used by SVG assets: `start` maps to `x = -cellSize / 2`, `middle` to `x = 0`, and `end` to `x = cellSize / 2`. For default `placement: cell`, text uses `y = -cellSize / 2` with `dominant-baseline="middle"`. For `placement: caption`, text uses `y = -cellSize` with `dominant-baseline="text-before-edge"`.
 
 ## Lifecycle Semantics
 
