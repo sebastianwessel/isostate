@@ -18,7 +18,7 @@ describe('NFR package scripts', () => {
 			'publint run packages/core && publint run packages/cli && publint run packages/editor'
 		);
 		expect(packageJson.scripts?.['site:build']).toBe(
-			'astro build --root website'
+			'bun --bun node_modules/.bin/astro build --root website'
 		);
 		expect(packageJson.scripts?.coverage).toContain('bun test --coverage');
 		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.2');

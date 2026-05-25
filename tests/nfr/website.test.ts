@@ -93,7 +93,7 @@ describe('Astro website', () => {
 		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.11.1');
 		expect(packageJson.devDependencies?.['beautiful-mermaid']).toBe('1.1.3');
 		expect(packageJson.scripts?.['site:build']).toBe(
-			'astro build --root website'
+			'bun --bun node_modules/.bin/astro build --root website'
 		);
 		expect(config).toContain("output: 'static'");
 		expect(config).toContain("base: '/isostate'");
