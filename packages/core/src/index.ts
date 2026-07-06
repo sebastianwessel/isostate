@@ -22,6 +22,7 @@ export {
 	type PngSnapshotOptions,
 	type SnapshotOptions,
 } from "./runtime/export.ts";
+export type { ElementPointerEvent, MountedSceneEvents } from "./runtime/index.ts";
 export {
 	type MountedScene,
 	type MountSceneOptions,

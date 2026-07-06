@@ -6,6 +6,7 @@ import { resolveTheme } from "../types/asset-registry.ts";
 import { ControllerError, RenderError } from "../types/errors.ts";
 import type { CompiledFloor, CompiledLayout, RuntimeBundle } from "../types/runtime-bundle.ts";
 import { sha256 } from "../utils/sha256.ts";
+import { type MountedSceneEvents, SceneInteractivity } from "./interactivity.ts";
 
 const RUNTIME_BUNDLE_FORMAT = "isostate-runtime-bundle";
 const RUNTIME_VERSION = "0.4.0";
@@ -18,6 +19,8 @@ export interface MountSceneOptions {
 	label?: string;
 	/** CSS custom properties applied on top of the bundle theme. */
 	themeVars?: Record<string, string>;
+	/** Enable pointer interactivity on scene elements. Default: false. */
+	interactive?: boolean;
 }
 
 /** Runtime configuration resolved from a mounted scene bundle. */
@@ -43,6 +46,12 @@ export interface MountedScene {
 	controller?: AnimationController;
 	/** Inspect effective runtime settings after defaults and bundle metadata are applied. */
 	getResolvedConfig(): ResolvedRuntimeConfig;
+	/**
+	 * Subscribe to interactivity events. Returns an unsubscribe function.
+	 * Callable regardless of the `interactive` option; without it no events
+	 * fire.
+	 */
+	on<K extends keyof MountedSceneEvents>(event: K, listener: MountedSceneEvents[K]): () => void;
 	/** Remove DOM and event listeners owned by this mount. Safe to call more than once. */
 	destroy(): void;
 }
@@ -77,6 +86,8 @@ export function mountScene(target: HTMLElement, bundle: RuntimeBundle, options: 
 		);
 	}
 
+	const interactivity = new SceneInteractivity(svg, options.interactive === true);
+
 	let destroyed = false;
 
 	return {
@@ -84,9 +95,11 @@ export function mountScene(target: HTMLElement, bundle: RuntimeBundle, options: 
 		engine,
 		controller,
 		getResolvedConfig: () => getResolvedConfig(bundle, options, controller),
+		on: (event, listener) => interactivity.on(event, listener),
 		destroy: () => {
 			if (destroyed) return;
 			destroyed = true;
+			interactivity.destroy();
 			destroyControllerSafely(controller);
 			engine.destroy();
 			if (svg.parentNode === target) {

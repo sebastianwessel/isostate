@@ -58,8 +58,9 @@ When `interactive: true`:
 1. `mountScene` attaches exactly three delegated listeners to the root SVG:
    `click`, `pointerover`, `pointerout`. No per-element listeners.
 2. Event resolution: from `event.target`, walk up `parentNode` until the
-   root SVG; the first ancestor `<g>` carrying a `data-id` attribute whose
-   node is a scene element group identifies the element. Floor, connectors,
+   root SVG and stop at the first ancestor `<g>` carrying a `data-id`
+   attribute; that node identifies the element only if it is a scene
+   element group (element state map membership), otherwise no event fires. Floor, connectors,
    defs, and the diagnostics overlay never produce events (connector groups
    are excluded even if they carry `data-id`; exclusion is by membership in
    the element state map, not by DOM heuristics).
@@ -77,7 +78,9 @@ When `interactive: true`:
    `interactive: true`.
 6. `destroy()` removes the three listeners and all subscriptions. `on()`
    after destroy throws `RenderError("MOUNT_DESTROYED")` (new code).
-7. Listener exceptions are not caught (consistent with controller events).
+7. Listener exceptions follow the controller event pattern exactly:
+   caught per listener and rethrown via `queueMicrotask` so one throwing
+   listener cannot stop delivery to sibling listeners.
 8. When `interactive` is false/omitted: no listeners, no `iso-interactive`
    class, `on()` still registers (and never fires).
 

@@ -23,7 +23,9 @@ in this version.
 import {
 	mountScene,
 	type ControllerConfig,
+	type ElementPointerEvent,
 	type MountedScene,
+	type MountedSceneEvents,
 	type MountSceneOptions,
 	type ResolvedRuntimeConfig,
 	type RuntimeBundle
@@ -46,6 +48,66 @@ Use `mounted.getResolvedConfig()` to inspect effective grid, floor, layout,
 theme, viewBox, camera state, scene stops, and layer order.
 
 Use `mounted.destroy()` when removing the host page or component.
+
+## Interactivity
+
+Pass `interactive: true` to enable pointer events on scene elements:
+
+```ts
+const mounted = mountScene(target, sceneBundle, { interactive: true });
+
+const unsubscribeClick = mounted.on('element-click', (event) => {
+	console.log('clicked', event.id, event.originalEvent);
+});
+
+const unsubscribeEnter = mounted.on('element-enter', (event) => {
+	console.log('entered', event.id);
+});
+
+mounted.on('element-leave', (event) => {
+	console.log('left', event.id);
+});
+
+unsubscribeClick();
+unsubscribeEnter();
+```
+
+`mounted.on(event, listener)` subscribes to `MountedSceneEvents` and returns an
+unsubscribe function. It is always callable, whether or not `interactive` was
+set; without `interactive: true` no events ever fire.
+
+```ts
+interface ElementPointerEvent {
+	id: string;
+	originalEvent: Event;
+}
+
+interface MountedSceneEvents {
+	'element-click': (event: ElementPointerEvent) => void;
+	'element-enter': (event: ElementPointerEvent) => void;
+	'element-leave': (event: ElementPointerEvent) => void;
+}
+```
+
+When `interactive: true`, `mountScene()` attaches exactly three delegated
+listeners (`click`, `pointerover`, `pointerout`) to the root SVG — never
+per-element listeners. `element-enter`/`element-leave` fire only on group
+crossings, not on movement between child nodes of the same element group.
+Floor, connectors, `<defs>`, and the diagnostics overlay never produce events,
+and an element whose current presence is `removed` never produces events
+either.
+
+The SVG root gains the `iso-interactive` class only when `interactive: true`;
+the runtime stylesheet scopes `cursor: pointer` to
+`.iso-interactive g[data-id]`. While the pointer is over an element group, the
+engine toggles the `iso-hover` class on that group so scenes can style hover
+state in CSS.
+
+`mounted.on()` throws `RenderError` with code `MOUNT_DESTROYED` when called
+after `mounted.destroy()`. Listener exceptions are not caught, matching
+`AnimationController`'s event system. See
+[Interactive Elements](../examples/interactive-elements.md) and
+[Errors](./errors.md).
 
 ## Camera Focus
 

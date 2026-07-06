@@ -33,5 +33,6 @@ export function buildKeyframeCSS(): string {
 		".iso-connector-direction-route .iso-connector-shaft.iso-ambient-flow{animation:iso-connector-flow-route 900ms linear infinite}",
 		".iso-connector-direction-reverse .iso-connector-shaft.iso-ambient-flow{animation:iso-connector-flow-reverse 900ms linear infinite}",
 		"@media (prefers-reduced-motion: reduce){.iso-element,.iso-connector{animation-duration:1ms!important}.iso-ambient-pulse,.iso-ambient-float,.iso-ambient-shake,.iso-ambient-glow,.iso-ambient-spin,.iso-ambient-blink,.iso-ambient-flow{animation:none!important}}",
+		".iso-interactive g[data-id]{cursor:pointer}",
 	].join("\n");
 }

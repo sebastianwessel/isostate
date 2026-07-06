@@ -188,7 +188,10 @@ describe('mountScene', () => {
 
 		expect(mounted.getResolvedConfig().camera.isZoomed).toBe(false);
 
-		mounted.controller?.zoomToArea({ at: [0, 0], size: [1, 1] }, { duration: 0 });
+		mounted.controller?.zoomToArea(
+			{ at: [0, 0], size: [1, 1] },
+			{ duration: 0 }
+		);
 		const zoomed = mounted.getResolvedConfig().camera;
 		expect(zoomed.isZoomed).toBe(true);
 		expect(zoomed.target).toEqual({ type: 'area', at: [0, 0], size: [1, 1] });

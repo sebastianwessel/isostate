@@ -31,6 +31,7 @@ only loads the runtime, compiled scene data, and referenced SVG assets.
     - [Runtime Basic](./docs/examples/runtime-basic.md)
     - [Compile YAML](./docs/examples/compile-yaml.md)
     - [Custom Assets](./docs/examples/custom-assets.md)
+    - [Interactive Elements](./docs/examples/interactive-elements.md)
     - [Inspect Bundle](./docs/examples/inspect-bundle.md)
     - [Export Snapshot](./docs/examples/export-snapshot.md)
   - Reference
