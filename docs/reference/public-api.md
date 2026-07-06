@@ -174,6 +174,49 @@ const json = toJson(bundle);
 `fromJs` and `fromJson` are diagnostics/test helpers for inspecting generated
 bundles. They are not needed in the browser path.
 
+## Snapshot Export
+
+```ts
+import {
+	exportScenePng,
+	exportSceneSvg,
+	type PngSnapshotOptions,
+	type SnapshotOptions
+} from '@sebastianwessel/isostate';
+```
+
+`exportSceneSvg(mounted, options?)` serializes a `MountedScene` to a
+standalone SVG document string at a chosen progress. `options` is a
+`SnapshotOptions`:
+
+| Field | Meaning | Default |
+|---|---|---|
+| `progress` | Progress to render before serializing. | current progress |
+| `inlineAssets` | Inline external `<image>` hrefs as `data:` URIs. | `true` |
+| `background` | Solid CSS background color drawn behind the scene. | none (transparent) |
+
+```ts
+const svgString = await exportSceneSvg(mounted, {
+	progress: 1,
+	background: '#ffffff'
+});
+```
+
+`exportScenePng(mounted, options?)` rasterizes the same clone to a PNG
+`Blob`. `PngSnapshotOptions` extends `SnapshotOptions` with `scale` (device
+pixel multiplier applied to the viewBox size, default `2`). PNG export always
+inlines assets; passing `inlineAssets: false` throws `EXPORT_INVALID_OPTIONS`.
+
+```ts
+const blob = await exportScenePng(mounted, { progress: 0.5, scale: 3 });
+const url = URL.createObjectURL(blob);
+```
+
+Both functions restore the engine's prior progress after serializing, even
+when the export rejects, and throw `EXPORT_TARGET_DESTROYED` if the mount was
+already destroyed. See [Export Snapshot](../examples/export-snapshot.md) and
+[Errors](./errors.md) for the full error code list.
+
 ## Low-Level Escape Hatches
 
 `buildSceneDOM`, `AnimationEngine`, `AnimationController`, projection helpers,

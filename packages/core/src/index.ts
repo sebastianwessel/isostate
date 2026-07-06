@@ -17,6 +17,12 @@ export {
 } from "./rendering/rendering-engine.ts";
 export { applyThemeToElement } from "./rendering/theme.ts";
 export {
+	exportScenePng,
+	exportSceneSvg,
+	type PngSnapshotOptions,
+	type SnapshotOptions,
+} from "./runtime/export.ts";
+export {
 	type MountedScene,
 	type MountSceneOptions,
 	mountScene,
