@@ -2,7 +2,7 @@
 id: TICKET-036
 title: Element interactivity (hover/click events)
 wave: 6
-status: planned
+status: done
 parallel_group: wave06_slot_b
 depends_on: [TICKET-033]
 blocked_by: []

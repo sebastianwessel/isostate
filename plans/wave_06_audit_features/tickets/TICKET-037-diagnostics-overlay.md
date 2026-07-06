@@ -2,7 +2,7 @@
 id: TICKET-037
 title: Diagnostics overlay
 wave: 6
-status: planned
+status: done
 parallel_group: wave06_slot_c
 depends_on: [TICKET-033, TICKET-036]
 blocked_by: []

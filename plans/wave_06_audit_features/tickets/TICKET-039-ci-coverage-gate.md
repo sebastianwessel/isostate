@@ -2,7 +2,7 @@
 id: TICKET-039
 title: Coverage to 80% and CI coverage gate
 wave: 6
-status: planned
+status: done
 parallel_group: wave06_slot_b
 depends_on: []
 blocked_by: []

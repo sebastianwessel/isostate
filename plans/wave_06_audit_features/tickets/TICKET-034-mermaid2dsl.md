@@ -2,7 +2,7 @@
 id: TICKET-034
 title: mermaid2dsl converter and CLI command
 wave: 6
-status: planned
+status: done
 parallel_group: wave06_slot_a
 depends_on: []
 blocked_by: []

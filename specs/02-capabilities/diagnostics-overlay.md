@@ -1,6 +1,6 @@
 # Capability: Diagnostics Overlay
 
-Status: specified (wave 06)
+Status: implemented (wave 06)
 
 A development-time visual overlay for a mounted scene: grid lines, cell
 coordinates, element anchors, connector route points, and a scene/progress

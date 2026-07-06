@@ -2,7 +2,7 @@
 id: TICKET-035
 title: CLI help output and diagnostics grouping
 wave: 6
-status: planned
+status: done
 parallel_group: wave06_slot_b
 depends_on: [TICKET-034]
 blocked_by: []

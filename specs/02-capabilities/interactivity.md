@@ -1,6 +1,6 @@
 # Capability: Element Interactivity
 
-Status: specified (wave 06)
+Status: implemented (wave 06)
 
 Opt-in pointer interactivity for mounted scenes: hover and click events on
 scene elements, exposed as subscriptions on `MountedScene`. Runtime-level

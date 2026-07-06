@@ -2,7 +2,7 @@
 id: TICKET-038
 title: Error docs completeness and drift guard
 wave: 6
-status: planned
+status: done
 parallel_group: wave06_slot_a
 depends_on: []
 blocked_by: []

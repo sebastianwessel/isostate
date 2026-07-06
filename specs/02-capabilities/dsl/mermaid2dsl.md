@@ -1,6 +1,6 @@
 # Capability: mermaid2dsl Converter
 
-Status: specified (wave 06)
+Status: implemented (wave 06)
 
 Converts a Mermaid flowchart definition into a valid `.isostate.yaml`
 `SceneDocument`. Dev-time only. Delivers the converter input source promised

@@ -1,6 +1,6 @@
 # Capability: Snapshot Export
 
-Status: specified (wave 06)
+Status: implemented (wave 06)
 
 Delivers vision capability C6 (static snapshot export). Exports a mounted
 scene as a self-contained SVG string or a rasterized PNG blob at a chosen

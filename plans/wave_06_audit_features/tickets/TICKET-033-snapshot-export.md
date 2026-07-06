@@ -2,7 +2,7 @@
 id: TICKET-033
 title: Snapshot export (SVG string, PNG blob)
 wave: 6
-status: planned
+status: done
 parallel_group: wave06_slot_a
 depends_on: []
 blocked_by: []
