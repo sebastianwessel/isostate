@@ -91,6 +91,30 @@ Later scene:
 Keep scene ids stable and descriptive. The order of `scenes` is the timeline;
 do not author progress values.
 
+## Verify With The Diagnostics Overlay
+
+While iterating on a scene in the browser, attach the diagnostics overlay to
+check grid alignment, element anchors, and connector routing without leaving
+the page:
+
+```ts
+import { attachDiagnosticsOverlay, mountScene } from '@sebastianwessel/isostate';
+
+const mounted = mountScene(target, sceneBundle, {
+	controller: { container: document.documentElement }
+});
+const overlay = attachDiagnosticsOverlay(mounted, { coordinates: true });
+
+// Later, once the scene looks right:
+overlay.destroy();
+```
+
+The overlay draws floor grid lines, element anchor points, connector route
+points, and a `scene <id> · progress <p>` readout, re-rendering itself on
+scroll/camera changes when a controller is attached. It is a development-time
+aid only: it is never included in exported snapshots or the standalone
+runtime bundle. See [Diagnostics Overlay](../reference/public-api.md#diagnostics-overlay).
+
 Next:
 
 - [Assets Workflow](./assets-workflow.md)

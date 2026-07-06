@@ -69,9 +69,11 @@ function attachDiagnosticsOverlay(
 7. Readout (when enabled): a `<text>` block pinned to the top-left corner of
    the viewBox (`viewBox.minX + 4`, `viewBox.minY + 10`), `font-size: 10`,
    `fill: var(--iso-diag-text, #1e3a8a)`, content
-   `scene <id> · progress <p>` with `<p>` rounded to 3 decimals. Without a
-   controller the scene id part is omitted and progress comes from the
-   engine.
+   `scene <id> · progress <p>` with `<p>` rounded to 3 decimals. The scene
+   id comes from the engine's progress-to-stop mapping (not the
+   controller's navigation index, which does not track scroll progress).
+   Without a controller the scene id part is omitted and progress comes
+   from the engine.
 8. Live updates: when the mount has a controller, the overlay subscribes to
    `progress-change` and `camera-change` and re-renders itself (full
    rebuild of the overlay group's children — overlay simplicity beats

@@ -17,6 +17,11 @@ export {
 } from "./rendering/rendering-engine.ts";
 export { applyThemeToElement } from "./rendering/theme.ts";
 export {
+	attachDiagnosticsOverlay,
+	type DiagnosticsOverlayHandle,
+	type DiagnosticsOverlayOptions,
+} from "./runtime/diagnostics-overlay.ts";
+export {
 	exportScenePng,
 	exportSceneSvg,
 	type PngSnapshotOptions,

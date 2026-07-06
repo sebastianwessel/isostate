@@ -279,6 +279,54 @@ when the export rejects, and throw `EXPORT_TARGET_DESTROYED` if the mount was
 already destroyed. See [Export Snapshot](../examples/export-snapshot.md) and
 [Errors](./errors.md) for the full error code list.
 
+## Diagnostics Overlay
+
+```ts
+import {
+	attachDiagnosticsOverlay,
+	type DiagnosticsOverlayHandle,
+	type DiagnosticsOverlayOptions
+} from '@sebastianwessel/isostate';
+```
+
+`attachDiagnosticsOverlay(mounted, options?)` draws a development-time overlay
+on top of a mounted scene: floor grid lines, optional cell coordinate labels,
+element anchor points, connector route points, and a scene/progress readout.
+It is exported from the root entry only and is never part of the standalone
+runtime bundle or its size budget.
+
+```ts
+const overlay = attachDiagnosticsOverlay(mounted, { coordinates: true });
+
+overlay.update(); // re-render manually (always safe to call)
+overlay.destroy(); // remove the overlay group and its subscriptions
+```
+
+`DiagnosticsOverlayOptions`:
+
+| Field | Meaning | Default |
+|---|---|---|
+| `grid` | Draw grid lines across the floor extent. | `true` |
+| `coordinates` | Draw cell coordinate labels at whole-cell intersections. | `false` |
+| `anchors` | Mark element anchor points. | `true` |
+| `routes` | Mark connector route points. | `true` |
+| `readout` | Show the scene id / progress readout panel. | `true` |
+
+The overlay renders into a single `<g data-iso-diagnostics>` appended as the
+last child of the root SVG, above all scene content. Its elements never carry
+`data-id`, so they never trigger `interactive: true` pointer events, and
+`exportSceneSvg`/`exportScenePng` always strip the group from snapshots (see
+[Snapshot Export](#snapshot-export)).
+
+Attaching a second overlay to the same mount replaces the first: the earlier
+handle's `update()`/`destroy()` become no-ops. When the mount has a
+controller, the overlay subscribes to `progress-change` and `camera-change`
+and re-renders itself automatically; without a controller, call `update()`
+after changing progress. `attachDiagnosticsOverlay()` throws `RenderError`
+with code `MOUNT_DESTROYED` when called on an already-destroyed mount, and
+`mounted.destroy()` removes the overlay implicitly since its group lives
+inside the SVG. See [Errors](./errors.md).
+
 ## Low-Level Escape Hatches
 
 `buildSceneDOM`, `AnimationEngine`, `AnimationController`, projection helpers,
