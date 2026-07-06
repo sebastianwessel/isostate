@@ -1,5 +1,5 @@
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
-import { dirname, extname, resolve } from 'node:path';
+import { basename, dirname, extname, resolve } from 'node:path';
 import {
 	compileScene,
 	parseScene,
@@ -14,6 +14,7 @@ import {
 	formatValidationWarning
 } from './diagnostics.js';
 import { inspectCommand } from './inspect.js';
+import { convertMermaidToDsl } from './mermaid2dsl.js';
 import { bundleCommand } from './static-bundle.js';
 
 export interface CliIo {
@@ -47,6 +48,8 @@ export async function runCli(
 				return await inspectCommand(rest, io);
 			case 'assets':
 				return await assetsCommand(rest, io);
+			case 'mermaid2dsl':
+				return await mermaid2dslCommand(rest, io);
 			case undefined:
 				io.stderr.error('ERROR MISSING_COMMAND Expected a command');
 				return { exitCode: 1 };
@@ -137,6 +140,92 @@ async function compileCommand(args: string[], io: CliIo): Promise<CliResult> {
 	await writeAtomic(parsed.out, output);
 	io.stdout.log(`WROTE ${parsed.out}`);
 	return { exitCode: 0 };
+}
+
+async function mermaid2dslCommand(
+	args: string[],
+	io: CliIo
+): Promise<CliResult> {
+	const parsed = parseMermaid2DslArgs(args);
+	if (!parsed.ok) {
+		io.stderr.error(parsed.error);
+		return { exitCode: 1 };
+	}
+
+	const source = await readInput(parsed.input);
+	const { yaml, warnings } = convertMermaidToDsl(source, {
+		name: mermaidSceneName(parsed.input)
+	});
+
+	for (const warning of warnings) {
+		io.stderr.error(
+			formatValidationWarning({
+				code: warning.code,
+				message: warning.message,
+				location: { line: warning.line }
+			})
+		);
+	}
+
+	await writeAtomic(parsed.out, yaml);
+	io.stdout.log(`WROTE ${parsed.out}`);
+	return { exitCode: 0 };
+}
+
+function parseMermaid2DslArgs(
+	args: string[]
+): { ok: true; input: string; out: string } | { ok: false; error: string } {
+	const positionals = positionalArgs(args, new Set(['--out']));
+	const input = positionals.at(0);
+	if (!input) {
+		return {
+			ok: false,
+			error: 'ERROR MISSING_INPUT Expected a Mermaid flowchart source file'
+		};
+	}
+	if (positionals.length > 1) {
+		return {
+			ok: false,
+			error: 'ERROR EXTRA_INPUT Expected exactly one input Mermaid file'
+		};
+	}
+
+	let out = defaultMermaidOut(input);
+
+	for (let index = 0; index < args.length; index += 1) {
+		const arg = args[index];
+		if (arg === '--out') {
+			const value = args[index + 1];
+			if (!value || value.startsWith('-')) {
+				return {
+					ok: false,
+					error: 'ERROR MISSING_OPTION --out requires a path'
+				};
+			}
+			out = value;
+			index += 1;
+			continue;
+		}
+		if (arg.startsWith('-')) {
+			return { ok: false, error: `ERROR UNKNOWN_OPTION Unknown option ${arg}` };
+		}
+	}
+
+	return { ok: true, input, out };
+}
+
+function defaultMermaidOut(input: string): string {
+	const extension = extname(input);
+	const stem = extension ? input.slice(0, -extension.length) : input;
+	return `${stem}.isostate.yaml`;
+}
+
+function mermaidSceneName(input: string): string {
+	const extension = extname(input);
+	const stem = extension
+		? basename(input).slice(0, -extension.length)
+		: basename(input);
+	return stem;
 }
 
 function parseInputArgs(

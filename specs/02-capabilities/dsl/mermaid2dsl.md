@@ -88,6 +88,8 @@ If two distinct Mermaid ids normalize to the same DSL id, fail
    closes a cycle in document order (depth-first from sources in
    first-appearance order); emit warning `MERMAID_CYCLE_BROKEN` for each
    ignored edge.
+   When the graph has no in-degree-0 node (a pure cycle), the layering
+   depth-first search starts from the first node in document order.
 3. Within a layer, nodes are ordered by first appearance in the document.
 4. Grid placement with spacing of 2 whole cells starting at `[0, 0]`:
    - `TD`/`TB`: `at = [indexInLayer * 2, layer * 2]`
@@ -142,7 +144,8 @@ output in v1.
 ## Error and Warning Codes
 
 Errors (thrown as `ParseError`-shaped structured errors with `code`,
-`message`, `details.line` where applicable):
+`message`, `details.line` where applicable; the error `message` also ends
+with `(line N)` when a line number is known, so CLI output shows it):
 `MERMAID_PARSE_ERROR`, `MERMAID_UNSUPPORTED`, `MERMAID_EMPTY`,
 `MERMAID_NODE_REDEFINED`, `MERMAID_ID_COLLISION`, `MERMAID_INTERNAL`.
 

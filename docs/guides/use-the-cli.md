@@ -27,6 +27,7 @@ isostate validate scene.isostate.yaml
 isostate compile scene.isostate.yaml --out public/scene.isostate.js
 isostate bundle scene.isostate.yaml --out public/isostate/scene
 isostate inspect public/isostate/scene/scene.isostate.js
+isostate mermaid2dsl flow.mmd
 ```
 
 ## Commands
@@ -87,6 +88,24 @@ npx --package @sebastianwessel/isostate-cli isostate inspect public/scene.isosta
 
 Use this in troubleshooting when a deployed page loads a stale or unexpected
 bundle.
+
+### mermaid2dsl
+
+Converts a supported Mermaid flowchart subset into a starting
+`.isostate.yaml` scene: shapes, labels, grid layout, and connections. Dev-time
+only; never adds the `mermaid` package as a dependency.
+
+```bash
+npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl flow.mmd
+npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl flow.mmd --out scenes/flow.isostate.yaml
+```
+
+`--out` defaults to the input path with its extension replaced by
+`.isostate.yaml`. The generated document is validated before writing;
+conversion warnings (`MERMAID_LABEL_DROPPED`, `MERMAID_CYCLE_BROKEN`) print
+but do not fail the command. See
+[Convert A Mermaid Flowchart](./convert-mermaid.md) for the supported input
+subset and a worked example.
 
 ## CI Pattern
 
