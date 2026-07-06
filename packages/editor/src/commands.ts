@@ -163,7 +163,13 @@ export function withDocumentMutation(
 	}
 }
 
-function mergeElementPatch<T extends ElementPlacement | ElementPatch>(
+/**
+ * Deep-merges an `ElementPatch` onto an existing resolved element or patch,
+ * matching the runtime's `mergeElementPatch` semantics in
+ * `packages/core/src/dsl/scene-validator.ts`: `text` and `primitive`
+ * sub-objects are merged field-by-field instead of being replaced wholesale.
+ */
+export function mergeElementPatch<T extends ElementPlacement | ElementPatch>(
 	target: T,
 	patch: ElementPatch
 ): T {

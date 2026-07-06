@@ -48,6 +48,56 @@ function serializeScalarString(str: string): string {
 	return str;
 }
 
+function countTrailingNewlines(str: string): number {
+	let count = 0;
+	let index = str.length;
+	while (index > 0 && str[index - 1] === '\n') {
+		count++;
+		index--;
+	}
+	return count;
+}
+
+/**
+ * Computes the block-scalar chomping indicator and content lines needed to
+ * reproduce `value` exactly on reparse, or `undefined` when a block scalar
+ * cannot represent the value losslessly (in which case the caller must fall
+ * back to a quoted scalar).
+ */
+function planTextBlockScalar(
+	value: string
+): { indicator: '|-' | '|' | '|+'; lines: string[] } | undefined {
+	const trailingNewlines = countTrailingNewlines(value);
+	const body = value.slice(0, value.length - trailingNewlines);
+	// An all-newline (or empty) body has no anchoring content line, so the
+	// block scalar's indentation and chomping cannot be inferred unambiguously.
+	if (body.length === 0) return undefined;
+
+	let indicator: '|-' | '|' | '|+';
+	let content: string;
+	if (trailingNewlines === 0) {
+		indicator = '|-';
+		content = value;
+	} else if (trailingNewlines === 1) {
+		indicator = '|';
+		content = body;
+	} else {
+		indicator = '|+';
+		content = body;
+	}
+
+	const lines = content.split('\n');
+	// `|+` keep chomping preserves every trailing newline beyond the first
+	// via trailing blank lines in the literal block.
+	for (let i = 0; i < trailingNewlines - 1; i++) lines.push('');
+
+	// Any line with leading/trailing whitespace is unsafe: YAML block scalars
+	// strip it (or shift the inferred indentation), which is not reversible.
+	if (lines.some((line) => line !== line.trim())) return undefined;
+
+	return { indicator, lines };
+}
+
 function serializeTuple(t: [number, number]): string {
 	return `[${t[0]}, ${t[1]}]`;
 }
@@ -96,9 +146,10 @@ function serializeTextToBuf(
 	buf.push('text:');
 	const value = text.value;
 	if (value !== undefined) {
-		if (value.includes('\n')) {
-			buf.push('  value: |');
-			for (const line of value.split('\n')) {
+		const block = value.includes('\n') ? planTextBlockScalar(value) : undefined;
+		if (block) {
+			buf.push(`  value: ${block.indicator}`);
+			for (const line of block.lines) {
 				buf.push(`    ${line}`);
 			}
 		} else {
@@ -531,26 +582,34 @@ function serializeHeader(
 		);
 	}
 	if (header.grid !== undefined) {
-		lines.push(`${indent}grid:`);
+		const gridLines: string[] = [];
 		if (header.grid.cellSize !== undefined)
-			lines.push(`${indent}  cellSize: ${header.grid.cellSize}`);
+			gridLines.push(`${indent}  cellSize: ${header.grid.cellSize}`);
+		if (gridLines.length > 0) {
+			lines.push(`${indent}grid:`, ...gridLines);
+		}
 	}
 	if (header.floor !== undefined) {
-		lines.push(`${indent}floor:`);
+		const floorLines: string[] = [];
 		if (header.floor.size !== undefined)
-			lines.push(`${indent}  size: ${serializeTuple(header.floor.size)}`);
+			floorLines.push(`${indent}  size: ${serializeTuple(header.floor.size)}`);
 		if (header.floor.origin !== undefined)
-			lines.push(`${indent}  origin: ${serializeTuple(header.floor.origin)}`);
+			floorLines.push(
+				`${indent}  origin: ${serializeTuple(header.floor.origin)}`
+			);
 		if (header.floor.layer !== undefined)
-			lines.push(
+			floorLines.push(
 				`${indent}  layer: ${serializeScalarString(header.floor.layer)}`
 			);
 		if (header.floor.visible !== undefined)
-			lines.push(`${indent}  visible: ${header.floor.visible}`);
+			floorLines.push(`${indent}  visible: ${header.floor.visible}`);
 		if (header.floor.asset !== undefined)
-			lines.push(
+			floorLines.push(
 				`${indent}  asset: ${serializeScalarString(header.floor.asset)}`
 			);
+		if (floorLines.length > 0) {
+			lines.push(`${indent}floor:`, ...floorLines);
+		}
 	}
 	if (header.theme !== undefined)
 		lines.push(`${indent}theme: ${serializeScalarString(header.theme)}`);

@@ -17,6 +17,7 @@ import type {
 	EditorWorkspace,
 	PlaceableAssetManifestEntry,
 	SpriteAssetManifestEntry,
+	SpriteManifestDefinition,
 	SpriteSheetAssetManifestEntry
 } from './types.ts';
 
@@ -464,6 +465,25 @@ export function createAssetPlacementCommand(
 		id: 'asset.place',
 		label: 'Place Asset',
 		apply(workspace): EditorCommandResult {
+			if (workspace.document) {
+				const conflict = findSpriteSheetConflict(
+					workspace.document,
+					manifestEntry
+				);
+				if (conflict) {
+					return {
+						workspace,
+						changed: false,
+						diagnostics: [
+							{
+								code: 'EDITOR_ASSET_CONFLICT',
+								message: conflict,
+								severity: 'error'
+							}
+						]
+					};
+				}
+			}
 			return withDocumentMutation(
 				workspace,
 				'asset.place',
@@ -482,11 +502,9 @@ export function createAssetPlacementCommand(
 					if (!existingAsset) {
 						const newAsset = createAssetDeclaration(normalizedEntry);
 						doc.header.assets.push(newAsset);
-					} else if (
-						normalizedEntry.type !== 'sprite' &&
-						!existingAsset.anchor &&
-						normalizedEntry.anchor
-					) {
+					} else if (normalizedEntry.type === 'sprite') {
+						mergeSpriteIntoSheetDeclaration(existingAsset, normalizedEntry);
+					} else if (!existingAsset.anchor && normalizedEntry.anchor) {
 						existingAsset.anchor = normalizedEntry.anchor;
 					}
 					const elementId = generateUniqueElementId(doc, normalizedEntry.id);
@@ -512,6 +530,89 @@ export function createAssetPlacementCommand(
 			);
 		}
 	};
+}
+
+function tupleEquals(
+	a: [number, number] | undefined,
+	b: [number, number] | undefined
+): boolean {
+	if (a === undefined || b === undefined) return a === b;
+	return a[0] === b[0] && a[1] === b[1];
+}
+
+function spriteDefinitionEquals(
+	a: SpriteManifestDefinition | undefined,
+	b: SpriteManifestDefinition | undefined
+): boolean {
+	if (a === undefined || b === undefined) return a === b;
+	if (Array.isArray(a) || Array.isArray(b)) {
+		return (
+			Array.isArray(a) && Array.isArray(b) && a[0] === b[0] && a[1] === b[1]
+		);
+	}
+	return (
+		tupleEquals(a.at, b.at) &&
+		tupleEquals(a.anchor, b.anchor) &&
+		JSON.stringify(a.rect ?? null) === JSON.stringify(b.rect ?? null)
+	);
+}
+
+/**
+ * Checks whether placing `manifestEntry` would require merging into an
+ * already-declared `header.assets[]` sprite-sheet entry whose metadata
+ * conflicts with the manifest. Returns a human-readable conflict message, or
+ * `undefined` when there is no existing declaration or it is compatible.
+ */
+function findSpriteSheetConflict(
+	document: SceneDocument,
+	manifestEntry: PlaceableAssetManifestEntry
+): string | undefined {
+	if (manifestEntry.type !== 'sprite') return undefined;
+	const existingAsset = document.header.assets.find(
+		(a) => a.id === manifestEntry.sheetId
+	);
+	if (!existingAsset) return undefined;
+	if (!('type' in existingAsset) || existingAsset.type !== 'sprite-sheet') {
+		return `Asset "${manifestEntry.sheetId}" is already declared as a non-sprite-sheet asset`;
+	}
+	if (existingAsset.path !== manifestEntry.path) {
+		return `Sprite sheet "${manifestEntry.sheetId}" path differs from the manifest`;
+	}
+	if (!tupleEquals(existingAsset.sheetSize, manifestEntry.sheetSize)) {
+		return `Sprite sheet "${manifestEntry.sheetId}" sheetSize differs from the manifest`;
+	}
+	if (!tupleEquals(existingAsset.tileSize, manifestEntry.tileSize)) {
+		return `Sprite sheet "${manifestEntry.sheetId}" tileSize differs from the manifest`;
+	}
+	if (!tupleEquals(existingAsset.anchor, manifestEntry.sheetAnchor)) {
+		return `Sprite sheet "${manifestEntry.sheetId}" anchor differs from the manifest`;
+	}
+	const existingSprite = existingAsset.sprites[manifestEntry.id];
+	if (
+		existingSprite !== undefined &&
+		!spriteDefinitionEquals(existingSprite, manifestEntry.sprite)
+	) {
+		return `Sprite "${manifestEntry.id}" definition differs from the manifest`;
+	}
+	return undefined;
+}
+
+/**
+ * Merges the placed sprite id into an already-declared, compatible
+ * sprite-sheet's `sprites` map (adding it when absent). Callers must verify
+ * with `findSpriteSheetConflict` first that no metadata conflict exists.
+ */
+function mergeSpriteIntoSheetDeclaration(
+	existingAsset: AssetCatalogEntry,
+	normalizedEntry: SpriteAssetManifestEntry
+): void {
+	if (!('type' in existingAsset) || existingAsset.type !== 'sprite-sheet')
+		return;
+	if (existingAsset.sprites[normalizedEntry.id] !== undefined) return;
+	const sanitized = sanitizeSpriteDefinitions({
+		[normalizedEntry.id]: normalizedEntry.sprite
+	});
+	existingAsset.sprites[normalizedEntry.id] = sanitized[normalizedEntry.id];
 }
 
 function createAssetDeclaration(

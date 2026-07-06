@@ -209,6 +209,100 @@ describe('serializeSceneDocument', () => {
 		const b = serializeSceneDocument(doc);
 		expect(a).toBe(b);
 	});
+
+	test('omits grid/floor keys entirely when all sub-fields are empty, and reparses', () => {
+		const yaml = `header:
+  version: "1"
+  assets: []
+  grid: {}
+  floor: {}
+  layers: []
+scenes:
+  - id: scene-1
+    elements: []
+`;
+		const doc = parseScene(yaml);
+		const serialized = serializeSceneDocument(doc);
+		expect(serialized).not.toContain('grid:');
+		expect(serialized).not.toContain('floor:');
+		// Must remain parseable: a bare `grid:`/`floor:` key would serialize as
+		// YAML null, which the core parser rejects with DSL_SCHEMA_TYPE_ERROR.
+		expect(() => parseScene(serialized)).not.toThrow();
+	});
+
+	test('emits grid/floor keys with sub-fields when at least one is defined', () => {
+		const yaml = `header:
+  version: "1"
+  assets: []
+  grid:
+    cellSize: 48
+  floor:
+    visible: false
+  layers: []
+scenes:
+  - id: scene-1
+    elements: []
+`;
+		const doc = parseScene(yaml);
+		const serialized = serializeSceneDocument(doc);
+		expect(serialized).toContain('grid:\n    cellSize: 48');
+		expect(serialized).toContain('floor:\n    visible: false');
+		const reparsed = parseScene(serialized);
+		expect(JSON.stringify(reparsed)).toBe(JSON.stringify(doc));
+	});
+
+	test('preserves multi-line text.value exactly across serialize/parse for varying trailing newlines', () => {
+		const values = [
+			'Line one\nLine two',
+			'Line one\nLine two\n',
+			'Line one\nLine two\n\n',
+			'Line one\nLine two\n\n\n'
+		];
+		for (const value of values) {
+			const yaml = `header:
+  version: "1"
+  assets: []
+  layers: []
+scenes:
+  - id: scene-1
+    elements:
+      - id: e1
+        asset: text
+        at: [0, 0]
+        text:
+          value: ${JSON.stringify(value)}
+`;
+			const doc = parseScene(yaml);
+			const serialized = serializeSceneDocument(doc);
+			const reparsed = parseScene(serialized);
+			const reparsedValue = reparsed.scenes[0].elements?.[0].text?.value;
+			expect(reparsedValue).toBe(value);
+		}
+	});
+
+	test('falls back to quoted scalar when a block scalar cannot represent the value losslessly', () => {
+		// An all-newline value has no anchoring content line for a block scalar,
+		// so it must round-trip through a quoted scalar instead.
+		const value = '\n\n';
+		const yaml = `header:
+  version: "1"
+  assets: []
+  layers: []
+scenes:
+  - id: scene-1
+    elements:
+      - id: e1
+        asset: text
+        at: [0, 0]
+        text:
+          value: ${JSON.stringify(value)}
+`;
+		const doc = parseScene(yaml);
+		const serialized = serializeSceneDocument(doc);
+		expect(serialized).not.toContain('value: |');
+		const reparsed = parseScene(serialized);
+		expect(reparsed.scenes[0].elements?.[0].text?.value).toBe(value);
+	});
 });
 
 describe('serializeEditorWorkspace', () => {
