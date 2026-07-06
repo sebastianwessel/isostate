@@ -377,4 +377,376 @@ describe('SceneTreePanel', () => {
 		root.unmount();
 		container.remove();
 	});
+
+	test('layer lock toggle marks layer locked', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const defaultLayer = Array.from(
+			container.querySelectorAll('.isostate-tree-layer')
+		).find((layer) => layer.textContent?.includes('default')) as HTMLElement;
+		const toggle = defaultLayer.querySelector(
+			'button[aria-label="Lock layer"]'
+		) as HTMLButtonElement;
+		toggle.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(
+			defaultLayer.querySelector('button[aria-label="Unlock layer"]')
+		).toBeTruthy();
+
+		toggle.dispatchEvent(new Event('click', { bubbles: true }));
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('collapsing a scene hides its layers until expanded again', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const firstScene = container.querySelector(
+			'.isostate-tree-scene'
+		) as HTMLElement;
+		const disclosure = firstScene.querySelector(
+			'button[aria-label="Collapse scene"]'
+		) as HTMLButtonElement;
+		disclosure.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(firstScene.querySelector('.isostate-tree-layers')).toBeNull();
+		expect(
+			firstScene.querySelector('button[aria-label="Expand scene"]')
+		).toBeTruthy();
+
+		const expandButton = firstScene.querySelector(
+			'button[aria-label="Expand scene"]'
+		) as HTMLButtonElement;
+		expandButton.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(firstScene.querySelector('.isostate-tree-layers')).toBeTruthy();
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('adding a connection with fewer than two elements uses a route', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		const emptyYaml = `header:
+  version: "1"
+  assetBaseUrl: https://example.com/assets
+  assets:
+    - id: block
+      path: block.svg
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+    elements: []
+`;
+		const workspace = createEditorWorkspace({ sourceYaml: emptyYaml });
+		root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const addButton = container.querySelector(
+			'button[aria-label="Add connection"]'
+		) as HTMLButtonElement;
+		addButton.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		expect(
+			container.querySelectorAll('.isostate-tree-connection')
+		).toHaveLength(1);
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('dragging a scene row reorders scenes in the tree', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		const yaml = `header:
+  version: "1"
+  assetBaseUrl: https://example.com/assets
+  assets:
+    - id: block
+      path: block.svg
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+    elements:
+      - id: e1
+        asset: block
+        at: [0, 0]
+        layer: default
+  - id: scene-2
+    add:
+      elements: []
+  - id: scene-3
+    add:
+      elements: []
+`;
+		const workspace = createEditorWorkspace({ sourceYaml: yaml });
+		root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const sceneRows = Array.from(
+			container.querySelectorAll('.isostate-tree-scene')
+		) as HTMLElement[];
+		const scene2 = sceneRows.find((row) =>
+			row.textContent?.includes('scene-2')
+		) as HTMLElement;
+		const scene3 = sceneRows.find((row) =>
+			row.textContent?.includes('scene-3')
+		) as HTMLElement;
+		const transfer = createDataTransfer();
+		scene3.dispatchEvent(createDragEvent('dragstart', transfer));
+		scene2.dispatchEvent(createDragEvent('drop', transfer));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const orderedIds = Array.from(
+			container.querySelectorAll('.isostate-tree-name')
+		).map((node) => node.textContent);
+		expect(orderedIds).toEqual(['scene-1', 'scene-3', 'scene-2']);
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('dropping a scene onto itself or the root scene is a no-op', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		const yaml = `header:
+  version: "1"
+  assetBaseUrl: https://example.com/assets
+  assets:
+    - id: block
+      path: block.svg
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+    elements: []
+  - id: scene-2
+    add:
+      elements: []
+`;
+		const workspace = createEditorWorkspace({ sourceYaml: yaml });
+		root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const sceneRows = Array.from(
+			container.querySelectorAll('.isostate-tree-scene')
+		) as HTMLElement[];
+		const scene2 = sceneRows.find((row) =>
+			row.textContent?.includes('scene-2')
+		) as HTMLElement;
+		const transfer = createDataTransfer();
+		scene2.dispatchEvent(createDragEvent('dragstart', transfer));
+		scene2.dispatchEvent(createDragEvent('drop', transfer));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const orderedIdsSelf = Array.from(
+			container.querySelectorAll('.isostate-tree-name')
+		).map((node) => node.textContent);
+		expect(orderedIdsSelf).toEqual(['scene-1', 'scene-2']);
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('dragging an element onto a different layer moves it there', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const layers = Array.from(
+			container.querySelectorAll('.isostate-tree-layer')
+		) as HTMLElement[];
+		const overlayLayer = layers.find((layer) =>
+			layer.textContent?.includes('overlay')
+		) as HTMLElement;
+		const elementRow = Array.from(
+			container.querySelectorAll(
+				'.isostate-tree-element:not(.isostate-tree-connection)'
+			)
+		).find((row) => row.textContent?.includes('e1')) as HTMLElement;
+
+		const transfer = createDataTransfer();
+		elementRow.dispatchEvent(createDragEvent('dragstart', transfer));
+		overlayLayer.dispatchEvent(createDragEvent('drop', transfer));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const overlayIds = Array.from(
+			overlayLayer.querySelectorAll('.isostate-tree-row-label')
+		).map((node) => node.textContent);
+		expect(overlayIds).toContain('e1');
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('dragging an element onto another element reorders within the layer', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		const yaml = `header:
+  version: "1"
+  assetBaseUrl: https://example.com/assets
+  assets:
+    - id: block
+      path: block.svg
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+    elements:
+      - id: e1
+        asset: block
+        at: [0, 0]
+        layer: default
+      - id: e2
+        asset: block
+        at: [1, 0]
+        layer: default
+      - id: e3
+        asset: block
+        at: [2, 0]
+        layer: default
+`;
+		const workspace = createEditorWorkspace({ sourceYaml: yaml });
+		root.render(createElement(TestWrapper, { initialWorkspace: workspace }));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const findRow = (id: string) =>
+			Array.from(
+				container.querySelectorAll(
+					'.isostate-tree-element:not(.isostate-tree-connection)'
+				)
+			).find((row) => row.textContent?.includes(id)) as HTMLElement;
+
+		const transfer = createDataTransfer();
+		findRow('e3').dispatchEvent(createDragEvent('dragstart', transfer));
+		findRow('e1').dispatchEvent(createDragEvent('drop', transfer));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const orderedIds = Array.from(
+			container.querySelectorAll('.isostate-tree-row-label')
+		).map((node) => node.textContent);
+		expect(orderedIds[0]).toBe('e3');
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('dragging an element onto itself within the same scene is a no-op', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const elementRow = Array.from(
+			container.querySelectorAll(
+				'.isostate-tree-element:not(.isostate-tree-connection)'
+			)
+		).find((row) => row.textContent?.includes('e1')) as HTMLElement;
+
+		const transfer = createDataTransfer();
+		elementRow.dispatchEvent(createDragEvent('dragstart', transfer));
+		elementRow.dispatchEvent(createDragEvent('drop', transfer));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const orderedIds = Array.from(
+			container.querySelectorAll('.isostate-tree-row-label')
+		).map((node) => node.textContent);
+		expect(orderedIds[0]).toBe('e1');
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('dragging a connection onto a different layer moves it there', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const layers = Array.from(
+			container.querySelectorAll('.isostate-tree-layer')
+		) as HTMLElement[];
+		const overlayLayer = layers.find((layer) =>
+			layer.textContent?.includes('overlay')
+		) as HTMLElement;
+		const connectionRow = container.querySelector(
+			'.isostate-tree-connection'
+		) as HTMLElement;
+
+		const transfer = createDataTransfer();
+		connectionRow.dispatchEvent(createDragEvent('dragstart', transfer));
+		overlayLayer.dispatchEvent(createDragEvent('drop', transfer));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const overlayIds = Array.from(
+			overlayLayer.querySelectorAll('.isostate-tree-row-label')
+		).map((node) => node.textContent);
+		expect(overlayIds).toContain('c1');
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('dropping an unrecognized drag payload onto a scene is ignored', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const root = createRoot(container);
+		root.render(
+			createElement(TestWrapper, { initialWorkspace: makeWorkspace() })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const sceneRow = container.querySelector(
+			'.isostate-tree-scene'
+		) as HTMLElement;
+		const transfer = createDataTransfer();
+		transfer.setData('application/x-isostate-tree', 'not-json{{{');
+		const beforeIds = Array.from(
+			container.querySelectorAll('.isostate-tree-name')
+		).map((node) => node.textContent);
+		sceneRow.dispatchEvent(createDragEvent('drop', transfer));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+
+		const afterIds = Array.from(
+			container.querySelectorAll('.isostate-tree-name')
+		).map((node) => node.textContent);
+		expect(afterIds).toEqual(beforeIds);
+
+		root.unmount();
+		container.remove();
+	});
 });

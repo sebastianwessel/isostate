@@ -546,6 +546,99 @@ describe('CanvasView', () => {
 		container.remove();
 	});
 
+	test.each([
+		['rectangle', 'primitive.rectangle'],
+		['circle', 'primitive.circle'],
+		['polygon', 'primitive.polygon'],
+		['line', 'primitive.line']
+	])('drop with built-in %s asset creates a %s element', async (assetId) => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeWorkspace();
+		const root = createRoot(container);
+		let result: EditorCommandResult | null = null;
+		root.render(
+			createElement(CanvasView, {
+				workspace,
+				onCommand: (cmd) => {
+					result = applyEditorCommand(workspace, cmd);
+				},
+				theme: 'light'
+			})
+		);
+		await waitForCanvasRender();
+		const pt = getGridPoint(workspace, [2, 2]);
+		const canvas = container.querySelector(
+			'.isostate-editor-canvas-view'
+		) as HTMLDivElement;
+		const event = new DragEvent('drop', { bubbles: true, cancelable: true });
+		Object.defineProperties(event, {
+			dataTransfer: {
+				value: createDataTransfer({
+					'application/x-isostate-asset': assetId
+				})
+			}
+		});
+		setEventClientPoint(event, pt);
+		canvas.dispatchEvent(event);
+
+		expect(result?.changed).toBe(true);
+		const element = result?.workspace.document?.scenes[0].elements?.find(
+			(candidate) => candidate.asset === assetId && candidate.id !== 'e1'
+		);
+		expect(element?.primitive?.[assetId as 'rectangle']).toBeDefined();
+		const compiledDocument = result?.workspace.document;
+		expect(compiledDocument).toBeDefined();
+		if (!compiledDocument)
+			throw new Error('Expected command to produce a document');
+		expect(() => compileScene(compiledDocument)).not.toThrow();
+
+		root.unmount();
+		container.remove();
+	});
+
+	test('drop with an unrecognized built-in asset id creates a bare element', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeWorkspace();
+		const root = createRoot(container);
+		let result: EditorCommandResult | null = null;
+		root.render(
+			createElement(CanvasView, {
+				workspace,
+				onCommand: (cmd) => {
+					result = applyEditorCommand(workspace, cmd);
+				},
+				theme: 'light'
+			})
+		);
+		await waitForCanvasRender();
+		const pt = getGridPoint(workspace, [2, 2]);
+		const canvas = container.querySelector(
+			'.isostate-editor-canvas-view'
+		) as HTMLDivElement;
+		const event = new DragEvent('drop', { bubbles: true, cancelable: true });
+		Object.defineProperties(event, {
+			dataTransfer: {
+				value: createDataTransfer({
+					'application/x-isostate-asset': 'block'
+				})
+			}
+		});
+		setEventClientPoint(event, pt);
+		canvas.dispatchEvent(event);
+
+		expect(result?.changed).toBe(true);
+		const element = result?.workspace.document?.scenes[0].elements?.find(
+			(candidate) => candidate.asset === 'block' && candidate.id !== 'e1'
+		);
+		expect(element?.text).toBeUndefined();
+		expect(element?.primitive).toBeUndefined();
+
+		root.unmount();
+		container.remove();
+	});
+
 	test('drop with manifest asset dataTransfer dispatches asset.place command', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
