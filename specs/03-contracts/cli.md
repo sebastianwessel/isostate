@@ -163,12 +163,64 @@ Behavior:
 - prints scene count, asset count, layer count, floor size, and digest;
 - exits non-zero for malformed or non-canonical bundle files.
 
+### `isostate mermaid2dsl`
+
+```bash
+isostate mermaid2dsl flow.mmd
+isostate mermaid2dsl flow.mmd --out scenes/flow.isostate.yaml
+```
+
+Options:
+
+| Option | Values | Default | Rule |
+|---|---|---|---|
+| positional input | path | required | Mermaid flowchart source file |
+| `--out` | path | input path with extension replaced by `.isostate.yaml` | parent directories are created |
+
+Behavior:
+
+- converts the supported Mermaid flowchart subset to authored YAML per
+  `02-capabilities/dsl/mermaid2dsl.md`;
+- validates the generated document through `@sebastianwessel/isostate/dsl`
+  before writing; a validation failure is a converter bug and fails with
+  `MERMAID_INTERNAL`;
+- prints conversion warnings (`MERMAID_LABEL_DROPPED`,
+  `MERMAID_CYCLE_BROKEN`) using the standard `WARN <code> ...` format;
+- exits `0` on success (with or without warnings), `1` on any error.
+
+## Help
+
+- `isostate --help`, `isostate -h`, and `isostate` with no arguments print
+  the global usage text to stdout and exit `0` (no arguments additionally
+  exits `0`, not `1`).
+- `isostate <command> --help` and `isostate <command> -h` print that
+  command's usage (synopsis, description, options table content) and exit
+  `0` without executing the command.
+- Unknown commands print `ERROR CLI_UNKNOWN_COMMAND <name>` plus the global
+  usage to stderr and exit `1`.
+- The global usage text lists every command in this contract in the order:
+  `validate`, `compile`, `bundle`, `assets manifest`, `inspect`,
+  `mermaid2dsl`, one line per command with a one-sentence description.
+
 ## Diagnostics
 
 CLI diagnostics are human-readable by default and must preserve structured error
 codes from core errors. Errors must not print full YAML source.
 
 Warnings never change the exit code unless validation errors are also present.
+
+Output grouping for `validate` and any command that surfaces validation
+results:
+
+- errors print first, one `ERROR <code> ...` line each, preceded by a
+  `Errors (<n>)` header line when `n > 0`;
+- warnings print after errors, one `WARN <code> ...` line each, preceded by
+  a `Warnings (<n>)` header line when `n > 0`;
+- errors and the `Errors` header go to stderr; warnings, the `Warnings`
+  header, and summaries go to stdout;
+- the final summary line is `OK` for a clean document,
+  `OK (<n> warnings)` when only warnings are present, and
+  `FAILED (<e> errors, <w> warnings)` when errors are present.
 
 ## Public API Inventory
 

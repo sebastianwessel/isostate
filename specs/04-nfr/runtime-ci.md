@@ -50,6 +50,7 @@ bun run format
 bun run lint
 bun run typecheck
 bun run test
+bun run coverage
 bun run build
 bun run size
 bun run publint
@@ -81,7 +82,8 @@ Opt-in checks:
 - Release process must verify `isostate bundle` output imports without
   dev-time dependencies.
 - Pull requests to `main` must run `bun ci`, format, lint, typecheck, tests,
-  build, size, package lint, basic example bundle generation, and the static
+  the coverage gate (`bun run coverage`, minimum 80% line coverage), build,
+  size, package lint, basic example bundle generation, and the static
   website build.
 - Manual releases from `main` must verify package versions, reject already
   published npm versions, run `bun ci`/format/lint/typecheck/tests/build/size/

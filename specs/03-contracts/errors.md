@@ -135,6 +135,25 @@ print these as compact key/value pairs before the message.
 | `CAMERA_TARGET_NOT_FOUND` | Runtime `zoomToElement()` cannot resolve the id. | Pass an existing element id. |
 | `CAMERA_TARGET_NOT_VISIBLE` | Runtime `zoomToElement()` targets a currently removed element. | Navigate to a scene where it is visible or zoom to an area. |
 | `INVALID_CAMERA_OPTIONS` | Runtime camera area or options are invalid. | Fix area, padding, duration, or easing. |
+| `MOUNT_DESTROYED` | `MountedScene.on()` or `attachDiagnosticsOverlay()` called after `destroy()`. | Use the API while the scene is mounted. |
+| `EXPORT_TARGET_DESTROYED` | Snapshot export called on a destroyed mount. | Export before calling `destroy()`. |
+| `EXPORT_INVALID_OPTIONS` | Export `progress` outside `[0, 1]`, non-positive `scale`, or `inlineAssets: false` on PNG export. | Fix the option value. |
+| `EXPORT_ASSET_FETCH_FAILED` | An external asset could not be fetched for inlining. | Serve assets from a reachable URL or export SVG with `inlineAssets: false`. |
+| `EXPORT_RASTERIZE_FAILED` | Canvas 2D context unavailable or PNG encoding failed. | Run in a browser with canvas support. |
+
+### Converter
+
+`isostate mermaid2dsl` structured errors (see
+`02-capabilities/dsl/mermaid2dsl.md`):
+
+| Code | Meaning | Action |
+|---|---|---|
+| `MERMAID_PARSE_ERROR` | Input line cannot be tokenized as a supported statement. | Fix the statement at `details.line`. |
+| `MERMAID_UNSUPPORTED` | Statement uses Mermaid features outside the supported subset. | Remove or rewrite the statement at `details.line`. |
+| `MERMAID_EMPTY` | Input declares no nodes. | Add at least one node. |
+| `MERMAID_NODE_REDEFINED` | A node is redefined with a different shape or label. | Keep one bracketed definition per node. |
+| `MERMAID_ID_COLLISION` | Two Mermaid ids normalize to the same DSL id. | Rename one node id. |
+| `MERMAID_INTERNAL` | Generated document failed DSL validation (converter bug). | Report the issue with the input file. |
 
 ## Warning Codes
 
@@ -149,4 +168,12 @@ successfully when no errors are present.
 | `ELEMENT_OUTSIDE_FLOOR` | Element lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_OUTSIDE_FLOOR` | Connector route lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_INTERSECTS_OBJECT` | Manual connector route crosses an unrelated visible object. |
+| `MERMAID_LABEL_DROPPED` | A Mermaid edge label was dropped; the DSL has no connection labels. |
+| `MERMAID_CYCLE_BROKEN` | A cycle-closing edge was ignored for layout layering. |
 | `CONNECTOR_ROUTE_DETOUR` | Auto route is valid but much longer than the direct route. |
+
+## Documentation Completeness
+
+Every error and warning code in this contract must have a row in
+`docs/reference/errors.md`. `tests/nfr/error-docs.test.ts` parses both files
+and fails when a code listed here is missing from the docs table.
