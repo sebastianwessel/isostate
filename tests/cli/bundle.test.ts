@@ -1,10 +1,11 @@
 import { afterEach, beforeAll, describe, expect, test } from 'bun:test';
 import { existsSync } from 'node:fs';
 import {
+	cp,
 	mkdir,
 	mkdtemp,
-	readFile,
 	readdir,
+	readFile,
 	rm,
 	writeFile
 } from 'node:fs/promises';
@@ -236,6 +237,103 @@ scenes:
 		).toEqual(new Set(['assets/app-icons.png']));
 	});
 
+	test('resolves second-order filename collisions to distinct files with correct content', async () => {
+		// Regression test: uniqueAssetFile() used to compute `${id}-${basename}`
+		// once and add it to usedFiles without checking whether that prefixed
+		// name was already claimed by another asset. Here, asset "server"'s
+		// prefixed candidate "server-icon.svg" collides with an asset that
+		// already claimed that exact filename plainly, which previously caused
+		// copyAssets() to silently skip copying "server"'s real source file and
+		// serve "aab-server-icon"'s bytes under both ids' URLs.
+		const dir = await makeTempDir();
+		const input = join(dir, 'scene.isostate.yaml');
+		const assetDir = join(dir, 'source-assets');
+		const out = join(dir, 'public', 'isostate');
+		await mkdir(join(assetDir, 'dir-x'), { recursive: true });
+		await mkdir(join(assetDir, 'dir-y'), { recursive: true });
+		await writeFile(
+			input,
+			`header:
+  version: "0.1"
+  assetBaseUrl: ./source-assets
+  assets:
+    - id: aab-server-icon
+      path: dir-y/server-icon.svg
+    - id: server
+      path: dir-x/icon.svg
+    - id: icon
+      path: dir-y/icon.svg
+  layers:
+    - name: default
+scenes:
+  - id: initial
+    elements:
+      - id: a
+        asset: aab-server-icon
+        at: [0, 0]
+      - id: b
+        asset: server
+        at: [1, 0]
+      - id: c
+        asset: icon
+        at: [2, 0]
+`,
+			'utf8'
+		);
+		await writeFile(
+			join(assetDir, 'dir-y', 'server-icon.svg'),
+			'<svg id="aab-server-icon-source"></svg>',
+			'utf8'
+		);
+		await writeFile(
+			join(assetDir, 'dir-x', 'icon.svg'),
+			'<svg id="server-source"></svg>',
+			'utf8'
+		);
+		await writeFile(
+			join(assetDir, 'dir-y', 'icon.svg'),
+			'<svg id="icon-source"></svg>',
+			'utf8'
+		);
+
+		const result = await runCli([
+			'bundle',
+			input,
+			'--out',
+			out,
+			'--asset-dir',
+			assetDir
+		]);
+
+		expect(result.exitCode).toBe(0);
+
+		const outputFiles = await readdir(join(out, 'assets'));
+		expect(new Set(outputFiles).size).toBe(outputFiles.length);
+		expect(outputFiles.length).toBe(3);
+
+		const manifest = JSON.parse(
+			await readFile(join(out, 'manifest.json'), 'utf8')
+		) as {
+			assets: Array<{ id: string; file: string; digest: string }>;
+		};
+		const byId = new Map(manifest.assets.map((asset) => [asset.id, asset]));
+		const files = manifest.assets.map((asset) => asset.file);
+		expect(new Set(files).size).toBe(files.length);
+
+		// Every asset must be served from a file containing its own source
+		// bytes, not another asset's.
+		for (const [id, sourceMarker] of [
+			['aab-server-icon', 'aab-server-icon-source'],
+			['server', 'server-source'],
+			['icon', 'icon-source']
+		] as const) {
+			const entry = byId.get(id);
+			expect(entry).toBeDefined();
+			const contents = await readFile(join(out, entry?.file ?? ''), 'utf8');
+			expect(contents).toContain(sourceMarker);
+		}
+	});
+
 	test('rejects extra input paths', async () => {
 		const dir = await makeTempDir();
 		const input = join(dir, 'scene.isostate.yaml');
@@ -259,6 +357,59 @@ scenes:
 		expect(result.stderr).toContain('ERROR EXTRA_INPUT');
 		expect(existsSync(out)).toBe(false);
 	});
+
+	test('resolves default --runtime copy from an installed (non-monorepo) package layout', async () => {
+		// Regression test for the hardcoded monorepo-relative RUNTIME_SOURCE path:
+		// simulates a real `npm install` layout where the CLI's compiled dist/bin.js
+		// resolves `@sebastianwessel/isostate` from its own node_modules, entirely
+		// outside this repository's packages/core <-> packages/cli sibling layout.
+		const dir = await makeTempDir();
+		const installRoot = join(dir, 'install');
+		await installIsolatedPackages(installRoot);
+
+		const input = join(installRoot, 'scene.isostate.yaml');
+		const assetDir = join(installRoot, 'source-assets');
+		const out = join(installRoot, 'public', 'isostate');
+		await writeSceneWithAssets(input, assetDir);
+
+		const proc = Bun.spawn(
+			[
+				process.execPath,
+				join(
+					installRoot,
+					'node_modules',
+					'@sebastianwessel',
+					'isostate-cli',
+					'dist',
+					'bin.js'
+				),
+				'bundle',
+				input,
+				'--out',
+				out,
+				'--asset-dir',
+				assetDir
+			],
+			{ cwd: installRoot, stdout: 'pipe', stderr: 'pipe' }
+		);
+		const [stdout, stderr, exitCode] = await Promise.all([
+			new Response(proc.stdout).text(),
+			new Response(proc.stderr).text(),
+			proc.exited
+		]);
+
+		expect({ exitCode, stdout, stderr }).toMatchObject({
+			exitCode: 0,
+			stdout: `BUNDLED ${out}\n`
+		});
+		expect(existsSync(join(out, 'isostate.runtime.js'))).toBe(true);
+		const runtimeContents = await readFile(
+			join(out, 'isostate.runtime.js'),
+			'utf8'
+		);
+		expect(runtimeContents.length).toBeGreaterThan(0);
+		expect(runtimeContents).not.toContain('node:fs');
+	});
 });
 
 async function writeSceneWithAssets(input: string, assetDir: string) {
@@ -280,6 +431,39 @@ async function makeTempDir(): Promise<string> {
 	const dir = await mkdtemp(join(tmpdir(), 'isostate-cli-'));
 	tempDirs.push(dir);
 	return dir;
+}
+
+/**
+ * Builds an isolated `node_modules` layout (real file copies, not monorepo
+ * symlinks) that mirrors what `npm install @sebastianwessel/isostate-cli
+ * @sebastianwessel/isostate` produces, so bundle tests can exercise runtime
+ * artifact resolution the way a real end user would encounter it.
+ */
+async function installIsolatedPackages(installRoot: string): Promise<void> {
+	const scopeDir = join(installRoot, 'node_modules', '@sebastianwessel');
+	await mkdir(scopeDir, { recursive: true });
+
+	await cp(
+		'packages/core/package.json',
+		join(scopeDir, 'isostate', 'package.json')
+	);
+	await cp('packages/core/dist', join(scopeDir, 'isostate', 'dist'), {
+		recursive: true
+	});
+	await cp(
+		'packages/cli/package.json',
+		join(scopeDir, 'isostate-cli', 'package.json')
+	);
+	await cp('packages/cli/dist', join(scopeDir, 'isostate-cli', 'dist'), {
+		recursive: true
+	});
+
+	// `yaml` is a peer dependency of both packages and must be resolvable from
+	// the isolated node_modules root for the DSL parser to load.
+	await cp('node_modules/yaml', join(installRoot, 'node_modules', 'yaml'), {
+		recursive: true,
+		dereference: true
+	});
 }
 
 async function runCli(args: string[]) {

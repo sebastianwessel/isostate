@@ -48,6 +48,8 @@ interface UrlAssetManifestEntry {
 	label?: string;
 	anchor?: [number, number];
 	tags?: string[];
+	width?: number;
+	height?: number;
 	digest: string;
 }
 
@@ -61,8 +63,11 @@ type SpriteManifestDefinition =
 			tags?: string[];
 	  };
 
-interface SpriteSheetManifestEntry extends Omit<UrlAssetManifestEntry, 'type'> {
+interface SpriteSheetManifestEntry
+	extends Omit<UrlAssetManifestEntry, 'type' | 'width' | 'height'> {
 	type: 'sprite-sheet';
+	width: number;
+	height: number;
 	sheetSize: [number, number];
 	tileSize?: [number, number];
 	sprites: Record<string, SpriteManifestDefinition>;
@@ -340,17 +345,31 @@ async function readMetadata(
 	args: AssetManifestArgs,
 	assetDir: string
 ): Promise<Record<string, MetadataEntry>> {
+	const isExplicitPath = args.metadataPath !== undefined;
 	const metaPath = args.metadataPath ?? join(assetDir, '.isostate-assets.yaml');
 
+	let isFile: boolean;
 	try {
-		const stats = await lstat(metaPath);
-		if (!stats.isFile()) return {};
+		isFile = (await lstat(metaPath)).isFile();
 	} catch (error) {
-		if (isMissingPathError(error)) return {};
+		if (isMissingPathError(error)) {
+			if (!isExplicitPath) return {};
+			throw codedError(
+				'ASSET_MANIFEST_METADATA_NOT_FOUND',
+				`Metadata path "${metaPath}" does not exist`
+			);
+		}
 		throw wrapFsError(
 			'FILE_READ_FAILED',
 			`Unable to read metadata ${metaPath}`,
 			error
+		);
+	}
+	if (!isFile) {
+		if (!isExplicitPath) return {};
+		throw codedError(
+			'ASSET_MANIFEST_METADATA_NOT_FOUND',
+			`Metadata path "${metaPath}" is not a file`
 		);
 	}
 
@@ -388,7 +407,10 @@ async function readMetadata(
 }
 
 async function createSpriteSheetEntry(
-	common: Omit<SpriteSheetManifestEntry, 'type' | 'sheetSize' | 'sprites'>,
+	common: Omit<
+		SpriteSheetManifestEntry,
+		'type' | 'sheetSize' | 'sprites' | 'width' | 'height'
+	>,
 	meta: MetadataEntry,
 	relativePath: string,
 	bytes: Buffer,
@@ -401,12 +423,21 @@ async function createSpriteSheetEntry(
 		);
 	}
 
-	const sheetSize =
-		meta.sheetSize ?? (await readImageSize(relativePath, bytes));
+	const actualSize = await readImageSize(relativePath, bytes);
+	const sheetSize = meta.sheetSize ?? actualSize;
 	if (!isPositiveIntegerTuple(sheetSize)) {
 		throw codedError(
 			'ASSET_MANIFEST_INVALID_METADATA',
 			`Sprite sheet "${relativePath}" must declare a valid sheetSize`
+		);
+	}
+	if (
+		meta.sheetSize &&
+		(meta.sheetSize[0] !== actualSize[0] || meta.sheetSize[1] !== actualSize[1])
+	) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Sprite sheet "${relativePath}" sheetSize [${meta.sheetSize[0]}, ${meta.sheetSize[1]}] does not match source image dimensions [${actualSize[0]}, ${actualSize[1]}]`
 		);
 	}
 	if (meta.tileSize && !isPositiveIntegerTuple(meta.tileSize)) {
@@ -444,6 +475,8 @@ async function createSpriteSheetEntry(
 	const entry: SpriteSheetManifestEntry = {
 		...common,
 		type: 'sprite-sheet',
+		width: sheetSize[0],
+		height: sheetSize[1],
 		sheetSize,
 		sprites
 	};
@@ -825,7 +858,7 @@ function readWebpSize(path: string, bytes: Buffer): [number, number] {
 		const b3 = bytes[24];
 		return [
 			1 + (((b1 & 0x3f) << 8) | b0),
-			1 + ((b3 << 6) | (b2 << 2) | ((b1 & 0xc0) >> 6))
+			1 + ((b1 >> 6) | (b2 << 2) | ((b3 & 0x0f) << 10))
 		];
 	}
 	if (chunk === 'VP8 ' && bytes.length >= 30) {
@@ -838,11 +871,18 @@ function readWebpSize(path: string, bytes: Buffer): [number, number] {
 }
 
 function readSvgSize(path: string, content: string): [number, number] {
-	const width = content.match(/\bwidth=["']([0-9]+(?:\.[0-9]+)?)["']/i)?.[1];
-	const height = content.match(/\bheight=["']([0-9]+(?:\.[0-9]+)?)["']/i)?.[1];
+	const rootTag = content.match(/<svg\b[^>]*>/i)?.[0];
+	if (!rootTag) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_METADATA',
+			`Unable to read SVG dimensions for "${path}"`
+		);
+	}
+	const width = rootTag.match(/\bwidth=["']([0-9]+(?:\.[0-9]+)?)["']/i)?.[1];
+	const height = rootTag.match(/\bheight=["']([0-9]+(?:\.[0-9]+)?)["']/i)?.[1];
 	if (width && height)
 		return [Math.round(Number(width)), Math.round(Number(height))];
-	const viewBox = content.match(
+	const viewBox = rootTag.match(
 		/\bviewBox=["']\s*[-0-9.]+\s+[-0-9.]+\s+([0-9.]+)\s+([0-9.]+)\s*["']/i
 	);
 	if (viewBox)
@@ -890,7 +930,14 @@ function checkSvgSafety(path: string, content: string): void {
 
 function deriveId(relativePath: string): string {
 	const normalized = normalizePathSegments(relativePath);
-	return normalized.join('-');
+	const id = normalized.join('-');
+	if (!IDENTIFIER_PATTERN.test(id)) {
+		throw codedError(
+			'ASSET_MANIFEST_INVALID_FILENAME',
+			`Path "${relativePath}" normalizes to id "${id}", which is not a DSL-safe kebab-case identifier`
+		);
+	}
+	return id;
 }
 
 function deriveGroupAndName(relativePath: string): {
