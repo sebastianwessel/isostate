@@ -67,7 +67,9 @@ export interface FloorConfig {
 	asset?: string;
 }
 
+/** Scaling behavior: `contain` fits content in the viewport, `none` uses the compiled viewBox as-is. */
 export type LayoutFit = "contain" | "none";
+/** Source used to compute the viewBox bounds. */
 export type LayoutBounds = "floor" | "content" | "union";
 
 /** Resolved layout emitted to runtime bundles. */
