@@ -5,6 +5,7 @@ import {
 	getCurrentElementBounds,
 	getElementState,
 	getGridAreaBounds,
+	getResolvedProjectionLayout,
 	getResolvedViewBox,
 	hideElementAfterExit,
 	unhideElementOnReadd,
@@ -23,15 +24,22 @@ import type {
 } from "../types/node.ts";
 import type { RuntimeBundle } from "../types/runtime-bundle.ts";
 import { type EasingType, resolveEasing } from "../utils/easing.ts";
+import { calculateVisualSize, projectToScreen } from "../utils/projection.ts";
 import { AnimationEngine } from "./animation-engine.ts";
 
 // ── Event types ────────────────────────────────────────────────────────────
 
+/** Events emitted by `AnimationController.on()`. */
 export interface ControllerEvents {
+	/** Fired whenever resolved scroll/scene progress changes. */
 	"progress-change": (progress: number) => void;
+	/** Fired when the active scene index changes. */
 	"scene-change": (index: number) => void;
+	/** Fired after the camera viewBox or zoom target changes. */
 	"camera-change": (state: CameraState) => void;
+	/** Fired when scroll-driven progress tracking is paused. */
 	paused: () => void;
+	/** Fired when scroll-driven progress tracking resumes. */
 	resumed: () => void;
 }
 
@@ -55,27 +63,40 @@ export interface ControllerConfig {
 	container?: HTMLElement;
 	/** SVG scene updated by this controller. Defaults to the first SVG in `container` for direct controller usage. */
 	sceneElement?: SVGSVGElement;
+	/** Scroll axis used to derive progress. Defaults to `vertical`. */
 	scrollDirection?: "vertical" | "horizontal";
+	/** Extra scroll offsets, in pixels, applied when deriving progress from `container`. */
 	scrollOffset?: {
 		top?: number;
 		bottom?: number;
 		left?: number;
 		right?: number;
 	};
+	/** Minimum resolved progress. Defaults to `0`. */
 	minProgress?: number;
+	/** Maximum resolved progress. Defaults to `1`. */
 	maxProgress?: number;
+	/** Enable arrow-key scene navigation. Defaults to `false`. */
 	keyboardControls?: boolean;
+	/** Enable touch swipe scene navigation. Defaults to `false`. */
 	touchControls?: boolean;
+	/** Multiplier applied to wheel/touch scroll deltas. Defaults to `1.0`. */
 	scrollSensitivity?: number;
+	/** Camera transition duration in milliseconds. Defaults to `600`. */
 	transitionDuration?: number;
+	/** Camera transition easing curve. Defaults to `ease-in-out`. */
 	transitionEasing?: "linear" | "ease-in-out" | "ease-out";
 }
 
 export type { CameraGridArea, CameraZoomOptions };
 
+/** Current camera viewBox and zoom target, as reported by `AnimationController.getCameraState()`. */
 export interface CameraState {
+	/** Current SVG viewBox. */
 	viewBox: ViewBoxRect;
+	/** Focus target that produced the current viewBox, if any. */
 	target?: RuntimeCameraTarget;
+	/** Whether the camera differs from the compiled full scene view. */
 	isZoomed: boolean;
 }
 
@@ -127,8 +148,8 @@ export class AnimationController {
 	// Scroll tracking state
 	private _minScroll = 0;
 	private _maxScroll = 0;
-	private _touchStartY = 0;
-	private _touchStartX = 0;
+	private _lastTouchY = 0;
+	private _lastTouchX = 0;
 	private _isDragging = false;
 
 	// Transition animation state
@@ -294,6 +315,11 @@ export class AnimationController {
 		}
 		const elementBounds = getCurrentElementBounds(svg, id);
 		if (!elementBounds) {
+			if (getElementState(svg, id)) {
+				throw new ControllerError("CAMERA_TARGET_NOT_VISIBLE", `Camera target element "${id}" is currently removed`, {
+					elementId: id,
+				});
+			}
 			throw new ControllerError("CAMERA_TARGET_NOT_FOUND", `Camera target element "${id}" was not found`, {
 				elementId: id,
 			});
@@ -464,8 +490,8 @@ export class AnimationController {
 		const { previous, next } = surroundingStops(sceneStops, progress);
 		const previousCamera = this._effectiveCameraAt(previous.index);
 		const nextCamera = this._effectiveCameraAt(next.index);
-		const previousViewBox = this._resolveCameraViewBox(previousCamera);
-		const nextViewBox = this._resolveCameraViewBox(nextCamera);
+		const previousViewBox = this._resolveCameraViewBox(previousCamera, { forInterpolation: true });
+		const nextViewBox = this._resolveCameraViewBox(nextCamera, { forInterpolation: true });
 		const range = next.scene.progress - previous.scene.progress;
 		const rawT = range <= 0 ? 0 : (progress - previous.scene.progress) / range;
 		const t = resolveCameraEasing(nextCamera.easing)(Math.max(0, Math.min(1, rawT)));
@@ -489,7 +515,10 @@ export class AnimationController {
 		return { target: { type: "reset" } };
 	}
 
-	private _resolveCameraViewBox(camera: RequiredCameraFocus): ViewBoxRect {
+	private _resolveCameraViewBox(
+		camera: RequiredCameraFocus,
+		options: { forInterpolation?: boolean } = {},
+	): ViewBoxRect {
 		if (!this._bundle) throw new ControllerError("CAMERA_NOT_INITIALIZED", "Camera requires an initialized bundle");
 		if (camera.target.type === "reset") return getResolvedViewBox(this._bundle);
 		if (camera.target.type === "area") {
@@ -500,7 +529,9 @@ export class AnimationController {
 		}
 		const svg = this._getSceneSvg();
 		if (!svg) throw new ControllerError("CAMERA_NOT_INITIALIZED", "Camera requires an initialized scene SVG");
-		const bounds = getCurrentElementBounds(svg, camera.target.id);
+		const bounds = options.forInterpolation
+			? this._resolveElementBoundsForInterpolation(svg, camera.target.id)
+			: getCurrentElementBounds(svg, camera.target.id);
 		if (!bounds) {
 			throw new ControllerError(
 				"CAMERA_TARGET_NOT_FOUND",
@@ -511,6 +542,46 @@ export class AnimationController {
 			);
 		}
 		return expandViewBox(bounds, camera.padding ?? 32);
+	}
+
+	/**
+	 * Resolve element bounds for scroll/setProgress camera interpolation.
+	 *
+	 * Unlike `getCurrentElementBounds()`, this tolerates an element whose
+	 * resolved presence is transiently "removed" because progress has not yet
+	 * reached the stop that introduces it (the engine still carries valid
+	 * authored geometry for it via nearest-geometry fallback). It falls back to
+	 * that geometry instead of reporting the target as missing so a scene that
+	 * both adds an element and focuses the camera on it in the same stop can be
+	 * interpolated into smoothly. A genuinely unknown element id still resolves
+	 * to `undefined` so callers can throw `CAMERA_TARGET_NOT_FOUND`.
+	 */
+	private _resolveElementBoundsForInterpolation(svg: SVGSVGElement, id: string): ViewBoxRect | undefined {
+		const direct = getCurrentElementBounds(svg, id);
+		if (direct) return direct;
+
+		const state = getElementState(svg, id);
+		if (!state || !this._bundle) return undefined;
+
+		const layout = getResolvedProjectionLayout(this._bundle);
+		const element = state.current;
+		const screen = projectToScreen(
+			element.pos[0] + element.size,
+			element.pos[1] + element.size,
+			layout.cellSize,
+			layout.selectedBounds.minX,
+			layout.selectedBounds.minY,
+			layout.padding.x,
+			layout.padding.y,
+		);
+		const visualSize = calculateVisualSize(element.size, layout.cellSize);
+		const [anchorX, anchorY] = state.anchor;
+		return {
+			minX: roundCameraNumber(screen.screenX - visualSize * anchorX),
+			minY: roundCameraNumber(screen.screenY - visualSize * anchorY),
+			width: roundCameraNumber(Math.max(1, visualSize)),
+			height: roundCameraNumber(Math.max(1, visualSize)),
+		};
 	}
 
 	private _applyCameraDestination(viewBox: ViewBoxRect, target: RuntimeCameraTarget, options: CameraZoomOptions): void {
@@ -766,14 +837,15 @@ export class AnimationController {
 	private _transitionToScene(index: number): void {
 		this._cancelTransition();
 
-		if (index === this._sceneIndex) return;
+		const stop = this.scenes[index];
+		const from = this._progress;
+		const to = stop.progress;
+
+		if (index === this._sceneIndex && from === to) return;
 
 		this._sceneIndex = index;
 		this._emit("scene-change", index);
 
-		const stop = this.scenes[index];
-		const from = this._progress;
-		const to = stop.progress;
 		const duration = this._config.transitionDuration;
 		if (duration > 0 && from !== to) {
 			this._animateProgress(from, to, duration);
@@ -781,6 +853,7 @@ export class AnimationController {
 		}
 
 		this._progress = to;
+		this._cancelCameraAnimation();
 		this._scheduleProgressForward(to);
 	}
 
@@ -829,6 +902,10 @@ export class AnimationController {
 	// ── Scroll binding ─────────────────────────────────────────────────────
 
 	private _bindScroll(): void {
+		if (this._config.keyboardControls) {
+			document.addEventListener("keydown", this._onKeyDown);
+		}
+
 		const container = this._config.container;
 		if (!container) return;
 
@@ -837,10 +914,6 @@ export class AnimationController {
 
 		container.addEventListener("scroll", this._onScroll, { passive: true });
 		window.addEventListener("resize", this._onResize, { passive: true });
-
-		if (this._config.keyboardControls) {
-			document.addEventListener("keydown", this._onKeyDown);
-		}
 
 		if (this._config.touchControls) {
 			container.addEventListener("touchstart", this._onTouchStart, {
@@ -854,12 +927,13 @@ export class AnimationController {
 	}
 
 	private _unbindScroll(): void {
+		document.removeEventListener("keydown", this._onKeyDown);
+
 		const container = this._config.container;
 		if (!container) return;
 
 		container.removeEventListener("scroll", this._onScroll);
 		window.removeEventListener("resize", this._onResize);
-		document.removeEventListener("keydown", this._onKeyDown);
 		container.removeEventListener("touchstart", this._onTouchStart);
 		container.removeEventListener("touchmove", this._onTouchMove);
 		container.removeEventListener("touchend", this._onTouchEnd);
@@ -892,14 +966,15 @@ export class AnimationController {
 		if (range <= 0) return;
 
 		const rawProgress = (currentScroll - this._minScroll) / range;
+		const sensitivity = this._config.scrollSensitivity ?? 1;
+		const scaledProgress = rawProgress * sensitivity;
 		const clampedProgress = Math.max(
 			this._config.minProgress ?? 0,
-			Math.min(this._config.maxProgress ?? 1, rawProgress),
+			Math.min(this._config.maxProgress ?? 1, scaledProgress),
 		);
 
-		const sensitivity = this._config.scrollSensitivity ?? 1;
 		if (clampedProgress !== this._progress) {
-			this.setProgress(clampedProgress * sensitivity);
+			this.setProgress(clampedProgress);
 		}
 	};
 
@@ -924,9 +999,9 @@ export class AnimationController {
 		this._isDragging = true;
 		const touch = e.touches[0];
 		if (this._config.scrollDirection === "horizontal") {
-			this._touchStartX = touch.clientX;
+			this._lastTouchX = touch.clientX;
 		} else {
-			this._touchStartY = touch.clientY;
+			this._lastTouchY = touch.clientY;
 		}
 	};
 
@@ -935,10 +1010,13 @@ export class AnimationController {
 		if (!this._isDragging) return;
 
 		const touch = e.touches[0];
-		const delta =
-			this._config.scrollDirection === "horizontal"
-				? this._touchStartX - touch.clientX
-				: this._touchStartY - touch.clientY;
+		const isHorizontal = this._config.scrollDirection === "horizontal";
+		const delta = isHorizontal ? this._lastTouchX - touch.clientX : this._lastTouchY - touch.clientY;
+		if (isHorizontal) {
+			this._lastTouchX = touch.clientX;
+		} else {
+			this._lastTouchY = touch.clientY;
+		}
 
 		const sensitivity = this._config.scrollSensitivity ?? 1.0;
 		const progressDelta = (delta / 300) * sensitivity;
@@ -955,10 +1033,7 @@ export class AnimationController {
 	// ── Pause state ────────────────────────────────────────────────────────
 
 	private _applyPauseState(pause: boolean): void {
-		const container = this._config.container;
-		if (!container) return;
-
-		const svg = container.querySelector("svg");
+		const svg = this._getSceneSvg();
 		if (!svg) return;
 
 		const playState = pause ? "paused" : "running";

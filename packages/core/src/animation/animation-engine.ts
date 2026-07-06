@@ -1,3 +1,4 @@
+import { AnimationError } from "../types/errors.ts";
 import type {
 	AmbientAnimation,
 	LifecycleStatus,
@@ -9,6 +10,7 @@ import type {
 } from "../types/node.ts";
 import type { RuntimeBundle } from "../types/runtime-bundle.ts";
 
+/** Lifecycle transition key used to look up entry/exit animation keyframes. */
 export type LifecycleKey = "entering" | "present" | "exiting" | "removed";
 
 /** Internal state tracked per element across frames. */
@@ -134,6 +136,9 @@ export class AnimationEngine {
 
 	/** Set current scroll progress (0-1) and compute frame update. */
 	setProgress(progress: number): void {
+		if (!Number.isFinite(progress)) {
+			throw new AnimationError("INVALID_PROGRESS", "setProgress() requires a finite progress value");
+		}
 		const clamped = Math.max(0, Math.min(1, progress));
 		if (this._paused) return;
 		this._progress = clamped;
@@ -350,7 +355,7 @@ function interpolateElement(
 		pos: interpolatePos(prev.pos, next.pos, t),
 		size: prev.size + (next.size - prev.size) * t,
 		lifecycle,
-		ambient: cloneAmbient(next.ambient),
+		ambient: cloneAmbient(t < 1 ? prev.ambient : next.ambient),
 		layer: t < 1 ? prev.layer : next.layer,
 		entry: next.enter ?? prev.enter,
 		exit: next.exit ?? prev.exit,
@@ -385,10 +390,10 @@ function interpolateConnector(
 		layer: t < 1 ? prev.layer : next.layer,
 		lifecycle,
 		style: cloneConnectorStyle(t < 1 ? prev.style : next.style),
-		start: next.start,
-		end: next.end,
-		direction: next.direction,
-		ambient: cloneAmbient(next.ambient),
+		start: t < 1 ? prev.start : next.start,
+		end: t < 1 ? prev.end : next.end,
+		direction: t < 1 ? prev.direction : next.direction,
+		ambient: cloneAmbient(t < 1 ? prev.ambient : next.ambient),
 		entry: next.enter ?? prev.enter,
 		exit: next.exit ?? prev.exit,
 	};

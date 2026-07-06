@@ -64,6 +64,32 @@ describe('mountScene', () => {
 		);
 	});
 
+	test('breaks equal-order layerOrder ties by code-point order, not locale collation', () => {
+		// 'Zone'.localeCompare('aisle') is positive under the default ICU locale,
+		// while code-point order places capital letters before lowercase ones.
+		// getResolvedConfig must use code-point order so layerOrder is
+		// byte-deterministic regardless of host locale.
+		expect('Zone'.localeCompare('aisle')).toBeGreaterThan(0);
+
+		const target = document.createElement('div');
+		const bundle = withDigest({
+			...createBundle(),
+			layers: [
+				{ name: 'base', order: 0 },
+				{ name: 'Zone', order: 1 },
+				{ name: 'aisle', order: 1 }
+			]
+		});
+
+		const mounted = mountScene(target, bundle);
+
+		expect(mounted.getResolvedConfig().layerOrder).toEqual([
+			{ name: 'base', order: 0 },
+			{ name: 'Zone', order: 1 },
+			{ name: 'aisle', order: 1 }
+		]);
+	});
+
 	test('destroy cleans up owned resources', () => {
 		const target = document.createElement('div');
 		const mounted = mountScene(target, createBundle());
@@ -71,6 +97,17 @@ describe('mountScene', () => {
 		mounted.destroy();
 		mounted.destroy();
 
+		expect(target.querySelector('svg')).toBeNull();
+		expect(mounted.engine.bundle).toBeNull();
+	});
+
+	test('destroy remains safe and completes cleanup when the controller was already destroyed', () => {
+		const target = document.createElement('div');
+		const mounted = mountScene(target, createBundle(), { controller: {} });
+
+		mounted.controller?.destroy();
+
+		expect(() => mounted.destroy()).not.toThrow();
 		expect(target.querySelector('svg')).toBeNull();
 		expect(mounted.engine.bundle).toBeNull();
 	});
@@ -143,6 +180,24 @@ describe('mountScene', () => {
 		mounted.destroy();
 	});
 
+	test('getResolvedConfig reports live camera state from the controller', () => {
+		const target = document.createElement('div');
+		const mounted = mountScene(target, createBundle(), {
+			controller: {}
+		});
+
+		expect(mounted.getResolvedConfig().camera.isZoomed).toBe(false);
+
+		mounted.controller?.zoomToArea({ at: [0, 0], size: [1, 1] }, { duration: 0 });
+		const zoomed = mounted.getResolvedConfig().camera;
+		expect(zoomed.isZoomed).toBe(true);
+		expect(zoomed.target).toEqual({ type: 'area', at: [0, 0], size: [1, 1] });
+
+		mounted.controller?.destroy();
+		expect(mounted.getResolvedConfig().camera.isZoomed).toBe(false);
+		mounted.destroy();
+	});
+
 	test('controller applies default entry and exit animations on lifecycle changes', async () => {
 		const target = document.createElement('div');
 		const mounted = mountScene(target, createLifecycleBundle(), {
@@ -195,9 +250,9 @@ describe('mountScene', () => {
 		const mounted = mountScene(target, createLifecycleBundle(), {
 			controller: { transitionDuration: 0 }
 		});
-		const badge = mounted.svg.querySelector('[data-id="badge"]') as
-			| TestElement
-			| null;
+		const badge = mounted.svg.querySelector(
+			'[data-id="badge"]'
+		) as TestElement | null;
 
 		mounted.controller?.setProgress(0.5);
 		await nextFrame();
@@ -233,7 +288,9 @@ describe('mountScene', () => {
 
 		expect(badge?.getAttribute('transform')).toBe(authoredTransform);
 		expect(badge?.getAttribute('transform')).not.toBe(
-			mounted.svg.querySelector('[data-id="block-1"]')?.getAttribute('transform')
+			mounted.svg
+				.querySelector('[data-id="block-1"]')
+				?.getAttribute('transform')
 		);
 		mounted.destroy();
 	});
@@ -265,13 +322,17 @@ describe('mountScene', () => {
 		const zone = mounted.svg.querySelector('[data-id="zone"]');
 
 		expect(label?.querySelector('tspan')?.textContent).toBe('Start');
-		expect(zone?.querySelector('polygon')?.getAttribute('fill')).toBe('#2563eb');
+		expect(zone?.querySelector('polygon')?.getAttribute('fill')).toBe(
+			'#2563eb'
+		);
 
 		mounted.controller?.setProgress(1);
 		await nextFrame();
 
 		expect(label?.querySelector('tspan')?.textContent).toBe('End');
-		expect(zone?.querySelector('polygon')?.getAttribute('fill')).toBe('#fbbf24');
+		expect(zone?.querySelector('polygon')?.getAttribute('fill')).toBe(
+			'#fbbf24'
+		);
 		mounted.destroy();
 	});
 
@@ -673,7 +734,13 @@ class TestElement {
 		return this.children[0] ?? null;
 	}
 
+	get childNodes(): TestElement[] {
+		return this.children;
+	}
+
 	appendChild<T extends TestElement>(child: T): T {
+		// Real Node.appendChild moves an already-attached node.
+		child.parentNode?.removeChild(child);
 		child.parentNode = this;
 		child.parentElement = this;
 		this.children.push(child);
@@ -681,6 +748,7 @@ class TestElement {
 	}
 
 	insertBefore<T extends TestElement>(child: T, before: TestElement): T {
+		child.parentNode?.removeChild(child);
 		child.parentNode = this;
 		child.parentElement = this;
 		const index = this.children.indexOf(before);
