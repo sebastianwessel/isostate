@@ -68,8 +68,8 @@ function requireString(value: unknown, context: string): string {
 }
 
 function requireNumber(value: unknown, context: string): number {
-	if (typeof value !== "number" || Number.isNaN(value)) {
-		fail("DSL_SCHEMA_TYPE_ERROR", `${context} must be a number`);
+	if (typeof value !== "number" || !Number.isFinite(value)) {
+		fail("DSL_SCHEMA_TYPE_ERROR", `${context} must be a finite number`);
 	}
 	return value;
 }
@@ -673,23 +673,24 @@ function parseCamera(raw: unknown, context: string): CameraFocus {
 	assertKnownFields(camera, new Set(["target", "padding", "duration", "easing"]), context);
 	const target = requireObject(camera.target, `${context}.target`);
 	assertKnownFields(target, new Set(["element", "area", "reset"]), `${context}.target`);
-	const parsed: CameraFocus = { target: {} as CameraFocus["target"] };
+	// Collect every authored target kind so the validator can reject documents
+	// that declare more than one of element/area/reset.
+	const parsedTarget: Record<string, unknown> = {};
 	if (target.element !== undefined) {
-		parsed.target = { element: requireIdentifier(target.element, `${context}.target.element`) };
+		parsedTarget.element = requireIdentifier(target.element, `${context}.target.element`);
 	}
 	if (target.area !== undefined) {
 		const area = requireObject(target.area, `${context}.target.area`);
 		assertKnownFields(area, new Set(["at", "size"]), `${context}.target.area`);
-		parsed.target = {
-			area: {
-				at: parseTuple2(area.at, `${context}.target.area.at`),
-				size: parseTuple2(area.size, `${context}.target.area.size`),
-			},
+		parsedTarget.area = {
+			at: parseTuple2(area.at, `${context}.target.area.at`),
+			size: parseTuple2(area.size, `${context}.target.area.size`),
 		};
 	}
 	if (target.reset !== undefined) {
-		parsed.target = { reset: requireBoolean(target.reset, `${context}.target.reset`) as true };
+		parsedTarget.reset = requireBoolean(target.reset, `${context}.target.reset`) as true;
 	}
+	const parsed: CameraFocus = { target: parsedTarget as CameraFocus["target"] };
 	if (camera.padding !== undefined) {
 		parsed.padding = requireNumber(camera.padding, `${context}.padding`);
 	}

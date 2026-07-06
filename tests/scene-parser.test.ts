@@ -628,4 +628,56 @@ scenes:
 			'DSL_SCHEMA_TYPE_ERROR'
 		);
 	});
+
+	test('rejects non-finite numeric values', () => {
+		expectParseErrorCode(
+			`
+header:
+  assets:
+    - id: tree-oak
+  grid:
+    cellSize: .inf
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements: []
+`,
+			'DSL_SCHEMA_TYPE_ERROR'
+		);
+
+		expectParseErrorCode(
+			`
+header:
+  assets:
+    - id: tree-oak
+  floor:
+    origin: [.inf, 0]
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements: []
+`,
+			'DSL_SCHEMA_TYPE_ERROR'
+		);
+
+		expectParseErrorCode(
+			`
+header:
+  assets:
+    - id: tree-oak
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements:
+      - id: tree-1
+        asset: tree-oak
+        at: [.nan, 0]
+        layer: ground
+`,
+			'DSL_SCHEMA_TYPE_ERROR'
+		);
+	});
 });

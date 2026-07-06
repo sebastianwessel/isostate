@@ -189,7 +189,12 @@ function compileLayers(layers: LayerDefinition[]): CompiledLayer[] {
 			name: layer.name,
 			order: layer.order ?? index,
 		}))
-		.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name));
+		.sort((a, b) => a.order - b.order || compareCodePointOrder(a.name, b.name));
+}
+
+/** Locale-independent string comparator so tie-break order is byte-deterministic across hosts. */
+function compareCodePointOrder(a: string, b: string): number {
+	return a < b ? -1 : a > b ? 1 : 0;
 }
 
 function resolveAssetUrl(document: SceneDocument, assetId: string): string | undefined {
