@@ -30,6 +30,23 @@ isostate inspect public/isostate/scene/scene.isostate.js
 isostate mermaid2dsl flow.mmd
 ```
 
+## Help
+
+Run `isostate` with no arguments, `isostate --help`, or `isostate -h` to print
+global usage and exit `0`. The listing covers every command, in this order:
+`validate`, `compile`, `bundle`, `assets manifest`, `inspect`, `mermaid2dsl`.
+
+```bash
+isostate --help
+```
+
+Run `isostate <command> --help` (or `-h`) for a specific command's synopsis,
+description, and options; this exits `0` without executing the command, for
+example `isostate validate --help` or `isostate assets manifest --help`.
+
+An unknown command prints `ERROR CLI_UNKNOWN_COMMAND <name>` plus the global
+usage text to stderr and exits `1`.
+
 ## Commands
 
 ### validate
@@ -42,6 +59,33 @@ npx --package @sebastianwessel/isostate-cli isostate validate scene.isostate.yam
 ```
 
 Use this as the fastest CI check for authored YAML.
+
+Diagnostics are grouped: errors print first under an `Errors (<n>)` header on
+stderr, warnings print after under a `Warnings (<n>)` header on stdout, and a
+summary line follows on stdout — `OK`, `OK (<n> warnings)`, or
+`FAILED (<e> errors, <w> warnings)`.
+
+```text
+$ isostate validate scene.isostate.yaml
+OK
+```
+
+```text
+$ isostate validate scene.isostate.yaml
+Warnings (1)
+WARN UNREFERENCED_ASSET asset=gateway Asset "gateway" is declared but never used
+OK (1 warnings)
+```
+
+A failing document (errors on stderr, warnings and summary on stdout):
+
+```text
+$ isostate validate scene.isostate.yaml 1>stdout.log 2>stderr.log; cat stderr.log
+Errors (1)
+ERROR ASSET_NOT_DECLARED scene=initial element=server-1 Asset "server" is not declared in header.assets
+$ cat stdout.log
+FAILED (1 errors, 0 warnings)
+```
 
 ### compile
 

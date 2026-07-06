@@ -167,6 +167,15 @@ Common fixes, grouped by the owner that raises each code (matching
 | `MERMAID_CYCLE_BROKEN` | Remove or restructure the cycle-closing edge if explicit layering is required. |
 | `CONNECTOR_ROUTE_DETOUR` | Shorten the route with a manual `route`, or accept the longer auto-routed path. |
 
+### CLI (General)
+
+This code comes from the CLI's own Help contract (`specs/03-contracts/cli.md`,
+"## Help") and is not part of `specs/03-contracts/errors.md`.
+
+| Code | Fix |
+|---|---|
+| `CLI_UNKNOWN_COMMAND` | Run `isostate --help` to see the supported commands and use one of them. |
+
 ### Asset Manifest (CLI)
 
 These codes come from the asset manifest generator's contract

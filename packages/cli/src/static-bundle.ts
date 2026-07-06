@@ -25,10 +25,7 @@ import {
 	validateScene
 } from '@sebastianwessel/isostate/dsl';
 import type { CliIo, CliResult } from './commands.js';
-import {
-	formatValidationError,
-	formatValidationWarning
-} from './diagnostics.js';
+import { printGroupedErrors, printGroupedWarnings } from './diagnostics.js';
 import { runtimeDigest, sha256Hex } from './runtime-digest.js';
 
 type RuntimeMode = 'copy' | 'external' | 'none';
@@ -97,13 +94,9 @@ export async function bundleCommand(
 	const source = await readFile(parsed.input, 'utf8');
 	const document = parseScene(source);
 	const report = validateScene(document);
-	for (const warning of report.warnings) {
-		io.stderr.error(formatValidationWarning(warning));
-	}
+	printGroupedErrors(report.errors, io);
+	printGroupedWarnings(report.warnings, io);
 	if (!report.isValid) {
-		for (const error of report.errors) {
-			io.stderr.error(formatValidationError(error));
-		}
 		return { exitCode: 1 };
 	}
 

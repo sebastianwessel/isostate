@@ -20,12 +20,91 @@ interface ValidationIssue {
 	};
 }
 
+/** Shape returned by `validateScene()`: blocking errors and non-blocking warnings. */
+export interface ValidationReport {
+	errors: ValidationIssue[];
+	warnings: ValidationIssue[];
+	isValid: boolean;
+}
+
 export function formatValidationError(error: ValidationIssue): string {
 	return formatIssue('ERROR', error);
 }
 
 export function formatValidationWarning(warning: ValidationIssue): string {
 	return formatIssue('WARN', warning);
+}
+
+type DiagnosticsIo = {
+	stdout: Pick<typeof console, 'log'>;
+	stderr: Pick<typeof console, 'error'>;
+};
+
+/**
+ * Prints the `Errors (<n>)` / `ERROR <code> ...` block to stderr, per the
+ * grouping rules in `specs/03-contracts/cli.md` ("## Diagnostics"). No-op
+ * when there are no errors.
+ */
+export function printGroupedErrors(
+	errors: ValidationIssue[],
+	io: DiagnosticsIo
+): void {
+	if (errors.length === 0) return;
+	io.stderr.error(`Errors (${errors.length})`);
+	for (const error of errors) {
+		io.stderr.error(formatValidationError(error));
+	}
+}
+
+/**
+ * Prints the `Warnings (<n>)` / `WARN <code> ...` block to stdout, per the
+ * grouping rules in `specs/03-contracts/cli.md` ("## Diagnostics"). No-op
+ * when there are no warnings.
+ */
+export function printGroupedWarnings(
+	warnings: ValidationIssue[],
+	io: DiagnosticsIo
+): void {
+	if (warnings.length === 0) return;
+	io.stdout.log(`Warnings (${warnings.length})`);
+	for (const warning of warnings) {
+		io.stdout.log(formatValidationWarning(warning));
+	}
+}
+
+/**
+ * Prints a validation report using the grouped output contract from
+ * `specs/03-contracts/cli.md` ("## Diagnostics"):
+ *
+ * - errors print first, one `ERROR <code> ...` line each, preceded by an
+ *   `Errors (<n>)` header when `n > 0`; errors and that header go to stderr;
+ * - warnings print after errors, one `WARN <code> ...` line each, preceded
+ *   by a `Warnings (<n>)` header when `n > 0`; warnings, that header, and
+ *   the summary go to stdout;
+ * - the summary line is `OK` when clean, `OK (<n> warnings)` when only
+ *   warnings are present, and `FAILED (<e> errors, <w> warnings)` when
+ *   errors are present.
+ *
+ * Returns the exit code the caller should use: `1` when the report has
+ * errors, `0` otherwise.
+ */
+export function printValidationReport(
+	report: ValidationReport,
+	io: DiagnosticsIo
+): number {
+	const errorCount = report.errors.length;
+	const warningCount = report.warnings.length;
+
+	printGroupedErrors(report.errors, io);
+	printGroupedWarnings(report.warnings, io);
+
+	if (errorCount > 0) {
+		io.stdout.log(`FAILED (${errorCount} errors, ${warningCount} warnings)`);
+		return 1;
+	}
+
+	io.stdout.log(warningCount > 0 ? `OK (${warningCount} warnings)` : 'OK');
+	return 0;
 }
 
 export function formatThrownError(error: unknown): string {

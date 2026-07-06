@@ -10,8 +10,9 @@ import {
 import { assetsManifestCommand } from './assets-manifest.js';
 import {
 	formatThrownError,
-	formatValidationError,
-	formatValidationWarning
+	formatValidationWarning,
+	printGroupedWarnings,
+	printValidationReport
 } from './diagnostics.js';
 import { inspectCommand } from './inspect.js';
 import { convertMermaidToDsl } from './mermaid2dsl.js';
@@ -30,31 +31,179 @@ type BundleFormat = 'js' | 'json';
 
 const DEFAULT_OUT = 'build/scene.isostate.js';
 
+/**
+ * One entry per command listed in the Help contract
+ * (`specs/03-contracts/cli.md`), in the exact required listing order:
+ * `validate`, `compile`, `bundle`, `assets manifest`, `inspect`,
+ * `mermaid2dsl`.
+ */
+interface CommandHelp {
+	/** Command name as it appears in the global usage listing. */
+	name: string;
+	/** One-sentence description shown next to the command in global usage. */
+	summary: string;
+	/** Full per-command usage text for `<command> --help`/`-h`. */
+	usage: string;
+}
+
+const COMMAND_HELP: CommandHelp[] = [
+	{
+		name: 'validate',
+		summary: 'Parse and validate a .isostate.yaml scene file.',
+		usage: `Usage: isostate validate <input.isostate.yaml>
+
+Parses and validates a .isostate.yaml scene file, printing a grouped
+diagnostics report of errors and warnings.
+
+Arguments:
+  <input.isostate.yaml>  Path to the scene file to validate
+
+Options:
+  -h, --help  Show this help message and exit`
+	},
+	{
+		name: 'compile',
+		summary: 'Compile a .isostate.yaml scene into a runtime bundle.',
+		usage: `Usage: isostate compile <input.isostate.yaml> [options]
+
+Validates a .isostate.yaml scene file and compiles it into a canonical
+runtime bundle (JS default export or JSON).
+
+Arguments:
+  <input.isostate.yaml>  Path to the scene file to compile
+
+Options:
+  --out <path>       Output file path (default: build/scene.isostate.js)
+  --format <format>  Output format: js or json (default: inferred from --out, otherwise js)
+  --pretty           Use pretty serialization where supported
+  -h, --help         Show this help message and exit`
+	},
+	{
+		name: 'bundle',
+		summary: 'Produce a deployable static bundle directory.',
+		usage: `Usage: isostate bundle <input.isostate.yaml> --out <dir> [options]
+
+Validates and compiles a .isostate.yaml scene file, then writes a
+deployable static bundle directory: the compiled scene, the standalone
+browser runtime, copied referenced assets, and a deployment manifest.
+
+Arguments:
+  <input.isostate.yaml>  Path to the scene file to bundle
+
+Options:
+  --out <dir>                  Deployment directory to create (required)
+  --asset-dir <dir>             Source root for local external assets (default: directory containing the input file)
+  --public-asset-base <url>     URL prefix written into compiled scene data (default: ./assets)
+  --scene-name <name>            Output scene bundle basename (default: scene)
+  --runtime <copy|external|none> Runtime artifact output mode (default: copy)
+  -h, --help                     Show this help message and exit`
+	},
+	{
+		name: 'assets manifest',
+		summary: 'Generate an asset manifest from a directory of assets.',
+		usage: `Usage: isostate assets manifest <asset-dir> [options]
+
+Recursively scans a directory for SVG and sprite sheet assets and writes an
+isostate.asset-manifest JSON file.
+
+Arguments:
+  <asset-dir>  Root directory to scan recursively
+
+Options:
+  --out <path>              Output manifest path (default: isostate-assets.manifest.json)
+  --asset-base-url <url>    URL/path written to manifest assetBaseUrl (default: ./assets)
+  --metadata <path>         Optional manifest metadata path (default: <asset-dir>/.isostate-assets.yaml when present)
+  --pretty                  Write indented JSON (default: on)
+  -h, --help                Show this help message and exit`
+	},
+	{
+		name: 'inspect',
+		summary: 'Print metadata about a compiled runtime bundle.',
+		usage: `Usage: isostate inspect <bundle.isostate.js|bundle.isostate.json>
+
+Parses a compiled runtime bundle, verifies its format/version/digest, and
+prints scene count, asset count, layer count, floor size, and digest.
+
+Arguments:
+  <bundle>  Path to a compiled .isostate.js or .isostate.json runtime bundle
+
+Options:
+  -h, --help  Show this help message and exit`
+	},
+	{
+		name: 'mermaid2dsl',
+		summary:
+			'Convert a Mermaid flowchart into an authored .isostate.yaml scene.',
+		usage: `Usage: isostate mermaid2dsl <flowchart.mmd> [options]
+
+Converts the supported Mermaid flowchart subset into authored
+.isostate.yaml scene YAML, validating the generated document before
+writing it.
+
+Arguments:
+  <flowchart.mmd>  Mermaid flowchart source file
+
+Options:
+  --out <path>  Output path (default: input path with its extension replaced by .isostate.yaml)
+  -h, --help    Show this help message and exit`
+	}
+];
+
+function globalUsageText(): string {
+	const lines = [
+		'Usage: isostate <command> [options]',
+		'',
+		'Commands:',
+		...COMMAND_HELP.map(
+			({ name, summary }) => `  ${name.padEnd(16)}${summary}`
+		),
+		'',
+		'Run `isostate <command> --help` for command-specific usage.'
+	];
+	return lines.join('\n');
+}
+
+function isHelpFlag(arg: string | undefined): boolean {
+	return arg === '--help' || arg === '-h';
+}
+
+function hasHelpFlag(args: string[]): boolean {
+	return args.some(isHelpFlag);
+}
+
 export async function runCli(
 	args: string[],
 	io: CliIo = { stdout: console, stderr: console }
 ): Promise<CliResult> {
 	const [command, ...rest] = args;
 
+	if (command === undefined || isHelpFlag(command)) {
+		io.stdout.log(globalUsageText());
+		return { exitCode: 0 };
+	}
+
 	try {
 		switch (command) {
 			case 'validate':
+				if (hasHelpFlag(rest)) return printCommandHelp('validate', io);
 				return await validateCommand(rest, io);
 			case 'compile':
+				if (hasHelpFlag(rest)) return printCommandHelp('compile', io);
 				return await compileCommand(rest, io);
 			case 'bundle':
+				if (hasHelpFlag(rest)) return printCommandHelp('bundle', io);
 				return await bundleCommand(rest, io);
 			case 'inspect':
+				if (hasHelpFlag(rest)) return printCommandHelp('inspect', io);
 				return await inspectCommand(rest, io);
 			case 'assets':
 				return await assetsCommand(rest, io);
 			case 'mermaid2dsl':
+				if (hasHelpFlag(rest)) return printCommandHelp('mermaid2dsl', io);
 				return await mermaid2dslCommand(rest, io);
-			case undefined:
-				io.stderr.error('ERROR MISSING_COMMAND Expected a command');
-				return { exitCode: 1 };
 			default:
-				io.stderr.error(`ERROR UNKNOWN_COMMAND Unknown command "${command}"`);
+				io.stderr.error(`ERROR CLI_UNKNOWN_COMMAND ${command}`);
+				io.stderr.error(globalUsageText());
 				return { exitCode: 1 };
 		}
 	} catch (error) {
@@ -63,8 +212,22 @@ export async function runCli(
 	}
 }
 
+function printCommandHelp(name: string, io: CliIo): CliResult {
+	const help = COMMAND_HELP.find((entry) => entry.name === name);
+	/* istanbul ignore next -- every dispatched command has a COMMAND_HELP entry */
+	if (!help) throw new Error(`Missing help text for command "${name}"`);
+	io.stdout.log(help.usage);
+	return { exitCode: 0 };
+}
+
 async function assetsCommand(args: string[], io: CliIo): Promise<CliResult> {
 	const [subcommand, ...rest] = args;
+	if (
+		isHelpFlag(subcommand) ||
+		(subcommand === 'manifest' && hasHelpFlag(rest))
+	) {
+		return printCommandHelp('assets manifest', io);
+	}
 	switch (subcommand) {
 		case 'manifest':
 			return await assetsManifestCommand(rest, io);
@@ -92,21 +255,7 @@ async function validateCommand(args: string[], io: CliIo): Promise<CliResult> {
 	const document = parseScene(source);
 	const report = validateScene(document);
 
-	for (const warning of report.warnings) {
-		io.stderr.error(formatValidationWarning(warning));
-	}
-
-	if (!report.isValid) {
-		for (const error of report.errors) {
-			io.stderr.error(formatValidationError(error));
-		}
-		return { exitCode: 1 };
-	}
-
-	io.stdout.log(
-		`OK ${parsed.input} (${report.errors.length} errors, ${report.warnings.length} warnings)`
-	);
-	return { exitCode: 0 };
+	return { exitCode: printValidationReport(report, io) };
 }
 
 async function compileCommand(args: string[], io: CliIo): Promise<CliResult> {
@@ -120,16 +269,11 @@ async function compileCommand(args: string[], io: CliIo): Promise<CliResult> {
 	const document = parseScene(source);
 	const report = validateScene(document);
 
-	for (const warning of report.warnings) {
-		io.stderr.error(formatValidationWarning(warning));
-	}
-
 	if (!report.isValid) {
-		for (const error of report.errors) {
-			io.stderr.error(formatValidationError(error));
-		}
+		printValidationReport(report, io);
 		return { exitCode: 1 };
 	}
+	printGroupedWarnings(report.warnings, io);
 
 	const bundle = compileScene(document);
 	const output =
