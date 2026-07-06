@@ -39,10 +39,13 @@ The engine updates element transforms, styles, and animation classes on each pro
 3. Applies and plays entry animations on element addition.
 4. Applies and plays exit animations on element removal; hides element after completion.
 5. Updates ambient animation classes — adds new ones, removes obsolete ones.
-6. Rebuilds or updates connector route paths and endpoint geometry.
-7. Applies interpolated transforms (`translate`, `scale`) to each element's SVG.
-8. Applies interpolated styles (opacity, color via CSS variables).
-9. Triggers CSS transitions on changed properties for smooth animation.
+6. Recomputes painter's-algorithm depth order for the current element
+   positions and reconciles the depth group's DOM order; nodes whose relative
+   order is unchanged are not moved.
+7. Rebuilds or updates connector route paths and endpoint geometry.
+8. Applies interpolated transforms (`translate`, `scale`) to each element's SVG.
+9. Applies interpolated styles (opacity, color via CSS variables).
+10. Triggers CSS transitions on changed properties for smooth animation.
 
 ## Depth Sorting
 
@@ -432,10 +435,10 @@ Built-in ambient animations have corresponding CSS classes and keyframes:
 
 ```css
 .iso-ambient-pulse {
-  animation: iso-pulse 2s ease-in-out infinite;
+  animation: iso-anim-pulse 2s ease-in-out infinite;
 }
 
-@keyframes iso-pulse {
+@keyframes iso-anim-pulse {
   0%, 100% { opacity: 0.7; }
   50% { opacity: 1.0; }
 }

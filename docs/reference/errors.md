@@ -49,6 +49,11 @@ Common fixes:
 | `SPRITE_ASSET_ID_COLLISION` | Rename the colliding sprite or asset id. |
 | `INVALID_SPRITE_DEFINITION` | Use exactly one tuple, `at`, or `rect` sprite definition. |
 | `INVALID_SPRITE_RECT` | Keep the sprite rectangle in whole pixels within `sheetSize`. |
+| `INVALID_GRID_CELL_SIZE` | Use a positive finite number for `header.grid.cellSize`. |
+| `INVALID_FLOOR_ORIGIN` | Use finite numbers in `header.floor.origin`. |
+| `INVALID_PROGRESS` | Pass a finite progress value to `AnimationEngine.setProgress()`. |
+| `ASSET_MANIFEST_METADATA_NOT_FOUND` | Point `--metadata` at an existing file or remove the flag. |
+| `ASSET_MANIFEST_INVALID_METADATA` | Fix metadata fields; `sheetSize` must match the actual image dimensions. |
 | `ASSET_NOT_FOUND` | Recompile the bundle so every external asset has a URL entry. |
 | `INVALID_ASSET_URL` | Use a non-empty relative or HTTP(S) asset URL, not `javascript:`. |
 | `TEXT_CONTENT_REQUIRED` | Add a `text.value` field to an `asset: text` element. |

@@ -1,5 +1,5 @@
 export default {
-  "_digest": "8dc9d7b42d6c706c60b33f3a6938c70f89e1ca02f69f1d9925b2a714f10cf5a6",
+  "_digest": "2c9386bceeab37758f8941a8215cf59f3c3218ff9626b68d1abe77eeb14b8fc3",
   "_format": "isostate-runtime-bundle",
   "_version": "0.4.0",
   "assets": {
@@ -141,8 +141,6 @@ export default {
         {
           "direction": "route",
           "end": "arrow",
-          "enter": "fade-in",
-          "exit": "fade-out",
           "id": "primary-avenue",
           "layer": "routes",
           "presence": "present",
@@ -354,8 +352,6 @@ export default {
         {
           "direction": "route",
           "end": "arrow",
-          "enter": "fade-in",
-          "exit": "fade-out",
           "id": "primary-avenue",
           "layer": "routes",
           "presence": "present",
@@ -691,8 +687,6 @@ export default {
         {
           "direction": "route",
           "end": "arrow",
-          "enter": "fade-in",
-          "exit": "fade-out",
           "id": "primary-avenue",
           "layer": "routes",
           "presence": "present",
@@ -731,7 +725,6 @@ export default {
           "direction": "route",
           "end": "arrow",
           "enter": "fade-in",
-          "exit": "fade-out",
           "id": "walking-loop",
           "layer": "routes",
           "presence": "entering",
@@ -789,7 +782,6 @@ export default {
           "direction": "route",
           "end": "arrow",
           "enter": "fade-in",
-          "exit": "fade-out",
           "id": "growth-link",
           "layer": "routes",
           "presence": "entering",

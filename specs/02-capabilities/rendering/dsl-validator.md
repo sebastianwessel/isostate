@@ -25,8 +25,10 @@ The validator runs after parsing and before compilation. It never runs in the br
 | Sprite ids | Sprite ids are kebab-case, not reserved, and globally unique across normal asset ids, sheet namespace ids, and all sprites | `INVALID_SPRITE_ID`, `DUPLICATE_SPRITE_ID`, `SPRITE_ASSET_ID_COLLISION` |
 | Sprite definitions | Each sprite uses exactly one of tuple, `at`, or `rect`, with no unknown fields | `INVALID_SPRITE_DEFINITION` |
 | Sprite rectangles | Authored or tile-derived sprite rectangles use whole pixels and fit inside `sheetSize` | `INVALID_SPRITE_RECT` |
+| Grid cell size | `header.grid.cellSize`, when present, is a positive finite number | `INVALID_GRID_CELL_SIZE` |
 | Floor config | `header.floor`, when present, is a mapping | `DSL_SCHEMA_TYPE_ERROR` |
 | Floor size | `header.floor.size`, when present, is a positive `[columns, rows]` tuple | `INVALID_FLOOR_SIZE` |
+| Floor origin | `header.floor.origin`, when present, is a finite `[x, y]` tuple | `INVALID_FLOOR_ORIGIN` |
 | Floor layer | `header.floor.layer`, when supplied, references a declared layer | `LAYER_NOT_FOUND` |
 | Floor asset | `header.floor.asset`, when supplied, is a placeable normal URL asset id or sprite id | `ASSET_NOT_DECLARED`, `SPRITE_SHEET_NOT_PLACEABLE` |
 | Layers exist | `header.layers` contains at least one layer | `NO_LAYERS` |
@@ -109,9 +111,9 @@ map independently from elements.
 
 | Check | Rule | Code |
 |---|---|---|
-| Unused declared asset | Asset declared but never used by any placement | `UNREFERENCED_ASSET` warning |
+| Unused declared asset | Asset declared but never used by any placement; a sprite sheet counts as used when any of its sprites is placed | `UNREFERENCED_ASSET` warning |
 | Unused layer | Layer has no element in any resolved scene | `UNREFERENCED_LAYER` warning |
-| Floor/content outside bounds | Element or connector route lies outside `floor.size` when `layout.bounds` is `floor` | `ELEMENT_OUTSIDE_FLOOR` or `CONNECTOR_OUTSIDE_FLOOR` warning |
+| Floor/content outside bounds | Element or connector route lies outside the floor rectangle spanning `floor.origin` to `floor.origin + floor.size` when `layout.bounds` is `floor` | `ELEMENT_OUTSIDE_FLOOR` or `CONNECTOR_OUTSIDE_FLOOR` warning |
 | Empty text value | `asset: text` has `text.value` that is empty or whitespace-only | `EMPTY_TEXT_CONTENT` warning |
 
 ## Validation Report

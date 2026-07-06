@@ -30,6 +30,8 @@ Rules:
 
 - `header` and `scenes` are required.
 - `scenes[].id`, asset ids, element ids, connection ids, and layer names are kebab-case.
+- All numeric values must be finite (`.inf`, `-.inf`, and `.nan` are rejected);
+  `grid.cellSize` must additionally be greater than zero.
 - Scene progress is derived from order. Do not author `at`, `progress`, or timestamps.
 - First scene is the full initial placement snapshot.
 - Later scenes are deltas only.

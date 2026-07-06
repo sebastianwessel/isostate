@@ -52,7 +52,6 @@ Use this skill when creating or reviewing isostate scene definitions and example
    deployment, verify `isostate bundle` output as well.
 9. Run available checks after edits:
    ```bash
-   node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
    bun test tests/nfr/docs-paths.test.ts tests/nfr/assets-manifest.test.ts
    ```
 10. For a publishable change, confirm the full path: authored YAML/editor state,

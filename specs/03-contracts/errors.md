@@ -68,6 +68,8 @@ print these as compact key/value pairs before the message.
 | `DUPLICATE_SCENE_ID` | Duplicate scene id. | Rename one scene. |
 | `NO_ASSETS` | Header has no assets. | Add at least one asset. |
 | `INVALID_FLOOR_SIZE` | Floor size is malformed or not positive. | Fix `header.floor.size`. |
+| `INVALID_FLOOR_ORIGIN` | Floor origin contains non-finite numbers. | Fix `header.floor.origin`. |
+| `INVALID_GRID_CELL_SIZE` | Grid cellSize is not a positive finite number. | Fix `header.grid.cellSize`. |
 | `NO_SCENES` | Document has no scenes. | Add at least one scene. |
 | `NO_LAYERS` | Scene has no layers. | Add at least one layer. |
 | `INVALID_INITIAL_SCENE` | First scene does not declare a full `elements` snapshot or contains delta fields. | Use `elements` only in first scene. |
@@ -92,6 +94,12 @@ print these as compact key/value pairs before the message.
 | `TEXT_CONTENT_FOR_NON_TEXT_ASSET` | A non-text asset defines `text`. | Remove `text` or change `asset` to `text`. |
 | `INVALID_TEXT_CONTENT` | Text is too long or has too many lines. | Keep text ≤1000 characters and ≤20 lines. Empty text is a warning, not an error. |
 | `INVALID_TEXT_STYLE` | A text style field has an invalid or unsafe value. | Use supported text style values. |
+| `PRIMITIVE_CONTENT_REQUIRED` | A built-in primitive element (`rectangle`, `circle`, `polygon`, `line`) is missing its `primitive` payload. | Add the matching `primitive` payload. |
+| `PRIMITIVE_CONTENT_MISMATCH` | A primitive payload does not match the element's built-in asset id, or more than one payload is present. | Keep exactly one payload matching the asset id. |
+| `PRIMITIVE_CONTENT_FOR_TEXT_ASSET` | An `asset: text` element defines `primitive` content. | Remove `primitive` from text elements. |
+| `INVALID_PRIMITIVE_POINTS` | Primitive `points` are malformed or outside the normalized `0..1` range. | Keep points normalized from `0` to `1`. |
+| `INVALID_PRIMITIVE_STYLE` | A primitive style field has an invalid or unsafe value. | Use supported primitive style values. |
+| `GENERATED_CONTENT_FOR_EXTERNAL_ASSET` | An external URL asset element defines generated `primitive` content. | Only built-in generated assets may define primitive content. |
 | `UNKNOWN_ANIMATION` | Entry/exit animation is unknown. | Use a built-in value or `none`. |
 | `UNKNOWN_AMBIENT_ANIMATION` | Ambient name is unknown and no custom CSS is registered. | Define CSS or fix name. |
 | `INVALID_CAMERA_TARGET` | Scene camera target is missing, contains multiple target kinds, references a non-element id, uses invalid reset value, or has malformed shape. | Use exactly one valid `target.element`, `target.area`, or `target.reset: true`. |
@@ -121,6 +129,7 @@ print these as compact key/value pairs before the message.
 | `CONTROLLER_NO_SCENES` | Controller initialized with empty scene list. | Pass at least one scene. |
 | `CONTROLLER_SCENE_INDEX_OUT_OF_RANGE` | Scene index is invalid. | Use an existing index. |
 | `CONTROLLER_PROGRESS_OUT_OF_RANGE` | Strict progress API received value outside `[0, 1]`. | Clamp before calling or use clamping API. |
+| `INVALID_PROGRESS` | `AnimationEngine.setProgress()` received a non-finite value. | Pass a finite progress value between `0` and `1`. |
 | `CONTROLLER_DESTROYED` | Controller API called after `destroy()`. | Create and initialize a new controller. |
 | `CAMERA_NOT_INITIALIZED` | Controller camera API was called before init or without an SVG scene. | Initialize through `mountScene(..., { controller })` or pass `sceneElement` to `AnimationController.init()`. |
 | `CAMERA_TARGET_NOT_FOUND` | Runtime `zoomToElement()` cannot resolve the id. | Pass an existing element id. |

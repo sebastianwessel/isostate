@@ -118,7 +118,7 @@ Options:
 | positional `asset-dir` | directory | required | root directory to scan recursively |
 | `--out` | path | `isostate-assets.manifest.json` | parent directories are created |
 | `--asset-base-url` | URL/path | `./assets` | written to manifest `assetBaseUrl` |
-| `--metadata` | path | `<asset-dir>/.isostate-assets.yaml` when present | optional manifest metadata |
+| `--metadata` | path | `<asset-dir>/.isostate-assets.yaml` when present | optional manifest metadata; an explicitly supplied path must exist (`ASSET_MANIFEST_METADATA_NOT_FOUND`) |
 | `--pretty` | flag | on | writes indented JSON when enabled |
 
 Behavior:

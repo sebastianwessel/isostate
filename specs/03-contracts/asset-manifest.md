@@ -200,11 +200,17 @@ Rules:
 
 - Metadata keys are slash-separated paths relative to `asset-dir`.
 - Unknown metadata paths produce `ASSET_MANIFEST_METADATA_ORPHAN`.
+- An explicitly supplied `--metadata` path that does not exist or is not a
+  file fails with `ASSET_MANIFEST_METADATA_NOT_FOUND`; silent fallback to an
+  empty metadata set applies only to the default
+  `<asset-dir>/.isostate-assets.yaml` path.
 - `label` must be a non-empty string at most 80 characters.
 - `anchor` uses the same validation rules as `header.assets[].anchor`.
 - `tags` is a list of unique kebab-case strings.
 - `type` may be omitted for URL SVG assets and must be `sprite-sheet` for
   sprite sheet metadata.
+- Metadata-supplied `sheetSize` is verified against the actual image
+  dimensions; a mismatch fails with `ASSET_MANIFEST_INVALID_METADATA`.
 - Sprite sheet metadata is required for raster sprite sheet files; the generator
   does not infer sprite rectangles.
 - Sprite sheet metadata follows the authored YAML sprite sheet rules for
@@ -231,6 +237,8 @@ Normalization rules:
   Unicode normalization; otherwise they are removed.
 - Consecutive separators collapse to one hyphen.
 - Empty normalized segments fail with `ASSET_MANIFEST_INVALID_FILENAME`.
+- Derived ids that would not be valid DSL identifiers (for example ids
+  starting with a digit) fail with `ASSET_MANIFEST_INVALID_FILENAME`.
 - Case-only path collisions fail with `ASSET_MANIFEST_PATH_COLLISION` so
   manifests are portable across case-insensitive filesystems.
 
@@ -310,8 +318,8 @@ Editor rules for sprite manifests:
   `name`, sheet `label`, sheet `tags`, sprite `label`, or sprite `tags`.
 - The element's `asset` value is the nested sprite id, never the sheet id.
 - If a YAML document already declares the same sheet id with different `path`,
-  `sheetSize`, `tileSize`, or sprite definitions, the editor must not merge
-  silently; it reports `EDITOR_ASSET_CONFLICT` and leaves YAML unchanged.
+  `sheetSize`, `tileSize`, `anchor`, or sprite definitions, the editor must not
+  merge silently; it reports `EDITOR_ASSET_CONFLICT` and leaves YAML unchanged.
 
 ## SVG Safety
 
