@@ -22,7 +22,7 @@ describe('NFR package scripts', () => {
 		);
 		expect(packageJson.scripts?.coverage).toContain('bun test --coverage');
 		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.3');
-		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.11.1');
+		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.13.0');
 		expect(packageJson.devDependencies?.['canvaskit-wasm']).toBe('^0.41.1');
 	});
 
