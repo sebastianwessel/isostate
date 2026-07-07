@@ -42,16 +42,20 @@
 
 ## CI Gates
 
-Default CI commands:
+Default CI commands. `bun run build` must run before `bun run test` and
+`bun run coverage`: the editor package and its tests import the core package
+by its published name (`@sebastianwessel/isostate`), which resolves to
+`packages/core/dist`, so the workspace must be built before the test process
+starts.
 
 ```bash
 bun ci
 bun run format
 bun run lint
 bun run typecheck
+bun run build
 bun run test
 bun run coverage
-bun run build
 bun run size
 bun run publint
 bun run examples:basic:bundle
@@ -81,12 +85,13 @@ Opt-in checks:
 - Release process must verify the runtime entrypoint can be bundled without the `yaml` package installed.
 - Release process must verify `isostate bundle` output imports without
   dev-time dependencies.
-- Pull requests to `main` must run `bun ci`, format, lint, typecheck, tests,
-  the coverage gate (`bun run coverage`, minimum 80% line coverage), build,
+- Pull requests to `main` must run `bun ci`, format, lint, typecheck, build,
+  tests, the coverage gate (`bun run coverage`, minimum 80% line coverage),
   size, package lint, basic example bundle generation, and the static
   website build.
 - Manual releases from `main` must verify package versions, reject already
-  published npm versions, run `bun ci`/format/lint/typecheck/tests/build/size/
-  publint/basic example bundle generation, publish both npm packages, create
+  published npm versions, run `bun ci`/format/lint/typecheck/build/tests/
+  coverage/size/publint/basic example bundle generation, publish both npm
+  packages, create
   a `v<version>` git tag, create a GitHub release, and deploy the Astro static
   documentation site to GitHub Pages.
