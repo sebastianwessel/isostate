@@ -1,7 +1,7 @@
 {
   "format": "isostate-static-bundle",
-  "version": "0.4.0",
-  "generatedAt": "2026-07-07T10:11:09.887Z",
+  "version": "0.5.0",
+  "generatedAt": "2026-07-07T23:21:54.033Z",
   "source": {
     "file": "examples/basic/source.isostate.yaml"
   },
@@ -12,7 +12,7 @@
   "scene": {
     "file": "scene.isostate.js",
     "format": "js",
-    "digest": "e15f8dcf11591dc4e7081c8ec9eb5d521ec93c78be2573986ca0ba0a05a01adf"
+    "digest": "37ca3f7061a263262d01443003c781b15070937746166b394be10152b99263a2"
   },
   "assets": [
     {

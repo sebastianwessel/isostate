@@ -9,7 +9,7 @@ import { sha256 } from "../utils/sha256.ts";
 import { type MountedSceneEvents, SceneInteractivity } from "./interactivity.ts";
 
 const RUNTIME_BUNDLE_FORMAT = "isostate-runtime-bundle";
-const RUNTIME_VERSION = "0.4.0";
+const RUNTIME_VERSION = "0.5.0";
 const HEX_DIGEST_PATTERN = /^[a-f0-9]{64}$/;
 
 export interface MountSceneOptions {

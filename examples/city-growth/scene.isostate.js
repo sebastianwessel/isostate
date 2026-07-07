@@ -1,7 +1,7 @@
 export default {
-  "_digest": "2c9386bceeab37758f8941a8215cf59f3c3218ff9626b68d1abe77eeb14b8fc3",
+  "_digest": "8d240bd9ad9c813dd0cbad8241cf343b346cf5afd3876161ff93907112734546",
   "_format": "isostate-runtime-bundle",
-  "_version": "0.4.0",
+  "_version": "0.5.0",
   "assets": {
     "bridge": {
       "anchor": [
