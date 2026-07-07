@@ -309,12 +309,13 @@ describe('IsostateEditor', () => {
 		expect(assetItem).toBeTruthy();
 		assetItem.click();
 		await tick();
-		// Picking an asset marks it active in the DOM immediately. (Note: the
-		// onClickAsset handler does not currently notify onWorkspaceChange,
-		// so we assert the visible DOM state here rather than the callback.)
 		expect(assetItem.classList.contains('isostate-asset-item--active')).toBe(
 			true
 		);
+		expect(latestWorkspace?.editState.dragPayload).toEqual({
+			kind: 'asset',
+			assetId: expect.any(String)
+		});
 
 		window.dispatchEvent(
 			new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
