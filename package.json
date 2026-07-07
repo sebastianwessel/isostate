@@ -33,7 +33,9 @@
 		"validate": "tsx scripts/validate.ts",
 		"isostate": "bun packages/cli/src/bin.ts",
 		"examples:basic:serve": "bun run build && python3 -m http.server 4173",
-		"examples:basic:bundle": "bun examples/basic/generate-static-bundle.ts"
+		"examples:basic:bundle": "bun examples/basic/generate-static-bundle.ts",
+		"examples:city-growth:serve": "bun run build && python3 -m http.server 4175",
+		"examples:city-growth:bundle": "bun examples/city-growth/generate-static-bundle.ts"
 	},
 	"peerDependencies": {
 		"yaml": ">=2.0.0"

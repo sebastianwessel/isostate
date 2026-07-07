@@ -28,4 +28,6 @@ Each example focuses on one public workflow.
 | [Asset Manifest](./asset-manifest.md) | Generate and use an asset manifest with the CLI. |
 
 For a runnable browser demo, use
-[`examples/basic`](../../examples/basic/README.md).
+[`examples/basic`](../../examples/basic/README.md). For a larger, layered
+scene with animated routes, see
+[`examples/city-growth`](../../examples/city-growth/README.md).

@@ -115,8 +115,8 @@ scenes:
 ---
 
 <SiteLayout
-	title="Isometric 3D scenes from YAML"
-	description="isostate turns simple YAML into beautiful scroll-driven isometric visualizations — like Mermaid, but in three dimensions. Compile once, embed anywhere."
+	title="Isometric scenes from YAML"
+	description="isostate turns simple YAML into beautiful scroll-driven isometric visualizations with a real sense of depth — like Mermaid, but isometric. Compile once, embed anywhere."
 >
 	<div class="landing">
 
@@ -125,10 +125,10 @@ scenes:
 			<img class="hero-photo" src={heroBackgroundUrl} alt="" aria-hidden="true" />
 			<div class="hero-body">
 				<p class="tag">Open source · YAML-first · SVG-native</p>
-				<h1>Isometric 3D&nbsp;scenes, written like&nbsp;diagrams.</h1>
+				<h1>Isometric&nbsp;scenes, written like&nbsp;diagrams.</h1>
 				<p class="lead">
 					Create beautiful, scroll-driven isometric visuals with simple YAML —
-					like writing a Mermaid diagram, but in three dimensions.
+					like writing a Mermaid diagram, but with isometric depth.
 					Compile once, embed anywhere. No 3D engine required.
 				</p>
 				<div class="hero-ctas">
@@ -402,7 +402,7 @@ scenes:
 					<p class="eyebrow green">Use cases</p>
 					<h2>Anywhere a static diagram feels flat.</h2>
 					<p class="section-sub">
-						isostate is a generic tool for 3D isometric visualisation. Here are the places
+						isostate is a generic tool for isometric visualisation. Here are the places
 						where visual sequences make the biggest difference.
 					</p>
 				</header>
@@ -476,6 +476,20 @@ scenes:
 						</div>
 						<h3>Static, portable, fast</h3>
 						<p>Under 20 KB gzipped. Deploys to GitHub Pages, Netlify, a CDN, or bundled in an npm package. No server component, no lock-in, no hassle.</p>
+					</article>
+					<article class="feat-card">
+						<div class="feat-icon">
+							<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="7 10 12 15 17 10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="15" x2="12" y2="3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+						</div>
+						<h3>Interactive, exportable scenes</h3>
+						<p>Opt in to pointer interactivity with `element-click`, `element-enter`, and `element-leave` events, or export any scene as a standalone SVG or PNG. A dev-time diagnostics overlay shows grid anchors and connector routes while you tune positions.</p>
+					</article>
+					<article class="feat-card">
+						<div class="feat-icon">
+							<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><polyline points="4 17 10 11 4 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="12" y1="19" x2="20" y2="19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+						</div>
+						<h3>Start from a Mermaid diagram</h3>
+						<p>Already have a flowchart? Run `isostate mermaid2dsl` to turn a supported Mermaid diagram into a starting `.isostate.yaml` scene — deterministic output, no `mermaid` package shipped to the browser.</p>
 					</article>
 				</div>
 			</div>

@@ -1,5 +1,9 @@
 # Sprite Sheet Assets Design
 
+> **Status: Implemented (historical design record).** Sprite sheet assets
+> shipped in wave 05. The authoritative contracts now live in
+> `specs/03-contracts/scene-schema.md` and `specs/03-contracts/asset-manifest.md`.
+
 ## Purpose
 
 Add first-class sprite sheet assets to the isostate DSL so authors can load one

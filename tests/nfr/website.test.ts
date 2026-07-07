@@ -111,7 +111,7 @@ describe('Astro website', () => {
 		expect(docs).toContain('docNav');
 		expect(docs).toContain("title: 'Visual Language'");
 		expect(docs).toContain("title: 'Ship'");
-		expect(index).toContain('Isometric 3D scenes from YAML');
+		expect(index).toContain('Isometric scenes from YAML');
 		expect(index).toContain('id="isostate-demo"');
 		expect(index).toContain('mountScene');
 		expect(index).toContain("import { Code } from 'astro:components'");
