@@ -105,6 +105,15 @@ npx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml
   --format json
 ```
 
+Add `--pretty` for unminified, indented output (useful when diffing generated
+bundles or debugging):
+
+```bash
+npx --package @sebastianwessel/isostate-cli isostate compile scene.isostate.yaml \
+  --out public/scene.isostate.js \
+  --pretty
+```
+
 ### bundle
 
 Writes deployable static output: the standalone browser runtime, compiled scene
@@ -117,8 +126,40 @@ npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml 
   --public-asset-base ./assets
 ```
 
+`--scene-name <name>` sets the output scene bundle basename (default `scene`,
+producing `<name>.isostate.js`). `--runtime <copy|external|none>` controls the
+runtime artifact (default `copy`): `copy` writes `isostate.runtime.js` into the
+bundle, `external` omits it and assumes the host page loads the runtime some
+other way, and `none` omits it entirely.
+
+```bash
+npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml \
+  --out public/isostate/scene \
+  --scene-name lobby \
+  --runtime external
+```
+
 See [Deploy Static Bundle](./deploy-static-bundle.md) for the full output
 layout and runtime boundary.
+
+### assets manifest
+
+Recursively scans a directory of SVG and sprite sheet assets and writes an
+`isostate.asset-manifest` JSON file for the visual editor's asset browser.
+
+```bash
+npx --package @sebastianwessel/isostate-cli isostate assets manifest assets \
+  --out public/isostate-assets.manifest.json \
+  --asset-base-url ./assets
+```
+
+Options: `--out <path>` (default `isostate-assets.manifest.json`),
+`--asset-base-url <url>` written into the manifest's `assetBaseUrl` (default
+`./assets`), `--metadata <path>` for optional labels/anchors/tags/sprite sheet
+definitions (default `<asset-dir>/.isostate-assets.yaml` when present), and
+`--pretty` to write indented JSON (on by default). See
+[Asset Manifest](../examples/asset-manifest.md) for the manifest output shape
+and a worked example.
 
 ### inspect
 

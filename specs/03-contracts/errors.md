@@ -155,6 +155,40 @@ print these as compact key/value pairs before the message.
 | `MERMAID_ID_COLLISION` | Two Mermaid ids normalize to the same DSL id. | Rename one node id. |
 | `MERMAID_INTERNAL` | Generated document failed DSL validation (converter bug). | Report the issue with the input file. |
 
+### CLI
+
+Argument-parsing errors thrown by `isostate` commands (`packages/cli/src/commands.ts`,
+`packages/cli/src/static-bundle.ts`, `packages/cli/src/assets-manifest.ts`; see
+`03-contracts/cli.md`).
+
+| Code | Meaning | Action |
+|---|---|---|
+| `MISSING_SUBCOMMAND` | `isostate assets` was called with no subcommand. | Run `isostate assets manifest ...`. |
+| `UNKNOWN_SUBCOMMAND` | `isostate assets <subcommand>` is not a recognized subcommand. | Use `isostate assets manifest`. |
+| `FILE_READ_FAILED` | The CLI could not read an input or metadata file. | Check the path exists and is readable. |
+| `FILE_WRITE_FAILED` | The CLI could not write an output file. | Check the output directory exists and is writable. |
+| `MISSING_INPUT` | A command's required positional input argument is missing. | Pass the required input file or directory. |
+| `EXTRA_INPUT` | More than one positional input argument was given. | Pass exactly one input. |
+| `MISSING_OPTION` | An option flag is present without its required value. | Supply a value after the flag. |
+| `UNKNOWN_OPTION` | An unrecognized `-`-prefixed option was passed. | Remove the option or fix the typo. |
+| `UNSUPPORTED_FORMAT` | `compile --format` (or the format inferred from `--out`) is not `js` or `json`. | Use `--format js`, `--format json`, or an `--out` path ending in `.js`/`.json`. |
+
+### Asset Manifest
+
+`isostate assets manifest` generator errors (`packages/cli/src/assets-manifest.ts`;
+see `03-contracts/asset-manifest.md`).
+
+| Code | Meaning | Action |
+|---|---|---|
+| `ASSET_MANIFEST_PATH_COLLISION` | Two asset paths differ only by case. | Rename one file so the paths differ beyond case. |
+| `ASSET_MANIFEST_OVERSIZED` | An SVG exceeds 512KB, or a raster sprite sheet exceeds 2MB. | Reduce the file size or split the asset. |
+| `ASSET_MANIFEST_RESERVED_ID` | A derived asset id matches a reserved built-in id (`text`, `rectangle`, `circle`, `polygon`, `line`). | Rename the file so it derives a non-reserved id. |
+| `ASSET_MANIFEST_ID_COLLISION` | Two assets, or a sprite and another manifest id, derive or declare the same id. | Rename one of the colliding files or sprites. |
+| `ASSET_MANIFEST_UNSAFE_SVG` | An SVG file contains `<script>` or event-handler attributes. | Remove scripts and event handlers from the SVG. |
+| `ASSET_MANIFEST_EXTERNAL_REFERENCE` | An SVG file references external `href`/`xlink:href`/`url()` content. | Inline or remove the external reference. |
+| `ASSET_MANIFEST_INVALID_FILENAME` | A relative path normalizes to an empty segment or an id that is not a valid DSL identifier. | Rename the file to a valid kebab-case-safe name. |
+| `ASSET_MANIFEST_METADATA_ORPHAN` | The metadata file declares a path with no matching asset file. | Remove the stale metadata entry or add the missing asset file. |
+
 ## Warning Codes
 
 Warnings do not block compilation. The current CLI reports warnings and exits

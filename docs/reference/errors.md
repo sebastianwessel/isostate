@@ -153,6 +153,33 @@ Common fixes, grouped by the owner that raises each code (matching
 | `MERMAID_ID_COLLISION` | Rename one of the colliding Mermaid node ids. |
 | `MERMAID_INTERNAL` | Report the issue with the input file; this indicates a converter bug. |
 
+### CLI
+
+| Code | Fix |
+|---|---|
+| `MISSING_SUBCOMMAND` | Run `isostate assets manifest ...`. |
+| `UNKNOWN_SUBCOMMAND` | Use `isostate assets manifest`; it is the only supported subcommand. |
+| `FILE_READ_FAILED` | Check that the input or metadata path exists and is readable. |
+| `FILE_WRITE_FAILED` | Check that the output directory exists and is writable. |
+| `MISSING_INPUT` | Pass the required positional input file or directory. |
+| `EXTRA_INPUT` | Pass exactly one positional input. |
+| `MISSING_OPTION` | Supply a value after the option flag. |
+| `UNKNOWN_OPTION` | Remove the unrecognized option or fix the typo. |
+| `UNSUPPORTED_FORMAT` | Use `--format js`, `--format json`, or an `--out` path ending in `.js`/`.json`. |
+
+### Asset Manifest
+
+| Code | Fix |
+|---|---|
+| `ASSET_MANIFEST_PATH_COLLISION` | Rename one file so the paths differ beyond case. |
+| `ASSET_MANIFEST_OVERSIZED` | Reduce the file size (SVG ≤512KB, raster sprite sheet ≤2MB) or split the asset. |
+| `ASSET_MANIFEST_RESERVED_ID` | Rename the file so it does not derive a reserved id (`text`, `rectangle`, `circle`, `polygon`, `line`). |
+| `ASSET_MANIFEST_ID_COLLISION` | Rename one of the colliding files or sprites. |
+| `ASSET_MANIFEST_UNSAFE_SVG` | Remove `<script>` elements and event-handler attributes from the SVG. |
+| `ASSET_MANIFEST_EXTERNAL_REFERENCE` | Inline or remove the external `href`/`xlink:href`/`url()` reference in the SVG. |
+| `ASSET_MANIFEST_INVALID_FILENAME` | Rename the file to a valid kebab-case-safe name. |
+| `ASSET_MANIFEST_METADATA_ORPHAN` | Remove the stale metadata entry or add the missing asset file. |
+
 ### Warnings
 
 | Code | Fix |

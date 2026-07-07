@@ -334,3 +334,36 @@ easing helpers, theme helpers, type guards, and structured error classes remain
 exported for advanced integrations and tests. Start new applications with
 `mountScene` unless you need to own the rendering and controller lifecycle
 manually.
+
+### Assets And Themes
+
+| Export | Purpose |
+|---|---|
+| `AssetRegistryImpl` | Default `AssetRegistry` implementation: register/get/getAll/has/remove asset definitions. |
+| `createAssetRegistry(assets?)` | Create an `AssetRegistryImpl` pre-populated with the given asset definitions. |
+| `createDefaultRegistry()` | Create a registry pre-populated with the built-in demo assets (platform, server, database, connector, cloud). |
+| `resolveTheme(name)` | Resolve a built-in theme name (`light`, `dark`, `brand`) to its CSS variable map; `undefined` if not found. |
+| `composeTheme(baseName, overrides)` | Build a `Theme` by extending a built-in theme's variables with overrides. |
+| `applyThemeToElement(element, themeVars)` | Set CSS custom properties on an SVG/HTML element; throws `RenderError` (`INVALID_THEME_VAR`) for invalid property names. |
+
+### Easing And Projection Utilities
+
+| Export | Purpose |
+|---|---|
+| `DEFAULT_CELL_SIZE` | Default grid cell size in pixels (`64`). |
+| `projectToScreen(gridX, gridY, cellSize, boundsMinX?, boundsMinY?, paddingX?, paddingY?)` | Convert isometric grid coordinates to screen coordinates within resolved layout bounds. |
+| `calculateVisualSize(gridSize, cellSize)` | Compute an element's on-screen size from its grid size. |
+| `calculateTransform(screenX, screenY, visualSize, cellSize)` | Build the CSS `transform` string (translate + scale) for an element. |
+| `linear(t)` | Linear easing (no interpolation). |
+| `easeInCubic(t)` | Cubic ease-in: starts slowly, accelerates. |
+| `easeOutCubic(t)` | Cubic ease-out: starts fast, decelerates. |
+| `easeInOutCubic(t)` | Cubic ease-in-out: slow start, fast middle, slow end. |
+| `resolveEasing(type: EasingType)` | Resolve an `EasingType` string to its `EasingFn`. |
+
+### Type Guards
+
+| Export | Purpose |
+|---|---|
+| `guardEntryAnimation(v)` | Narrow an unknown value to `EntryAnimation`; returns `undefined` if invalid. |
+| `guardExitAnimation(v)` | Narrow an unknown value to `ExitAnimation`; returns `undefined` if invalid. |
+| `guardLifecycleStatus(v)` | Narrow an unknown value to `LifecycleStatus`; returns `undefined` if invalid. |

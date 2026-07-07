@@ -280,6 +280,7 @@ export type {
 	EditorCommandResult,
 	EditorDiagnostic,
 	EditorEditState,
+	EditorExportArtifact,
 	EditorOperation,
 	EditorSelection,
 	EditorUiState,

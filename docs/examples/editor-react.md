@@ -31,7 +31,6 @@ export function SceneEditor() {
       <IsostateEditor
         value={yaml}
         onChange={handleChange}
-        mode="split"
         theme="system"
       />
       <p>Diagnostics: {diagnostics.length}</p>
