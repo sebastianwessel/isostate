@@ -181,7 +181,7 @@ export function useCanvasPointer({
 
 			if (drag.mode === 'place') {
 				const payload = workspace.editState.dragPayload;
-				if (!payload || payload.kind !== 'asset') return;
+				if (payload?.kind !== 'asset') return;
 				const element = createPlacedElement(
 					payload.assetId,
 					pt.snapped,

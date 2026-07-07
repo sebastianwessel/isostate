@@ -89,7 +89,7 @@ describe('Astro website', () => {
 		);
 
 		expect(packageJson.devDependencies?.astro).toMatch(/^6\.\d+\.\d+$/);
-		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.2');
+		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.3');
 		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.11.1');
 		expect(packageJson.devDependencies?.['beautiful-mermaid']).toBe('1.1.3');
 		expect(packageJson.scripts?.['site:build']).toBe(
