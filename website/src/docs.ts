@@ -8,7 +8,9 @@ import { Content as CustomTheme } from '../../docs/examples/custom-theme.md';
 import { Content as EditorBasic } from '../../docs/examples/editor-basic.md';
 import { Content as EditorExport } from '../../docs/examples/editor-export.md';
 import { Content as EditorReact } from '../../docs/examples/editor-react.md';
+import { Content as ExportSnapshot } from '../../docs/examples/export-snapshot.md';
 import { Content as InspectBundle } from '../../docs/examples/inspect-bundle.md';
+import { Content as InteractiveElements } from '../../docs/examples/interactive-elements.md';
 import { Content as LowLevelRendering } from '../../docs/examples/low-level-rendering.md';
 import { Content as ExamplesReadme } from '../../docs/examples/README.md';
 import { Content as RuntimeBasic } from '../../docs/examples/runtime-basic.md';
@@ -16,6 +18,7 @@ import { Content as GettingStarted } from '../../docs/getting-started.md';
 import { Content as AnimationAndConnections } from '../../docs/guides/animation-and-connections.md';
 import { Content as AssetsWorkflow } from '../../docs/guides/assets-workflow.md';
 import { Content as AuthorSceneDeltas } from '../../docs/guides/author-scene-deltas.md';
+import { Content as ConvertMermaid } from '../../docs/guides/convert-mermaid.md';
 import { Content as DeployStaticBundle } from '../../docs/guides/deploy-static-bundle.md';
 import { Content as InstallAuthoringSkill } from '../../docs/guides/install-authoring-skill.md';
 import { Content as PlanAScene } from '../../docs/guides/plan-a-scene.md';
@@ -99,6 +102,11 @@ export const docs: DocEntry[] = [
 		Content: InstallAuthoringSkill
 	},
 	{
+		slug: 'guides/convert-mermaid.md',
+		title: 'Convert Mermaid Diagrams',
+		Content: ConvertMermaid
+	},
+	{
 		slug: 'guides/use-the-cli.md',
 		title: 'Use The CLI',
 		Content: UseTheCli
@@ -167,6 +175,16 @@ export const docs: DocEntry[] = [
 		slug: 'examples/asset-manifest.md',
 		title: 'Asset Manifest',
 		Content: AssetManifest
+	},
+	{
+		slug: 'examples/export-snapshot.md',
+		title: 'Export Snapshot',
+		Content: ExportSnapshot
+	},
+	{
+		slug: 'examples/interactive-elements.md',
+		title: 'Interactive Elements',
+		Content: InteractiveElements
 	},
 	{
 		slug: 'examples/low-level-rendering.md',
@@ -241,6 +259,11 @@ export const docNav: DocNavSection[] = [
 		items: [
 			{
 				type: 'group',
+				title: 'Convert',
+				items: ['guides/convert-mermaid.md']
+			},
+			{
+				type: 'group',
 				title: 'Verify',
 				items: ['guides/use-the-cli.md', 'examples/inspect-bundle.md']
 			},
@@ -261,7 +284,9 @@ export const docNav: DocNavSection[] = [
 				items: [
 					'examples/runtime-basic.md',
 					'examples/controller-scroll.md',
-					'examples/camera-focus.md'
+					'examples/camera-focus.md',
+					'examples/interactive-elements.md',
+					'examples/export-snapshot.md'
 				]
 			},
 			{

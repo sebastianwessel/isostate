@@ -13,5 +13,5 @@ Source:
 Regenerate:
 
 ```bash
-~/.bun/bin/bun packages/cli/src/bin.ts compile examples/city-growth/source.isostate.yaml --out examples/city-growth/scene.isostate.js
+~/.bun/bin/bun packages/cli/src/bin.ts compile examples/city-growth/source.isostate.yaml --out examples/city-growth/scene.isostate.js --pretty
 ```

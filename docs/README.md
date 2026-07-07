@@ -87,8 +87,8 @@ sequenceDiagram
 
 Use [Examples](./examples/README.md) after the main workflow is clear. They are
 copyable slices for runtime mounting, scroll control, custom assets, pointer
-interactivity, static bundling, editor embedding, bundle inspection, and theme
-customization.
+interactivity, snapshot export, static bundling, editor embedding, bundle
+inspection, and theme customization.
 
 ## Reference
 

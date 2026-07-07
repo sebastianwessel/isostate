@@ -49,6 +49,82 @@ interface ResolvedRuntimeConfig {
 Import it from `@sebastianwessel/isostate` in runtime code or from `@sebastianwessel/isostate/dsl` in
 build tooling.
 
+## Interactivity
+
+```ts
+import type {
+	ElementPointerEvent,
+	MountedSceneEvents
+} from '@sebastianwessel/isostate';
+```
+
+Set `interactive: true` in `MountSceneOptions` and subscribe with
+`MountedScene.on(event, listener)`. Listeners receive an `ElementPointerEvent`:
+
+```ts
+interface ElementPointerEvent {
+	id: string; // element id from the scene definition
+	originalEvent: Event; // the native DOM event that triggered the notification
+}
+
+interface MountedSceneEvents {
+	'element-click': (event: ElementPointerEvent) => void;
+	'element-enter': (event: ElementPointerEvent) => void;
+	'element-leave': (event: ElementPointerEvent) => void;
+}
+```
+
+## Snapshot Export
+
+```ts
+import type {
+	SnapshotOptions,
+	PngSnapshotOptions
+} from '@sebastianwessel/isostate';
+```
+
+`exportSceneSvg(mounted, options?)` and `exportScenePng(mounted, options?)`
+serialize a mounted scene at a chosen progress.
+
+```ts
+interface SnapshotOptions {
+	progress?: number; // render this progress first; omitted = current progress
+	inlineAssets?: boolean; // inline external <image> hrefs as data: URIs (default true)
+	background?: string; // solid background color; default none (transparent)
+}
+
+interface PngSnapshotOptions extends SnapshotOptions {
+	scale?: number; // device-pixel multiplier applied to the viewBox size (default 2)
+}
+```
+
+## Diagnostics Overlay
+
+```ts
+import type {
+	DiagnosticsOverlayOptions,
+	DiagnosticsOverlayHandle
+} from '@sebastianwessel/isostate';
+```
+
+`attachDiagnosticsOverlay(mounted, options?)` returns a
+`DiagnosticsOverlayHandle` for a dev-time grid/anchor/route/readout overlay.
+
+```ts
+interface DiagnosticsOverlayOptions {
+	grid?: boolean; // draw grid lines across the floor extent (default true)
+	coordinates?: boolean; // draw cell coordinate labels (default false)
+	anchors?: boolean; // mark element anchor points (default true)
+	routes?: boolean; // mark connector route points (default true)
+	readout?: boolean; // show the scene id / progress readout panel (default true)
+}
+
+interface DiagnosticsOverlayHandle {
+	update(): void; // re-render from current scene state
+	destroy(): void; // remove the overlay and its subscriptions; safe to call twice
+}
+```
+
 ## Scene Data
 
 ```ts
