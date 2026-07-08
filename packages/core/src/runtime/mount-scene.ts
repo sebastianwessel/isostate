@@ -1,14 +1,15 @@
 import { AnimationEngine } from "../animation/animation-engine.ts";
-import type { ControllerConfig } from "../animation/controller.ts";
+import type { CameraState, ControllerConfig } from "../animation/controller.ts";
 import { AnimationController } from "../animation/controller.ts";
 import { buildSceneDOM, getResolvedViewBox } from "../rendering/rendering-engine.ts";
 import { resolveTheme } from "../types/asset-registry.ts";
-import { RenderError } from "../types/errors.ts";
+import { ControllerError, RenderError } from "../types/errors.ts";
 import type { CompiledFloor, CompiledLayout, RuntimeBundle } from "../types/runtime-bundle.ts";
 import { sha256 } from "../utils/sha256.ts";
+import { type MountedSceneEvents, SceneInteractivity } from "./interactivity.ts";
 
 const RUNTIME_BUNDLE_FORMAT = "isostate-runtime-bundle";
-const RUNTIME_VERSION = "0.4.0";
+const RUNTIME_VERSION = "0.5.0";
 const HEX_DIGEST_PATTERN = /^[a-f0-9]{64}$/;
 
 export interface MountSceneOptions {
@@ -18,6 +19,8 @@ export interface MountSceneOptions {
 	label?: string;
 	/** CSS custom properties applied on top of the bundle theme. */
 	themeVars?: Record<string, string>;
+	/** Enable pointer interactivity on scene elements. Default: false. */
+	interactive?: boolean;
 }
 
 /** Runtime configuration resolved from a mounted scene bundle. */
@@ -26,7 +29,7 @@ export interface ResolvedRuntimeConfig {
 	floor: CompiledFloor;
 	layout: CompiledLayout;
 	viewBox: { minX: number; minY: number; width: number; height: number };
-	camera: { viewBox: { minX: number; minY: number; width: number; height: number }; isZoomed: boolean };
+	camera: CameraState;
 	theme: string;
 	themeVars: Record<string, string>;
 	scenes: Array<{ id: string; progress: number }>;
@@ -43,6 +46,12 @@ export interface MountedScene {
 	controller?: AnimationController;
 	/** Inspect effective runtime settings after defaults and bundle metadata are applied. */
 	getResolvedConfig(): ResolvedRuntimeConfig;
+	/**
+	 * Subscribe to interactivity events. Returns an unsubscribe function.
+	 * Callable regardless of the `interactive` option; without it no events
+	 * fire.
+	 */
+	on<K extends keyof MountedSceneEvents>(event: K, listener: MountedSceneEvents[K]): () => void;
 	/** Remove DOM and event listeners owned by this mount. Safe to call more than once. */
 	destroy(): void;
 }
@@ -77,17 +86,21 @@ export function mountScene(target: HTMLElement, bundle: RuntimeBundle, options: 
 		);
 	}
 
+	const interactivity = new SceneInteractivity(svg, options.interactive === true);
+
 	let destroyed = false;
 
 	return {
 		svg,
 		engine,
 		controller,
-		getResolvedConfig: () => getResolvedConfig(bundle, options),
+		getResolvedConfig: () => getResolvedConfig(bundle, options, controller),
+		on: (event, listener) => interactivity.on(event, listener),
 		destroy: () => {
 			if (destroyed) return;
 			destroyed = true;
-			controller?.destroy();
+			interactivity.destroy();
+			destroyControllerSafely(controller);
 			engine.destroy();
 			if (svg.parentNode === target) {
 				target.removeChild(svg);
@@ -96,6 +109,22 @@ export function mountScene(target: HTMLElement, bundle: RuntimeBundle, options: 
 			}
 		},
 	};
+}
+
+/**
+ * Destroy the controller, tolerating a controller that was already destroyed
+ * independently (e.g. by application code calling `controller.destroy()`
+ * before `mountScene().destroy()`). Keeps `mountScene().destroy()` idempotent
+ * and defensive so engine cleanup and SVG removal always run.
+ */
+function destroyControllerSafely(controller: AnimationController | undefined): void {
+	if (!controller) return;
+	try {
+		controller.destroy();
+	} catch (error) {
+		if (error instanceof ControllerError && error.code === "CONTROLLER_DESTROYED") return;
+		throw error;
+	}
 }
 
 function assertMountTarget(target: HTMLElement): void {
@@ -145,20 +174,21 @@ function validateRuntimeBundle(bundle: RuntimeBundle): void {
 	}
 }
 
-function getResolvedConfig(bundle: RuntimeBundle, options: MountSceneOptions = {}): ResolvedRuntimeConfig {
+function getResolvedConfig(
+	bundle: RuntimeBundle,
+	options: MountSceneOptions = {},
+	controller?: AnimationController,
+): ResolvedRuntimeConfig {
 	return {
 		grid: { cellSize: bundle.grid.cellSize },
-		floor: { ...bundle.floor },
+		floor: { ...bundle.floor, size: [...bundle.floor.size], origin: [...bundle.floor.origin] },
 		layout: {
 			...bundle.layout,
 			padding: { ...bundle.layout.padding },
 			align: [...bundle.layout.align],
 		},
 		viewBox: getResolvedViewBox(bundle),
-		camera: {
-			viewBox: getResolvedViewBox(bundle),
-			isZoomed: false,
-		},
+		camera: resolveCameraState(bundle, controller),
 		theme: bundle.theme,
 		themeVars: getResolvedThemeVars(bundle, options.themeVars),
 		scenes: bundle.scenes.map((scene) => ({
@@ -167,8 +197,31 @@ function getResolvedConfig(bundle: RuntimeBundle, options: MountSceneOptions = {
 		})),
 		layerOrder: bundle.layers
 			.map((layer) => ({ name: layer.name, order: layer.order }))
-			.sort((a, b) => a.order - b.order || a.name.localeCompare(b.name)),
+			.sort((a, b) => a.order - b.order || compareCodePointOrder(a.name, b.name)),
 	};
+}
+
+/**
+ * Live camera state from the controller when one is attached and alive;
+ * otherwise the static bundle-derived default.
+ */
+function resolveCameraState(bundle: RuntimeBundle, controller?: AnimationController): CameraState {
+	if (controller) {
+		try {
+			return controller.getCameraState();
+		} catch (error) {
+			if (!(error instanceof ControllerError)) throw error;
+		}
+	}
+	return {
+		viewBox: getResolvedViewBox(bundle),
+		isZoomed: false,
+	};
+}
+
+/** Locale-independent string comparator so tie-break order is byte-deterministic across hosts. */
+function compareCodePointOrder(a: string, b: string): number {
+	return a < b ? -1 : a > b ? 1 : 0;
 }
 
 function getResolvedThemeVars(bundle: RuntimeBundle, overrides: Record<string, string> = {}): Record<string, string> {

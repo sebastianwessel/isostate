@@ -62,6 +62,9 @@ connection routes, road paths, flow effects, and camera focus.
 
 ### 4. Verify And Publish
 
+Use [Convert Mermaid Diagrams](./guides/convert-mermaid.md) to turn an
+existing flowchart into a starting scene.
+
 Use [The CLI](./guides/use-the-cli.md) for repeatable validation, compilation,
 inspection, and CI. Use [Deploy Static Bundle](./guides/deploy-static-bundle.md)
 when the result should be copied into a website public folder or CDN.
@@ -83,8 +86,9 @@ sequenceDiagram
 ## Examples
 
 Use [Examples](./examples/README.md) after the main workflow is clear. They are
-copyable slices for runtime mounting, scroll control, custom assets, static
-bundling, editor embedding, bundle inspection, and theme customization.
+copyable slices for runtime mounting, scroll control, custom assets, pointer
+interactivity, snapshot export, static bundling, editor embedding, bundle
+inspection, and theme customization.
 
 ## Reference
 

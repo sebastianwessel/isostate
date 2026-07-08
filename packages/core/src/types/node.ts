@@ -60,25 +60,39 @@ export interface AmbientAnimation {
 	iterations?: number;
 }
 
+/** Camera transition easing curve. */
 export type CameraEasing = "linear" | "ease-in-out" | "ease-out";
 
+/** Grid-space rectangle used as a camera zoom target. */
 export interface CameraGridArea {
+	/** Top-left grid cell of the area. */
 	at: [number, number];
+	/** Area size in whole grid cells. */
 	size: [number, number];
 }
 
+/** Authored camera focus target: a named element, a grid area, or a reset to the full scene view. */
 export type CameraTarget = { element: string } | { area: CameraGridArea } | { reset: true };
 
+/** Authored camera focus metadata attached to a scene stop. */
 export interface CameraFocus {
+	/** Focus target: an element, a grid area, or a reset to the full scene view. */
 	target: CameraTarget;
+	/** Extra viewBox padding in grid cells around the target. */
 	padding?: number;
+	/** Camera transition duration in milliseconds. */
 	duration?: number;
+	/** Camera transition easing curve. */
 	easing?: CameraEasing;
 }
 
+/** Options accepted by controller camera zoom methods (`zoomToElement`, `zoomToArea`). */
 export interface CameraZoomOptions {
+	/** Extra viewBox padding in grid cells around the target. */
 	padding?: number;
+	/** Camera transition duration in milliseconds. */
 	duration?: number;
+	/** Camera transition easing curve. */
 	easing?: CameraEasing;
 }
 

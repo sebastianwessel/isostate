@@ -62,6 +62,11 @@ class MiniElement {
 	}
 
 	appendChild<T extends MiniElement>(node: T): T {
+		if (node.parentElement) {
+			node.parentElement.childNodes = node.parentElement.childNodes.filter(
+				(child) => child !== node
+			);
+		}
 		node.parentElement = this;
 		this.childNodes.push(node);
 		return node;
@@ -432,6 +437,120 @@ describe('rendering engine', () => {
 		expect(line?.getAttribute('fill')).toBe('none');
 	});
 
+	test('preserves text node identity across identical updates and rebuilds on content change', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const textDef = {
+			value: 'Authentication\nGateway',
+			align: 'middle' as const,
+			fontSize: 12,
+			fontWeight: 700,
+			lineHeight: 1.2,
+			fill: '#111111'
+		};
+		const bundle = createBundle({
+			assets: undefined,
+			scenes: [
+				sceneStop([{ id: 'gateway-label', asset: 'text', text: textDef }])
+			]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const element = svg.querySelector('[data-id="gateway-label"]');
+		const textBefore = element?.querySelector('text');
+
+		updateElementTransforms(svg, [
+			{
+				id: 'gateway-label',
+				asset: 'text',
+				pos: [0, 0],
+				size: 1,
+				layer: 'main',
+				presence: 'present',
+				text: { ...textDef }
+			}
+		]);
+
+		const textAfterIdenticalUpdate = element?.querySelector('text');
+		expect(textAfterIdenticalUpdate).toBe(textBefore ?? null);
+
+		updateElementTransforms(svg, [
+			{
+				id: 'gateway-label',
+				asset: 'text',
+				pos: [0, 0],
+				size: 1,
+				layer: 'main',
+				presence: 'present',
+				text: { ...textDef, value: 'Authentication\nProxy' }
+			}
+		]);
+
+		const textAfterChange = element?.querySelector('text');
+		const lines = textAfterChange?.querySelectorAll('tspan') ?? [];
+		expect(textAfterChange).not.toBe(textBefore ?? null);
+		expect(lines.map((line) => line.textContent)).toEqual([
+			'Authentication',
+			'Proxy'
+		]);
+	});
+
+	test('preserves primitive node identity across identical updates and rebuilds on content change', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const rectanglePrimitive = {
+			fill: '#2563eb',
+			stroke: '#1d4ed8',
+			strokeWidth: 1,
+			opacity: 0.16
+		};
+		const bundle = createBundle({
+			assets: undefined,
+			scenes: [
+				sceneStop([
+					{
+						id: 'service-zone',
+						asset: 'rectangle',
+						primitive: { rectangle: rectanglePrimitive }
+					}
+				])
+			]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const element = svg.querySelector('[data-id="service-zone"]');
+		const polygonBefore = element?.querySelector('polygon');
+
+		updateElementTransforms(svg, [
+			{
+				id: 'service-zone',
+				asset: 'rectangle',
+				pos: [0, 0],
+				size: 1,
+				layer: 'main',
+				presence: 'present',
+				primitive: { rectangle: { ...rectanglePrimitive } }
+			}
+		]);
+
+		const polygonAfterIdenticalUpdate = element?.querySelector('polygon');
+		expect(polygonAfterIdenticalUpdate).toBe(polygonBefore ?? null);
+
+		updateElementTransforms(svg, [
+			{
+				id: 'service-zone',
+				asset: 'rectangle',
+				pos: [0, 0],
+				size: 1,
+				layer: 'main',
+				presence: 'present',
+				primitive: { rectangle: { ...rectanglePrimitive, fill: '#ff0000' } }
+			}
+		]);
+
+		const polygonAfterChange = element?.querySelector('polygon');
+		expect(polygonAfterChange).not.toBe(polygonBefore ?? null);
+		expect(polygonAfterChange?.getAttribute('fill')).toBe('#ff0000');
+	});
+
 	test('rejects unsafe URL assets before assigning image href', () => {
 		const container = new MiniElement('div', null) as unknown as HTMLElement;
 		const bundle = createBundle({
@@ -468,6 +587,129 @@ describe('rendering engine', () => {
 		const ids = layer?.childNodes.map((node) => node.getAttribute('data-id'));
 
 		expect(ids).toEqual(['front', 'a-first', 'z-last']);
+	});
+
+	test('sorts primitives and url assets in one shared perspective order', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const bundle = createBundle({
+			assets: {
+				marker: { url: './assets/marker.svg' }
+			},
+			scenes: [
+				sceneStop([
+					{
+						id: 'circle-near',
+						asset: 'circle',
+						pos: [5, 5],
+						primitive: {
+							circle: {
+								fill: '#2563eb',
+								stroke: '#1d4ed8',
+								strokeWidth: 1,
+								opacity: 1
+							}
+						}
+					},
+					{ id: 'marker-far', asset: 'marker', pos: [1, 1] }
+				])
+			]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const layer = svg.querySelector('.iso-depth-layer');
+		const ids = layer?.childNodes.map((node) => node.getAttribute('data-id'));
+
+		expect(ids).toEqual(['marker-far', 'circle-near']);
+	});
+
+	test('reorders the depth layer when elements swap relative depth between scene stops', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const bundle = createBundle({
+			assets: {
+				block: { url: './assets/block.svg' }
+			},
+			scenes: [
+				sceneStop([
+					{ id: 'alpha', asset: 'block', pos: [0, 0] },
+					{ id: 'beta', asset: 'block', pos: [3, 3] }
+				])
+			]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const layer = svg.querySelector('.iso-depth-layer');
+
+		expect(
+			layer?.childNodes.map((node) => node.getAttribute('data-id'))
+		).toEqual(['alpha', 'beta']);
+
+		updateElementTransforms(svg, [
+			{
+				id: 'alpha',
+				asset: 'block',
+				pos: [5, 5],
+				size: 1,
+				layer: 'main',
+				presence: 'present'
+			},
+			{
+				id: 'beta',
+				asset: 'block',
+				pos: [0, 0],
+				size: 1,
+				layer: 'main',
+				presence: 'present'
+			}
+		]);
+
+		expect(
+			layer?.childNodes.map((node) => node.getAttribute('data-id'))
+		).toEqual(['beta', 'alpha']);
+	});
+
+	test('skips depth layer DOM moves when relative order is unchanged', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const bundle = createBundle({
+			assets: {
+				block: { url: './assets/block.svg' }
+			},
+			scenes: [
+				sceneStop([
+					{ id: 'alpha', asset: 'block', pos: [0, 0] },
+					{ id: 'beta', asset: 'block', pos: [3, 3] }
+				])
+			]
+		});
+
+		const svg = buildSceneDOM(container, bundle);
+		const layer = svg.querySelector('.iso-depth-layer');
+		const alphaBefore = layer?.querySelector('[data-id="alpha"]');
+		const betaBefore = layer?.querySelector('[data-id="beta"]');
+
+		updateElementTransforms(svg, [
+			{
+				id: 'alpha',
+				asset: 'block',
+				pos: [1, 0],
+				size: 1,
+				layer: 'main',
+				presence: 'present'
+			},
+			{
+				id: 'beta',
+				asset: 'block',
+				pos: [4, 3],
+				size: 1,
+				layer: 'main',
+				presence: 'present'
+			}
+		]);
+
+		expect(
+			layer?.childNodes.map((node) => node.getAttribute('data-id'))
+		).toEqual(['alpha', 'beta']);
+		expect(layer?.querySelector('[data-id="alpha"]')).toBe(alphaBefore ?? null);
+		expect(layer?.querySelector('[data-id="beta"]')).toBe(betaBefore ?? null);
 	});
 
 	test('renders a generated floor grid when floor is visible', () => {
@@ -680,7 +922,7 @@ describe('rendering engine', () => {
 		).toBe('0 8');
 	});
 
-	test('keeps connector flow class when route updates replace the shaft path', () => {
+	test('keeps connector flow class and shaft node identity when the route updates', () => {
 		const container = new MiniElement('div', null) as unknown as HTMLElement;
 		const flow = connector({
 			id: 'navigation-arrow',
@@ -708,6 +950,7 @@ describe('rendering engine', () => {
 			?.querySelector('.iso-connector-shaft');
 
 		expect(before?.getAttribute('class')).toContain('iso-ambient-flow');
+		const dBefore = before?.getAttribute('d');
 
 		updateElementTransforms(
 			svg,
@@ -726,8 +969,50 @@ describe('rendering engine', () => {
 		const after = svg
 			.querySelector('.iso-connector-navigation-arrow')
 			?.querySelector('.iso-connector-shaft');
-		expect(after).not.toBe(before);
+		expect(after).toBe(before);
 		expect(after?.getAttribute('class')).toContain('iso-ambient-flow');
+		expect(after?.getAttribute('d')).not.toBe(dBefore);
+	});
+
+	test('preserves shaft node identity, host classes, and play-state across identical updates', () => {
+		const container = new MiniElement('div', null) as unknown as HTMLElement;
+		const flow = connector({
+			id: 'status-link',
+			route: [
+				[0, 0],
+				[2, 0]
+			],
+			ambient: [{ name: 'flow' }]
+		});
+		const bundle = createBundle({
+			scenes: [sceneStop([], 0, [flow])]
+		});
+		const svg = buildSceneDOM(container, bundle);
+		const shaftBefore = svg
+			.querySelector('.iso-connector-status-link')
+			?.querySelector('.iso-connector-shaft');
+
+		// Simulate host-added class and a paused animation, as the animation
+		// controller does via inline style + classList.
+		shaftBefore?.classList.add('host-added');
+		if (shaftBefore)
+			(
+				shaftBefore as unknown as { style: Record<string, string> }
+			).style.animationPlayState = 'paused';
+
+		updateElementTransforms(svg, [], [flow]);
+		updateElementTransforms(svg, [], [flow]);
+
+		const shaftAfter = svg
+			.querySelector('.iso-connector-status-link')
+			?.querySelector('.iso-connector-shaft');
+
+		expect(shaftAfter).toBe(shaftBefore);
+		expect(shaftAfter?.getAttribute('class')).toContain('host-added');
+		expect(
+			(shaftAfter as unknown as { style: Record<string, string> })?.style
+				.animationPlayState
+		).toBe('paused');
 	});
 
 	test('renders road connector outline body and center lane paths', () => {

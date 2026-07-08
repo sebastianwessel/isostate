@@ -7,6 +7,7 @@ function installHappyDom() {
 	g.document = window.document;
 	g.window = window;
 	g.HTMLElement = window.HTMLElement;
+	g.HTMLFormElement = window.HTMLFormElement;
 	g.SVGElement = window.SVGElement;
 	g.Element = window.Element;
 	g.Node = window.Node;

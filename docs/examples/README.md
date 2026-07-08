@@ -19,6 +19,8 @@ Each example focuses on one public workflow.
 | [Custom Assets](./custom-assets.md) | Create SVG assets and sprite sheets with explicit anchors and browser-loadable paths. |
 | [Custom Theme](./custom-theme.md) | Apply theme variables. |
 | [Inspect Bundle](./inspect-bundle.md) | Read generated bundle metadata safely. |
+| [Export Snapshot](./export-snapshot.md) | Export a mounted scene to an SVG string or PNG blob. |
+| [Interactive Elements](./interactive-elements.md) | React to element hover and click with tooltips and camera zoom. |
 | [Low-Level Rendering](./low-level-rendering.md) | Use the advanced rendering escape hatch. |
 | [Editor Basic](./editor-basic.md) | Mount the editor with initial YAML. |
 | [Editor React](./editor-react.md) | Controlled React component example. |
@@ -26,4 +28,6 @@ Each example focuses on one public workflow.
 | [Asset Manifest](./asset-manifest.md) | Generate and use an asset manifest with the CLI. |
 
 For a runnable browser demo, use
-[`examples/basic`](../../examples/basic/README.md).
+[`examples/basic`](../../examples/basic/README.md). For a larger, layered
+scene with animated routes, see
+[`examples/city-growth`](../../examples/city-growth/README.md).

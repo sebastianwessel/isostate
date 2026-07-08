@@ -21,6 +21,14 @@ artifacts:
     layer: capability
   - path: 02-capabilities/camera.md
     layer: capability
+  - path: 02-capabilities/export.md
+    layer: capability
+  - path: 02-capabilities/interactivity.md
+    layer: capability
+  - path: 02-capabilities/diagnostics-overlay.md
+    layer: capability
+  - path: 02-capabilities/dsl/mermaid2dsl.md
+    layer: capability
   - path: 02-capabilities/editor.md
     layer: capability
   - path: 03-contracts/scene-schema.md

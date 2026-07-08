@@ -69,6 +69,8 @@ style:
   strokeWidth: 3
   opacity: 1
   dash: [12, 8]
+  outline: "#ffffff"
+  outlineWidth: 2
 ```
 
 Supported:
@@ -78,6 +80,12 @@ Supported:
 - `start`/`end`: `none`, `arrow`, `dot`, `circle`, `diamond`, `bar`
 - `ambient: [{ name: flow }]` for dashed/dotted flow animation
 - road paths may use `style.lane: center-dashed`
+- `outline`/`outlineWidth`: draw a casing behind the connector shaft —
+  `outline` is the casing color (defaults to `stroke` when unset, same color
+  rules as `stroke`) and `outlineWidth` is the extra width added on each side
+  of `strokeWidth`. `road` variant defaults to `outline: "#ffffff"`,
+  `outlineWidth: 2`; `line` variant has no outline by default. `outlineWidth`
+  must be a positive finite number when set.
 
 ## Animation And Camera
 

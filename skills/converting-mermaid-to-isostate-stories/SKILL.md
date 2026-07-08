@@ -20,6 +20,30 @@ Correct data display is the highest priority. A beautiful scene that mislabels
 nodes, swaps asset meanings, drops edges, reverses message direction, or makes
 the Mermaid flow unreconstructable is a failed conversion.
 
+## Relationship To `isostate mermaid2dsl`
+
+The CLI ships a deterministic converter, `isostate mermaid2dsl`
+(`docs/guides/convert-mermaid.md`), that turns a narrow Mermaid flowchart
+subset into a single starting `.isostate.yaml` with no AI involved. Choose the
+right tool:
+
+- Use `isostate mermaid2dsl` when the source is a plain `graph`/`flowchart`
+  with direction `TD`/`TB`/`LR`, only rectangle/circle/diamond nodes, and
+  `-->`/`---` edges, and a single generic starting scene (primitive shapes,
+  auto grid layout, no styling) is enough. It is fast, reproducible, and
+  requires no asset design. Its output is a valid `.isostate.yaml` you can then
+  author on top of with this skill.
+- Use this skill when you need anything richer: a cumulative multi-scene story,
+  semantic connection styling (active/completed/optional/alternative/async/
+  error), real assets instead of generic primitives, subgraphs mapped to zones,
+  sequence or state diagrams, or any Mermaid feature the CLI rejects (`RL`/`BT`
+  direction, other node shapes, `&`-separated edges, edge labels rendered as
+  visible text). See `specs/02-capabilities/dsl/mermaid2dsl.md` for the exact
+  CLI-supported subset.
+
+A common path is to run the CLI first for a structurally-correct skeleton, then
+redesign it into a story with this skill.
+
 ## Workflow
 
 1. Read the shared story guidance in `references/story-mapping.md`. This is

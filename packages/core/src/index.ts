@@ -17,6 +17,18 @@ export {
 } from "./rendering/rendering-engine.ts";
 export { applyThemeToElement } from "./rendering/theme.ts";
 export {
+	attachDiagnosticsOverlay,
+	type DiagnosticsOverlayHandle,
+	type DiagnosticsOverlayOptions,
+} from "./runtime/diagnostics-overlay.ts";
+export {
+	exportScenePng,
+	exportSceneSvg,
+	type PngSnapshotOptions,
+	type SnapshotOptions,
+} from "./runtime/export.ts";
+export type { ElementPointerEvent, MountedSceneEvents } from "./runtime/index.ts";
+export {
 	type MountedScene,
 	type MountSceneOptions,
 	mountScene,
@@ -51,6 +63,9 @@ export type {
 	CompiledFloor,
 	CompiledLayer,
 	CompiledLayout,
+	ConnectionPatch,
+	ConnectionPlacement,
+	ConnectionRemoval,
 	ElementPatch,
 	ElementPlacement,
 	ElementRemoval,
@@ -62,12 +77,14 @@ export type {
 	LayoutBounds,
 	LayoutFit,
 	LifecycleStatus,
+	PrimitiveContent,
 	ResolvedLayoutConfig,
 	RuntimeElementState,
 	RuntimeSceneStop,
 	SceneDocument,
 	SceneHeader,
 	SceneStep,
+	TextContent,
 	Theme,
 	ValidationError,
 	ValidationReport,

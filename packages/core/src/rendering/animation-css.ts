@@ -21,11 +21,18 @@ export function buildKeyframeCSS(): string {
 		"@keyframes iso-anim-glow{0%,100%{filter:drop-shadow(0 0 2px rgba(255,255,255,.5))}50%{filter:drop-shadow(0 0 8px rgba(255,255,255,.9))}}",
 		"@keyframes iso-anim-spin{from{rotate:0deg}to{rotate:360deg}}",
 		"@keyframes iso-anim-blink{0%,49%{opacity:1}50%,100%{opacity:0}}",
+		".iso-ambient-pulse{animation:iso-anim-pulse 2s ease-in-out infinite}",
+		".iso-ambient-float{animation:iso-anim-float 3s ease-in-out infinite}",
+		".iso-ambient-shake{animation:iso-anim-shake 0.5s ease-in-out infinite}",
+		".iso-ambient-glow{animation:iso-anim-glow 2s ease-in-out infinite}",
+		".iso-ambient-spin{animation:iso-anim-spin 4s linear infinite}",
+		".iso-ambient-blink{animation:iso-anim-blink 1.5s step-end infinite}",
 		"@keyframes iso-connector-flow-route{from{stroke-dashoffset:0}to{stroke-dashoffset:calc(-1px * var(--iso-flow-distance,20))}}",
 		"@keyframes iso-connector-flow-reverse{from{stroke-dashoffset:0}to{stroke-dashoffset:calc(1px * var(--iso-flow-distance,20))}}",
 		".iso-connector-pattern-dashed .iso-connector-shaft,.iso-connector-pattern-dotted .iso-connector-shaft{--iso-flow-distance:20}",
 		".iso-connector-direction-route .iso-connector-shaft.iso-ambient-flow{animation:iso-connector-flow-route 900ms linear infinite}",
 		".iso-connector-direction-reverse .iso-connector-shaft.iso-ambient-flow{animation:iso-connector-flow-reverse 900ms linear infinite}",
 		"@media (prefers-reduced-motion: reduce){.iso-element,.iso-connector{animation-duration:1ms!important}.iso-ambient-pulse,.iso-ambient-float,.iso-ambient-shake,.iso-ambient-glow,.iso-ambient-spin,.iso-ambient-blink,.iso-ambient-flow{animation:none!important}}",
+		".iso-interactive g[data-id]{cursor:pointer}",
 	].join("\n");
 }

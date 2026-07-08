@@ -625,11 +625,16 @@ The compiled `RuntimeBundle` exposes resolved `scenes[]` snapshots only. It does
 | identifiers | kebab-case `/^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$/` | `INVALID_IDENTIFIER` |
 | `header.assets` | at least one item | `NO_ASSETS` |
 | `floor.size` | optional tuple of two positive finite numbers | `INVALID_FLOOR_SIZE` |
+| `floor.origin` | optional tuple of two finite numbers | `INVALID_FLOOR_ORIGIN` |
+| `grid.cellSize` | optional positive finite number | `INVALID_GRID_CELL_SIZE` |
 | `header.layers` | at least one item | `NO_LAYERS` |
 | `scenes` | at least one item | `NO_SCENES` |
 | `at` | tuple of two finite numbers, each `>= 0` | `INVALID_POSITION` |
 | `size` | placement: whole-cell number `> 0`; patch: whole-cell number `>= 0` | `INVALID_SIZE` |
 | `ambient[].iterations` | positive integer when `infinite` is false | `INVALID_AMBIENT_ITERATIONS` |
+
+All authored numeric fields must be finite; the parser rejects `NaN` and
+infinite values with `DSL_SCHEMA_TYPE_ERROR` before validation runs.
 
 ## Unknown Fields
 

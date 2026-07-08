@@ -326,10 +326,18 @@ function validateHeader(document: SceneDocument, errors: ValidationError[]): voi
 		}
 	}
 
+	const grid = document.header.grid;
+	if (grid?.cellSize !== undefined && !(Number.isFinite(grid.cellSize) && grid.cellSize > 0)) {
+		errors.push(issue("INVALID_GRID_CELL_SIZE", "Grid cellSize must be a positive finite number"));
+	}
+
 	const floor = document.header.floor;
 	if (floor) {
 		if (floor.size !== undefined && !isValidPositiveTuple(floor.size)) {
 			errors.push(issue("INVALID_FLOOR_SIZE", "Floor size must be positive"));
+		}
+		if (floor.origin !== undefined && !floor.origin.every((part) => Number.isFinite(part))) {
+			errors.push(issue("INVALID_FLOOR_ORIGIN", "Floor origin must contain finite numbers"));
 		}
 		if (floor.layer !== undefined && !layerNames.has(floor.layer)) {
 			errors.push(
@@ -729,6 +737,15 @@ function validateTextForAsset(
 	sceneId: string,
 	allowSparse: boolean,
 ): void {
+	if (element.primitive !== undefined) {
+		errors.push(
+			issue("PRIMITIVE_CONTENT_FOR_TEXT_ASSET", "Built-in text elements may not define primitive content", {
+				sceneId,
+				elementId: element.id,
+				field: "primitive",
+			}),
+		);
+	}
 	if (!element.text) {
 		if (allowSparse) return;
 		errors.push(
@@ -739,15 +756,6 @@ function validateTextForAsset(
 			}),
 		);
 		return;
-	}
-	if (element.primitive !== undefined) {
-		errors.push(
-			issue("PRIMITIVE_CONTENT_FOR_TEXT_ASSET", "Built-in text elements may not define primitive content", {
-				sceneId,
-				elementId: element.id,
-				field: "primitive",
-			}),
-		);
 	}
 	validateTextContent(element.text as TextContent, errors, warnings, sceneId, element.id, allowSparse);
 }
@@ -1192,8 +1200,18 @@ function validateSceneObjectDeltas(
 			}
 		}
 
+		const addedElementIds = new Set<string>();
 		for (const add of scene.add?.elements ?? []) {
 			validatePlacement(add, document, errors, warnings, scene.id);
+			if (addedElementIds.has(add.id)) {
+				errors.push(
+					issue("DUPLICATE_ELEMENT_ID", `Duplicate element "${add.id}"`, {
+						sceneId: scene.id,
+						elementId: add.id,
+					}),
+				);
+			}
+			addedElementIds.add(add.id);
 			if (elements.has(add.id)) {
 				errors.push(
 					issue("ELEMENT_ALREADY_PRESENT", `Element "${add.id}" is already present`, {
@@ -1216,6 +1234,7 @@ function validateSceneObjectDeltas(
 		}
 
 		validateEndpointRemovalRule(scene, connectors, errors);
+		const removedElementIds = new Set((scene.remove?.elements ?? []).map((removal) => removal.id));
 
 		const connectorUpdateIds = new Set<string>();
 		for (const update of scene.update?.connections ?? []) {
@@ -1232,18 +1251,13 @@ function validateSceneObjectDeltas(
 				validateConnectionPatch(update, document, errors, scene.id, elementsForConnections, documentElementIds);
 				continue;
 			}
-			validateConnectionPatch(
-				{
-					...existing,
-					...update,
-					style: mergeStyle(existing.style, update.style),
-				},
-				document,
-				errors,
-				scene.id,
-				elementsForConnections,
-				documentElementIds,
-			);
+			const merged = {
+				...existing,
+				...update,
+				style: mergeStyle(existing.style, update.style),
+			};
+			validateConnectionPatch(merged, document, errors, scene.id, elementsForConnections, documentElementIds);
+			validateEndpointsAgainstRemovals(merged, removedElementIds, errors, scene.id);
 		}
 
 		for (const removal of scene.remove?.connections ?? []) {
@@ -1266,8 +1280,19 @@ function validateSceneObjectDeltas(
 			}
 		}
 
+		const addedConnectorIds = new Set<string>();
 		for (const add of scene.add?.connections ?? []) {
 			validateConnectionPlacement(add, document, errors, scene.id, elementsForConnections, documentElementIds);
+			validateEndpointsAgainstRemovals(add, removedElementIds, errors, scene.id);
+			if (addedConnectorIds.has(add.id)) {
+				errors.push(
+					issue("DUPLICATE_CONNECTOR_ID", `Duplicate connection "${add.id}"`, {
+						sceneId: scene.id,
+						elementId: add.id,
+					}),
+				);
+			}
+			addedConnectorIds.add(add.id);
 			if (connectors.has(add.id)) {
 				errors.push(
 					issue("CONNECTOR_ALREADY_PRESENT", `Connection "${add.id}" is already present`, {
@@ -1387,8 +1412,11 @@ function validateEndpointRemovalRule(
 	const removedElements = new Set((scene.remove?.elements ?? []).map((removal) => removal.id));
 	if (removedElements.size === 0) return;
 	const removedConnections = new Set((scene.remove?.connections ?? []).map((removal) => removal.id));
+	// Connectors updated in this scene are checked against their merged
+	// endpoints in the update loop instead.
+	const updatedConnections = new Set((scene.update?.connections ?? []).map((update) => update.id));
 	for (const connection of connectors.values()) {
-		if (removedConnections.has(connection.id)) continue;
+		if (removedConnections.has(connection.id) || updatedConnections.has(connection.id)) continue;
 		const endpointIds = [connection.from?.element, connection.to?.element];
 		if (endpointIds.some((id) => id !== undefined && removedElements.has(id))) {
 			errors.push(
@@ -1399,6 +1427,25 @@ function validateEndpointRemovalRule(
 				),
 			);
 		}
+	}
+}
+
+function validateEndpointsAgainstRemovals(
+	connection: ConnectionPatch | ResolvedConnectorRecord,
+	removedElementIds: Set<string>,
+	errors: ValidationError[],
+	sceneId: string,
+): void {
+	if (removedElementIds.size === 0) return;
+	const endpointIds = [connection.from?.element, connection.to?.element];
+	if (endpointIds.some((id) => id !== undefined && removedElementIds.has(id))) {
+		errors.push(
+			issue(
+				"CONNECTION_ENDPOINT_REMOVED",
+				`Connection "${connection.id}" references an element removed in the same scene`,
+				{ sceneId, elementId: connection.id },
+			),
+		);
 	}
 }
 
@@ -1790,6 +1837,13 @@ function validateWarnings(document: SceneDocument, warnings: ValidationWarning[]
 		usedAssets.add(document.header.floor.asset);
 	}
 
+	const floorBounds = document.header.floor?.size
+		? {
+				min: document.header.floor.origin ?? [0, 0],
+				size: document.header.floor.size,
+			}
+		: undefined;
+
 	for (const snapshot of snapshots) {
 		for (const element of snapshot.elements) {
 			usedAssets.add(element.asset);
@@ -1797,9 +1851,13 @@ function validateWarnings(document: SceneDocument, warnings: ValidationWarning[]
 				usedAssets.delete(element.asset);
 			}
 			usedLayers.add(element.layer);
-			if (document.header.floor?.size) {
-				const [columns, rows] = document.header.floor.size;
-				if (element.pos[0] + element.size > columns || element.pos[1] + element.size > rows) {
+			if (floorBounds) {
+				const outside = [0, 1].some(
+					(axis) =>
+						element.pos[axis] < floorBounds.min[axis] ||
+						element.pos[axis] + element.size > floorBounds.min[axis] + floorBounds.size[axis],
+				);
+				if (outside) {
 					warnings.push(
 						issue("ELEMENT_OUTSIDE_FLOOR", `Element "${element.id}" is outside floor bounds`, {
 							sceneId: snapshot.id,
@@ -1811,9 +1869,14 @@ function validateWarnings(document: SceneDocument, warnings: ValidationWarning[]
 		}
 		for (const connector of snapshot.connectors) {
 			usedLayers.add(connector.layer);
-			if (document.header.floor?.size) {
-				const [columns, rows] = document.header.floor.size;
-				if (connector.route.some((point) => point[0] > columns || point[1] > rows)) {
+			if (floorBounds) {
+				const outside = connector.route.some((point) =>
+					[0, 1].some(
+						(axis) =>
+							point[axis] < floorBounds.min[axis] || point[axis] > floorBounds.min[axis] + floorBounds.size[axis],
+					),
+				);
+				if (outside) {
 					warnings.push(
 						issue("CONNECTOR_OUTSIDE_FLOOR", `Connection "${connector.id}" is outside floor bounds`, {
 							sceneId: snapshot.id,
@@ -1826,7 +1889,12 @@ function validateWarnings(document: SceneDocument, warnings: ValidationWarning[]
 	}
 
 	for (const asset of document.header.assets) {
-		if (!usedAssets.has(asset.id)) {
+		// Sprite sheets are referenced through their sprite ids, never through
+		// the sheet namespace id itself.
+		const isUsed = isSpriteSheetAsset(asset)
+			? Object.keys(asset.sprites ?? {}).some((spriteId) => usedAssets.has(spriteId))
+			: usedAssets.has(asset.id);
+		if (!isUsed) {
 			warnings.push(
 				issue("UNREFERENCED_ASSET", `Asset "${asset.id}" is not used`, {
 					assetName: asset.id,
@@ -2072,8 +2140,8 @@ function toRuntimeConnectorState(
 		start: connection.start ?? "none",
 		end: connection.end ?? "arrow",
 		direction: connection.direction ?? "route",
-		enter: presence === "entering" ? (connection.enter ?? "fade-in") : (connection.enter ?? "fade-in"),
-		exit: presence === "exiting" ? (exit ?? connection.exit ?? "fade-out") : (exit ?? connection.exit ?? "fade-out"),
+		enter: presence === "entering" ? (connection.enter ?? "fade-in") : connection.enter,
+		exit: presence === "exiting" ? (exit ?? connection.exit ?? "fade-out") : (exit ?? connection.exit),
 		ambient: connection.ambient,
 	};
 }

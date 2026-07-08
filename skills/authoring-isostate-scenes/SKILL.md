@@ -26,6 +26,14 @@ Use this skill when creating or reviewing isostate scene definitions and example
    - Complete YAML examples: `references/examples.md`
    - CLI validation, compile, bundle, inspect, and static deploy workflow:
      `references/deployment.md`
+   - Runtime capabilities that are NOT authored in scene YAML — pointer
+     interactivity (`mountScene({ interactive: true })` plus
+     `MountedScene.on(...)`), snapshot export (`exportSceneSvg` /
+     `exportScenePng`), and the dev-time diagnostics overlay
+     (`attachDiagnosticsOverlay`): these are runtime API options applied by
+     the embedding application, never fields in `.isostate.yaml`. See
+     `docs/reference/public-api.md` and the diagnostics-overlay section of
+     `docs/guides/plan-a-scene.md`. Do not try to author them into scenes.
 3. Prefer the current public DSL:
    - first scene: top-level `elements` and optional `connections`
    - later scenes: `add`, `update`, `remove` sections with nested `elements` and/or `connections`
@@ -52,7 +60,6 @@ Use this skill when creating or reviewing isostate scene definitions and example
    deployment, verify `isostate bundle` output as well.
 9. Run available checks after edits:
    ```bash
-   node /Users/sebastianwessel/.agents/skills/spec-architect/scripts/check_specs.mjs specs
    bun test tests/nfr/docs-paths.test.ts tests/nfr/assets-manifest.test.ts
    ```
 10. For a publishable change, confirm the full path: authored YAML/editor state,

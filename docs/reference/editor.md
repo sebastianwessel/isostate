@@ -10,7 +10,7 @@ explicitly publishes it.
 
 | Export | Use | Description |
 |---|---|---|
-| `@sebastianwessel/isostate-editor` | Non-React hosts, generic embedding | `mountEditor`, `IsostateEditor`, commands, serialization, asset helpers |
+| `@sebastianwessel/isostate-editor` | Non-React hosts, generic embedding | `mountEditor`, `IsostateEditor`, commands, serialization, asset helpers (see [Asset Provider Helpers](#asset-provider-helpers)) |
 | `@sebastianwessel/isostate-editor/react` | React hosts | `IsostateEditor` component and props only |
 | `@sebastianwessel/isostate-editor/style.css` | All hosts | Editor stylesheet (import once) |
 
@@ -200,6 +200,20 @@ interface EditorWorkspaceInput {
 Host applications cannot initialize persistent editor-only UI state through v1
 workspace input.
 
+## Creating A Workspace
+
+```ts
+import { createEditorWorkspace } from '@sebastianwessel/isostate-editor';
+
+function createEditorWorkspace(input: EditorWorkspaceInput): EditorWorkspace;
+```
+
+`createEditorWorkspace` parses and validates `input.sourceYaml` and returns a
+fresh `EditorWorkspace`, including its `document` and `diagnostics`. It is used
+internally by `mountEditor` and is also the entry point for hosts that manage
+workspace state themselves (for example to drive `applyEditorCommand` without
+mounting the React component).
+
 ## Command API
 
 ```ts
@@ -220,13 +234,35 @@ Commands include:
 
 - `createYamlEditCommand`, `createYamlFormatCommand`
 - `createSceneAddCommand`, `createSceneUpdateCommand`, `createSceneRemoveCommand`, `createSceneReorderCommand`
-- `createObjectAddCommand`, `createObjectUpdateCommand`, `createObjectRemoveCommand`
+- `createObjectAddCommand`, `createObjectUpdateCommand`, `createObjectRemoveCommand`, `createObjectReorderCommand`
 - `createConnectionAddCommand`, `createConnectionUpdateCommand`, `createConnectionRemoveCommand`
 - `createLayerAddCommand`, `createLayerUpdateCommand`, `createLayerRemoveCommand`, `createLayerReorderCommand`
-- `createAssetAddCommand`, `createAssetUpdateCommand`, `createAssetRemoveCommand`
+- `createAssetAddCommand`, `createAssetUpdateCommand`, `createAssetRemoveCommand`, `createAssetPlacementCommand`
 - `createCameraUpdateCommand`, `createCameraRemoveCommand`
 
 Commands must not access DOM APIs.
+
+## Asset Provider Helpers
+
+```ts
+import {
+  createManifestAssetProvider,
+  filterAssetsByGroup,
+  filterAssetsByTag,
+  getMissingAssets,
+  getUnusedAssets,
+  searchAssets,
+  validateAssetManifest
+} from '@sebastianwessel/isostate-editor';
+```
+
+- `createManifestAssetProvider(assetManifestUrl)` — builds an `EditorAssetProvider` that fetches, validates, and caches a manifest from a URL for `mountEditor`/`IsostateEditor`'s `assetProvider` option.
+- `validateAssetManifest(manifest)` — validates raw manifest data and returns either the parsed `EditorAssetCatalog` or `EDITOR_ASSET_MANIFEST_INVALID` diagnostics.
+- `searchAssets(catalog, query)` — case-insensitive search across an asset's id, label, path, and tags.
+- `filterAssetsByGroup(catalog, group)` — returns placeable catalog assets belonging to one manifest group.
+- `filterAssetsByTag(catalog, tag)` — returns placeable catalog assets carrying one tag.
+- `getMissingAssets(workspace, catalog)` — returns asset ids declared in `header.assets` that are not present in the catalog.
+- `getUnusedAssets(workspace, catalog)` — returns declared, cataloged asset ids that no scene element references.
 
 ## Serialization
 

@@ -255,6 +255,51 @@ scenes:
 		);
 	});
 
+	test('validates grid cell size and floor origin', () => {
+		expectErrorCode(
+			parseScene(`
+header:
+  assets:
+    - id: building-office
+  grid:
+    cellSize: 0
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements: []
+`),
+			'INVALID_GRID_CELL_SIZE'
+		);
+
+		expectErrorCode(
+			parseScene(`
+header:
+  assets:
+    - id: building-office
+  grid:
+    cellSize: -8
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements: []
+`),
+			'INVALID_GRID_CELL_SIZE'
+		);
+
+		const infiniteCellSize = validDocument();
+		infiniteCellSize.header.grid = { cellSize: Number.POSITIVE_INFINITY };
+		expectErrorCode(infiniteCellSize, 'INVALID_GRID_CELL_SIZE');
+
+		const nonFiniteOrigin = validDocument();
+		nonFiniteOrigin.header.floor = {
+			...nonFiniteOrigin.header.floor,
+			origin: [Number.POSITIVE_INFINITY, 0]
+		};
+		expectErrorCode(nonFiniteOrigin, 'INVALID_FLOOR_ORIGIN');
+	});
+
 	test('validates scene step shape', () => {
 		expectErrorCode(
 			parseScene(`
@@ -841,6 +886,153 @@ scenes:
 			report.warnings.find((w) => w.code === 'ELEMENT_OUTSIDE_FLOOR')
 		).toBeDefined();
 	});
+
+	test('rejects duplicate ids within a single scene add delta', () => {
+		const dupAdds = validDocument();
+		dupAdds.scenes[1].add = {
+			elements: [
+				{ id: 'twin', asset: 'tree-oak', at: [0, 0] },
+				{ id: 'twin', asset: 'building-office', at: [1, 1] }
+			],
+			connections: [
+				{ id: 'twin-link', route: [[0, 0], [1, 0]] },
+				{ id: 'twin-link', route: [[0, 1], [1, 1]] }
+			]
+		};
+		expectErrorCode(dupAdds, 'DUPLICATE_ELEMENT_ID');
+		expectErrorCode(dupAdds, 'DUPLICATE_CONNECTOR_ID');
+	});
+
+	test('rejects connections referencing elements removed in the same scene', () => {
+		const addToRemoved = validDocument();
+		addToRemoved.scenes[2].add = {
+			connections: [
+				{
+					id: 'late-link',
+					from: { element: 'tree-1' },
+					to: { element: 'office-1' }
+				}
+			]
+		};
+		expectErrorCode(addToRemoved, 'CONNECTION_ENDPOINT_REMOVED');
+
+		const retargetToRemoved = validDocument();
+		retargetToRemoved.scenes[2].remove = { elements: [{ id: 'tree-1' }] };
+		retargetToRemoved.scenes[2].update = {
+			connections: [{ id: 'tree-flow', to: { element: 'tree-1', side: 'left' } }]
+		};
+		expectErrorCode(retargetToRemoved, 'CONNECTION_ENDPOINT_REMOVED');
+
+		const retargetAway = validDocument();
+		retargetAway.scenes[2].remove = { elements: [{ id: 'tree-1' }] };
+		retargetAway.scenes[2].update = {
+			connections: [{ id: 'tree-flow', to: { at: [4, 3] } }]
+		};
+		const report = validateScene(retargetAway);
+		expect(
+			report.errors.filter((e) => e.code === 'CONNECTION_ENDPOINT_REMOVED')
+		).toEqual([]);
+	});
+
+	test('rejects camera targets with multiple kinds from YAML', () => {
+		expectErrorCode(
+			parseScene(`
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: building-office
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    camera:
+      target:
+        element: office-1
+        reset: true
+    elements:
+      - id: office-1
+        asset: building-office
+        at: [0, 0]
+        layer: ground
+`),
+			'INVALID_CAMERA_TARGET'
+		);
+	});
+
+	test('rejects primitive-only update patches on text elements', () => {
+		expectErrorCode(
+			parseScene(`
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: building-office
+  layers:
+    - name: ground
+    - name: labels
+scenes:
+  - id: initial
+    elements:
+      - id: office-1
+        asset: building-office
+        at: [0, 0]
+        layer: ground
+      - id: label-1
+        asset: text
+        at: [1, 1]
+        layer: labels
+        text:
+          value: Hello
+  - id: next
+    update:
+      elements:
+        - id: label-1
+          primitive:
+            circle:
+              fill: "#ff0000"
+`),
+			'PRIMITIVE_CONTENT_FOR_TEXT_ASSET'
+		);
+	});
+
+	test('does not warn for sprite sheets whose sprites are used', () => {
+		const report = validateScene(fixture('compact.isostate.yaml'));
+		expect(report.errors).toEqual([]);
+		expect(
+			report.warnings.filter((w) => w.code === 'UNREFERENCED_ASSET')
+		).toEqual([]);
+	});
+
+	test('floor bounds warnings respect floor origin', () => {
+		const report = validateScene(
+			parseScene(`
+header:
+  assetBaseUrl: ./assets
+  assets:
+    - id: building-office
+  floor:
+    origin: [2, 2]
+    size: [3, 3]
+  layers:
+    - name: ground
+scenes:
+  - id: initial
+    elements:
+      - id: inside
+        asset: building-office
+        at: [3, 3]
+        layer: ground
+      - id: outside
+        asset: building-office
+        at: [0, 0]
+        layer: ground
+`)
+		);
+		expect(report.isValid).toBe(true);
+		const flagged = report.warnings
+			.filter((w) => w.code === 'ELEMENT_OUTSIDE_FLOOR')
+			.map((w) => w.elementId);
+		expect(flagged).toEqual(['outside']);
+	});
 });
 
 describe('resolveSceneSnapshots', () => {
@@ -893,5 +1085,22 @@ describe('resolveSceneSnapshots', () => {
 			expect.objectContaining({ id: 'office-road', presence: 'present' }),
 			expect.objectContaining({ id: 'tree-flow', presence: 'exiting' })
 		]);
+	});
+
+	test('omits connector enter/exit defaults unless entering or exiting', () => {
+		const snapshots = resolveSceneSnapshots(validDocument());
+
+		const present = snapshots[0].connectors.find((c) => c.id === 'office-road');
+		expect(present?.presence).toBe('present');
+		expect(present?.enter).toBeUndefined();
+		expect(present?.exit).toBeUndefined();
+
+		const entering = snapshots[1].connectors.find((c) => c.id === 'tree-flow');
+		expect(entering?.presence).toBe('entering');
+		expect(entering?.enter).toBe('fade-in');
+
+		const exiting = snapshots[2].connectors.find((c) => c.id === 'tree-flow');
+		expect(exiting?.presence).toBe('exiting');
+		expect(exiting?.exit).toBe('fade-out');
 	});
 });

@@ -1,5 +1,10 @@
 # Shadcn Editor Migration Implementation Plan
 
+> **Status: Implemented (historical record).** This migration is complete — the
+> editor package ships shadcn/ui-based components (`packages/editor/src/ui/`,
+> `packages/editor/components.json`, the `radix-ui` dependency). The unchecked
+> checkboxes below are the original task list, kept for provenance.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Migrate `@sebastianwessel/isostate-editor` to shadcn/ui-based reusable components so standard controls use shadcn primitives instead of custom ad hoc markup.

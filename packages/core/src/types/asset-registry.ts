@@ -37,14 +37,14 @@ const BUILTIN_THEMES: Record<string, Record<string, string>> = {
  * Returns undefined if the theme is not found.
  */
 export function resolveTheme(name: string): Record<string, string> | undefined {
-	return BUILTIN_THEMES[name];
+	return Object.hasOwn(BUILTIN_THEMES, name) ? BUILTIN_THEMES[name] : undefined;
 }
 
 /**
  * Compose a new theme by extending an existing one with overrides.
  */
 export function composeTheme(baseName: string, overrides: Record<string, string>): Theme {
-	const base = BUILTIN_THEMES[baseName];
+	const base = resolveTheme(baseName);
 	if (!base) {
 		return { name: baseName, vars: { ...overrides } };
 	}
@@ -84,6 +84,7 @@ export class AssetRegistryImpl implements AssetRegistry {
 	}
 }
 
+/** Create a registry populated with the given asset definitions. */
 export function createAssetRegistry(assets: AssetDefinition[] = []): AssetRegistryImpl {
 	const registry = new AssetRegistryImpl();
 	for (const asset of assets) {

@@ -4,6 +4,15 @@ Use this reference only for Mermaid `flowchart` or `graph` extraction details.
 Apply shared storytelling, branch, label, marker, camera, layout, and
 verification rules from `story-mapping.md`.
 
+For a plain `graph`/`flowchart` with direction `TD`/`TB`/`LR`, only
+rectangle/circle/diamond nodes, and `-->`/`---` edges, the deterministic
+`isostate mermaid2dsl` CLI (`docs/guides/convert-mermaid.md`) can generate a
+starting `.isostate.yaml` directly. This reference is for richer or cumulative
+story conversion, semantic styling, subgraph zones, and diagram features the
+CLI does not support (`RL`/`BT` direction, other node shapes, `&`-separated
+edges, edge labels as visible text). See
+`specs/02-capabilities/dsl/mermaid2dsl.md` for the exact CLI subset.
+
 ## Interpret The Flow
 
 Extract:

@@ -685,6 +685,130 @@ scenes:
 		});
 	});
 
+	test('merges a second sprite from an already-declared sheet into its sprites map', () => {
+		const workspace = createEditorWorkspace({
+			sourceYaml: `header:
+  version: "1"
+  assetBaseUrl: /assets
+  assets:
+    - id: sprites-app-icons
+      type: sprite-sheet
+      path: sprites/app-icons.png
+      sheetSize: [128, 64]
+      tileSize: [32, 32]
+      sprites:
+        app-home: [0, 0]
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+    elements:
+      - id: e1
+        asset: app-home
+        at: [0, 0]
+`
+		});
+		const entry = {
+			id: 'app-alert',
+			type: 'sprite' as const,
+			path: 'sprites/app-icons.png',
+			group: 'sprites',
+			name: 'app-alert',
+			digest: 'sha256:sprite',
+			sheetId: 'sprites-app-icons',
+			sheetSize: [128, 64] as [number, number],
+			tileSize: [32, 32] as [number, number],
+			sprites: {
+				'app-home': [0, 0] as [number, number],
+				'app-alert': {
+					rect: [32, 0, 32, 32] as [number, number, number, number]
+				}
+			},
+			sprite: { rect: [32, 0, 32, 32] as [number, number, number, number] }
+		};
+		const command = createAssetPlacementCommand(
+			'scene-1',
+			entry,
+			[2, 2],
+			'/assets'
+		);
+		const result = applyEditorCommand(workspace, command);
+
+		expect(result.changed).toBe(true);
+		expect(result.diagnostics).toEqual([]);
+		const asset = result.workspace.document?.header.assets.find(
+			(a) => a.id === 'sprites-app-icons'
+		);
+		expect(asset).toMatchObject({
+			type: 'sprite-sheet',
+			sprites: {
+				'app-home': [0, 0],
+				'app-alert': { rect: [32, 0, 32, 32] }
+			}
+		});
+		const element = result.workspace.document?.scenes[0].elements?.find(
+			(e) => e.asset === 'app-alert'
+		);
+		expect(element).toBeDefined();
+		expect(element?.at).toEqual([2, 2]);
+	});
+
+	test('reports EDITOR_ASSET_CONFLICT and leaves YAML unchanged on sheet metadata mismatch', () => {
+		const originalYaml = `header:
+  version: "1"
+  assetBaseUrl: /assets
+  assets:
+    - id: sprites-app-icons
+      type: sprite-sheet
+      path: sprites/app-icons.png
+      sheetSize: [128, 64]
+      tileSize: [32, 32]
+      sprites:
+        app-home: [0, 0]
+  layers:
+    - name: default
+scenes:
+  - id: scene-1
+    elements:
+      - id: e1
+        asset: app-home
+        at: [0, 0]
+`;
+		const workspace = createEditorWorkspace({ sourceYaml: originalYaml });
+		const entry = {
+			id: 'app-alert',
+			type: 'sprite' as const,
+			path: 'sprites/app-icons.png',
+			group: 'sprites',
+			name: 'app-alert',
+			digest: 'sha256:sprite',
+			sheetId: 'sprites-app-icons',
+			// Conflicting sheetSize compared to the already-declared sheet.
+			sheetSize: [256, 64] as [number, number],
+			tileSize: [32, 32] as [number, number],
+			sprites: {
+				'app-home': [0, 0] as [number, number],
+				'app-alert': {
+					rect: [32, 0, 32, 32] as [number, number, number, number]
+				}
+			},
+			sprite: { rect: [32, 0, 32, 32] as [number, number, number, number] }
+		};
+		const command = createAssetPlacementCommand(
+			'scene-1',
+			entry,
+			[2, 2],
+			'/assets'
+		);
+		const result = applyEditorCommand(workspace, command);
+
+		expect(result.changed).toBe(false);
+		expect(
+			result.diagnostics.some((d) => d.code === 'EDITOR_ASSET_CONFLICT')
+		).toBe(true);
+		expect(result.workspace.sourceYaml).toBe(originalYaml);
+	});
+
 	test('rebases mixed manifest asset roots to a shared base', () => {
 		const workspace = createEditorWorkspace({
 			sourceYaml: `header:

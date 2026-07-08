@@ -134,7 +134,7 @@ describe('compileScene', () => {
 		expect(first).toEqual(second);
 		expect(toJson(first)).toBe(toJson(second));
 		expect(first._format).toBe('isostate-runtime-bundle');
-		expect(first._version).toBe('0.4.0');
+		expect(first._version).toBe('0.5.0');
 		expect(first._digest).toMatch(/^[a-f0-9]{64}$/);
 		expect(first.className).toBe('demo-surface');
 		expect(first.grid).toEqual({ cellSize: 72 });
@@ -276,6 +276,32 @@ describe('compileScene', () => {
 			'tree-oak': { url: './assets/tree-oak.svg' }
 		});
 		expect(bundle._digest).toMatch(/^[a-f0-9]{64}$/);
+	});
+
+	test('breaks equal-order layer ties by code-point order, not locale collation', () => {
+		// 'Zone'.localeCompare('aisle') is positive under the default ICU locale
+		// (locale collation treats case/diacritics specially), while code-point
+		// order places capital letters before lowercase ones. The compiler must
+		// use code-point order so the same document compiles byte-identically
+		// regardless of host locale.
+		expect('Zone'.localeCompare('aisle')).toBeGreaterThan(0);
+
+		const bundle = compileScene(
+			createDocument({
+				header: {
+					...createDocument().header,
+					layers: [
+						{ name: 'Zone', order: 1 },
+						{ name: 'aisle', order: 1 }
+					]
+				}
+			})
+		);
+
+		expect(bundle.layers).toEqual([
+			{ name: 'Zone', order: 1 },
+			{ name: 'aisle', order: 1 }
+		]);
 	});
 
 	test('derives floor size from resolved scene element footprints', () => {

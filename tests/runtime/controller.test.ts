@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { AnimationController } from '../../packages/core/src/animation/controller.ts';
-import type { RuntimeBundle } from '../../packages/core/src/types/index.ts';
+import { buildSceneDOM } from '../../packages/core/src/rendering/rendering-engine.ts';
 import type { ControllerError } from '../../packages/core/src/types/errors.ts';
+import type { RuntimeBundle } from '../../packages/core/src/types/index.ts';
 
 type RafCallback = (time: number) => void;
 
@@ -125,6 +126,69 @@ function cameraBundle(): RuntimeBundle {
 			}
 		]
 	};
+}
+
+function cameraAddElementBundle(): RuntimeBundle {
+	const base = bundle();
+	return {
+		...base,
+		floor: { size: [4, 4], origin: [0, 0], visible: true, layer: 'base' },
+		layout: {
+			fit: 'contain',
+			align: [0.5, 0.5],
+			padding: { x: 16, y: 16 },
+			bounds: 'union'
+		},
+		scenes: [
+			{
+				...base.scenes[0],
+				id: 'overview',
+				progress: 0
+			},
+			{
+				id: 'focus-widget',
+				progress: 1,
+				elements: [
+					...base.scenes[0].elements,
+					{
+						id: 'widget',
+						asset: 'box',
+						layer: 'base',
+						pos: [2, 2],
+						size: 1,
+						presence: 'entering',
+						enter: 'fade-in'
+					}
+				],
+				camera: { target: { type: 'element', id: 'widget' } }
+			}
+		]
+	};
+}
+
+function cameraRemovedElementBundle(): RuntimeBundle {
+	const base = bundle();
+	return {
+		...base,
+		scenes: [
+			{ ...base.scenes[0], id: 'present', progress: 0 },
+			{
+				id: 'removed',
+				progress: 1,
+				elements: [
+					{
+						...base.scenes[0].elements[0],
+						presence: 'removed'
+					}
+				]
+			}
+		]
+	};
+}
+
+function buildRealSvg(bundle: RuntimeBundle): SVGSVGElement {
+	const container = document.createElement('div');
+	return buildSceneDOM(container, bundle);
 }
 
 function fakeSvg(): SVGSVGElement {
@@ -354,5 +418,238 @@ describe('AnimationController', () => {
 
 		controller.setProgress(2);
 		expect(controller.getProgress()).toBe(1);
+	});
+
+	test('does not crash when a scene adds an element and focuses the camera on it in the same stop', () => {
+		installRaf();
+		const bundleWithNewCameraTarget = cameraAddElementBundle();
+		const svg = buildRealSvg(bundleWithNewCameraTarget);
+		const controller = new AnimationController();
+		controller.init(
+			bundleWithNewCameraTarget,
+			{ transitionDuration: 0, sceneElement: svg },
+			{ sceneElement: svg }
+		);
+
+		expect(() => {
+			for (let progress = 0; progress <= 1; progress += 0.1) {
+				controller.setProgress(progress);
+				flushRaf();
+			}
+		}).not.toThrow();
+
+		expect(svg.getAttribute('viewBox')).toBeTruthy();
+	});
+
+	test('touch swipe applies incremental displacement instead of double-counting cumulative delta', () => {
+		installRaf();
+		const listeners = new Map<string, (event: TouchEvent) => void>();
+		const container = {
+			scrollTop: 0,
+			scrollLeft: 0,
+			scrollHeight: 100,
+			clientHeight: 100,
+			addEventListener(
+				type: string,
+				listener: (event: TouchEvent) => void
+			): void {
+				listeners.set(type, listener);
+			},
+			removeEventListener(type: string): void {
+				listeners.delete(type);
+			},
+			querySelector(): SVGSVGElement | null {
+				return null;
+			}
+		};
+		globalThis.window = {
+			addEventListener() {},
+			removeEventListener() {}
+		} as unknown as Window & typeof globalThis;
+		const controller = new AnimationController();
+		controller.init(bundle(), {
+			container: container as unknown as HTMLElement,
+			touchControls: true
+		});
+
+		const touch = (clientY: number): TouchEvent =>
+			({ touches: [{ clientY, clientX: 0 }] }) as unknown as TouchEvent;
+
+		listeners.get('touchstart')?.(touch(300));
+		listeners.get('touchmove')?.(touch(280));
+		listeners.get('touchmove')?.(touch(260));
+		listeners.get('touchmove')?.(touch(240));
+		listeners.get('touchmove')?.(touch(220));
+		listeners.get('touchmove')?.(touch(200));
+
+		// Total displacement is 100px over default 300px scale => 100/300 progress.
+		expect(controller.getProgress()).toBeCloseTo(100 / 300, 5);
+	});
+
+	test('keyboardControls binds keydown navigation without a scroll container', () => {
+		installRaf();
+		const controller = new AnimationController();
+		controller.init(bundle(), {
+			transitionDuration: 0,
+			keyboardControls: true
+		});
+
+		const event = new (
+			globalThis.window as unknown as { KeyboardEvent: typeof KeyboardEvent }
+		).KeyboardEvent('keydown', { key: 'ArrowRight' });
+		document.dispatchEvent(event);
+
+		expect(controller.getSceneIndex()).toBe(1);
+		expect(controller.getProgress()).toBe(1);
+
+		controller.destroy();
+	});
+
+	test('applies scrollSensitivity before min/maxProgress clamping and keeps the dedupe guard in sync', () => {
+		installRaf();
+		const listeners = new Map<string, EventListener>();
+		const container = {
+			scrollTop: 0,
+			scrollLeft: 0,
+			scrollHeight: 200,
+			clientHeight: 100,
+			addEventListener(type: string, listener: EventListener): void {
+				listeners.set(type, listener);
+			},
+			removeEventListener(type: string): void {
+				listeners.delete(type);
+			},
+			querySelector(): SVGSVGElement | null {
+				return null;
+			}
+		};
+		globalThis.window = {
+			addEventListener() {},
+			removeEventListener() {}
+		} as unknown as Window & typeof globalThis;
+		const controller = new AnimationController();
+		controller.init(bundle(), {
+			container: container as unknown as HTMLElement,
+			minProgress: 0.2,
+			maxProgress: 0.8,
+			scrollSensitivity: 1.5
+		});
+
+		container.scrollTop = 100; // 100% of scrollable range
+		listeners.get('scroll')?.(new Event('scroll'));
+		expect(controller.getProgress()).toBe(0.8);
+
+		// A different scroll position that shares the same pre-sensitivity
+		// clamped fraction as a stale post-sensitivity progress must still update.
+		container.scrollTop = 50; // 50% of range
+		listeners.get('scroll')?.(new Event('scroll'));
+		expect(controller.getProgress()).toBeCloseTo(0.75, 5);
+	});
+
+	test('setSceneIndex() resets progress and camera even when the target index matches the stale scene index', () => {
+		installRaf();
+		const controller = new AnimationController();
+		controller.init(bundle(), { transitionDuration: 0 });
+
+		controller.setProgress(0.9);
+		flushRaf();
+		expect(controller.getSceneIndex()).toBe(0);
+		expect(controller.getProgress()).toBe(0.9);
+
+		let sceneChangeEvents = 0;
+		controller.on('scene-change', () => {
+			sceneChangeEvents++;
+		});
+
+		controller.setSceneIndex(0);
+		flushRaf();
+
+		expect(controller.getProgress()).toBe(0);
+		expect(sceneChangeEvents).toBe(1);
+	});
+
+	test('nextScene() with transitionDuration 0 cancels an in-flight camera override animation', () => {
+		installRaf();
+		const svg = fakeSvg();
+		const controller = new AnimationController();
+		controller.init(
+			cameraBundle(),
+			{ transitionDuration: 0, sceneElement: svg },
+			{ sceneElement: svg }
+		);
+		flushRaf();
+
+		controller.zoomToArea({ at: [0, 0], size: [1, 1] }, { duration: 1000 });
+		// A camera override animation is now in-flight: exactly one rAF callback
+		// (the camera step) is pending.
+		expect(rafCallbacks.size).toBe(1);
+
+		controller.nextScene();
+
+		// nextScene() with transitionDuration 0 must cancel the pending camera
+		// override rAF unconditionally, leaving only the progress-forward frame
+		// scheduled by _scheduleProgressForward().
+		expect(rafCallbacks.size).toBe(1);
+		flushRaf();
+
+		// The applied viewBox must be the destination scene's progress-derived
+		// camera, not a value still animating toward the cancelled override.
+		expect(svg.getAttribute('viewBox')).toBe('80 48 128 64');
+	});
+
+	test('pause() and resume() toggle ambient CSS animations when a sceneElement is configured without a scroll container', () => {
+		installRaf();
+		const svg = buildRealSvg(bundle());
+		const controller = new AnimationController();
+		controller.init(
+			bundle(),
+			{ transitionDuration: 0, sceneElement: svg },
+			{ sceneElement: svg }
+		);
+
+		// bundle() has no ambient elements; add a synthetic ambient class to assert the play-state toggle path runs.
+		const target = svg.querySelector('[data-id="box-a"]') as Element | null;
+		target?.classList.add('iso-ambient-pulse');
+
+		controller.pause();
+		expect(
+			(target as unknown as { style: CSSStyleDeclaration } | null)?.style
+				.animationPlayState
+		).toBe('paused');
+
+		controller.resume();
+		expect(
+			(target as unknown as { style: CSSStyleDeclaration } | null)?.style
+				.animationPlayState
+		).toBe('running');
+	});
+
+	test('zoomToElement distinguishes unknown ids from removed elements', () => {
+		installRaf();
+		const removedBundle = cameraRemovedElementBundle();
+		const svg = buildRealSvg(removedBundle);
+		const controller = new AnimationController();
+		controller.init(
+			removedBundle,
+			{ transitionDuration: 0, sceneElement: svg },
+			{ sceneElement: svg }
+		);
+
+		try {
+			controller.zoomToElement('does-not-exist');
+			throw new Error('expected throw');
+		} catch (error) {
+			expect(errorCode(error)).toBe('CAMERA_TARGET_NOT_FOUND');
+		}
+
+		controller.setProgress(1);
+		flushRaf();
+
+		try {
+			controller.zoomToElement('box-a');
+			throw new Error('expected throw');
+		} catch (error) {
+			expect(errorCode(error)).toBe('CAMERA_TARGET_NOT_VISIBLE');
+		}
 	});
 });

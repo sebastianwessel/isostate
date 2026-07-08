@@ -3,6 +3,7 @@ import type {
 	ElementPlacement,
 	SceneDocument
 } from '@sebastianwessel/isostate/types';
+import { mergeElementPatch } from './commands.ts';
 
 function mergeConnection(
 	existing: ConnectionPlacement,
@@ -34,7 +35,10 @@ export function resolveSceneElements(
 		for (const patch of scene.update?.elements ?? []) {
 			const existing = elements.get(patch.id);
 			if (existing) {
-				elements.set(patch.id, { ...existing, ...patch } as ElementPlacement);
+				elements.set(
+					patch.id,
+					mergeElementPatch(existing, patch) as ElementPlacement
+				);
 			}
 		}
 		for (const element of scene.add?.elements ?? []) {

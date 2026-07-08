@@ -5,6 +5,7 @@ export type {
 	CompiledLayout,
 	RuntimeBundle,
 } from "../types/runtime-bundle.ts";
+export type { ElementPointerEvent, MountedSceneEvents } from "./interactivity.ts";
 export {
 	type MountedScene,
 	type MountSceneOptions,

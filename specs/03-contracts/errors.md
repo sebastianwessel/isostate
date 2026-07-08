@@ -68,6 +68,8 @@ print these as compact key/value pairs before the message.
 | `DUPLICATE_SCENE_ID` | Duplicate scene id. | Rename one scene. |
 | `NO_ASSETS` | Header has no assets. | Add at least one asset. |
 | `INVALID_FLOOR_SIZE` | Floor size is malformed or not positive. | Fix `header.floor.size`. |
+| `INVALID_FLOOR_ORIGIN` | Floor origin contains non-finite numbers. | Fix `header.floor.origin`. |
+| `INVALID_GRID_CELL_SIZE` | Grid cellSize is not a positive finite number. | Fix `header.grid.cellSize`. |
 | `NO_SCENES` | Document has no scenes. | Add at least one scene. |
 | `NO_LAYERS` | Scene has no layers. | Add at least one layer. |
 | `INVALID_INITIAL_SCENE` | First scene does not declare a full `elements` snapshot or contains delta fields. | Use `elements` only in first scene. |
@@ -92,6 +94,12 @@ print these as compact key/value pairs before the message.
 | `TEXT_CONTENT_FOR_NON_TEXT_ASSET` | A non-text asset defines `text`. | Remove `text` or change `asset` to `text`. |
 | `INVALID_TEXT_CONTENT` | Text is too long or has too many lines. | Keep text ≤1000 characters and ≤20 lines. Empty text is a warning, not an error. |
 | `INVALID_TEXT_STYLE` | A text style field has an invalid or unsafe value. | Use supported text style values. |
+| `PRIMITIVE_CONTENT_REQUIRED` | A built-in primitive element (`rectangle`, `circle`, `polygon`, `line`) is missing its `primitive` payload. | Add the matching `primitive` payload. |
+| `PRIMITIVE_CONTENT_MISMATCH` | A primitive payload does not match the element's built-in asset id, or more than one payload is present. | Keep exactly one payload matching the asset id. |
+| `PRIMITIVE_CONTENT_FOR_TEXT_ASSET` | An `asset: text` element defines `primitive` content. | Remove `primitive` from text elements. |
+| `INVALID_PRIMITIVE_POINTS` | Primitive `points` are malformed or outside the normalized `0..1` range. | Keep points normalized from `0` to `1`. |
+| `INVALID_PRIMITIVE_STYLE` | A primitive style field has an invalid or unsafe value. | Use supported primitive style values. |
+| `GENERATED_CONTENT_FOR_EXTERNAL_ASSET` | An external URL asset element defines generated `primitive` content. | Only built-in generated assets may define primitive content. |
 | `UNKNOWN_ANIMATION` | Entry/exit animation is unknown. | Use a built-in value or `none`. |
 | `UNKNOWN_AMBIENT_ANIMATION` | Ambient name is unknown and no custom CSS is registered. | Define CSS or fix name. |
 | `INVALID_CAMERA_TARGET` | Scene camera target is missing, contains multiple target kinds, references a non-element id, uses invalid reset value, or has malformed shape. | Use exactly one valid `target.element`, `target.area`, or `target.reset: true`. |
@@ -121,11 +129,65 @@ print these as compact key/value pairs before the message.
 | `CONTROLLER_NO_SCENES` | Controller initialized with empty scene list. | Pass at least one scene. |
 | `CONTROLLER_SCENE_INDEX_OUT_OF_RANGE` | Scene index is invalid. | Use an existing index. |
 | `CONTROLLER_PROGRESS_OUT_OF_RANGE` | Strict progress API received value outside `[0, 1]`. | Clamp before calling or use clamping API. |
+| `INVALID_PROGRESS` | `AnimationEngine.setProgress()` received a non-finite value. | Pass a finite progress value between `0` and `1`. |
 | `CONTROLLER_DESTROYED` | Controller API called after `destroy()`. | Create and initialize a new controller. |
 | `CAMERA_NOT_INITIALIZED` | Controller camera API was called before init or without an SVG scene. | Initialize through `mountScene(..., { controller })` or pass `sceneElement` to `AnimationController.init()`. |
 | `CAMERA_TARGET_NOT_FOUND` | Runtime `zoomToElement()` cannot resolve the id. | Pass an existing element id. |
 | `CAMERA_TARGET_NOT_VISIBLE` | Runtime `zoomToElement()` targets a currently removed element. | Navigate to a scene where it is visible or zoom to an area. |
 | `INVALID_CAMERA_OPTIONS` | Runtime camera area or options are invalid. | Fix area, padding, duration, or easing. |
+| `MOUNT_DESTROYED` | `MountedScene.on()` or `attachDiagnosticsOverlay()` called after `destroy()`. | Use the API while the scene is mounted. |
+| `EXPORT_TARGET_DESTROYED` | Snapshot export called on a destroyed mount. | Export before calling `destroy()`. |
+| `EXPORT_INVALID_OPTIONS` | Export `progress` outside `[0, 1]`, non-positive `scale`, or `inlineAssets: false` on PNG export. | Fix the option value. |
+| `EXPORT_ASSET_FETCH_FAILED` | An external asset could not be fetched for inlining. | Serve assets from a reachable URL or export SVG with `inlineAssets: false`. |
+| `EXPORT_RASTERIZE_FAILED` | Canvas 2D context unavailable or PNG encoding failed. | Run in a browser with canvas support. |
+
+### Converter
+
+`isostate mermaid2dsl` structured errors (see
+`02-capabilities/dsl/mermaid2dsl.md`):
+
+| Code | Meaning | Action |
+|---|---|---|
+| `MERMAID_PARSE_ERROR` | Input line cannot be tokenized as a supported statement. | Fix the statement at `details.line`. |
+| `MERMAID_UNSUPPORTED` | Statement uses Mermaid features outside the supported subset. | Remove or rewrite the statement at `details.line`. |
+| `MERMAID_EMPTY` | Input declares no nodes. | Add at least one node. |
+| `MERMAID_NODE_REDEFINED` | A node is redefined with a different shape or label. | Keep one bracketed definition per node. |
+| `MERMAID_ID_COLLISION` | Two Mermaid ids normalize to the same DSL id. | Rename one node id. |
+| `MERMAID_INTERNAL` | Generated document failed DSL validation (converter bug). | Report the issue with the input file. |
+
+### CLI
+
+Argument-parsing errors thrown by `isostate` commands (`packages/cli/src/commands.ts`,
+`packages/cli/src/static-bundle.ts`, `packages/cli/src/assets-manifest.ts`; see
+`03-contracts/cli.md`).
+
+| Code | Meaning | Action |
+|---|---|---|
+| `MISSING_SUBCOMMAND` | `isostate assets` was called with no subcommand. | Run `isostate assets manifest ...`. |
+| `UNKNOWN_SUBCOMMAND` | `isostate assets <subcommand>` is not a recognized subcommand. | Use `isostate assets manifest`. |
+| `FILE_READ_FAILED` | The CLI could not read an input or metadata file. | Check the path exists and is readable. |
+| `FILE_WRITE_FAILED` | The CLI could not write an output file. | Check the output directory exists and is writable. |
+| `MISSING_INPUT` | A command's required positional input argument is missing. | Pass the required input file or directory. |
+| `EXTRA_INPUT` | More than one positional input argument was given. | Pass exactly one input. |
+| `MISSING_OPTION` | An option flag is present without its required value. | Supply a value after the flag. |
+| `UNKNOWN_OPTION` | An unrecognized `-`-prefixed option was passed. | Remove the option or fix the typo. |
+| `UNSUPPORTED_FORMAT` | `compile --format` (or the format inferred from `--out`) is not `js` or `json`. | Use `--format js`, `--format json`, or an `--out` path ending in `.js`/`.json`. |
+
+### Asset Manifest
+
+`isostate assets manifest` generator errors (`packages/cli/src/assets-manifest.ts`;
+see `03-contracts/asset-manifest.md`).
+
+| Code | Meaning | Action |
+|---|---|---|
+| `ASSET_MANIFEST_PATH_COLLISION` | Two asset paths differ only by case. | Rename one file so the paths differ beyond case. |
+| `ASSET_MANIFEST_OVERSIZED` | An SVG exceeds 512KB, or a raster sprite sheet exceeds 2MB. | Reduce the file size or split the asset. |
+| `ASSET_MANIFEST_RESERVED_ID` | A derived asset id matches a reserved built-in id (`text`, `rectangle`, `circle`, `polygon`, `line`). | Rename the file so it derives a non-reserved id. |
+| `ASSET_MANIFEST_ID_COLLISION` | Two assets, or a sprite and another manifest id, derive or declare the same id. | Rename one of the colliding files or sprites. |
+| `ASSET_MANIFEST_UNSAFE_SVG` | An SVG file contains `<script>` or event-handler attributes. | Remove scripts and event handlers from the SVG. |
+| `ASSET_MANIFEST_EXTERNAL_REFERENCE` | An SVG file references external `href`/`xlink:href`/`url()` content. | Inline or remove the external reference. |
+| `ASSET_MANIFEST_INVALID_FILENAME` | A relative path normalizes to an empty segment or an id that is not a valid DSL identifier. | Rename the file to a valid kebab-case-safe name. |
+| `ASSET_MANIFEST_METADATA_ORPHAN` | The metadata file declares a path with no matching asset file. | Remove the stale metadata entry or add the missing asset file. |
 
 ## Warning Codes
 
@@ -140,4 +202,12 @@ successfully when no errors are present.
 | `ELEMENT_OUTSIDE_FLOOR` | Element lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_OUTSIDE_FLOOR` | Connector route lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_INTERSECTS_OBJECT` | Manual connector route crosses an unrelated visible object. |
+| `MERMAID_LABEL_DROPPED` | A Mermaid edge label was dropped; the DSL has no connection labels. |
+| `MERMAID_CYCLE_BROKEN` | A cycle-closing edge was ignored for layout layering. |
 | `CONNECTOR_ROUTE_DETOUR` | Auto route is valid but much longer than the direct route. |
+
+## Documentation Completeness
+
+Every error and warning code in this contract must have a row in
+`docs/reference/errors.md`. `tests/nfr/error-docs.test.ts` parses both files
+and fails when a code listed here is missing from the docs table.

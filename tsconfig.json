@@ -25,9 +25,13 @@
 			"@sebastianwessel/isostate/*": ["packages/core/src/*"]
 		},
 		"allowImportingTsExtensions": true,
-		"outDir": "dist",
-		"rootDir": "packages"
+		"outDir": "dist"
 	},
-	"include": ["packages/**/*.ts", "packages/**/*.tsx", "tests/**/*.ts", "tests/**/*.tsx"],
-	"exclude": ["node_modules", "dist", "tests"]
+	"include": [
+		"packages/**/*.ts",
+		"packages/**/*.tsx",
+		"tests/contracts/**/*.ts",
+		"tests/contracts/**/*.tsx"
+	],
+	"exclude": ["node_modules", "dist"]
 }

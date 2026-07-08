@@ -41,11 +41,14 @@ jobs:
       - name: Typecheck
         run: bun run typecheck
 
+      - name: Build
+        run: bun run build
+
       - name: Test
         run: bun run test
 
-      - name: Build
-        run: bun run build
+      - name: Coverage
+        run: bun run coverage
 
       - name: Size
         run: bun run size

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from 'bun:test';
 import { mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
 import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 
 const cli = [process.execPath, 'packages/cli/src/bin.ts'];
 const tempDirs: string[] = [];
@@ -30,7 +30,7 @@ describe('isostate validate', () => {
 		);
 	});
 
-	test('exits 0 and prints a compact success summary for valid input', async () => {
+	test('exits 0 and prints the OK summary line for valid input', async () => {
 		const dir = await makeTempDir();
 		const input = join(dir, 'scene.isostate.yaml');
 		await writeFile(input, validYaml, 'utf8');
@@ -38,11 +38,11 @@ describe('isostate validate', () => {
 		const result = await runCli(['validate', input]);
 
 		expect(result.exitCode).toBe(0);
-		expect(result.stdout).toContain(`OK ${input}`);
+		expect(result.stdout).toBe('OK\n');
 		expect(result.stderr).toBe('');
 	});
 
-	test('exits 1 and preserves validation error codes for invalid input', async () => {
+	test('exits 1, groups errors under an Errors header on stderr, and prints the FAILED summary on stdout', async () => {
 		const dir = await makeTempDir();
 		const input = join(dir, 'scene.isostate.yaml');
 		await writeFile(
@@ -54,12 +54,13 @@ describe('isostate validate', () => {
 		const result = await runCli(['validate', input]);
 
 		expect(result.exitCode).toBe(1);
+		expect(result.stderr).toContain('Errors (1)');
 		expect(result.stderr).toContain('ERROR ASSET_NOT_DECLARED');
 		expect(result.stderr).not.toContain('header:');
-		expect(result.stdout).toBe('');
+		expect(result.stdout).toBe('FAILED (1 errors, 0 warnings)\n');
 	});
 
-	test('prints scene object field and value context for validation findings', async () => {
+	test('prints scene object field and value context for validation findings, grouped and stream-split', async () => {
 		const dir = await makeTempDir();
 		const input = join(dir, 'scene.isostate.yaml');
 		await writeFile(
@@ -85,13 +86,60 @@ scenes:
 		const result = await runCli(['validate', input]);
 
 		expect(result.exitCode).toBe(1);
-		expect(result.stderr).toContain(
-			'WARN EMPTY_TEXT_CONTENT scene=initial element=title field=text.value value=""'
-		);
+		expect(result.stderr).toContain('Errors (1)');
 		expect(result.stderr).toContain(
 			'ERROR INVALID_TEXT_STYLE scene=initial element=title field=text.fontSize value=0'
 		);
-		expect(result.stdout).toBe('');
+		expect(result.stderr).not.toContain('WARN');
+		expect(result.stdout).toContain('Warnings (1)');
+		expect(result.stdout).toContain(
+			'WARN EMPTY_TEXT_CONTENT scene=initial element=title field=text.value value=""'
+		);
+		expect(result.stdout).toContain('FAILED (1 errors, 1 warnings)');
+	});
+
+	test('exits 0 and prints the OK (<n> warnings) summary when only warnings are present', async () => {
+		const dir = await makeTempDir();
+		const input = join(dir, 'scene.isostate.yaml');
+		await writeFile(
+			input,
+			`header:
+  assets: []
+  layers:
+    - name: labels
+    - name: unused
+scenes:
+  - id: initial
+    elements:
+      - id: title
+        asset: text
+        at: [0, 0]
+        layer: labels
+        text:
+          value: Hello
+`,
+			'utf8'
+		);
+
+		const result = await runCli(['validate', input]);
+
+		expect(result.exitCode).toBe(0);
+		expect(result.stderr).toBe('');
+		expect(result.stdout).toContain('Warnings (1)');
+		expect(result.stdout).toContain('WARN UNREFERENCED_LAYER');
+		expect(result.stdout.trim().endsWith('OK (1 warnings)')).toBe(true);
+	});
+
+	test('omits the Errors/Warnings headers entirely when there are no findings of that kind', async () => {
+		const dir = await makeTempDir();
+		const input = join(dir, 'scene.isostate.yaml');
+		await writeFile(input, validYaml, 'utf8');
+
+		const result = await runCli(['validate', input]);
+
+		expect(result.stdout).not.toContain('Errors (');
+		expect(result.stdout).not.toContain('Warnings (');
+		expect(result.stderr).toBe('');
 	});
 
 	test('exits 1 when input is missing', async () => {

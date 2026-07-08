@@ -378,22 +378,30 @@ export function IsostateEditor(props: IsostateEditorProps) {
 					: undefined
 			}
 			onDragAsset={(assetId) => {
-				setWorkspace((prev) => ({
-					...prev,
-					editState: {
-						...prev.editState,
-						dragPayload: { kind: 'asset', assetId }
-					}
-				}));
+				setWorkspace((prev) => {
+					const next = {
+						...prev,
+						editState: {
+							...prev.editState,
+							dragPayload: { kind: 'asset', assetId } as const
+						}
+					};
+					onWorkspaceChange?.(next);
+					return next;
+				});
 			}}
 			onClickAsset={(assetId) => {
-				setWorkspace((prev) => ({
-					...prev,
-					editState: {
-						...prev.editState,
-						dragPayload: { kind: 'asset', assetId }
-					}
-				}));
+				setWorkspace((prev) => {
+					const next = {
+						...prev,
+						editState: {
+							...prev.editState,
+							dragPayload: { kind: 'asset', assetId } as const
+						}
+					};
+					onWorkspaceChange?.(next);
+					return next;
+				});
 			}}
 		/>
 	);

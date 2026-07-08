@@ -363,7 +363,7 @@ JSON output:
 ```json
 {
   "_format": "isostate-runtime-bundle",
-  "_version": "0.4.0",
+  "_version": "0.5.0",
   "_digest": "...",
   "grid": { "cellSize": 64 },
   "floor": { "size": [5, 4], "origin": [0, 0], "visible": true, "layer": "ground" },

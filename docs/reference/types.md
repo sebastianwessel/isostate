@@ -49,6 +49,92 @@ interface ResolvedRuntimeConfig {
 Import it from `@sebastianwessel/isostate` in runtime code or from `@sebastianwessel/isostate/dsl` in
 build tooling.
 
+`buildSceneDOM(container, bundle, config?)` is the lower-level rendering
+primitive `mountScene` builds on; it accepts a `RenderConfig`:
+
+```ts
+interface RenderConfig {
+	label?: string; // accessible label for the mounted SVG root
+	themeVars?: Record<string, string>; // CSS custom properties applied on top of the bundle theme
+}
+```
+
+## Interactivity
+
+```ts
+import type {
+	ElementPointerEvent,
+	MountedSceneEvents
+} from '@sebastianwessel/isostate';
+```
+
+Set `interactive: true` in `MountSceneOptions` and subscribe with
+`MountedScene.on(event, listener)`. Listeners receive an `ElementPointerEvent`:
+
+```ts
+interface ElementPointerEvent {
+	id: string; // element id from the scene definition
+	originalEvent: Event; // the native DOM event that triggered the notification
+}
+
+interface MountedSceneEvents {
+	'element-click': (event: ElementPointerEvent) => void;
+	'element-enter': (event: ElementPointerEvent) => void;
+	'element-leave': (event: ElementPointerEvent) => void;
+}
+```
+
+## Snapshot Export
+
+```ts
+import type {
+	SnapshotOptions,
+	PngSnapshotOptions
+} from '@sebastianwessel/isostate';
+```
+
+`exportSceneSvg(mounted, options?)` and `exportScenePng(mounted, options?)`
+serialize a mounted scene at a chosen progress.
+
+```ts
+interface SnapshotOptions {
+	progress?: number; // render this progress first; omitted = current progress
+	inlineAssets?: boolean; // inline external <image> hrefs as data: URIs (default true)
+	background?: string; // solid background color; default none (transparent)
+}
+
+interface PngSnapshotOptions extends SnapshotOptions {
+	scale?: number; // device-pixel multiplier applied to the viewBox size (default 2)
+}
+```
+
+## Diagnostics Overlay
+
+```ts
+import type {
+	DiagnosticsOverlayOptions,
+	DiagnosticsOverlayHandle
+} from '@sebastianwessel/isostate';
+```
+
+`attachDiagnosticsOverlay(mounted, options?)` returns a
+`DiagnosticsOverlayHandle` for a dev-time grid/anchor/route/readout overlay.
+
+```ts
+interface DiagnosticsOverlayOptions {
+	grid?: boolean; // draw grid lines across the floor extent (default true)
+	coordinates?: boolean; // draw cell coordinate labels (default false)
+	anchors?: boolean; // mark element anchor points (default true)
+	routes?: boolean; // mark connector route points (default true)
+	readout?: boolean; // show the scene id / progress readout panel (default true)
+}
+
+interface DiagnosticsOverlayHandle {
+	update(): void; // re-render from current scene state
+	destroy(): void; // remove the overlay and its subscriptions; safe to call twice
+}
+```
+
 ## Scene Data
 
 ```ts
@@ -83,16 +169,20 @@ Scene steps may declare camera focus metadata:
 
 ```ts
 interface CameraFocus {
-	target: { element: string } | { area: CameraGridArea } | { reset: true };
+	target: CameraTarget;
 	padding?: number;
 	duration?: number;
-	easing?: 'linear' | 'ease-in-out' | 'ease-out';
+	easing?: CameraEasing;
 }
+
+type CameraTarget = { element: string } | { area: CameraGridArea } | { reset: true };
 
 interface CameraGridArea {
 	at: [number, number];
 	size: [number, number];
 }
+
+type CameraEasing = 'linear' | 'ease-in-out' | 'ease-out';
 ```
 
 Runtime controllers expose the same camera area type plus zoom options and
@@ -102,7 +192,7 @@ camera state:
 interface CameraZoomOptions {
 	padding?: number;
 	duration?: number;
-	easing?: 'linear' | 'ease-in-out' | 'ease-out';
+	easing?: CameraEasing;
 }
 
 interface CameraState {
@@ -112,6 +202,37 @@ interface CameraState {
 		| { type: 'area'; at: [number, number]; size: [number, number] }
 		| { type: 'reset' };
 	isZoomed: boolean;
+}
+```
+
+`ControllerConfig` configures the optional `AnimationController` created by
+`mountScene()` via `MountSceneOptions.controller`, or constructed directly:
+
+```ts
+interface ControllerConfig {
+	container?: HTMLElement; // scroll container; defaults to the mount target
+	sceneElement?: SVGSVGElement; // defaults to the first SVG in `container`
+	scrollDirection?: 'vertical' | 'horizontal'; // default 'vertical'
+	scrollOffset?: { top?: number; bottom?: number; left?: number; right?: number };
+	minProgress?: number; // default 0
+	maxProgress?: number; // default 1
+	keyboardControls?: boolean; // default false
+	touchControls?: boolean; // default false
+	scrollSensitivity?: number; // default 1.0
+	transitionDuration?: number; // camera transition ms; default 600
+	transitionEasing?: 'linear' | 'ease-in-out' | 'ease-out'; // default 'ease-in-out'
+}
+```
+
+`ControllerEvents` are the events accepted by `AnimationController.on(event, listener)`:
+
+```ts
+interface ControllerEvents {
+	'progress-change': (progress: number) => void;
+	'scene-change': (index: number) => void;
+	'camera-change': (state: CameraState) => void;
+	paused: () => void;
+	resumed: () => void;
 }
 ```
 
@@ -156,25 +277,82 @@ other primitive fields. `update.elements[].size` may be `0` to scale an existing
 element to zero; initial and added placements still require positive whole-cell
 sizes.
 
+`RuntimeBundle.floor`, `.layout`, `.layers`, and `.assets` use these compiled
+shapes (compiled scene stops are documented under Animation and Lifecycle):
+
+```ts
+interface CompiledFloor {
+	size: [number, number];
+	origin: [number, number];
+	visible: boolean;
+	layer: string;
+	asset?: string;
+}
+
+interface CompiledLayer {
+	name: string;
+	order: number;
+}
+
+type LayoutFit = 'contain' | 'none';
+type LayoutBounds = 'floor' | 'content' | 'union';
+
+interface CompiledLayout {
+	fit: LayoutFit;
+	align: [number, number];
+	padding: { x: number; y: number };
+	bounds: LayoutBounds;
+}
+
+interface CompiledAsset {
+	url?: string; // omitted for reserved built-in generated assets
+	category?: AssetCategory;
+	anchor?: [number, number];
+	sprite?: { sheetSize: [number, number]; rect: [number, number, number, number] };
+}
+```
+
+`ResolvedLayoutConfig` has the same shape as `CompiledLayout` and is the
+dev-time compiler's resolved layout value before bundling.
+
 ## Assets and Themes
 
 ```ts
 import type {
+	AssetCatalogEntry,
 	AssetCategory,
 	AssetDefinition,
+	AssetRegistry,
 	Theme
 } from '@sebastianwessel/isostate';
 ```
 
-Authored YAML uses document-local `header.assets[]` values. Normal asset ids
-resolve to browser-loaded SVG files through `header.assetBaseUrl`. Sprite sheet
-entries expose nested sprite ids as placeable asset ids while sharing one image
-URL. Built-in generated assets (`text`, `rectangle`, `circle`, `polygon`,
-`line`) are reserved exceptions and are never registered or URL-loaded.
-External asset definitions may declare `anchor: [x, y]` with normalized viewport
-coordinates so imported visuals align their real ground contact point to the
-grid. Sprite sheets require `sheetSize`; tuple and `at` sprites also require
-`tileSize`.
+Authored YAML uses document-local `header.assets[]` values, typed as
+`AssetCatalogEntry` (`UrlAssetCatalogEntry | SpriteSheetAssetCatalogEntry`).
+Normal asset ids resolve to browser-loaded SVG files through
+`header.assetBaseUrl`. Sprite sheet entries expose nested sprite ids as
+placeable asset ids while sharing one image URL. Built-in generated assets
+(`text`, `rectangle`, `circle`, `polygon`, `line`) are reserved exceptions and
+are never registered or URL-loaded. External asset definitions may declare
+`anchor: [x, y]` with normalized viewport coordinates so imported visuals align
+their real ground contact point to the grid. Sprite sheets require
+`sheetSize`; tuple and `at` sprites also require `tileSize`.
+
+`AssetDefinition` (`UrlAssetDefinition | SpriteSheetAssetDefinition`) is the
+equivalent authoring-tooling shape, managed through `AssetRegistry` — a
+mutable metadata registry for editors and catalogs, not used by browser
+rendering:
+
+```ts
+interface AssetRegistry {
+	register(asset: AssetDefinition): void;
+	get(id: string): AssetDefinition | undefined;
+	getAll(category?: AssetCategory): AssetDefinition[];
+	has(id: string): boolean;
+	remove(id: string): void;
+}
+```
+
 Theme variables are `Record<string, string>` values whose keys must start with
 `--`.
 
@@ -184,13 +362,88 @@ Theme variables are `Record<string, string>` values whose keys must start with
 import type {
 	AmbientAnimation,
 	EntryAnimation,
-	ExitAnimation
+	ExitAnimation,
+	FrameUpdate,
+	LifecycleKey,
+	LifecycleStatus,
+	RuntimeElementState,
+	RuntimeSceneStop
 } from '@sebastianwessel/isostate';
 ```
 
 These types describe entry and exit animations plus ambient animation classes.
 Lifecycle is derived from scene `add`, `update`, and `remove` operations by the
-compiler.
+compiler; `LifecycleStatus` is the resulting presence value (never authored in
+YAML):
+
+```ts
+type LifecycleStatus = 'entering' | 'present' | 'exiting' | 'removed';
+```
+
+`RuntimeElementState` is the resolved per-element state inside a compiled
+scene stop, and `RuntimeSceneStop` is one compiled entry in
+`RuntimeBundle.scenes`:
+
+```ts
+interface RuntimeElementState {
+	id: string;
+	asset: string;
+	pos: [number, number];
+	size: number;
+	layer: string;
+	presence: LifecycleStatus;
+	enter?: EntryAnimation;
+	exit?: ExitAnimation;
+	ambient?: AmbientAnimation[];
+	text?: TextContent;
+	primitive?: PrimitiveContent;
+}
+
+interface RuntimeSceneStop {
+	id: string;
+	progress: number;
+	elements: RuntimeElementState[];
+	connectors: RuntimeConnectorState[]; // connector analogue of RuntimeElementState
+	camera?: RuntimeCameraFocus; // resolved camera focus, if the scene step declared one
+}
+```
+
+`AnimationEngine.getFrameUpdates()` (used internally by `mountScene` and
+`AnimationController`) returns interpolated `FrameUpdate` values keyed by
+`LifecycleKey`, whose literal values match `LifecycleStatus`:
+
+```ts
+type LifecycleKey = 'entering' | 'present' | 'exiting' | 'removed';
+
+interface FrameUpdate {
+	id: string;
+	asset: string;
+	lifecycle: LifecycleKey;
+	ambient: AmbientAnimation[];
+	pos: [number, number];
+	size: number;
+	layer: string;
+	entry?: string;
+	exit?: string;
+	text?: TextContent;
+	primitive?: PrimitiveContent;
+}
+```
+
+### Easing
+
+```ts
+import type { EasingFn, EasingType } from '@sebastianwessel/isostate';
+```
+
+```ts
+type EasingFn = (t: number) => number;
+type EasingType = 'linear' | 'easeInCubic' | 'easeInOutCubic' | 'easeOutCubic';
+```
+
+`resolveEasing(type)` maps an `EasingType` to its `EasingFn` implementation.
+Camera transitions and ambient/entry/exit keyframe interpolation both use
+resolved easing functions internally.
 
 ## Validation
 

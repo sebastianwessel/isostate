@@ -149,17 +149,34 @@ describe('AnimationEngine', () => {
 		);
 	});
 
-	test('uses discrete ambient values from the destination stop', () => {
+	test('holds ambient values until the destination stop is reached', () => {
 		const engine = new AnimationEngine();
 		engine.init(bundle());
 
 		engine.setProgress(0.25);
+		expect(engine.getElementUpdate('office').ambient).toEqual([
+			{ name: 'pulse' }
+		]);
+
+		engine.setProgress(0.5);
 		expect(engine.getElementUpdate('office').ambient).toEqual([
 			{ name: 'glow' }
 		]);
 
 		engine.setProgress(1);
 		expect(engine.getElementUpdate('office').ambient).toEqual([]);
+	});
+
+	test('rejects non-finite progress instead of silently emptying frame maps', () => {
+		const engine = new AnimationEngine();
+		engine.init(bundle());
+		engine.setProgress(0.25);
+
+		expect(() => engine.setProgress(Number.NaN)).toThrow();
+		expect(() => engine.setProgress(Number.POSITIVE_INFINITY)).toThrow();
+
+		expect(engine.getProgress()).toBe(0.25);
+		expect(engine.getElementUpdate('office').lifecycle).toBe('present');
 	});
 
 	test('pause freezes the current frame until resume', () => {
@@ -225,6 +242,25 @@ describe('AnimationEngine', () => {
 			'solid'
 		);
 		expect(engine.getConnectorUpdate('request-flow').ambient).toEqual([]);
+	});
+
+	test('holds connector endpoints, direction, and ambient until the destination stop is reached', () => {
+		const engine = new AnimationEngine();
+		engine.init(bundleWithConnectorEndpointChange());
+
+		engine.setProgress(0.25);
+		const held = engine.getConnectorUpdate('request-flow');
+		expect(held.start).toBe('none');
+		expect(held.end).toBe('arrow');
+		expect(held.direction).toBe('route');
+		expect(held.ambient).toEqual([{ name: 'flow' }]);
+
+		engine.setProgress(1);
+		const destination = engine.getConnectorUpdate('request-flow');
+		expect(destination.start).toBe('arrow');
+		expect(destination.end).toBe('none');
+		expect(destination.direction).toBe('reverse');
+		expect(destination.ambient).toEqual([]);
 	});
 
 	test('mirrors element lifecycle for connector add remove and backward scrubbing', () => {
@@ -456,6 +492,43 @@ function bundleWithConnectorStyleChange(): RuntimeBundle {
 							outlineWidth: 0,
 							lane: 'none'
 						},
+						ambient: []
+					})
+				]
+			}
+		]
+	};
+}
+
+function bundleWithConnectorEndpointChange(): RuntimeBundle {
+	const base = bundle();
+	return {
+		...base,
+		layers: [
+			{ name: 'base', order: 0 },
+			{ name: 'connectors', order: 1 }
+		],
+		scenes: [
+			{
+				...base.scenes[0],
+				connectors: [
+					connector({
+						start: 'none',
+						end: 'arrow',
+						direction: 'route',
+						ambient: [{ name: 'flow' }]
+					})
+				]
+			},
+			{
+				...base.scenes[0],
+				id: 'endpoints-flipped',
+				progress: 1,
+				connectors: [
+					connector({
+						start: 'arrow',
+						end: 'none',
+						direction: 'reverse',
 						ambient: []
 					})
 				]

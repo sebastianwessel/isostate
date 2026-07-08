@@ -59,8 +59,13 @@ export interface ViewBoxRect {
 interface ConnectorState {
 	node: SVGGElement;
 	shaft: SVGPathElement;
+	outline?: SVGPathElement;
+	lane?: SVGPathElement;
+	startEndpoint?: SVGElement;
+	endEndpoint?: SVGElement;
 	isHidden: boolean;
 	ambient: Set<string>;
+	previous?: RuntimeConnectorState;
 }
 
 /** Extended SVG with engine internals stored on it. */
@@ -71,10 +76,14 @@ interface SceneSVG extends SVGSVGElement {
 	_layout: ResolvedLayoutState;
 	_viewBoxW: number;
 	_viewBoxH: number;
+	_depthGroup: SVGGElement;
 }
 
+/** Options accepted by `buildSceneDOM()`. */
 export interface RenderConfig {
+	/** Accessible label for the mounted SVG root. */
 	label?: string;
+	/** CSS custom properties applied on top of the bundle theme. */
 	themeVars?: Record<string, string>;
 }
 
@@ -161,6 +170,7 @@ export function buildSceneDOM(container: HTMLElement, bundle: RuntimeBundle, con
 	svg._layerMap = layerMap;
 	svg._elementMap = elementMap;
 	svg._connectorMap = connectorMap;
+	svg._depthGroup = depthGroup;
 	container.appendChild(svg);
 	return svg;
 }
@@ -171,6 +181,7 @@ export function updateElementTransforms(
 		_elementMap?: Map<string, ElementState | unknown>;
 		_connectorMap?: Map<string, ConnectorState | unknown>;
 		_layout?: ResolvedLayoutState;
+		_depthGroup?: SVGGElement;
 	},
 	elements: RuntimeElementState[],
 	connectors: RuntimeConnectorState[] = [],
@@ -178,15 +189,21 @@ export function updateElementTransforms(
 	const layout = svg._layout;
 	if (!layout) return;
 
-	const map = svg._elementMap;
+	const map = svg._elementMap as Map<string, ElementState> | undefined;
 	if (map) {
 		for (const def of elements) {
-			const state = map.get(def.id) as ElementState | undefined;
+			const state = map.get(def.id);
 			if (!state) continue;
+			const previous = state.current;
 			state.current = def;
-			updateGeneratedElementContent(state.node, def, layout);
+			if (!hasEqualGeneratedContent(previous, def)) {
+				updateGeneratedElementContent(state.node, def, layout);
+			}
 			applyElementTransform(state.node, def, layout);
 			applyAmbientClasses(state, def.ambient ?? []);
+		}
+		if (svg._depthGroup) {
+			reconcileDepthOrder(svg._depthGroup, map);
 		}
 	}
 
@@ -613,9 +630,44 @@ function sortElementsForPerspective(elements: RuntimeElementState[]): RuntimeEle
 }
 
 function renderBucket(element: RuntimeElementState): number {
-	if (isPrimitiveAsset(element.asset)) return 0;
-	if (isTextAsset(element.asset)) return 2;
-	return 1;
+	if (isTextAsset(element.asset)) return 1;
+	return 0;
+}
+
+/**
+ * Re-sort the depth group's live child nodes to match the current
+ * `(x + y)` + id perspective order. Only elements whose relative order
+ * changed are moved so in-flight CSS animation state on unaffected
+ * elements is preserved. Text elements live in the label group and are
+ * never part of this reconciliation.
+ */
+function reconcileDepthOrder(depthGroup: SVGGElement, elementMap: Map<string, ElementState>): void {
+	const current: RuntimeElementState[] = [];
+	for (const state of elementMap.values()) {
+		if ((state.node.parentElement as SVGGElement | null) !== depthGroup) continue;
+		current.push(state.current);
+	}
+	if (current.length < 2) return;
+
+	const desiredOrder = sortElementsForPerspective(current);
+	const existingOrder = [...depthGroup.childNodes] as unknown as SVGElement[];
+
+	let orderMatches = existingOrder.length === desiredOrder.length;
+	if (orderMatches) {
+		for (let index = 0; index < desiredOrder.length; index++) {
+			const expectedId = desiredOrder[index]?.id;
+			if (existingOrder[index]?.getAttribute("data-id") !== expectedId) {
+				orderMatches = false;
+				break;
+			}
+		}
+	}
+	if (orderMatches) return;
+
+	for (const def of desiredOrder) {
+		const state = elementMap.get(def.id);
+		if (state) depthGroup.appendChild(state.node);
+	}
 }
 
 function collectElementDefinitions(bundle: RuntimeBundle): RuntimeElementState[] {
@@ -710,10 +762,38 @@ function updateGeneratedElementContent(node: SVGGElement, def: RuntimeElementSta
 	}
 }
 
+/**
+ * Compare the generated-content payload (`text` or `primitive`) of two
+ * element states for structural equality. Used to skip destructive
+ * regeneration of text/primitive DOM content on frame updates where the
+ * asset, id, and content payload are unchanged from the previous frame.
+ */
+function hasEqualGeneratedContent(previous: RuntimeElementState | undefined, next: RuntimeElementState): boolean {
+	if (!previous) return false;
+	if (previous.asset !== next.asset) return false;
+	if (!isTextAsset(next.asset) && !isPrimitiveAsset(next.asset)) return true;
+	if (isTextAsset(next.asset)) return deepEqual(previous.text, next.text);
+	return deepEqual(previous.primitive, next.primitive);
+}
+
+function deepEqual(a: unknown, b: unknown): boolean {
+	if (a === b) return true;
+	if (typeof a !== typeof b) return false;
+	if (a === null || b === null || typeof a !== "object" || typeof b !== "object") return false;
+	if (Array.isArray(a) || Array.isArray(b)) {
+		if (!Array.isArray(a) || !Array.isArray(b) || a.length !== b.length) return false;
+		return a.every((item, index) => deepEqual(item, b[index]));
+	}
+	const aKeys = Object.keys(a as Record<string, unknown>);
+	const bKeys = Object.keys(b as Record<string, unknown>);
+	if (aKeys.length !== bKeys.length) return false;
+	return aKeys.every((key) => deepEqual((a as Record<string, unknown>)[key], (b as Record<string, unknown>)[key]));
+}
+
 function createConnectorInstance(def: RuntimeConnectorState, layout: ResolvedLayoutState): ConnectorState {
 	const node = document.createElementNS(NS, "g") as SVGGElement;
 	const shaft = document.createElementNS(NS, "path") as SVGPathElement;
-	const state = { node, shaft, isHidden: false, ambient: new Set<string>() };
+	const state: ConnectorState = { node, shaft, isHidden: false, ambient: new Set<string>() };
 	applyConnectorState(state, def, layout);
 
 	const entryAnim = def.enter;
@@ -732,63 +812,149 @@ function createConnectorInstance(def: RuntimeConnectorState, layout: ResolvedLay
 }
 
 function applyConnectorState(state: ConnectorState, def: RuntimeConnectorState, layout: ResolvedLayoutState): void {
-	applyConnectorGroupAttrs(state.node, def);
-	clearChildren(state.node);
+	const previous = state.previous;
+	const routeChanged = !previous || !routesEqual(previous.route, def.route);
+	const styleChanged = !previous || !connectorStylesEqual(previous.style, def.style);
+	const shapeChanged =
+		!previous ||
+		shouldRenderOutline(previous) !== shouldRenderOutline(def) ||
+		previous.style.variant !== def.style.variant ||
+		previous.style.lane !== def.style.lane ||
+		previous.start !== def.start ||
+		previous.end !== def.end ||
+		previous.route.length !== def.route.length;
 
-	const d = routePath(def.route, layout);
-	if (shouldRenderOutline(def)) {
-		const outline = document.createElementNS(NS, "path") as SVGPathElement;
-		outline.classList.add("iso-connector-outline");
-		applyConnectorPathAttrs(outline, def, d, {
+	applyConnectorGroupAttrs(state.node, def, previous);
+
+	const geometryChanged = routeChanged || shapeChanged || styleChanged;
+	const d = geometryChanged ? routePath(def.route, layout) : (state.shaft.getAttribute("d") ?? "");
+
+	if (shapeChanged) {
+		if (state.outline) state.node.removeChild(state.outline);
+		state.outline = undefined;
+		if (shouldRenderOutline(def)) {
+			const outline = document.createElementNS(NS, "path") as SVGPathElement;
+			outline.classList.add("iso-connector-outline");
+			applyConnectorPathAttrs(outline, def, d, {
+				stroke: def.style.outline ?? def.style.stroke,
+				strokeWidth: def.style.strokeWidth + def.style.outlineWidth * 2,
+				includeDash: false,
+			});
+			state.node.insertBefore(outline, state.shaft);
+			state.outline = outline;
+		}
+	} else if (state.outline && geometryChanged) {
+		applyConnectorPathAttrs(state.outline, def, d, {
 			stroke: def.style.outline ?? def.style.stroke,
 			strokeWidth: def.style.strokeWidth + def.style.outlineWidth * 2,
 			includeDash: false,
 		});
-		state.node.appendChild(outline);
 	}
 
-	state.shaft = document.createElementNS(NS, "path") as SVGPathElement;
+	if (!state.shaft.parentNode) state.node.appendChild(state.shaft);
 	state.shaft.classList.add("iso-connector-shaft");
-	applyConnectorPathAttrs(state.shaft, def, d, {
-		stroke: def.style.stroke,
-		strokeWidth: def.style.strokeWidth,
-		includeDash: true,
-	});
-	state.node.appendChild(state.shaft);
+	if (geometryChanged) {
+		applyConnectorPathAttrs(state.shaft, def, d, {
+			stroke: def.style.stroke,
+			strokeWidth: def.style.strokeWidth,
+			includeDash: true,
+		});
+	}
 
-	if (def.style.variant === "road" && def.style.lane === "center-dashed") {
-		const lane = document.createElementNS(NS, "path") as SVGPathElement;
-		lane.classList.add("iso-connector-lane");
-		applyConnectorPathAttrs(lane, def, d, {
+	if (shapeChanged) {
+		if (state.lane) state.node.removeChild(state.lane);
+		state.lane = undefined;
+		if (def.style.variant === "road" && def.style.lane === "center-dashed") {
+			const lane = document.createElementNS(NS, "path") as SVGPathElement;
+			lane.classList.add("iso-connector-lane");
+			applyConnectorPathAttrs(lane, def, d, {
+				stroke: "#ffffff",
+				strokeWidth: Math.max(1, def.style.strokeWidth * 0.12),
+				includeDash: false,
+			});
+			lane.setAttribute("stroke-dasharray", "8 8");
+			state.node.appendChild(lane);
+			state.lane = lane;
+		}
+	} else if (state.lane && geometryChanged) {
+		applyConnectorPathAttrs(state.lane, def, d, {
 			stroke: "#ffffff",
 			strokeWidth: Math.max(1, def.style.strokeWidth * 0.12),
 			includeDash: false,
 		});
-		lane.setAttribute("stroke-dasharray", "8 8");
-		state.node.appendChild(lane);
+		state.lane.setAttribute("stroke-dasharray", "8 8");
 	}
 
-	appendEndpoint(state.node, def, "start", layout);
-	appendEndpoint(state.node, def, "end", layout);
+	if (geometryChanged) {
+		if (state.startEndpoint) state.node.removeChild(state.startEndpoint);
+		if (state.endEndpoint) state.node.removeChild(state.endEndpoint);
+		state.startEndpoint = appendEndpoint(state.node, def, "start", layout);
+		state.endEndpoint = appendEndpoint(state.node, def, "end", layout);
+	}
+
 	applyConnectorAmbientClasses(state, def.ambient ?? []);
+	state.previous = def;
 }
 
 function clearChildren(node: SVGElement): void {
 	while (node.firstChild) node.removeChild(node.firstChild);
 }
 
-function applyConnectorGroupAttrs(node: SVGGElement, def: RuntimeConnectorState): void {
-	node.setAttribute(
-		"class",
-		[
-			"iso-connector",
-			`iso-connector-${def.id}`,
-			`iso-connector-variant-${def.style.variant}`,
-			`iso-connector-pattern-${def.style.pattern}`,
-			`iso-connector-direction-${def.direction}`,
-			`iso-layer-${def.layer}`,
-		].join(" "),
+function routesEqual(a: [number, number][], b: [number, number][]): boolean {
+	if (a === b) return true;
+	if (a.length !== b.length) return false;
+	return a.every((point, index) => {
+		const other = b[index];
+		return other !== undefined && point[0] === other[0] && point[1] === other[1];
+	});
+}
+
+function connectorStylesEqual(a: RuntimeConnectorState["style"], b: RuntimeConnectorState["style"]): boolean {
+	if (a === b) return true;
+	return (
+		a.variant === b.variant &&
+		a.pattern === b.pattern &&
+		a.stroke === b.stroke &&
+		a.strokeWidth === b.strokeWidth &&
+		a.opacity === b.opacity &&
+		a.outline === b.outline &&
+		a.outlineWidth === b.outlineWidth &&
+		a.lane === b.lane &&
+		(a.dash ?? []).join(",") === (b.dash ?? []).join(",")
 	);
+}
+
+function applyConnectorGroupAttrs(
+	node: SVGGElement,
+	def: RuntimeConnectorState,
+	previous?: RuntimeConnectorState,
+): void {
+	const nextClasses = [
+		"iso-connector",
+		`iso-connector-${def.id}`,
+		`iso-connector-variant-${def.style.variant}`,
+		`iso-connector-pattern-${def.style.pattern}`,
+		`iso-connector-direction-${def.direction}`,
+		`iso-layer-${def.layer}`,
+	];
+	if (!previous) {
+		node.classList.add(...nextClasses);
+	} else {
+		const previousClasses = [
+			"iso-connector",
+			`iso-connector-${previous.id}`,
+			`iso-connector-variant-${previous.style.variant}`,
+			`iso-connector-pattern-${previous.style.pattern}`,
+			`iso-connector-direction-${previous.direction}`,
+			`iso-layer-${previous.layer}`,
+		];
+		for (const name of previousClasses) {
+			if (!nextClasses.includes(name)) node.classList.remove(name);
+		}
+		for (const name of nextClasses) {
+			if (!previousClasses.includes(name)) node.classList.add(name);
+		}
+	}
 	node.setAttribute("data-id", def.id);
 	node.setAttribute("data-layer", def.layer);
 	node.style.overflow = "visible";
@@ -832,13 +998,14 @@ function appendEndpoint(
 	def: RuntimeConnectorState,
 	kind: "start" | "end",
 	layout: ResolvedLayoutState,
-): void {
+): SVGElement | undefined {
 	const endpoint = def[kind];
-	if (endpoint === "none" || def.route.length < 2) return;
+	if (endpoint === "none" || def.route.length < 2) return undefined;
 
 	const node = createEndpointNode(endpoint, def, kind, layout);
 	node.classList.add(`iso-connector-${kind}`);
 	group.appendChild(node);
+	return node;
 }
 
 function createEndpointNode(

@@ -3,14 +3,14 @@ import {
 	lstat,
 	mkdir,
 	mkdtemp,
-	readFile,
 	readdir,
+	readFile,
 	rm,
 	symlink,
 	writeFile
 } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 const cli = [process.execPath, 'packages/cli/src/bin.ts'];
 const tempDirs: string[] = [];
@@ -393,6 +393,145 @@ describe('isostate assets manifest', () => {
 		expect(result.exitCode).toBe(1);
 		expect(result.stderr).toContain('ASSET_MANIFEST_METADATA_ORPHAN');
 	});
+
+	test('rejects explicit --metadata path that does not exist', async () => {
+		const dir = await makeTempDir();
+		await writeFile(join(dir, 'asset.svg'), '<svg/>', 'utf8');
+		const out = join(dir, 'out.json');
+
+		const result = await runCli([
+			'assets',
+			'manifest',
+			dir,
+			'--out',
+			out,
+			'--metadata',
+			join(dir, 'does-not-exist.yaml')
+		]);
+
+		expect(result.exitCode).toBe(1);
+		expect(result.stderr).toContain('ASSET_MANIFEST_METADATA_NOT_FOUND');
+		expect(await fileExists(out)).toBe(false);
+	});
+
+	test('decodes VP8L (lossless) WebP height correctly beyond 8 bits', async () => {
+		const dir = await makeTempDir();
+		// 300x1200: pre-fix code mis-decoded height as 240 instead of 1200.
+		await writeFile(join(dir, 'sheet.webp'), fakeVp8lWebp(300, 1200));
+		await writeFile(
+			join(dir, '.isostate-assets.yaml'),
+			`assets:
+  sheet.webp:
+    type: sprite-sheet
+    tileSize: [300, 1200]
+    sprites:
+      whole: [0, 0]
+`,
+			'utf8'
+		);
+		const out = join(dir, 'out.json');
+
+		const result = await runCli(['assets', 'manifest', dir, '--out', out]);
+
+		expect(result.exitCode).toBe(0);
+		const manifest = JSON.parse(await readFile(out, 'utf8'));
+		expect(manifest.assets[0].sheetSize).toEqual([300, 1200]);
+		expect(manifest.assets[0].width).toBe(300);
+		expect(manifest.assets[0].height).toBe(1200);
+	});
+
+	test('reads root <svg> dimensions, not a nested child element', async () => {
+		const dir = await makeTempDir();
+		await writeFile(
+			join(dir, 'icons.svg'),
+			'<svg width="64" height="64" viewBox="0 0 64 64"><rect width="512" height="512"/></svg>',
+			'utf8'
+		);
+		await writeFile(
+			join(dir, '.isostate-assets.yaml'),
+			`assets:
+  icons.svg:
+    type: sprite-sheet
+    tileSize: [64, 64]
+    sprites:
+      whole: [0, 0]
+`,
+			'utf8'
+		);
+		const out = join(dir, 'out.json');
+
+		const result = await runCli(['assets', 'manifest', dir, '--out', out]);
+
+		expect(result.exitCode).toBe(0);
+		const manifest = JSON.parse(await readFile(out, 'utf8'));
+		expect(manifest.assets[0].sheetSize).toEqual([64, 64]);
+	});
+
+	test('rejects sprite sheet sheetSize metadata that mismatches actual image dimensions', async () => {
+		const dir = await makeTempDir();
+		await writeFile(join(dir, 'sheet.png'), fakePng(64, 64));
+		await writeFile(
+			join(dir, '.isostate-assets.yaml'),
+			`assets:
+  sheet.png:
+    type: sprite-sheet
+    sheetSize: [4096, 4096]
+    tileSize: [512, 512]
+    sprites:
+      far-tile: [7, 7]
+`,
+			'utf8'
+		);
+		const out = join(dir, 'out.json');
+
+		const result = await runCli(['assets', 'manifest', dir, '--out', out]);
+
+		expect(result.exitCode).toBe(1);
+		expect(result.stderr).toContain('ASSET_MANIFEST_INVALID_METADATA');
+		expect(await fileExists(out)).toBe(false);
+	});
+
+	test('sprite sheet manifest entries include width and height fields', async () => {
+		const dir = await makeTempDir();
+		await writeFile(join(dir, 'sheet.png'), fakePng(128, 64));
+		await writeFile(
+			join(dir, '.isostate-assets.yaml'),
+			`assets:
+  sheet.png:
+    type: sprite-sheet
+    tileSize: [64, 64]
+    sprites:
+      left: [0, 0]
+      right: [1, 0]
+`,
+			'utf8'
+		);
+		const out = join(dir, 'out.json');
+
+		const result = await runCli(['assets', 'manifest', dir, '--out', out]);
+
+		expect(result.exitCode).toBe(0);
+		const manifest = JSON.parse(await readFile(out, 'utf8'));
+		expect(manifest.assets[0].width).toBe(128);
+		expect(manifest.assets[0].height).toBe(64);
+		expect(manifest.assets[0].sheetSize).toEqual([128, 64]);
+	});
+
+	test('rejects derived ids that would start with a digit', async () => {
+		const dir = await makeTempDir();
+		await writeFile(join(dir, '2d-icon.svg'), '<svg/>', 'utf8');
+
+		const result = await runCli([
+			'assets',
+			'manifest',
+			dir,
+			'--out',
+			join(dir, 'out.json')
+		]);
+
+		expect(result.exitCode).toBe(1);
+		expect(result.stderr).toContain('ASSET_MANIFEST_INVALID_FILENAME');
+	});
 });
 
 async function makeTempDir(): Promise<string> {
@@ -430,5 +569,26 @@ function fakePng(width: number, height: number): Buffer {
 	bytes.set(Buffer.from([0x89, 0x50, 0x4e, 0x47]), 0);
 	bytes.writeUInt32BE(width, 16);
 	bytes.writeUInt32BE(height, 20);
+	return bytes;
+}
+
+/**
+ * Builds a minimal valid lossless (VP8L) WebP header. The 32-bit
+ * little-endian field starting at byte 21 packs 14 bits width-1, then 14
+ * bits height-1, per the VP8L bitstream spec.
+ */
+function fakeVp8lWebp(width: number, height: number): Buffer {
+	const widthMinusOne = width - 1;
+	const heightMinusOne = height - 1;
+	const bits = (widthMinusOne & 0x3fff) | ((heightMinusOne & 0x3fff) << 14);
+
+	const bytes = Buffer.alloc(25);
+	bytes.write('RIFF', 0, 'ascii');
+	bytes.writeUInt32LE(17, 4);
+	bytes.write('WEBP', 8, 'ascii');
+	bytes.write('VP8L', 12, 'ascii');
+	bytes.writeUInt32LE(5, 16);
+	bytes[20] = 0x2f;
+	bytes.writeUInt32LE(bits, 21);
 	return bytes;
 }

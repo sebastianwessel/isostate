@@ -23,6 +23,7 @@ only loads the runtime, compiled scene data, and referenced SVG assets.
     - [Author Scene Deltas](./docs/guides/author-scene-deltas.md)
     - [Assets Workflow](./docs/guides/assets-workflow.md)
     - [Animation And Connections](./docs/guides/animation-and-connections.md)
+    - [Convert Mermaid Diagrams](./docs/guides/convert-mermaid.md)
   - Ship
     - [Use The CLI](./docs/guides/use-the-cli.md)
     - [Deploy Static Bundle](./docs/guides/deploy-static-bundle.md)
@@ -30,7 +31,9 @@ only loads the runtime, compiled scene data, and referenced SVG assets.
     - [Runtime Basic](./docs/examples/runtime-basic.md)
     - [Compile YAML](./docs/examples/compile-yaml.md)
     - [Custom Assets](./docs/examples/custom-assets.md)
+    - [Interactive Elements](./docs/examples/interactive-elements.md)
     - [Inspect Bundle](./docs/examples/inspect-bundle.md)
+    - [Export Snapshot](./docs/examples/export-snapshot.md)
   - Reference
     - [Public API](./docs/reference/public-api.md)
     - [Runtime Bundle](./docs/reference/runtime-bundle.md)

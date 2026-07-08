@@ -124,12 +124,15 @@ describe('public type contracts', () => {
 						to: { element: 'database' }
 					} satisfies ConnectionPlacement
 				]
-			},
-			update: [
-				// @ts-expect-error old flat update arrays are not the authored v1 shape.
-				{ id: 'app-server', at: [1, 2], size: 2 }
-			]
+			}
 		} satisfies SceneStep;
+
+		const legacyFlatUpdate: SceneStep = {
+			id: 'scaled',
+			// @ts-expect-error old flat update arrays are not the authored v1 shape.
+			update: [{ id: 'app-server', at: [1, 2], size: 2 }]
+		};
+		expect(Array.isArray(legacyFlatUpdate.update)).toBe(true);
 
 		const patched = {
 			id: 'patched',

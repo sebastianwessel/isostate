@@ -38,6 +38,7 @@ try {
 ```tsx
 import '@sebastianwessel/isostate-editor/style.css';
 import { IsostateEditor } from '@sebastianwessel/isostate-editor/react';
+import type { EditorExportArtifact } from '@sebastianwessel/isostate-editor';
 
 function handleExport(artifact: EditorExportArtifact) {
   const blob = new Blob([artifact.content], {
@@ -54,7 +55,6 @@ function handleExport(artifact: EditorExportArtifact) {
 <IsostateEditor
   defaultValue={defaultYaml}
   onExport={handleExport}
-  mode="split"
 />
 ```
 

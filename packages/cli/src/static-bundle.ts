@@ -16,6 +16,7 @@ import {
 	resolve,
 	sep
 } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import {
 	compileScene,
 	parseScene,
@@ -24,10 +25,7 @@ import {
 	validateScene
 } from '@sebastianwessel/isostate/dsl';
 import type { CliIo, CliResult } from './commands.js';
-import {
-	formatValidationError,
-	formatValidationWarning
-} from './diagnostics.js';
+import { printGroupedErrors, printGroupedWarnings } from './diagnostics.js';
 import { runtimeDigest, sha256Hex } from './runtime-digest.js';
 
 type RuntimeMode = 'copy' | 'external' | 'none';
@@ -70,7 +68,14 @@ interface StaticBundleManifest {
 const DEFAULT_PUBLIC_ASSET_BASE = './assets';
 const DEFAULT_SCENE_NAME = 'scene';
 const RUNTIME_FILE = 'isostate.runtime.js';
-const RUNTIME_SOURCE = new URL(
+const RUNTIME_PACKAGE_NAME = '@sebastianwessel/isostate';
+const RUNTIME_RELATIVE_PATH = 'dist/browser/isostate.runtime.js';
+/**
+ * Monorepo dev fallback: only reachable when `@sebastianwessel/isostate`
+ * cannot be resolved as an installed package (for example, running the CLI
+ * source directly inside this repository before workspace linking exists).
+ */
+const MONOREPO_RUNTIME_FALLBACK = new URL(
 	'../../core/dist/browser/isostate.runtime.js',
 	import.meta.url
 );
@@ -89,13 +94,9 @@ export async function bundleCommand(
 	const source = await readFile(parsed.input, 'utf8');
 	const document = parseScene(source);
 	const report = validateScene(document);
-	for (const warning of report.warnings) {
-		io.stderr.error(formatValidationWarning(warning));
-	}
+	printGroupedErrors(report.errors, io);
+	printGroupedWarnings(report.warnings, io);
 	if (!report.isValid) {
-		for (const error of report.errors) {
-			io.stderr.error(formatValidationError(error));
-		}
 		return { exitCode: 1 };
 	}
 
@@ -303,7 +304,20 @@ function uniqueAssetFile(
 		return sourceBasename;
 	}
 
-	const candidate = `${id}-${sourceBasename}`;
+	const prefixed = `${id}-${sourceBasename}`;
+	if (!usedFiles.has(prefixed)) {
+		usedFiles.add(prefixed);
+		return prefixed;
+	}
+
+	const extension = extname(prefixed);
+	const stem = extension ? prefixed.slice(0, -extension.length) : prefixed;
+	let suffix = 2;
+	let candidate = `${stem}-${suffix}${extension}`;
+	while (usedFiles.has(candidate)) {
+		suffix += 1;
+		candidate = `${stem}-${suffix}${extension}`;
+	}
 	usedFiles.add(candidate);
 	return candidate;
 }
@@ -418,7 +432,57 @@ async function writeRuntimeArtifact(
 	outDir: string
 ): Promise<void> {
 	if (mode !== 'copy') return;
-	await copyFile(RUNTIME_SOURCE, join(outDir, RUNTIME_FILE));
+	const source = await resolveRuntimeSource();
+	try {
+		await copyFile(source, join(outDir, RUNTIME_FILE));
+	} catch {
+		throw codedError(
+			'RUNTIME_ARTIFACT_MISSING',
+			`Unable to copy browser runtime artifact from ${source}`
+		);
+	}
+}
+
+/**
+ * Locates the standalone browser runtime artifact shipped inside the
+ * installed `@sebastianwessel/isostate` package. Resolution walks up from the
+ * package's `./dsl` export (the same subpath the CLI already imports) to find
+ * the package root, so it works regardless of where npm/bun places
+ * `node_modules` for a real install. Falls back to the fixed monorepo dev
+ * layout only when the package cannot be resolved as an installed dependency.
+ */
+async function resolveRuntimeSource(): Promise<URL> {
+	let dslEntryUrl: string;
+	try {
+		dslEntryUrl = import.meta.resolve(`${RUNTIME_PACKAGE_NAME}/dsl`);
+	} catch {
+		return MONOREPO_RUNTIME_FALLBACK;
+	}
+
+	const packageRoot = await findPackageRoot(
+		dirname(fileURLToPath(dslEntryUrl))
+	);
+	if (!packageRoot) return MONOREPO_RUNTIME_FALLBACK;
+
+	return pathToFileURL(join(packageRoot, RUNTIME_RELATIVE_PATH));
+}
+
+async function findPackageRoot(startDir: string): Promise<string | undefined> {
+	let dir = startDir;
+	for (;;) {
+		const candidate = join(dir, 'package.json');
+		try {
+			const contents = JSON.parse(await readFile(candidate, 'utf8')) as {
+				name?: unknown;
+			};
+			if (contents.name === RUNTIME_PACKAGE_NAME) return dir;
+		} catch {
+			// keep walking up; this directory has no readable package.json
+		}
+		const parent = dirname(dir);
+		if (parent === dir) return undefined;
+		dir = parent;
+	}
 }
 
 async function copyAssets(

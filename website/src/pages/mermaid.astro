@@ -162,10 +162,13 @@ const chapters = [
 					<p class="eyebrow">Mermaid to isostate</p>
 					<h1>Turn existing Mermaid diagrams into isostate visual stories.</h1>
 					<p>
-						The fastest path is not a fixed Mermaid renderer. Put your Mermaid
-						source into a small workspace, install the isostate skills, let your
-						AI agent create the YAML and assets, then use the editor to tune the
-						result until every connection and label is clear.
+						For a plain flowchart, the <code>isostate mermaid2dsl</code> CLI turns
+						a <code>.mmd</code> file into a starting scene in one command — see the
+						<a href={href('/docs/guides/convert-mermaid.md')}>Convert Mermaid guide</a>.
+						For a richer, cumulative visual story, put your Mermaid source into a
+						small workspace, install the isostate skills, let your AI agent create
+						the YAML and assets, then use the editor to tune the result until
+						every connection and label is clear.
 					</p>
 				</header>
 
@@ -201,6 +204,13 @@ const chapters = [
 						sequence diagrams, state diagrams, and `graph` aliases, the agent
 						should preserve every participant, state, edge, label, return, async
 						path, and branch.
+					</p>
+					<p>
+						Prefer a deterministic starting point for a plain flowchart? Run
+						<code>npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl diagram.mmd</code>
+						first to emit a generic-but-correct <code>scene.isostate.yaml</code>,
+						then let the AI and editor steps below redesign it with real assets
+						and a cumulative story.
 					</p>
 					<Code code={fileSnippet} lang="md" theme="github-dark" wrap />
 				</section>

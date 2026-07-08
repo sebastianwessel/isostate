@@ -68,7 +68,7 @@ describe('built package entrypoints', () => {
 		);
 
 		expect(result.stderr).toBe('');
-		expect(result.stdout).toContain('OK examples/basic/source.isostate.yaml');
+		expect(result.stdout.trim().split('\n').at(-1)).toBe('OK');
 		expect(result.status).toBe(0);
 	}, buildTimeoutMs);
 

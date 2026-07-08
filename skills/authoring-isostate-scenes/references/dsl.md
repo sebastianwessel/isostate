@@ -15,6 +15,8 @@ header:
   floor:
     visible: true
     layer: ground
+  theme: light
+  className: my-scene
   layers:
     - name: ground
     - name: structures
@@ -30,11 +32,22 @@ Rules:
 
 - `header` and `scenes` are required.
 - `scenes[].id`, asset ids, element ids, connection ids, and layer names are kebab-case.
+- All numeric values must be finite (`.inf`, `-.inf`, and `.nan` are rejected);
+  `grid.cellSize` must additionally be greater than zero.
 - Scene progress is derived from order. Do not author `at`, `progress`, or timestamps.
 - First scene is the full initial placement snapshot.
 - Later scenes are deltas only.
 - Any scene may include optional `camera` metadata to focus presentation
   navigation on one element or one grid area.
+- `header.theme` selects a built-in theme name (`light`, `dark`, `brand`) whose
+  CSS variables are applied at render time. Defaults to `light`. Use it only
+  when the scene has a genuine default-palette need, not as a substitute for
+  host light/dark switching.
+- `header.className` adds an extra CSS class to the root SVG, alongside the
+  always-present `iso-scene` class, as a hook for page-owned styling. It is
+  optional and has no default. Do not use `theme`/`className` only to
+  implement light/dark mode — see `SKILL.md` for the shadcn-style `.dark` root
+  class convention.
 
 ## Scene Deltas
 
