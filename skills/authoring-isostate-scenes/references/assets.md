@@ -90,8 +90,13 @@ After generation:
 
 ## Enterprise Diagram Asset Quality
 
-For architecture and process diagrams, prefer polished one-cell SVG assets over
+For architecture and process diagrams, prefer polished one-cell assets over
 rough placeholders:
+
+Choose SVG for vector artwork and transparent PNG/WebP sprites for detailed
+photorealistic isometric renders. The software architecture catalog below is
+the ready-made raster option; do not substitute simple geometric icons when
+the requested visual direction calls for realistic materials and lighting.
 
 - Use one consistent isometric camera angle, light direction, shadow style,
   edge treatment, and scale across the set.
@@ -270,3 +275,20 @@ objects. Do not let those drift against the grid:
 - Do not compensate with fractional `at` or fractional `size` values.
 - Do not fix repeated placement drift in scene YAML. Fix the asset catalog
   `anchor` so every placement behaves the same.
+
+## Included Software Architecture Catalog
+
+Use `assets/software-architecture/manifest.json` when authoring architecture,
+workflow, or process diagrams in this repository. This photorealistic collection
+uses transparent PNG sprite sheets. Preserve the declared sheet dimensions,
+per-sprite rectangles, and checked anchors from source metadata. Place logical
+sprite ids (`architecture-service`, `workflow-decision`, `process-approval`, etc.),
+never the sheet namespace. Do not assume each sprite has a standalone SVG path.
+
+The npm runtime package distributes the static catalog under
+`dist/assets/software-architecture`; copy it into the host public asset folder.
+The website editor already loads its manifest. The example source is
+`website/src/scenes/software-architecture.isostate.yaml`. Regenerate catalog,
+package, website, and compiled/downloadable examples with `bun run assets:build`.
+Use native `size: 1`, whole-cell placements, generated text labels, and real
+connections. For decisions, separate branches and label outcomes explicitly.

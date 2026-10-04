@@ -58,7 +58,9 @@ Choose one authoring path:
 Use [Assets Workflow](./guides/assets-workflow.md) to create SVG assets, sprite
 sheets, manifests, anchors, and AI-generated asset sets. Use
 [Animation And Connections](./guides/animation-and-connections.md) for motion,
-connection routes, road paths, flow effects, and camera focus.
+connection routes, road paths, flow effects, and camera focus. Use
+[Software Architecture Assets](./guides/software-architecture-assets.md) for the
+included photorealistic architecture, workflow, and process collection.
 
 ### 4. Verify And Publish
 

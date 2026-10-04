@@ -1,0 +1,225 @@
+---
+import { Code } from 'astro:components';
+import manifest from '../../../assets/software-architecture/manifest.json';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { softwareCatalogPreviews } from '../lib/software-catalog';
+import type { AssetManifestEntry } from '../../../packages/editor/src/types';
+
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+const assets = softwareCatalogPreviews(manifest.assets as AssetManifestEntry[]);
+const assetRoot = `${base}/assets/software-architecture`;
+const groups = [
+	{ id: 'architecture', title: 'Software architecture', description: 'The components behind a system: from the first request to the last background job.', number: '01' },
+	{ id: 'workflow', title: 'Workflows', description: 'Give each step, event, and decision a recognizable place in the story.', number: '02' },
+	{ id: 'process', title: 'Business processes', description: 'Make schedules, documents, and human approvals part of the same visual language.', number: '03' }
+];
+const serviceSheet = manifest.assets.find((asset) => asset.sprites['architecture-service']);
+const service = serviceSheet?.sprites['architecture-service'];
+if (!serviceSheet || !service || !('rect' in service)) throw new Error('Missing service sprite metadata.');
+const example = `header:
+  version: "1.0"
+  assetBaseUrl: ./assets/software-architecture
+  assets:
+    - id: software
+      type: sprite-sheet
+      path: ${serviceSheet.path}
+      sheetSize: [${serviceSheet.sheetSize.join(', ')}]
+      sprites:
+        service:
+          rect: [${service.rect.join(', ')}]
+          anchor: [${service.anchor.join(', ')}]
+  layers:
+    - name: structures
+scenes:
+  - id: initial
+    elements:
+      - id: api
+        asset: service
+        at: [2, 2]`;
+---
+
+<SiteLayout title="Software Architecture Assets" description="20 photorealistic isometric assets for software architecture, workflows, and business processes. Preview, download, and build a scene with the included catalog.">
+	<div class="asset-page">
+		<header class="asset-hero">
+			<div class="hero-copy">
+				<p class="eyebrow">The software collection / 20 assets</p>
+				<h1>Give your system<br />a visual language.</h1>
+				<p class="lede">Services, decisions, and the people in between. A coordinated set of photorealistic isometric renders for explaining how software works.</p>
+				<div class="actions">
+					<a class="primary" href={`${base}/editor/?example=software-architecture`}>Build with these assets <span aria-hidden="true">↗</span></a>
+					<a href="#collection">Explore the collection ↓</a>
+				</div>
+				<p class="collection-note">Transparent PNG · MIT licensed · Included with isostate</p>
+			</div>
+			<div class="scene-card">
+				<div class="scene-heading"><span class="live-dot" aria-hidden="true"></span> One collection, three stories <span class="scene-counter" id="asset-scene-counter">01 / 03</span></div>
+				<div id="software-architecture-scene" class="scene-canvas" aria-label="Interactive software architecture, workflow, and process example"></div>
+				<p id="asset-scene-description" class="scene-description" aria-live="polite">A request travels from a client through the gateway and service to data.</p>
+				<div class="scene-controls" role="group" aria-label="Choose example scene">
+					<button type="button" data-progress="0" aria-pressed="true">01 Architecture</button>
+					<button type="button" data-progress="0.5" aria-pressed="false">02 Workflow</button>
+					<button type="button" data-progress="1" aria-pressed="false">03 Process</button>
+				</div>
+				<noscript><p class="scene-description">Enable JavaScript to explore the live scene. Every asset is available below.</p></noscript>
+			</div>
+		</header>
+
+		<section id="collection" class="collection" aria-labelledby="collection-title">
+			<div class="collection-heading">
+				<div><p class="eyebrow">Choose your building blocks</p><h2 id="collection-title">Small pieces. Clear stories.</h2></div>
+				<div class="filters" role="group" aria-label="Filter asset collection">
+					<button type="button" data-group="all" aria-pressed="true">All 20</button>
+					{groups.map((group) => <button type="button" data-group={group.id} aria-pressed="false">{group.id[0].toUpperCase() + group.id.slice(1)}</button>)}
+				</div>
+			</div>
+			<p class="collection-note">Choose a card to download its transparent sprite sheet. Use the manifest to select individual objects.</p>
+			{groups.map((group) => (
+				<section class="asset-group" data-asset-group={group.id} aria-labelledby={`${group.id}-title`}>
+					<header class="group-heading"><span class="group-number">{group.number}</span><div><h3 id={`${group.id}-title`}>{group.title}</h3><p>{group.description}</p></div><span class="group-count">{assets.filter((asset) => asset.group === group.id).length} assets</span></header>
+					<div class="asset-grid">
+						{assets.filter((asset) => asset.group === group.id).map((asset) => (
+							<a class="asset-tile" href={`${assetRoot}/${asset.path}`} download aria-label={`Download sprite sheet containing ${asset.label}`}>
+								<div class="asset-image">{asset.rect && asset.sheetSize ? <svg class="sprite-preview" viewBox={asset.rect.join(' ')} aria-hidden="true"><image href={`${assetRoot}/${asset.path}`} width={asset.sheetSize[0]} height={asset.sheetSize[1]} /></svg> : <img src={`${assetRoot}/${asset.path}`} alt="" loading="lazy" decoding="async" width="96" height="96" />}<span class="download-mark" aria-hidden="true">↓</span></div>
+								<span class="asset-name">{asset.label}</span><code>{asset.id}</code>
+							</a>
+						))}
+					</div>
+				</section>
+			))}
+		</section>
+
+		<section class="usage" aria-labelledby="usage-title">
+			<div class="usage-copy">
+				<p class="eyebrow">From collection to canvas</p><h2 id="usage-title">Ready for your<br />next explanation.</h2>
+				<p>Open the sample in the editor, or copy the included asset folder into your website and reference their sprites from YAML. Each asset fits one grid cell with a checked ground-contact anchor.</p>
+				<ol><li>Copy the collection into <code>public/assets/software-architecture</code>.</li><li>Declare the assets you need and place them on whole grid cells.</li><li>Add labels and connections, then validate and compile your scene.</li></ol>
+				<div class="download-links">
+					<a href={`${base}/scenes/software-architecture.isostate.yaml`} download>Sample YAML ↓</a>
+					<a href={`${base}/scenes/software-architecture.isostate.js`} download>Compiled sample ↓</a>
+					<a href={`${assetRoot}/manifest.json`} download>Editor manifest ↓</a>
+				</div>
+				<p class="guide-link"><a href={`${base}/docs/guides/software-architecture-assets.md`}>Read the setup and usage guide →</a></p>
+				<p class="license-note">Free to use and adapt under the <a href={`${assetRoot}/LICENSE`}>MIT license</a>. Keep its notice with redistributed assets.</p>
+			</div>
+			<div class="code-card"><div class="code-title">scene.isostate.yaml <span>One asset. One cell.</span></div><Code code={example} lang="yaml" theme="github-dark" /></div>
+		</section>
+	</div>
+
+	<script>
+		import { mountScene } from '../../../packages/core/src/index.ts';
+		import type { RuntimeBundle } from '../../../packages/core/src/types/runtime-bundle.ts';
+		import scene from '../scenes/software-architecture.isostate.js';
+
+		const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+		const target = document.getElementById('software-architecture-scene');
+		const descriptions = [
+			'A request travels from a client through the gateway and service to data.',
+			'A workflow moves from its starting point through a task and decision to completion.',
+			'A scheduled process creates a document, asks for approval, and delivers the result.'
+		];
+		if (target) {
+			initializeScene(target).catch(() => {
+				target.textContent = 'The live example could not load. Download the sample below to explore it locally.';
+			});
+		}
+		async function initializeScene(container: HTMLElement) {
+			const bundle: RuntimeBundle = structuredClone(scene);
+			for (const asset of Object.values(bundle.assets ?? {})) {
+				if (asset.url) asset.url = `${base}/${asset.url.replace(/^\.\//, '')}`;
+			}
+			const { _digest, ...unsigned } = bundle;
+			const bytes = new TextEncoder().encode(JSON.stringify(normalize(unsigned)));
+			bundle._digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), (byte) => byte.toString(16).padStart(2, '0')).join('');
+			const mounted = mountScene(container, bundle, {
+				label: 'Software architecture, workflow, and process examples',
+				controller: { enabled: true, mode: 'manual' }
+			});
+			mounted.controller?.setProgress(0);
+			const controls = document.querySelectorAll<HTMLButtonElement>('[data-progress]');
+			controls.forEach((button, index) => {
+				button.addEventListener('click', () => {
+					mounted.controller?.setProgress(Number(button.dataset.progress));
+					controls.forEach((control) => control.setAttribute('aria-pressed', String(control === button)));
+					const counter = document.getElementById('asset-scene-counter');
+					const description = document.getElementById('asset-scene-description');
+					if (counter) counter.textContent = `0${index + 1} / 03`;
+					if (description) description.textContent = descriptions[index];
+				});
+			});
+			window.addEventListener('beforeunload', () => mounted.destroy(), { once: true });
+		}
+		function normalize(value: unknown): unknown {
+			if (Array.isArray(value)) return value.map((item) => normalize(item));
+			if (!value || typeof value !== 'object') return value;
+			return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => [key, normalize(item)]));
+		}
+		document.querySelectorAll<HTMLButtonElement>('[data-group]').forEach((button) => {
+			button.addEventListener('click', () => {
+				document.querySelectorAll<HTMLButtonElement>('[data-group]').forEach((filter) => filter.setAttribute('aria-pressed', String(filter === button)));
+				document.querySelectorAll<HTMLElement>('[data-asset-group]').forEach((group) => {
+					group.hidden = button.dataset.group !== 'all' && group.dataset.assetGroup !== button.dataset.group;
+				});
+			});
+		});
+	</script>
+</SiteLayout>
+
+<style>
+	.asset-page { max-width: 1440px; margin: 0 auto; padding: 70px clamp(24px, 4vw, 64px) 100px; --iso-label: #344c4a; --iso-flow: #658e87; }
+	.asset-hero { display: grid; grid-template-columns: 0.95fr 1.15fr; gap: 64px; align-items: center; padding-bottom: 80px; }
+	.eyebrow { color: var(--green); font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+	h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; letter-spacing: -.055em; line-height: 1.05; }
+	h1 { font-size: clamp(40px, 4.6vw, 68px); margin: 22px 0; }
+	.lede { max-width: 440px; color: var(--soft-ink); font-size: 1.05rem; line-height: 1.7; }
+	.actions { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; margin-top: 30px; font-size: .83rem; font-weight: 600; }
+	.primary { display: inline-flex; gap: 22px; background: var(--green-dark); color: #fffdf5; border-radius: 5px; padding: 16px 20px; text-decoration: none; }
+	.primary:hover { background: var(--green); }
+	.collection-note, .license-note { font-size: .72rem; color: var(--muted); line-height: 1.7; }
+	.collection-note { margin-top: 22px; }
+	.scene-card { overflow: hidden; border: 1px solid #c5ccbf; border-radius: 8px; background: #fdfcf5; box-shadow: 0 20px 60px #203c2c0c; }
+	.scene-heading { display: flex; align-items: center; gap: 8px; padding: 20px 22px; font-size: .72rem; color: var(--soft-ink); border-bottom: 1px solid #e5e4d8; }
+	.live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+	.scene-counter { margin-left: auto; font-family: monospace; color: var(--muted); }
+	.scene-canvas { height: 380px; width: 100%; padding: 12px 20px; background: radial-gradient(ellipse at center, #edf4ed, #fffdf500 70%); }
+	.scene-description { margin: 0; padding: 0 26px 22px; min-height: 58px; font-size: .78rem; line-height: 1.65; color: var(--muted); }
+	.scene-controls { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #d9dfd2; }
+	button { font: inherit; cursor: pointer; }
+	.scene-controls button { padding: 16px 10px; border: 0; background: #edf0e5; color: var(--muted); font-size: .73rem; }
+	.scene-controls button + button { border-left: 1px solid #d9dfd2; }
+	.scene-controls button[aria-pressed='true'] { background: var(--green-dark); color: #fffdf5; }
+	button:focus-visible, a:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+	.collection { border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+	.collection-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 44px 0; }
+	h2 { font-size: clamp(32px, 3.5vw, 47px); margin: 12px 0 0; }
+	.filters { display: flex; flex-wrap: wrap; gap: 5px; }
+	.filters button { border: 1px solid var(--line); background: transparent; border-radius: 4px; padding: 9px 13px; font-size: .72rem; color: var(--soft-ink); }
+	.filters button[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+	.asset-group { margin-bottom: 44px; }
+	.asset-group[hidden] { display: none; }
+	.group-heading { display: flex; gap: 18px; align-items: center; margin-bottom: 22px; }
+	.group-number { font-family: Georgia, serif; font-size: 30px; color: #afb5a4; }
+	h3 { margin: 0; font-size: .95rem; font-weight: 650; }
+	.group-heading p { color: var(--muted); margin: 7px 0 0; font-size: .78rem; line-height: 1.5; }
+	.group-count { margin-left: auto; white-space: nowrap; font-size: .68rem; color: var(--muted); }
+	.asset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+	.asset-tile { display: block; border: 1px solid #dcdccf; border-radius: 6px; background: #fffdf7; overflow: hidden; text-decoration: none; transition: border-color .2s, transform .2s; }
+	.asset-tile:hover { transform: translateY(-4px); border-color: var(--green); }
+	.asset-image { position: relative; display: grid; place-items: center; height: 190px; background: radial-gradient(ellipse at 50% 75%, #e7eee4, transparent 65%); }
+	.asset-image img, .sprite-preview { width: 152px; height: 152px; }
+	.download-mark { position: absolute; top: 10px; right: 12px; color: var(--green); opacity: .4; }
+	.asset-name { display: block; padding: 0 12px 6px; color: var(--ink); font-size: .8rem; font-weight: 600; }
+	.asset-tile code { display: block; overflow-wrap: anywhere; padding: 0 12px 14px; font-size: .62rem; color: var(--muted); line-height: 1.45; }
+	.usage { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; border-top: 1px solid var(--line); padding-top: 65px; margin-top: 65px; align-items: start; }
+	.usage-copy > p:not(.eyebrow):not(.license-note) { font-size: .87rem; color: var(--soft-ink); line-height: 1.8; }
+	.usage-copy ol { padding-left: 20px; margin: 24px 0; color: var(--soft-ink); font-size: .8rem; line-height: 1.9; }
+	.usage-copy code { font-size: .72rem; overflow-wrap: anywhere; }
+	.download-links { display: flex; flex-wrap: wrap; gap: 18px; font-size: .76rem; font-weight: 600; }
+	.guide-link { margin-top: 24px; }
+	.code-card { overflow: hidden; border-radius: 6px; background: #0d1117; }
+	.code-title { display: flex; gap: 12px; justify-content: space-between; color: #d5ddd4; font: .72rem monospace; padding: 18px 22px; border-bottom: 1px solid #303835; }
+	.code-title span { color: #a2b0a1; font-family: inherit; }
+	.code-card :global(pre) { margin: 0; padding: 24px; font-size: .78rem; line-height: 1.75; overflow-x: auto; }
+	@media (max-width: 1100px) { .asset-hero { gap: 28px; } .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .collection-heading { align-items: start; flex-direction: column; } .usage { gap: 40px; } }
+	@media (max-width: 720px) { .asset-page { padding-top: 35px; } .asset-hero, .usage { grid-template-columns: 1fr; gap: 32px; } .asset-hero { padding-bottom: 45px; } .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .scene-canvas { height: 250px; } .group-heading { align-items: flex-start; } .group-count { display: none; } .usage { margin-top: 40px; padding-top: 35px; } .code-title span { display: none; } }
+	@media (prefers-reduced-motion: reduce) { .asset-tile { transition: none; } }
+</style>

@@ -16,14 +16,22 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 
 	<script>
 		import { mountEditor } from '../../../packages/editor/src/index.ts';
+		import softwareExample from '../scenes/software-architecture.isostate.yaml?raw';
 
 		const target = document.getElementById('editor-mount');
 		if (!target) throw new Error('Missing #editor-mount target');
 
 		const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 
+		const example = new URLSearchParams(window.location.search).get('example');
+		const initialYaml = example === 'software-architecture'
+			? softwareExample.replace('assetBaseUrl: ./assets/software-architecture', `assetBaseUrl: ${base}/assets/software-architecture`)
+			: undefined;
+
 		const editor = mountEditor(target, {
+			initialYaml,
 			assetManifestUrls: [
+				`${base}/assets/software-architecture/manifest.json`,
 				`${base}/assets/aws-3d.manifest.json`,
 				`${base}/assets/traffic.manifest.json`,
 				`${base}/assets/city-growth.manifest.json`

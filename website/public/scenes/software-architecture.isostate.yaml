@@ -1,0 +1,369 @@
+# Three visual vocabularies, one scene timeline.
+header:
+  version: "1.0"
+  name: software-architecture-showcase
+  assetBaseUrl: ./assets/software-architecture
+  assets:
+    - id: architecture-architecture-sprites
+      type: sprite-sheet
+      path: architecture/architecture-sprites.png
+      sheetSize: [ 1448, 1086 ]
+      anchor: [ 0.5, 0.9 ]
+      sprites:
+        architecture-browser:
+          rect: [ 6, 0, 350, 350 ]
+          anchor: [ 0.524, 0.946 ]
+        architecture-api-gateway:
+          rect: [ 368, 0, 350, 350 ]
+          anchor: [ 0.669, 0.951 ]
+        architecture-service:
+          rect: [ 730, 0, 350, 350 ]
+          anchor: [ 0.507, 0.931 ]
+        architecture-database:
+          rect: [ 1092, 0, 350, 350 ]
+          anchor: [ 0.511, 0.909 ]
+        architecture-cache:
+          rect: [ 6, 340, 350, 350 ]
+          anchor: [ 0.499, 0.837 ]
+        architecture-queue:
+          rect: [ 368, 355, 350, 350 ]
+          anchor: [ 0.634, 0.894 ]
+        architecture-worker:
+          rect: [ 730, 350, 350, 350 ]
+          anchor: [ 0.437, 0.949 ]
+        architecture-load-balancer:
+          rect: [ 1092, 350, 350, 350 ]
+          anchor: [ 0.513, 0.88 ]
+        architecture-storage:
+          rect: [ 6, 690, 350, 350 ]
+          anchor: [ 0.347, 0.943 ]
+        architecture-cloud:
+          rect: [ 368, 704, 350, 350 ]
+          anchor: [ 0.683, 0.914 ]
+        architecture-container:
+          rect: [ 730, 704, 350, 350 ]
+          anchor: [ 0.451, 0.931 ]
+        architecture-observability:
+          rect: [ 1092, 695, 350, 350 ]
+          anchor: [ 0.544, 0.931 ]
+    - id: workflow-workflow-process-sprites
+      type: sprite-sheet
+      path: workflow/workflow-process-sprites.png
+      sheetSize: [ 1774, 887 ]
+      anchor: [ 0.5, 0.9 ]
+      sprites:
+        workflow-start:
+          rect: [ 0, 0, 443, 443 ]
+          anchor: [ 0.5, 0.9 ]
+        workflow-end:
+          rect: [ 443, 0, 444, 443 ]
+          anchor: [ 0.5, 0.9 ]
+        workflow-task:
+          rect: [ 887, 0, 443, 443 ]
+          anchor: [ 0.5, 0.9 ]
+        workflow-decision:
+          rect: [ 1330, 0, 444, 443 ]
+          anchor: [ 0.5, 0.9 ]
+        workflow-event:
+          rect: [ 0, 443, 443, 444 ]
+          anchor: [ 0.5, 0.9 ]
+        process-approval:
+          rect: [ 443, 443, 444, 444 ]
+          anchor: [ 0.5, 0.9 ]
+        process-document:
+          rect: [ 887, 443, 443, 444 ]
+          anchor: [ 0.5, 0.9 ]
+        process-scheduler:
+          rect: [ 1330, 443, 444, 444 ]
+          anchor: [ 0.5, 0.9 ]
+  grid:
+    cellSize: 64
+  floor:
+    visible: false
+    layer: ground
+  layers:
+    - name: ground
+    - name: connections
+    - name: structures
+    - name: labels
+
+scenes:
+  - id: architecture
+    camera:
+      target:
+        area:
+          at: [0, 1]
+          size: [9, 2]
+      padding: 16
+      duration: 0
+    elements:
+      - id: browser
+        asset: architecture-browser
+        at: [1, 3]
+        enter: fade-in
+      - id: browser-label
+        asset: text
+        layer: labels
+        at: [1, 3]
+        text:
+          value: Client
+          placement: caption
+          fontSize: 11
+          fill: var(--iso-label)
+      - id: gateway
+        asset: architecture-api-gateway
+        at: [3, 3]
+        enter: fade-in
+      - id: gateway-label
+        asset: text
+        layer: labels
+        at: [3, 3]
+        text:
+          value: Gateway
+          placement: caption
+          fontSize: 11
+          fill: var(--iso-label)
+      - id: service
+        asset: architecture-service
+        at: [5, 3]
+        enter: fade-in
+      - id: service-label
+        asset: text
+        layer: labels
+        at: [5, 3]
+        text:
+          value: Service
+          placement: caption
+          fontSize: 11
+          fill: var(--iso-label)
+      - id: database
+        asset: architecture-database
+        at: [7, 3]
+        enter: fade-in
+      - id: database-label
+        asset: text
+        layer: labels
+        at: [7, 3]
+        text:
+          value: Data
+          placement: caption
+          fontSize: 11
+          fill: var(--iso-label)
+    connections:
+      - id: architecture-link-1
+        layer: connections
+        from: { element: browser, side: right }
+        to: { element: gateway, side: left }
+        style:
+          stroke: var(--iso-flow)
+          strokeWidth: 2
+      - id: architecture-link-2
+        layer: connections
+        from: { element: gateway, side: right }
+        to: { element: service, side: left }
+        style:
+          stroke: var(--iso-flow)
+          strokeWidth: 2
+      - id: architecture-link-3
+        layer: connections
+        from: { element: service, side: right }
+        to: { element: database, side: left }
+        style:
+          stroke: var(--iso-flow)
+          strokeWidth: 2
+  - id: workflow
+    camera:
+      target:
+        area:
+          at: [0, 1]
+          size: [9, 2]
+      padding: 16
+      duration: 0
+    remove:
+      elements:
+        - id: browser
+        - id: browser-label
+        - id: gateway
+        - id: gateway-label
+        - id: service
+        - id: service-label
+        - id: database
+        - id: database-label
+      connections:
+        - id: architecture-link-1
+        - id: architecture-link-2
+        - id: architecture-link-3
+    add:
+      elements:
+        - id: start
+          asset: workflow-start
+          at: [1, 3]
+          enter: fade-in
+        - id: start-label
+          asset: text
+          layer: labels
+          at: [1, 3]
+          text:
+            value: Start
+            placement: caption
+            fontSize: 11
+            fill: var(--iso-label)
+        - id: task
+          asset: workflow-task
+          at: [3, 3]
+          enter: fade-in
+        - id: task-label
+          asset: text
+          layer: labels
+          at: [3, 3]
+          text:
+            value: Task
+            placement: caption
+            fontSize: 11
+            fill: var(--iso-label)
+        - id: decision
+          asset: workflow-decision
+          at: [5, 3]
+          enter: fade-in
+        - id: decision-label
+          asset: text
+          layer: labels
+          at: [5, 3]
+          text:
+            value: Decision
+            placement: caption
+            fontSize: 11
+            fill: var(--iso-label)
+        - id: end
+          asset: workflow-end
+          at: [7, 3]
+          enter: fade-in
+        - id: end-label
+          asset: text
+          layer: labels
+          at: [7, 3]
+          text:
+            value: Finish
+            placement: caption
+            fontSize: 11
+            fill: var(--iso-label)
+      connections:
+        - id: workflow-link-1
+          layer: connections
+          from: { element: start, side: right }
+          to: { element: task, side: left }
+          style:
+            stroke: var(--iso-flow)
+            strokeWidth: 2
+        - id: workflow-link-2
+          layer: connections
+          from: { element: task, side: right }
+          to: { element: decision, side: left }
+          style:
+            stroke: var(--iso-flow)
+            strokeWidth: 2
+        - id: workflow-link-3
+          layer: connections
+          from: { element: decision, side: right }
+          to: { element: end, side: left }
+          style:
+            stroke: var(--iso-flow)
+            strokeWidth: 2
+  - id: process
+    camera:
+      target:
+        area:
+          at: [0, 1]
+          size: [9, 2]
+      padding: 16
+      duration: 0
+    remove:
+      elements:
+        - id: start
+        - id: start-label
+        - id: task
+        - id: task-label
+        - id: decision
+        - id: decision-label
+        - id: end
+        - id: end-label
+      connections:
+        - id: workflow-link-1
+        - id: workflow-link-2
+        - id: workflow-link-3
+    add:
+      elements:
+        - id: scheduler
+          asset: process-scheduler
+          at: [1, 3]
+          enter: fade-in
+        - id: scheduler-label
+          asset: text
+          layer: labels
+          at: [1, 3]
+          text:
+            value: Schedule
+            placement: caption
+            fontSize: 11
+            fill: var(--iso-label)
+        - id: document
+          asset: process-document
+          at: [3, 3]
+          enter: fade-in
+        - id: document-label
+          asset: text
+          layer: labels
+          at: [3, 3]
+          text:
+            value: Document
+            placement: caption
+            fontSize: 11
+            fill: var(--iso-label)
+        - id: approval
+          asset: process-approval
+          at: [5, 3]
+          enter: fade-in
+        - id: approval-label
+          asset: text
+          layer: labels
+          at: [5, 3]
+          text:
+            value: Approve
+            placement: caption
+            fontSize: 11
+            fill: var(--iso-label)
+        - id: delivery
+          asset: architecture-service
+          at: [7, 3]
+          enter: fade-in
+        - id: delivery-label
+          asset: text
+          layer: labels
+          at: [7, 3]
+          text:
+            value: Deliver
+            placement: caption
+            fontSize: 11
+            fill: var(--iso-label)
+      connections:
+        - id: process-link-1
+          layer: connections
+          from: { element: scheduler, side: right }
+          to: { element: document, side: left }
+          style:
+            stroke: var(--iso-flow)
+            strokeWidth: 2
+        - id: process-link-2
+          layer: connections
+          from: { element: document, side: right }
+          to: { element: approval, side: left }
+          style:
+            stroke: var(--iso-flow)
+            strokeWidth: 2
+        - id: process-link-3
+          layer: connections
+          from: { element: approval, side: right }
+          to: { element: delivery, side: left }
+          style:
+            stroke: var(--iso-flow)
+            strokeWidth: 2

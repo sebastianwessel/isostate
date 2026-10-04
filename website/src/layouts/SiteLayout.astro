@@ -769,6 +769,7 @@ function navId(value: string): string {
 			</a>
 			<nav class="nav-links" aria-label="Primary navigation">
 				<a href={href('/')} aria-current={currentPath === base || currentPath === `${base}/` ? 'page' : undefined}>Overview</a>
+				<a href={href('/assets')} aria-current={isActive('/assets') ? 'page' : undefined}>Assets</a>
 				<a href={href('/mermaid')} aria-current={isActive('/mermaid') ? 'page' : undefined}>Mermaid</a>
 				<a href={href('/docs/README.md')} aria-current={isActive('/docs') ? 'page' : undefined}>Docs</a>
 				<a href={href('/editor')} aria-current={isActive('/editor') ? 'page' : undefined}>Editor</a>

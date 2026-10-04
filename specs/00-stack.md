@@ -16,11 +16,29 @@
 
 | Tool | Version | Purpose |
 |---|---|---|
-| `tsc` | ^6.0.3 | TypeScript compiler |
-| `rollup` | ^4.60.4 | Bundle generation (ESM) |
-| `tsx` | ^4.22.3 | Run TypeScript files directly (scripts) |
-| `bun` | ^1.1.0 | Development runtime, package manager, and test runner |
-| `yaml` | ^2.9.0 | YAML parsing (dev-time only, not shipped to browser) |
+| `tsc` | ^7.0.2 | Native TypeScript compiler and declaration generation |
+| `rollup` | ^4.64.0 | Bundle generation (ESM) |
+| `esbuild` | ^0.28.2 | TypeScript/TSX transforms and source maps for Rollup |
+| `tsx` | ^4.23.15 | Run TypeScript files directly (scripts) |
+| `bun` | 1.4.2 | Development runtime, package manager, and test runner |
+| `yaml` | ^2.9.1 | YAML parsing (dev-time only, not shipped to browser) |
+
+TypeScript 7 provides the native `tsc` executable but no stable JavaScript
+compiler API. The Rollup build uses esbuild for syntax transforms instead of
+the removed `transpileModule` API; type checking and declarations remain the
+responsibility of TypeScript. TSConfig paths are explicitly relative, without
+the removed `baseUrl` option or deprecated interop overrides.
+
+Website tooling uses Astro 7.3.5, `@astrojs/sitemap` ^3.7.4,
+`astro-og-canvas` ^0.13.2, and `canvaskit-wasm` ^0.42.0. Development CI uses
+Node 24 (Astro requires Node >=22.12 and size-limit requires Node >=22.19 on
+the Node 22 release line). The published core and CLI retain their Node >=18
+consumer requirement; development tooling does not ship with those packages.
+
+`site:dev` passes Astro's `--ignore-lock` flag to keep the development server
+in the foreground, including when an agent launches it. This avoids Astro's
+automatic agent backgrounding and gives the invoking process ownership of
+the server's lifetime.
 
 ## Dev-Time Packages
 
@@ -55,7 +73,7 @@ The `yaml` package should be declared as a **peer dependency** or **optional dep
 // In package.json:
 // "peerDependencies": { "yaml": ">=2.0.0" }
 // OR
-// "optionalDependencies": { "yaml": "^2.9.0" }
+// "optionalDependencies": { "yaml": "^2.9.1" }
 ```
 
 For bundling, Rollup should use `external: ['yaml']` or tree-shake to exclude it from the output bundle.
@@ -65,16 +83,21 @@ For bundling, Rollup should use `external: ['yaml']` or tree-shake to exclude it
 | Tool | Version | Purpose |
 |---|---|---|
 | `bun:test` | built-in | Unit and integration tests (included with Bun) |
+| `happy-dom` | 20.14.5 | DOM environment for browser and editor tests |
 
 ## Linting & Formatting
 
 | Tool | Version | Purpose |
 |---|---|---|
-| `@biomejs/biome` | ^2.4.15 | Linting and code formatting (replaces ESLint + Prettier) |
+| `@biomejs/biome` | ^2.5.15 | Linting and code formatting (replaces ESLint + Prettier) |
 
 ## Package Manager
 
 **Bun** — chosen for fast installs, built-in test runner, and zero-config TypeScript support.
+
+The workspace declares `packageManager: "bun@1.4.2"`; CI follows the stable
+Bun release. Updating this declaration does not change an existing global Bun
+installation.
 
 TypeScript should be kept on the most recent stable major release supported by
 the project toolchain. When upgrading TypeScript, update package manifests,
@@ -85,8 +108,8 @@ the same change.
 
 | Tool | Version | Purpose |
 |---|---|---|
-| `publint` | ^0.3.21 | Validate package.json for npm publishing |
-| `size-limit` | ^12.1.0 | Monitor bundle size |
+| `publint` | ^0.3.25 | Validate package.json for npm publishing |
+| `size-limit` | ^14.1.0 | Monitor bundle size |
 
 Published packages:
 
@@ -112,6 +135,11 @@ the core runtime package:
 | Radix primitives | Accessible controls used directly or through copied shadcn/ui component patterns |
 | CodeMirror 6 | YAML code editing, folding, diagnostics, search, and formatting actions |
 | YAML language tooling | Browser authoring parse/format support inside the editor package only |
+
+The editor and website development toolchain track React/React DOM ^19.3.0,
+Radix UI ^1.6.7, `react-resizable-panels` ^4.14.2, `lucide-react` ^1.52.0,
+and Tailwind CSS/CLI ^4.3.3. CodeMirror packages retain their individual
+current stable 6.x versions in the workspace manifest and Bun lockfile.
 
 These dependencies are editor-only. They must not be imported by
 `@sebastianwessel/isostate`, included in static runtime bundles, or counted

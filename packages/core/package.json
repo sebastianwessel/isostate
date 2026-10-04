@@ -33,7 +33,8 @@
 		"./editor-support": {
 			"types": "./dist/editor-support/index.d.ts",
 			"import": "./dist/editor-support/index.js"
-		}
+		},
+		"./assets/software-architecture/*": "./dist/assets/software-architecture/*"
 	},
 	"files": [
 		"dist"
@@ -52,14 +53,14 @@
 		"prepublishOnly": "cd ../.. && bun run build && bun run lint"
 	},
 	"devDependencies": {
-		"typescript": "^6.0.3",
-		"@biomejs/biome": "^2.4.15",
-		"yaml": "^2.9.0",
-		"publint": "^0.3.21",
-		"size-limit": "^12.1.0"
+		"typescript": "^7.0.2",
+		"@biomejs/biome": "^2.5.15",
+		"yaml": "^2.9.1",
+		"publint": "^0.3.25",
+		"size-limit": "^14.1.0"
 	},
 	"peerDependencies": {
-		"yaml": "^2.9.0"
+		"yaml": "^2.9.1"
 	},
 	"peerDependenciesMeta": {
 		"yaml": {

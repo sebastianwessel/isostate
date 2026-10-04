@@ -36,7 +36,7 @@
 		"@sebastianwessel/isostate": "0.5.0"
 	},
 	"peerDependencies": {
-		"yaml": "^2.9.0"
+		"yaml": "^2.9.1"
 	},
 	"engines": {
 		"node": ">=18.0.0"

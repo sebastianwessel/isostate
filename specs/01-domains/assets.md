@@ -290,3 +290,39 @@ Isometric assets use CSS `color-mix()` to create depth shading from a single col
 | `iso-back`  | Back face (darkest) | base color 100% |
 
 Asset geometry only needs one color variable per material, and all depth shading is handled by CSS.
+
+## Software Architecture Catalog
+
+`assets/software-architecture/` is a first-party optional catalog of twenty
+premium isometric software and process renders distributed under the repository's
+MIT license. Its logical groups are `architecture` (twelve software and
+infrastructure objects), `workflow` (start, end, task, decision, event), and
+`process` (approval, document, scheduler). Logical ids use these prefixes,
+for example `architecture-database`.
+
+Two transparent PNG sprite sheets preserve the original generated image bytes:
+`architecture/architecture-sprites.png` (1448 × 1086 pixels) and
+`workflow/workflow-process-sprites.png` (1774 × 887 pixels). The material palette
+combines graphite metal, cyan glass, teal accents, and amber lights. The prompt
+sources are recorded in `IMAGEGEN-PROMPTS.md` alongside the images.
+
+The metadata source is `.isostate-assets.yaml`. Every sprite has an explicit
+whole-pixel `rect` and checked normalized `anchor`; architecture rectangles are
+350 × 350 pixels with per-object anchors. Workflow/process rectangles follow
+the source's four-column, two-row grid and use `[0.5, 0.9]` anchors. Scenes use
+these existing sprite-sheet declarations at native `size: 1`. A sheet namespace
+is not placeable. Labels remain scene text elements and routes remain scene
+connections.
+
+The existing CLI generates `manifest.json`, including sheet dimensions, source
+byte digests, and sprite labels/tags. Its `assetBaseUrl` is `./` because it resides
+beside the group directories. Website publishing may generate a second manifest
+with the hosted base URL while preserving ids, rectangles, anchors, and digests.
+
+The core package build copies this catalog, README, image-generation prompts,
+and MIT LICENSE to `dist/assets/software-architecture/`, exposing the files
+through the static `./assets/software-architecture/*` package export. Consumers
+may copy these files into a public asset directory or use bundler URL imports.
+This distribution does not add runtime imports, browser dependencies, DSL
+fields, or renderer behavior. Asset bytes remain outside the core engine's
+compressed bundle budget.

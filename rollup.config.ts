@@ -1,28 +1,27 @@
 import { builtinModules } from 'node:module';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import { transform } from 'esbuild';
 import { defineConfig } from 'rollup';
 import type { Plugin } from 'rollup';
-import ts from 'typescript';
 
 function typescriptPlugin(): Plugin {
 	return {
 		name: 'isostate-typescript',
-		transform(code, id) {
+		async transform(code, id) {
 			if (!id.endsWith('.ts') && !id.endsWith('.tsx')) return null;
 
-			const result = ts.transpileModule(code, {
-				compilerOptions: {
-					target: ts.ScriptTarget.ES2022,
-					module: ts.ModuleKind.ESNext,
-					sourceMap: true,
-					jsx: ts.JsxEmit.ReactJSX
-				},
-				fileName: id
+			const result = await transform(code, {
+				loader: id.endsWith('.tsx') ? 'tsx' : 'ts',
+				target: 'es2022',
+				format: 'esm',
+				sourcemap: true,
+				jsx: 'automatic',
+				sourcefile: id
 			});
 
 			return {
-				code: result.outputText,
-				map: result.sourceMapText ? JSON.parse(result.sourceMapText) : null
+				code: result.code,
+				map: result.map ? JSON.parse(result.map) : null
 			};
 		}
 	};

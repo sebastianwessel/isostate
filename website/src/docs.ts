@@ -22,6 +22,7 @@ import { Content as ConvertMermaid } from '../../docs/guides/convert-mermaid.md'
 import { Content as DeployStaticBundle } from '../../docs/guides/deploy-static-bundle.md';
 import { Content as InstallAuthoringSkill } from '../../docs/guides/install-authoring-skill.md';
 import { Content as PlanAScene } from '../../docs/guides/plan-a-scene.md';
+import { Content as SoftwareArchitectureAssets } from '../../docs/guides/software-architecture-assets.md';
 import { Content as UseEditorInAstro } from '../../docs/guides/use-editor-in-astro.md';
 import { Content as UseTheCli } from '../../docs/guides/use-the-cli.md';
 import { Content as DocsReadme } from '../../docs/README.md';
@@ -56,6 +57,11 @@ type DocNavItem =
 	  };
 
 export const docs: DocEntry[] = [
+	{
+		slug: 'guides/software-architecture-assets.md',
+		title: 'Software Architecture Assets',
+		Content: SoftwareArchitectureAssets
+	},
 	{
 		slug: 'README.md',
 		title: 'Documentation',
@@ -249,6 +255,7 @@ export const docNav: DocNavSection[] = [
 				title: 'Visual Language',
 				items: [
 					'guides/assets-workflow.md',
+					'guides/software-architecture-assets.md',
 					'guides/animation-and-connections.md'
 				]
 			}

@@ -7,7 +7,7 @@
 		"jsx": "react-jsx",
 		"paths": {
 			"@/*": ["./*"],
-			"@sebastianwessel/isostate": ["../core/dist/index.d.ts"],
+			"@sebastianwessel/isostate": ["../core/dist/index"],
 			"@sebastianwessel/isostate/*": ["../core/dist/*"]
 		}
 	},

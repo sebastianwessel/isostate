@@ -193,3 +193,10 @@ referenced assets, and digests. It should not contain the editor, YAML parser,
 validator, compiler, CLI, or authored YAML.
 
 Next: [Animation And Connections](./animation-and-connections.md).
+
+## Included Software Collection
+
+The [Software Architecture Assets](./software-architecture-assets.md) guide covers
+the packaged transparent sprite sheets, their editor catalog, logical object ids,
+and the three-scene website example. Start there when explaining services,
+workflows, or business processes with an existing visual vocabulary.

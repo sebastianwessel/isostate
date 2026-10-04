@@ -1,0 +1,115 @@
+assets:
+  architecture/architecture-sprites.png:
+    type: sprite-sheet
+    label: Software architecture
+    sheetSize: [1448, 1086]
+    anchor: [0.5, 0.9]
+    tags: [architecture, software, isometric]
+    sprites:
+      architecture-browser:
+        rect: [6, 0, 350, 350]
+        anchor: [0.524, 0.946]
+        label: Browser client
+        tags: [frontend, client, web]
+      architecture-api-gateway:
+        rect: [368, 0, 350, 350]
+        anchor: [0.669, 0.951]
+        label: API gateway
+        tags: [api, network, gateway]
+      architecture-service:
+        rect: [730, 0, 350, 350]
+        anchor: [0.507, 0.931]
+        label: Application service
+        tags: [backend, service, application]
+      architecture-database:
+        rect: [1092, 0, 350, 350]
+        anchor: [0.511, 0.909]
+        label: Database
+        tags: [data, database, persistence]
+      architecture-cache:
+        rect: [6, 340, 350, 350]
+        anchor: [0.499, 0.837]
+        label: Memory cache
+        tags: [cache, memory, performance]
+      architecture-queue:
+        rect: [368, 355, 350, 350]
+        anchor: [0.634, 0.894]
+        label: Message queue
+        tags: [messaging, queue, async]
+      architecture-worker:
+        rect: [730, 350, 350, 350]
+        anchor: [0.437, 0.949]
+        label: Background worker
+        tags: [worker, job, automation]
+      architecture-load-balancer:
+        rect: [1092, 350, 350, 350]
+        anchor: [0.513, 0.88]
+        label: Load balancer
+        tags: [network, routing, distribution]
+      architecture-storage:
+        rect: [6, 690, 350, 350]
+        anchor: [0.347, 0.943]
+        label: Object storage
+        tags: [storage, files, bucket]
+      architecture-cloud:
+        rect: [368, 704, 350, 350]
+        anchor: [0.683, 0.914]
+        label: Cloud platform
+        tags: [cloud, hosting, platform]
+      architecture-container:
+        rect: [730, 704, 350, 350]
+        anchor: [0.451, 0.931]
+        label: Container
+        tags: [container, deployment, package]
+      architecture-observability:
+        rect: [1092, 695, 350, 350]
+        anchor: [0.544, 0.931]
+        label: Observability
+        tags: [metrics, monitoring, telemetry]
+  workflow/workflow-process-sprites.png:
+    type: sprite-sheet
+    label: Workflows and processes
+    sheetSize: [1774, 887]
+    anchor: [0.5, 0.9]
+    tags: [workflow, process, isometric]
+    sprites:
+      workflow-start:
+        rect: [0, 0, 443, 443]
+        anchor: [0.5, 0.9]
+        label: Start
+        tags: [workflow, start, trigger]
+      workflow-end:
+        rect: [443, 0, 444, 443]
+        anchor: [0.5, 0.9]
+        label: End
+        tags: [workflow, end, complete]
+      workflow-task:
+        rect: [887, 0, 443, 443]
+        anchor: [0.5, 0.9]
+        label: Task
+        tags: [workflow, task, step]
+      workflow-decision:
+        rect: [1330, 0, 444, 443]
+        anchor: [0.5, 0.9]
+        label: Decision
+        tags: [workflow, decision, branch]
+      workflow-event:
+        rect: [0, 443, 443, 444]
+        anchor: [0.5, 0.9]
+        label: Event
+        tags: [workflow, event, signal]
+      process-approval:
+        rect: [443, 443, 444, 444]
+        anchor: [0.5, 0.9]
+        label: Approval
+        tags: [process, approval, review]
+      process-document:
+        rect: [887, 443, 443, 444]
+        anchor: [0.5, 0.9]
+        label: Document
+        tags: [process, document, artifact]
+      process-scheduler:
+        rect: [1330, 443, 444, 444]
+        anchor: [0.5, 0.9]
+        label: Scheduler
+        tags: [process, schedule, timer]

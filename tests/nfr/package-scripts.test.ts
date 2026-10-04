@@ -18,12 +18,15 @@ describe('NFR package scripts', () => {
 			'publint run packages/core && publint run packages/cli && publint run packages/editor'
 		);
 		expect(packageJson.scripts?.['site:build']).toBe(
-			'bun --bun node_modules/.bin/astro build --root website'
+			'bun scripts/sync-software-assets.ts && bun --bun node_modules/.bin/astro build --root website'
+		);
+		expect(packageJson.scripts?.['site:dev']).toBe(
+			'bun --bun node_modules/.bin/astro dev --root website --ignore-lock'
 		);
 		expect(packageJson.scripts?.coverage).toContain('bun test --coverage');
-		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.3');
-		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.13.0');
-		expect(packageJson.devDependencies?.['canvaskit-wasm']).toBe('^0.41.1');
+		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.4');
+		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.13.2');
+		expect(packageJson.devDependencies?.['canvaskit-wasm']).toBe('^0.42.0');
 	});
 
 	test('publishable packages declare dist-only artifacts', async () => {
@@ -73,7 +76,10 @@ describe('NFR package scripts', () => {
 			types?: string;
 		};
 		const editorPackage = JSON.parse(
-			await readFile(join(process.cwd(), 'packages/editor/package.json'), 'utf8')
+			await readFile(
+				join(process.cwd(), 'packages/editor/package.json'),
+				'utf8'
+			)
 		) as {
 			author?: string;
 			exports?: Record<string, { import?: string; types?: string } | string>;
@@ -123,9 +129,7 @@ describe('NFR package scripts', () => {
 		for (const pkg of [corePackage, cliPackage, editorPackage]) {
 			expect(pkg.author).toBe('Sebastian Wessel');
 			expect(pkg.license).toBe('MIT');
-			expect(pkg.homepage).toBe(
-				'https://sebastianwessel.github.io/isostate'
-			);
+			expect(pkg.homepage).toBe('https://sebastianwessel.github.io/isostate');
 			expect(pkg.bugs?.url).toBe(
 				'https://github.com/sebastianwessel/isostate/issues'
 			);
