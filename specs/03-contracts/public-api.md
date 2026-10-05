@@ -224,3 +224,11 @@ accept optional `message`. Element placement/patch and runtime element state
 accept optional `activity`; `ElementPatch.asset` supports external image/sprite
 replacement. These are declarative scene data and require no new runtime API.
 Existing controller `pause()` and `resume()` also control their CSS motion.
+
+## Timeline Input Priority
+
+The existing `setSceneIndex(index)`, `nextScene()`, and `prevScene()` methods
+animate progress using controller duration/easing. `setProgress(progress)` and
+scroll input cancel pending navigation and resolve an exact progress frame.
+Pause cancels navigation; resume renders stored progress. These behavior
+repairs do not introduce authored DSL or runtime bundle fields.

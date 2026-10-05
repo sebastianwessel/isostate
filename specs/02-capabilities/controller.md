@@ -175,6 +175,16 @@ When navigating scenes (not via scroll), the controller can animate the progress
 
 If `transitionDuration` is `0`, the transition is instant.
 
+`setSceneIndex(index)` uses the same animated navigation for an arbitrary valid
+scene index. `setProgress(progress)` is an exact externally driven seek and
+cancels an in-flight navigation transition before forwarding the new progress.
+Scroll input has the same priority. A scheduled navigation frame must not
+overwrite a later seek. Hosts use scene navigation for step buttons and exact
+seeks for scroll or range sliders.
+
+Pausing cancels in-flight scene navigation and freezes ambient motion. Resume
+applies the stored progress without completing the canceled navigation.
+
 ### Scene Camera
 
 The controller resolves camera from progress for scroll, direct `setProgress()`,

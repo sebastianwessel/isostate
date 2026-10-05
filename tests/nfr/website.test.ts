@@ -113,11 +113,13 @@ describe('Astro website', () => {
 		expect(docs).toContain("title: 'Ship'");
 		expect(index).toContain('Isometric scenes from YAML');
 		expect(index).toContain('id="isostate-demo"');
-		expect(index).toContain('mountScene');
+		expect(index).toContain('initializeOverview');
 		expect(index).toContain("import { Code } from 'astro:components'");
-		expect(index).toContain('sceneSnippets');
-		expect(index).toContain('route-car');
-		expect(index).toContain('Scroll to watch a route come to life');
+		expect(index).toContain('overviewChapters');
+		expect(index).toContain('Architecture → workflow → process');
+		expect(index).toContain('Follow a request.');
+		expect(index).toContain('data-scene-index');
+		expect(index).toContain('Pause effects');
 		expect(index).not.toContain('PUBLIC_ISOSTATE_VERSION');
 		expect(layout).toContain(
 			"import { renderMermaidSVGAsync } from 'beautiful-mermaid'"

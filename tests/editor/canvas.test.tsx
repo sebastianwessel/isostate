@@ -65,6 +65,9 @@ function setupHappyDom() {
 	g.SVGElement = w.SVGElement;
 	g.PointerEvent = w.PointerEvent;
 	g.DragEvent = w.DragEvent;
+	g.requestAnimationFrame = (callback: FrameRequestCallback) =>
+		setTimeout(() => callback(performance.now()), 0);
+	g.cancelAnimationFrame = (id: number) => clearTimeout(id);
 
 	type MatrixLike = {
 		a: number;
@@ -199,6 +202,48 @@ describe('CanvasView', () => {
 		);
 		await waitForCanvasRender();
 		expect(container.querySelector('svg')).toBeTruthy();
+		root.unmount();
+		container.remove();
+	});
+
+	test('runtime scrubbing renders controller frames and returning to edit restores the selected stop', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeMultiSceneWorkspace();
+		const root = createRoot(container);
+		const render = (mode: 'runtime' | 'edit', progress = 0) =>
+			root.render(
+				createElement(CanvasView, {
+					workspace,
+					onCommand: () => {},
+					theme: 'light',
+					previewMode: mode,
+					previewProgress: progress
+				})
+			);
+		render('runtime', 1);
+		await waitForCanvasRender();
+		const end = container
+			.querySelector('.iso-element-e1')
+			?.getAttribute('transform');
+		expect(end).toBeDefined();
+		render('runtime', 0.5);
+		await waitForCanvasRender();
+		const middle = container
+			.querySelector('.iso-element-e1')
+			?.getAttribute('transform');
+		expect(middle).toBeDefined();
+		expect(middle).not.toBe(end);
+		expect(container.querySelector('[aria-label="Editor overlay"]')).toBeNull();
+		render('edit');
+		await waitForCanvasRender();
+		const expected = getGridPoint(workspace, [5, 4]);
+		expect(
+			container.querySelector('.iso-element-e1')?.getAttribute('transform')
+		).toBe(`translate(${expected.x} ${expected.y}) scale(1)`);
+		expect(
+			container.querySelector('[aria-label="Editor overlay"]')
+		).toBeTruthy();
 		root.unmount();
 		container.remove();
 	});
@@ -365,8 +410,8 @@ describe('CanvasView', () => {
 		);
 		canvas.dispatchEvent(createPointerEventAt('pointerup', { x: 800, y: 60 }));
 
-		expect(nextViewport?.pan.x).not.toBe(0);
-		expect(nextViewport?.pan.y).not.toBe(0);
+		expect(nextViewport?.pan.x).toBe(100);
+		expect(nextViewport?.pan.y).toBe(-50);
 		expect(nextViewport?.zoom).toBe(2);
 
 		root.unmount();
@@ -708,6 +753,86 @@ describe('CanvasView', () => {
 		canvas.dispatchEvent(createPointerEventAt('pointermove', end));
 		canvas.dispatchEvent(createPointerEventAt('pointerup', end));
 		expect(lastCommand?.id).toBe('object.update');
+		root.unmount();
+		container.remove();
+	});
+
+	test('dragging preserves the grabbed offset and cancellation never commits', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeWorkspace();
+		const root = createRoot(container);
+		let result: EditorCommandResult | undefined;
+		root.render(
+			createElement(CanvasView, {
+				workspace,
+				onCommand: (cmd) => {
+					result = applyEditorCommand(workspace, cmd);
+				},
+				theme: 'light'
+			})
+		);
+		await waitForCanvasRender();
+		const canvas = container.querySelector(
+			'.isostate-editor-canvas-view'
+		) as HTMLDivElement;
+		const start = getGridPoint(workspace, [-0.2, -0.2]);
+		const end = getGridPoint(workspace, [1.8, 0.8]);
+		canvas.dispatchEvent(createPointerEventAt('pointerdown', start));
+		canvas.dispatchEvent(createPointerEventAt('pointermove', end));
+		canvas.dispatchEvent(createPointerEventAt('pointercancel', end));
+		canvas.dispatchEvent(createPointerEventAt('pointerup', end));
+		expect(result).toBeUndefined();
+		canvas.dispatchEvent(createPointerEventAt('pointerdown', start));
+		canvas.dispatchEvent(createPointerEventAt('pointermove', end));
+		canvas.dispatchEvent(createPointerEventAt('pointerup', end));
+		expect(result?.workspace.document?.scenes[0].elements?.[0].at).toEqual([
+			2, 1
+		]);
+		root.unmount();
+		container.remove();
+	});
+
+	test('zoom keeps the viewport center fixed and controls never select objects', async () => {
+		const container = document.createElement('div');
+		document.body.appendChild(container);
+		const workspace = makeWorkspace();
+		const root = createRoot(container);
+		let selected = false;
+		const render = (zoom: number) =>
+			root.render(
+				createElement(CanvasView, {
+					workspace: {
+						...workspace,
+						viewport: { ...workspace.viewport, zoom }
+					},
+					onCommand: () => {},
+					onSelect: () => {
+						selected = true;
+					},
+					theme: 'light'
+				})
+			);
+		render(1);
+		await waitForCanvasRender();
+		const box = () =>
+			container
+				.querySelector('svg.iso-scene')
+				?.getAttribute('viewBox')
+				?.split(' ')
+				.map(Number) ?? [];
+		const before = box();
+		render(2);
+		await waitForCanvasRender();
+		const after = box();
+		expect(after[0] + after[2] / 2).toBeCloseTo(before[0] + before[2] / 2);
+		expect(after[1] + after[3] / 2).toBeCloseTo(before[1] + before[3] / 2);
+		container
+			.querySelector('[aria-label="Zoom in"]')
+			?.dispatchEvent(
+				createPointerEventAt('pointerdown', getGridPoint(workspace, [0, 0]))
+			);
+		expect(selected).toBe(false);
 		root.unmount();
 		container.remove();
 	});

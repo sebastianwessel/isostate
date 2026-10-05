@@ -116,6 +116,19 @@ application owns persistence:
 Editor-only UI state such as pan, zoom, selection, pane sizing, and the active
 sidebar tab is not persisted by v1 APIs.
 
+## Navigate And Preview
+
+Select a scene to edit its resolved stop. Drag an object to move it; drag empty
+canvas, hold Space while dragging, or use middle mouse or Alt/Meta-drag to pan.
+Wheel/trackpad pans, Ctrl/Meta-wheel zooms, and the toolbar offers centered zoom
+and reset. Zoom and pan survive a committed edit and a return from preview.
+
+The **Scene progress** slider opens runtime preview, including movement,
+entry/exit effects, and authored camera focus. Click **Edit scene** or select a
+scene to return to whole-cell editing. Preview input does not change YAML.
+See [Canvas Navigation And Timeline](../reference/editor.md#canvas-navigation-and-timeline)
+for selection and gesture details.
+
 ## Editing Text Labels
 
 The inspector shows text controls when the selected element uses `asset: text`.

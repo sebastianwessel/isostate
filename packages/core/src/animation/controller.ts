@@ -82,9 +82,9 @@ export interface ControllerConfig {
 	touchControls?: boolean;
 	/** Multiplier applied to wheel/touch scroll deltas. Defaults to `1.0`. */
 	scrollSensitivity?: number;
-	/** Camera transition duration in milliseconds. Defaults to `600`. */
+	/** Scene navigation and camera transition duration in milliseconds. Defaults to `600`. */
 	transitionDuration?: number;
-	/** Camera transition easing curve. Defaults to `ease-in-out`. */
+	/** Scene navigation and camera transition easing curve. Defaults to `ease-in-out`. */
 	transitionEasing?: "linear" | "ease-in-out" | "ease-out";
 }
 
@@ -154,6 +154,7 @@ export class AnimationController {
 
 	// Transition animation state
 	private _transitionAnim: ReturnType<typeof requestAnimationFrame> | null = null;
+	private _backward = false;
 
 	get engine(): AnimationEngine {
 		return this._engine;
@@ -225,7 +226,11 @@ export class AnimationController {
 		if (!Number.isFinite(progress)) {
 			throw new ControllerError("CONTROLLER_PROGRESS_OUT_OF_RANGE", "setProgress() requires a finite progress value");
 		}
+		this._cancelTransition();
+		this._setProgress(progress);
+	}
 
+	private _setProgress(progress: number): void {
 		const clamped = Math.max(0, Math.min(1, progress));
 		if (clamped === this._progress && !this._paused && this._rafId !== null) {
 			return;
@@ -281,6 +286,7 @@ export class AnimationController {
 		if (this._paused) return;
 		this._paused = true;
 		this._cancelFrame();
+		this._cancelTransition();
 		this._engine.pause();
 		this._applyPauseState(true);
 		this._emit("paused");
@@ -427,6 +433,7 @@ export class AnimationController {
 			const pending = this._pendingProgress;
 			this._pendingProgress = null;
 			if (pending === null || this._paused || this._destroyed) return;
+			this._backward = pending < this._engine.getProgress();
 			this._engine.setProgress(pending);
 			this._applyFrameUpdate();
 			this._emit("progress-change", pending);
@@ -670,20 +677,21 @@ export class AnimationController {
 				unhideElementOnReadd(state.node);
 			}
 
-			if (isForwardEntryTransition(transition)) {
+			if (isForwardEntryTransition(transition, this._backward)) {
 				this._applyEntryAnimation(elDef, state);
 			}
 
-			if (isReverseExitTransition(transition)) {
+			if (isReverseExitTransition(transition, this._backward)) {
 				this._applyExitAnimation({ ...elDef, exit: oppositeExitAnimation(elDef.enter ?? "fade-in") }, state);
 				continue;
 			}
 
-			if (isForwardExitTransition(transition)) {
+			if (isForwardExitTransition(transition, this._backward)) {
 				this._applyExitAnimation(elDef, state);
+				continue;
 			}
 
-			if (isReverseEntryTransition(transition)) {
+			if (isReverseEntryTransition(transition, this._backward)) {
 				state.isHidden = false;
 				unhideElementOnReadd(state.node);
 				this._applyEntryAnimation({ ...elDef, enter: oppositeEntryAnimation(elDef.exit ?? "fade-out") }, state);
@@ -712,11 +720,11 @@ export class AnimationController {
 				unhideElementOnReadd(state.node);
 			}
 
-			if (isForwardEntryTransition(transition)) {
+			if (isForwardEntryTransition(transition, this._backward)) {
 				this._applyConnectorEntryAnimation(connectorDef, state);
 			}
 
-			if (isReverseExitTransition(transition)) {
+			if (isReverseExitTransition(transition, this._backward)) {
 				this._applyConnectorExitAnimation(
 					{
 						...connectorDef,
@@ -727,11 +735,12 @@ export class AnimationController {
 				continue;
 			}
 
-			if (isForwardExitTransition(transition)) {
+			if (isForwardExitTransition(transition, this._backward)) {
 				this._applyConnectorExitAnimation(connectorDef, state);
+				continue;
 			}
 
-			if (isReverseEntryTransition(transition)) {
+			if (isReverseEntryTransition(transition, this._backward)) {
 				state.isHidden = false;
 				unhideElementOnReadd(state.node);
 				this._applyConnectorEntryAnimation(
@@ -876,7 +885,7 @@ export class AnimationController {
 			const easedT = easing(t);
 			const currentProgress = from + (to - from) * easedT;
 
-			this.setProgress(currentProgress);
+			this._setProgress(currentProgress);
 
 			if (t < 1) {
 				this._transitionAnim = requestAnimationFrame(step);
@@ -1055,20 +1064,32 @@ export class AnimationController {
 	}
 }
 
-function isForwardEntryTransition(transition: LifecycleTransition): boolean {
-	return transition.from === "removed" && transition.to === "entering";
+function isForwardEntryTransition(transition: LifecycleTransition, backward: boolean): boolean {
+	return (
+		!backward &&
+		(transition.from === "removed" || transition.from === "exiting") &&
+		(transition.to === "entering" || transition.to === "present")
+	);
 }
 
-function isForwardExitTransition(transition: LifecycleTransition): boolean {
-	return transition.to === "exiting";
+function isForwardExitTransition(transition: LifecycleTransition, backward: boolean): boolean {
+	return !backward && (transition.to === "exiting" || (transition.to === "removed" && transition.from !== "exiting"));
 }
 
-function isReverseExitTransition(transition: LifecycleTransition): boolean {
-	return transition.to === "removed" && transition.from !== "exiting";
+function isReverseExitTransition(transition: LifecycleTransition, backward: boolean): boolean {
+	return (
+		backward &&
+		(transition.to === "removed" || transition.to === "exiting") &&
+		(transition.from === "entering" || transition.from === "present")
+	);
 }
 
-function isReverseEntryTransition(transition: LifecycleTransition): boolean {
-	return transition.from === "exiting" && transition.to !== "removed";
+function isReverseEntryTransition(transition: LifecycleTransition, backward: boolean): boolean {
+	return (
+		backward &&
+		(transition.from === "exiting" || transition.from === "removed") &&
+		(transition.to === "present" || transition.to === "entering")
+	);
 }
 
 function oppositeExitAnimation(entry: EntryAnimation): ExitAnimation {

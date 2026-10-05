@@ -26,6 +26,7 @@ interface DragState {
 	mode: 'none' | 'move' | 'place';
 	id?: string;
 	startAt?: [number, number];
+	startGrid?: [number, number];
 	startClient?: { x: number; y: number };
 	hasMoved?: boolean;
 }
@@ -67,7 +68,7 @@ export function useCanvasPointer({
 
 	const onPointerDown = useCallback(
 		(e: React.PointerEvent) => {
-			if (!adapterRef.current) return;
+			if (!adapterRef.current || e.button !== 0) return;
 			const pt = getEventGrid(e);
 			if (!pt) return;
 
@@ -78,7 +79,8 @@ export function useCanvasPointer({
 					startAt: pt.snapped,
 					startClient: { x: e.clientX, y: e.clientY }
 				};
-				setGhostCell(pt.snapped);
+				e.currentTarget.setPointerCapture?.(e.pointerId);
+				setGhostCell(getDragCell(dragRef.current, pt.gridPoint, pt.snapped));
 				return;
 			}
 
@@ -121,6 +123,7 @@ export function useCanvasPointer({
 						mode: 'move',
 						id: hit.id,
 						startAt: obj.grid.at,
+						startGrid: pt.gridPoint,
 						startClient: { x: e.clientX, y: e.clientY },
 						hasMoved: false
 					};
@@ -130,7 +133,8 @@ export function useCanvasPointer({
 						connectionIds: [],
 						layerNames: []
 					});
-					setGhostCell(pt.snapped);
+					e.currentTarget.setPointerCapture?.(e.pointerId);
+					setGhostCell(obj.grid.at);
 					return;
 				}
 			}
@@ -165,7 +169,7 @@ export function useCanvasPointer({
 					dragRef.current = { ...dragRef.current, hasMoved: true };
 				}
 			}
-			setGhostCell(pt.snapped);
+			setGhostCell(getDragCell(dragRef.current, pt.gridPoint, pt.snapped));
 		},
 		[getEventGrid]
 	);
@@ -177,6 +181,7 @@ export function useCanvasPointer({
 			const drag = dragRef.current;
 			dragRef.current = { mode: 'none' };
 			setGhostCell(null);
+			e.currentTarget.releasePointerCapture?.(e.pointerId);
 			if (!pt) return;
 
 			if (drag.mode === 'place') {
@@ -195,12 +200,10 @@ export function useCanvasPointer({
 			}
 
 			if (drag.mode === 'move' && drag.id) {
+				const cell = getDragCell(drag, pt.gridPoint, pt.snapped);
 				if (!drag.hasMoved) return;
 				if (!drag.startAt) return;
-				if (
-					pt.snapped[0] === drag.startAt[0] &&
-					pt.snapped[1] === drag.startAt[1]
-				) {
+				if (cell[0] === drag.startAt[0] && cell[1] === drag.startAt[1]) {
 					return;
 				}
 				const sceneId = workspace.activeSceneId;
@@ -208,7 +211,7 @@ export function useCanvasPointer({
 				onCommand(
 					createObjectUpdateCommand(sceneId, {
 						id: drag.id,
-						at: pt.snapped
+						at: cell
 					})
 				);
 			}
@@ -222,5 +225,27 @@ export function useCanvasPointer({
 		]
 	);
 
-	return { ghostCell, onPointerDown, onPointerMove, onPointerUp };
+	const onPointerCancel = () => {
+		dragRef.current = { mode: 'none' };
+		setGhostCell(null);
+	};
+	return {
+		ghostCell,
+		onPointerDown,
+		onPointerMove,
+		onPointerUp,
+		onPointerCancel
+	};
+}
+
+function getDragCell(
+	drag: DragState,
+	point: [number, number],
+	snapped: [number, number]
+): [number, number] {
+	if (drag.mode !== 'move' || !drag.startAt || !drag.startGrid) return snapped;
+	return [
+		drag.startAt[0] + Math.round(point[0] - drag.startGrid[0]),
+		drag.startAt[1] + Math.round(point[1] - drag.startGrid[1])
+	];
 }

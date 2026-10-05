@@ -97,11 +97,13 @@ For each progress update:
 7. For elements or connectors removed at the destination stop, keep the previous
    placement until `t === 1`, then transition to `removed` after the exit
    lifecycle.
-8. A removed element frame must still carry valid authored geometry. Before the
-   first appearance, use the first non-removed element state. Between a removal
-   and a later re-add, use the next non-removed element state. After the final
-   removal, fall back to the previous non-removed state. Removed elements must
-   never fall back to `[0, 0]` or blank asset/layer metadata.
+8. A removed element or connector frame must still carry valid authored
+   geometry and lifecycle metadata. Before the first appearance, use the first
+   non-removed state. Between a removal and a later re-add, use the next
+   non-removed state. After the final removal, fall back to the previous
+   non-removed state. Removed elements must never fall back to `[0, 0]` or
+   blank asset/layer metadata; removed connectors retain their route and
+   authored entry/exit instead of falling back to an empty path.
 9. Apply discrete asset, activity, message, layer, style, endpoint, direction, and ambient changes at the
    destination stop.
 
@@ -121,6 +123,18 @@ opposite exit animation for the element's configured entry animation before
 hiding it. If progress moves backward from an `exiting` state into a visible
 state, the controller must play the opposite entry animation for the configured
 exit animation. This also applies when seeking exactly back to the first scene.
+
+Lifecycle resolution uses the direction of the rendered progress change, even
+when a seek skips the add or remove stop. Forward `removed -> present` changes
+must still run the authored entry; forward visible-to-removed changes must run
+the authored exit. Backward removed-to-visible changes run the inverse exit,
+and backward visible-to-removed changes run the inverse entry. Elements and
+connections share these rules. Skipping intermediate snapshots must not
+silently drop lifecycle effects or play an exit instead of an entry.
+
+Re-adding immediately after an exiting stop restarts the authored entry even
+if no removed frame was rendered. Initial entry cleanup may clear only its
+own animation; it must not clear a newer exit started by a fast seek.
 
 ## Entry Animations
 

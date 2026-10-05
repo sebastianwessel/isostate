@@ -53,6 +53,10 @@ time-based camera animation while scroll is the trigger source.
    and applies it to the root SVG. Forward and backward navigation use the same
    camera interpolation as scroll.
 
+An externally supplied progress or scroll update cancels pending scene
+navigation first. The most recent input owns progress; an older navigation RAF
+cannot move the timeline after a user begins scrubbing.
+
 ## Happy Path: Direct Camera Focus
 
 1. External code calls `zoomToElement(id)`, `zoomToArea(area)`, or
@@ -73,6 +77,8 @@ time-based camera animation while scroll is the trigger source.
 - `pause()` sets `paused = true`, cancels pending progress forwarding, calls `engine.pause()`, and emits `paused`.
 - `resume()` sets `paused = false`, calls `engine.resume()`, schedules one frame at current progress, and emits `resumed`.
 - While paused, `setProgress()` updates stored progress but does not forward to the engine until resume.
+- Pausing cancels an in-flight scene navigation transition. Resume applies the
+  current stored progress; it does not finish the canceled navigation.
 - Camera transitions continue while paused because camera focus is not animation
   engine progress and does not change ambient animation play state.
 

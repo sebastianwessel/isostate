@@ -1,7 +1,7 @@
 {
   "format": "isostate-static-bundle",
   "version": "0.6.0",
-  "generatedAt": "2026-10-05T13:34:48.630Z",
+  "generatedAt": "2026-10-05T14:22:06.787Z",
   "source": {
     "file": "examples/city-growth/source.isostate.yaml"
   },

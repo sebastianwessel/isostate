@@ -91,6 +91,13 @@ Later scene:
 Keep scene ids stable and descriptive. The order of `scenes` is the timeline;
 do not author progress values.
 
+Give a traveling request or document one stable element id. Move it with
+`update.elements[].at` as it passes through the process, and use `from`/`to`
+connections so routes follow moving endpoints. Review the positions between
+stops, forward and backward, before considering the storyboard complete.
+The overview demonstrates this with one request traveling through software
+architecture, asynchronous work, AI review, and human approval.
+
 ## Verify With The Diagnostics Overlay
 
 While iterating on a scene in the browser, attach the diagnostics overlay to

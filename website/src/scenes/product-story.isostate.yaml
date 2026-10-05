@@ -1,265 +1,381 @@
+# A request crosses architecture, background work, and human review.
+# Imported catalog sprites retain their checked anchors and native one-cell size.
 header:
   version: "1.0"
-  name: isostate-route-story
+  name: request-to-delivery
   className: product-story-surface
   theme: light
-  assetBaseUrl: ../../../assets/isostate-story
+  assetBaseUrl: ./assets/software-architecture
   assets:
-    - id: route-house-start
-      path: route-house-start-provided
-      anchor: [0.5, 1]
-    - id: route-house-end
-      path: route-house-end-provided
-      anchor: [0.5, 1]
-    - id: route-car
-      path: route-car-provided
-      anchor: [0.5, 1]
-    - id: route-tree
-      path: route-tree
-      anchor: [0.5, 1]
-    - id: route-building-1
-      path: route-building-1-provided
-      anchor: [0.5, 1]
-    - id: route-building-2
-      path: route-building-2-provided
-      anchor: [0.5, 1]
-    - id: route-building-3
-      path: route-building-3-provided
-      anchor: [0.5, 1]
-    - id: route-building-4
-      path: route-building-4-provided
-      anchor: [0.5, 1]
-  grid:
-    cellSize: 64
-  floor:
-    visible: true
-    layer: ground
+    - id: agentic-agents-sprites
+      type: sprite-sheet
+      path: agentic/agents-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        ai-reviewer:
+          rect: [ 443, 431, 444, 456 ]
+          anchor: [ 0.482, 0.8246 ]
+    - id: agentic-ai-to-human-handoff
+      type: sprite-sheet
+      path: agentic/ai-to-human-handoff.png
+      sheetSize: [ 1254, 1254 ]
+      sprites:
+        ai-to-human-handoff:
+          rect: [ 0, 0, 1254, 1254 ]
+          anchor: [ 0.5, 0.91 ]
+    - id: agentic-humans-sprites
+      type: sprite-sheet
+      path: agentic/humans-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        human-approver:
+          rect: [ 887, 0, 443, 435 ]
+          anchor: [ 0.4989, 0.9011 ]
+    - id: architecture-architecture-sprites
+      type: sprite-sheet
+      path: architecture/architecture-sprites.png
+      sheetSize: [ 1448, 1086 ]
+      sprites:
+        architecture-browser:
+          rect: [ 6, 0, 350, 350 ]
+          anchor: [ 0.524, 0.946 ]
+        architecture-api-gateway:
+          rect: [ 368, 0, 350, 350 ]
+          anchor: [ 0.669, 0.951 ]
+        architecture-service:
+          rect: [ 730, 0, 350, 350 ]
+          anchor: [ 0.507, 0.931 ]
+        architecture-database:
+          rect: [ 1092, 0, 350, 350 ]
+          anchor: [ 0.511, 0.909 ]
+        architecture-queue:
+          rect: [ 368, 355, 350, 350 ]
+          anchor: [ 0.634, 0.894 ]
+        architecture-worker:
+          rect: [ 730, 350, 350, 350 ]
+          anchor: [ 0.437, 0.949 ]
+    - id: workflow-workflow-process-sprites
+      type: sprite-sheet
+      path: workflow/workflow-process-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        workflow-end:
+          rect: [ 443, 0, 444, 443 ]
+          anchor: [ 0.5, 0.9 ]
+        process-document:
+          rect: [ 887, 443, 443, 444 ]
+          anchor: [ 0.5, 0.9 ]
+  grid: { cellSize: 96 }
+  floor: { visible: true, layer: ground }
   layers:
-    - name: ground
-    - name: streets
-    - name: buildings
-    - name: landscape
-    - name: vehicles
-    - name: route
-    - name: labels
-
+    - { name: ground }
+    - { name: flows }
+    - { name: systems }
+    - { name: payload }
+    - { name: labels }
 scenes:
-  - id: ground-only
-    elements: []
-    connections: []
-
-  - id: neighborhood-enters
+  - id: request-received
+    elements:
+      - id: browser
+        asset: architecture-browser
+        layer: systems
+        at: [ 1, 5 ]
+        size: 1
+        enter: rise-from-ground
+        activity: { state: processing, color: "#0f9f83" }
+      - id: request
+        asset: process-document
+        layer: payload
+        at: [ 1, 4 ]
+        size: 1
+        enter: slide-in-left
+      - id: browser-label
+        asset: text
+        layer: labels
+        at: [ 2, 6 ]
+        size: 1
+        enter: fade-in
+        text: { value: Browser, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+  - id: api-entry
     add:
       elements:
-        - id: tree-one
-          asset: route-tree
-          layer: landscape
-          at: [2, 3]
+        - id: gateway
+          asset: architecture-api-gateway
+          layer: systems
+          at: [ 3, 5 ]
+          size: 1
           enter: rise-from-ground
-        - id: tree-two
-          asset: route-tree
-          layer: landscape
-          at: [3, 2]
-          enter: rise-from-ground
-        - id: tree-three
-          asset: route-tree
-          layer: landscape
-          at: [4, 3]
-          enter: rise-from-ground
-        - id: tree-four
-          asset: route-tree
-          layer: landscape
-          at: [11, 2]
-          enter: rise-from-ground
-        - id: tree-five
-          asset: route-tree
-          layer: landscape
-          at: [12, 3]
-          enter: rise-from-ground
-        - id: start-yard
-          asset: rectangle
-          layer: ground
-          at: [1, 8]
-          size: 2
-          enter: fade-in-grow
-          primitive:
-            rectangle:
-              fill: "#78d9ba"
-              stroke: "#0f5f4f"
-              strokeWidth: 1
-              opacity: 0.16
-        - id: end-yard
-          asset: rectangle
-          layer: ground
-          at: [14, 5]
-          size: 2
-          enter: fade-in-grow
-          primitive:
-            rectangle:
-              fill: "#e7bd45"
-              stroke: "#9a741d"
-              strokeWidth: 1
-              opacity: 0.18
-        - id: start-house
-          asset: route-house-start
-          layer: buildings
-          at: [1, 9]
-          size: 2
-          enter: slide-in-left
-        - id: end-house
-          asset: route-house-end
-          layer: buildings
-          at: [15, 6]
-          size: 2
-          enter: slide-in-right
-        - id: market-house
-          asset: route-building-1
-          layer: buildings
-          at: [5, 5]
-          size: 2
-          enter: rise-from-ground
-        - id: corner-house
-          asset: route-building-2
-          layer: buildings
-          at: [8, 10]
-          size: 2
-          enter: rise-from-ground
-        - id: block-house
-          asset: route-building-3
-          layer: buildings
-          at: [10, 4]
-          size: 2
-          enter: rise-from-ground
-        - id: tower-house
-          asset: route-building-4
-          layer: buildings
-          at: [13, 9]
-          size: 2
-          enter: rise-from-ground
-      connections:
-        - id: main-road
-          route: [[3, 8], [14, 8]]
-          layer: streets
-          enter: fade-in
-          style:
-            variant: road
-            lane: center-dashed
-            stroke: "#3e4748"
-            strokeWidth: 20
-          start: none
-          end: none
-
-  - id: route-appears
-    add:
-      elements:
-        - id: start-label
+          activity: { state: processing, color: "#0f9f83" }
+        - id: gateway-label
           asset: text
           layer: labels
-          at: [3, 7]
+          at: [ 4, 6 ]
+          size: 1
           enter: fade-in
-          text:
-            value: Start
-            align: middle
-            fontSize: 14
-            fontWeight: 800
-            fill: "#0a2e24"
-        - id: end-label
-          asset: text
-          layer: labels
-          at: [14, 7]
-          enter: fade-in
-          text:
-            value: End
-            align: middle
-            fontSize: 14
-            fontWeight: 800
-            fill: "#0a2e24"
+          text: { value: API gateway, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
       connections:
-        - id: navigation-arrow
-          route: [[3, 7], [14, 7]]
-          layer: route
-          enter: slide-in-left
-          style:
-            pattern: dotted
-            stroke: "#2f80ed"
-            strokeWidth: 5
-            opacity: 0.55
-          start: dot
+        - id: browser-to-api
+          from: { element: browser }
+          to: { element: gateway }
+          routing: { mode: orthogonal, avoid: none }
+          layer: flows
+          enter: fade-in
+          style: { pattern: dotted, stroke: "#658e87", strokeWidth: 2.5, cornerRadius: 8 }
           end: arrow
-
-  - id: car-start
+          ambient:
+            - { name: flow }
+          message: { kind: orb, color: "#658e87", size: 6, duration: 2200, count: 1 }
+    update:
+      elements:
+        - id: request
+          at: [ 3, 4 ]
+        - id: browser
+          activity: { state: complete, color: "#0f9f83" }
+  - id: service-and-data
     add:
       elements:
-        - id: route-car
-          asset: route-car
-          layer: vehicles
-          at: [3, 8]
-          enter: slide-in-left
-    update:
-      connections:
-        - id: navigation-arrow
-          style:
-            pattern: dotted
-            stroke: "#2f80ed"
-            strokeWidth: 7
-            opacity: 1
-          ambient:
-            - name: flow
-
-  - id: car-center
-    update:
-      elements:
-        - id: route-car
-          at: [8, 8]
-          ambient:
-            - name: pulse
-      connections:
-        - id: navigation-arrow
-          style:
-            pattern: dotted
-            stroke: "#2f80ed"
-            strokeWidth: 7
-            opacity: 1
-          ambient:
-            - name: flow
-
-  - id: car-finish
-    update:
-      elements:
-        - id: route-car
-          at: [14, 8]
-          ambient:
-            - name: pulse
-      connections:
-        - id: navigation-arrow
-          style:
-            pattern: dotted
-            stroke: "#2f80ed"
-            strokeWidth: 7
-            opacity: 1
-          ambient:
-            - name: flow
-
-  - id: destination-reached
-    add:
-      elements:
-        - id: arrival-label
+        - id: service
+          asset: architecture-service
+          layer: systems
+          at: [ 5, 5 ]
+          size: 1
+          enter: rise-from-ground
+          activity: { state: processing, color: "#0f9f83" }
+        - id: database
+          asset: architecture-database
+          layer: systems
+          at: [ 7, 5 ]
+          size: 1
+          enter: rise-from-ground
+        - id: service-label
           asset: text
           layer: labels
-          at: [17, 12]
-          enter: rise-from-ground
-          text:
-            value: Arrived
-            align: end
-            fontSize: 24
-            fontWeight: 900
-            fill: "#2563eb"
-    update:
+          at: [ 6, 6 ]
+          size: 1
+          enter: fade-in
+          text: { value: Service, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+        - id: database-label
+          asset: text
+          layer: labels
+          at: [ 8, 6 ]
+          size: 1
+          enter: fade-in
+          text: { value: Database, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
       connections:
-        - id: navigation-arrow
-          style:
-            pattern: solid
-            stroke: "#2f80ed"
-            strokeWidth: 7
-            opacity: 1
-          ambient: []
+        - id: api-to-service
+          from: { element: gateway }
+          to: { element: service }
+          routing: { mode: orthogonal, avoid: none }
+          layer: flows
+          enter: fade-in
+          style: { pattern: dotted, stroke: "#658e87", strokeWidth: 2.5, cornerRadius: 8 }
+          end: arrow
+          ambient:
+            - { name: flow }
+          message: { kind: orb, color: "#658e87", size: 6, duration: 2200, count: 1 }
+        - id: service-to-data
+          from: { element: service }
+          to: { element: database }
+          routing: { mode: orthogonal, avoid: none }
+          layer: flows
+          enter: fade-in
+          style: { pattern: dotted, stroke: "#658e87", strokeWidth: 2.5, cornerRadius: 8 }
+          end: arrow
+          ambient:
+            - { name: flow }
+          message: { kind: orb, color: "#658e87", size: 6, duration: 2200, count: 1 }
+    update:
+      elements:
+        - id: request
+          at: [ 5, 4 ]
+        - id: gateway
+          activity: { state: complete, color: "#0f9f83" }
+  - id: background-work
+    add:
+      elements:
+        - id: queue
+          asset: architecture-queue
+          layer: systems
+          at: [ 3, 2 ]
+          size: 1
+          enter: rise-from-ground
+          activity: { state: processing, color: "#0f9f83" }
+        - id: worker
+          asset: architecture-worker
+          layer: systems
+          at: [ 5, 2 ]
+          size: 1
+          enter: rise-from-ground
+          activity: { state: processing, color: "#0f9f83" }
+        - id: queue-label
+          asset: text
+          layer: labels
+          at: [ 4, 3 ]
+          size: 1
+          enter: fade-in
+          text: { value: Queue, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+        - id: worker-label
+          asset: text
+          layer: labels
+          at: [ 6, 3 ]
+          size: 1
+          enter: fade-in
+          text: { value: Worker, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+      connections:
+        - id: service-to-queue
+          from: { element: service }
+          to: { element: queue }
+          routing: { mode: orthogonal, avoid: none }
+          layer: flows
+          enter: fade-in
+          style: { pattern: dotted, stroke: "#658e87", strokeWidth: 2.5, cornerRadius: 8 }
+          end: arrow
+          ambient:
+            - { name: flow }
+          message: { kind: orb, color: "#658e87", size: 6, duration: 2200, count: 1 }
+        - id: queue-to-worker
+          from: { element: queue }
+          to: { element: worker }
+          routing: { mode: orthogonal, avoid: none }
+          layer: flows
+          enter: fade-in
+          style: { pattern: dotted, stroke: "#658e87", strokeWidth: 2.5, cornerRadius: 8 }
+          end: arrow
+          ambient:
+            - { name: flow }
+          message: { kind: orb, color: "#658e87", size: 6, duration: 2200, count: 1 }
+    update:
+      elements:
+        - id: request
+          at: [ 5, 1 ]
+        - id: service
+          activity: { state: complete, color: "#0f9f83" }
+  - id: ai-review
+    add:
+      elements:
+        - id: reviewer
+          asset: ai-reviewer
+          layer: systems
+          at: [ 7, 2 ]
+          size: 1
+          enter: slide-in-right
+          activity: { state: processing, color: "#0f9f83" }
+        - id: reviewer-label
+          asset: text
+          layer: labels
+          at: [ 8, 3 ]
+          size: 1
+          enter: fade-in
+          text: { value: AI review, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+      connections:
+        - id: worker-to-reviewer
+          from: { element: worker }
+          to: { element: reviewer }
+          routing: { mode: orthogonal, avoid: none }
+          layer: flows
+          enter: fade-in
+          style: { pattern: dotted, stroke: "#658e87", strokeWidth: 2.5, cornerRadius: 8 }
+          end: arrow
+          ambient:
+            - { name: flow }
+          message: { kind: orb, color: "#658e87", size: 6, duration: 2200, count: 1 }
+    update:
+      elements:
+        - id: request
+          at: [ 7, 1 ]
+        - id: worker
+          activity: { state: complete, color: "#0f9f83" }
+        - id: queue
+          activity: { state: complete, color: "#0f9f83" }
+  - id: human-approval
+    add:
+      elements:
+        - id: approver
+          asset: human-approver
+          layer: systems
+          at: [ 9, 2 ]
+          size: 1
+          enter: rise-from-ground
+          activity: { state: waiting, color: "#c68927" }
+        - id: handoff
+          asset: ai-to-human-handoff
+          layer: systems
+          at: [ 9, 4 ]
+          size: 1
+          enter: fade-in-grow
+        - id: approver-label
+          asset: text
+          layer: labels
+          at: [ 10, 3 ]
+          size: 1
+          enter: fade-in
+          text: { value: Human approval, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+        - id: handoff-label
+          asset: text
+          layer: labels
+          at: [ 10, 5 ]
+          size: 1
+          enter: fade-in
+          text: { value: Review the result, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+      connections:
+        - id: review-to-approval
+          from: { element: reviewer }
+          to: { element: approver }
+          routing: { mode: orthogonal, avoid: none }
+          layer: flows
+          enter: fade-in
+          style: { pattern: dotted, stroke: "#c68927", strokeWidth: 2.5, cornerRadius: 8 }
+          end: arrow
+          ambient:
+            - { name: flow }
+          message: { kind: orb, color: "#c68927", size: 6, duration: 2200, count: 1 }
+    update:
+      elements:
+        - id: request
+          at: [ 9, 1 ]
+        - id: reviewer
+          activity: { state: complete, color: "#0f9f83" }
+  - id: result-delivered
+    add:
+      elements:
+        - id: result
+          asset: workflow-end
+          layer: systems
+          at: [ 1, 2 ]
+          size: 1
+          enter: fade-in-grow
+          activity: { state: complete, color: "#0f9f83" }
+        - id: result-label
+          asset: text
+          layer: labels
+          at: [ 2, 3 ]
+          size: 1
+          enter: fade-in
+          text: { value: Delivered, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+      connections:
+        - id: approval-to-result
+          from: { element: approver }
+          to: { element: result }
+          routing: { mode: orthogonal, avoid: none }
+          layer: flows
+          enter: fade-in
+          style: { pattern: dotted, stroke: "#418653", strokeWidth: 2.5, cornerRadius: 8 }
+          end: arrow
+          ambient:
+            - { name: flow }
+          message: { kind: orb, color: "#418653", size: 6, duration: 2200, count: 1 }
+    update:
+      elements:
+        - id: approver
+          activity: { state: complete, color: "#0f9f83" }
+        - id: browser
+          activity: { state: complete, color: "#0f9f83" }
+      connections:
+        - id: review-to-approval
+          style: { stroke: "#418653" }
+          message: { enabled: false }
+    remove:
+      elements:
+        - { id: request, exit: fade-out-shrink }
+        - { id: handoff, exit: fade-out-shrink }
+        - { id: handoff-label, exit: fade-out }

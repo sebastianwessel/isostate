@@ -109,6 +109,24 @@ after `mounted.destroy()`. Listener exceptions are not caught, matching
 [Interactive Elements](../examples/interactive-elements.md) and
 [Errors](./errors.md).
 
+## Timeline Navigation
+
+Mount with `controller: {}` for step controls, or supply a scroll container.
+
+```ts
+mounted.controller?.setSceneIndex(2); // animated travel to a scene stop
+mounted.controller?.nextScene();
+mounted.controller?.prevScene();
+mounted.controller?.setProgress(0.45); // exact scroll/slider seek
+```
+
+Step navigation uses `transitionDuration` (default `600` ms) and
+`transitionEasing` (default `ease-in-out`). An exact seek interrupts a pending
+navigation. Entry and exit effects retain their direction even when a seek
+skips intermediate stops. `pause()` cancels navigation and freezes ambient
+motion; `resume()` renders the stored progress. Use duration `0` for
+reduced-motion step controls.
+
 ## Camera Focus
 
 When a mounted scene has a controller, applications can focus the SVG camera on

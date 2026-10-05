@@ -185,6 +185,14 @@ Rules:
   edit, the editor destroys the previous mounted core runtime preview, compiles
   the updated document, mounts a fresh preview, then restores editor selection
   and viewport state. Incremental runtime patching is not part of v1.
+- Pan deltas use the inverse root SVG screen transform, including letterboxing;
+  panel width/height alone must not be used as the SVG scale. Toolbar zoom is
+  centered on the authoring view. Object dragging retains the grab offset,
+  captures its pointer, and commits only after the movement threshold and
+  pointer release. Pointer cancellation discards the drag. Canvas controls
+  must not initiate object selection or a pan.
+- Text labels use measured visible bounds for selection so their higher layer
+  does not intercept clicks on neighboring object artwork.
 
 ## Object And Layer Visibility
 
@@ -210,6 +218,13 @@ The editor has two preview modes:
   grid settings.
 - Runtime preview ignores editor-only visibility and overlays, uses authored
   `floor.visible`, and shows the scene as the runtime would render it.
+
+The scene progress slider enters runtime preview through the core controller,
+preserving lifecycle effects and authored camera interpolation. Editing
+viewport controls are hidden while the authored camera owns the viewBox.
+An explicit **Edit scene** action, topbar scene selection, or scene tree
+selection returns to an exact authored stop and restores editor zoom/pan.
+Timeline scrubbing never writes interpolated coordinates into YAML.
 
 ## Inspector
 

@@ -48,6 +48,11 @@ assets. The browser loads the compiled URL with an SVG `<image>` element.
 
 ## Sprite Sheets
 
+When styling the mounted scene, target its root SVG, for example
+`.scene-host > svg.iso-scene { width: 100%; height: 100%; }`. Avoid applying
+dimensions to every descendant `svg`: sprites use nested viewports to crop
+their sheet, and resizing those viewports can expose neighboring assets.
+
 Use sprite sheets when many assets share one image file. Sprite sheets are also
 the recommended path for generated PNG or WebP sprites.
 

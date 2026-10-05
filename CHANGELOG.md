@@ -2,6 +2,10 @@
 
 ## 0.6.0
 
+- Rebuild the overview around a moving request through software architecture, asynchronous processing, AI review, and human approval, with smooth step navigation, scroll scrubbing, pause, and reduced-motion controls.
+- Restore lifecycle transitions when timeline seeks skip scene stops; prioritize scrubbing over in-flight navigation and preserve runtime camera/effects in editor preview.
+- Fix editor pan scaling, centered zoom, object grab offsets, pointer capture/cancellation, and return-to-edit navigation after timeline scrubbing; synchronize the authoring docs and skill.
+
 - Add rounded dimensional beam connections, configurable glow, moving packet/orb/envelope messages, and element activity indicators with pause and reduced-motion support.
 - Support scene-step image/sprite swaps while preserving element identity and connections; expose workflow controls in the editor and make the agentic example the hosted editor default.
 - Upgrade agentic and provider examples with selective traffic and work states, add gallery motion controls, and distinguish human-to-human, human-to-AI, and AI-to-human handoffs.

@@ -364,6 +364,23 @@ describe('IsostateEditor', () => {
 		expect(
 			container.querySelector('.isostate-preview-label')?.textContent
 		).toBe('50%');
+		const edit = Array.from(container.querySelectorAll('button')).find(
+			(button) => button.textContent === 'Edit scene'
+		);
+		expect(edit).toBeTruthy();
+		edit?.click();
+		await tick();
+		expect(
+			container
+				.querySelector('.isostate-editor-canvas-view')
+				?.getAttribute('data-preview-mode')
+		).toBe('edit');
+		expect(
+			container.querySelector('[aria-label="Editor overlay"]')
+		).toBeTruthy();
+		expect(
+			container.querySelector('button[aria-label="Zoom in"]')
+		).toBeTruthy();
 
 		root.unmount();
 		container.remove();

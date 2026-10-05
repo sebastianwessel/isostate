@@ -287,7 +287,11 @@ function resolveConnectorFrameMap(bundle: RuntimeBundle, progress: number): Map<
 
 	for (const id of ids) {
 		const frame = interpolateConnector(id, pair.prevStop, pair.nextStop, pair.t);
-		result.set(id, frame);
+		const reference =
+			frame.lifecycle === "removed"
+				? findNearestGeometry(bundle.scenes, id, progress, (stop) => stop.connectors ?? [])
+				: undefined;
+		result.set(id, reference ? frameFromConnector(reference, "removed") : frame);
 	}
 
 	return result;
@@ -420,7 +424,7 @@ function withRemovedElementGeometry(
 	progress: number,
 ): ElementFrame {
 	if (frame.lifecycle !== "removed") return frame;
-	const reference = findNearestElementGeometry(stops, id, progress);
+	const reference = findNearestGeometry(stops, id, progress, (stop) => stop.elements ?? []);
 	if (!reference) return frame;
 	return {
 		...frame,
@@ -437,23 +441,22 @@ function withRemovedElementGeometry(
 	};
 }
 
-function findNearestElementGeometry(
+function findNearestGeometry<T extends { id: string; presence: LifecycleStatus }>(
 	stops: RuntimeBundle["scenes"],
 	id: string,
 	progress: number,
-): RuntimeElementState | undefined {
+	states: (stop: RuntimeBundle["scenes"][number]) => T[],
+): T | undefined {
 	const sorted = [...stops].sort((a, b) => a.progress - b.progress);
 	const next = sorted
 		.filter((stop) => stop.progress >= progress)
-		.flatMap((stop) => stop.elements ?? [])
+		.flatMap(states)
 		.find((element) => element.id === id && element.presence !== "removed");
 	if (next) return next;
 
 	for (let index = sorted.length - 1; index >= 0; index -= 1) {
 		if (sorted[index].progress > progress) continue;
-		const previous = (sorted[index].elements ?? []).find(
-			(element) => element.id === id && element.presence !== "removed",
-		);
+		const previous = states(sorted[index]).find((element) => element.id === id && element.presence !== "removed");
 		if (previous) return previous;
 	}
 	return undefined;

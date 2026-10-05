@@ -105,7 +105,7 @@ function renderSceneControls(
 		button.addEventListener('click', () => {
 			// Navigation resumes playback so a paused controller can render the selected stop.
 			mounted.controller?.resume();
-			mounted.controller?.setProgress(Number(button.dataset.progress));
+			mounted.controller?.setSceneIndex(index);
 			updateMotionControl(false);
 			controls.querySelectorAll('button').forEach((control) => {
 				control.setAttribute('aria-pressed', String(control === button));

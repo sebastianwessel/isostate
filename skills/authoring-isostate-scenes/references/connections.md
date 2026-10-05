@@ -92,12 +92,21 @@ Supported:
 Use scene deltas for animation. Do not write keyframes.
 
 - Move elements by updating `at`.
+- Keep the same id when an object travels through a process. Endpoint-based
+  routes follow its interpolated position; preview intermediate progress in
+  both directions, not only the scene snapshots.
 - Scale existing elements by updating `size`; `size: 0` is update-only.
 - Animate connection flow with `ambient: [{ name: flow }]`.
 - Use `enter`/`exit` for meaningful add/remove transitions.
 - Use scene `camera` metadata when the narrative should zoom to an element or
   grid area. Stops without camera metadata inherit the previous camera focus;
   use `target.reset: true` to return to the full compiled view.
+
+The host decides how readers navigate. `controller.setSceneIndex(index)`,
+`nextScene()`, and `prevScene()` animate between stops; `setProgress(progress)`
+is an exact seek for scroll and slider input and interrupts ongoing navigation.
+Use `transitionDuration: 0` for reduced-motion step navigation. Pause controls
+must pause the controller, including generated message and activity motion.
 
 ## Endpoint Removal Rule
 

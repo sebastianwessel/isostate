@@ -104,6 +104,27 @@ interface IsostateEditorProps {
   YAML so SVG assets and sprite sheets can coexist under one `assetBaseUrl`
   without broken URLs.
 
+## Canvas Navigation And Timeline
+
+In edit mode, drag an object to move it by whole cells. Drag empty canvas to
+pan, or use middle mouse, Alt/Meta-drag, or Space-drag. Ordinary wheel/trackpad
+gestures pan; Ctrl/Meta-wheel zooms. Toolbar zoom keeps the scene center fixed,
+and **Reset view** restores the authoring viewport. Selection and movement use
+the SVG's current transform, including zoom, pan, and empty space around the
+scene. A click selects without moving; a drag retains the point where you
+grabbed the object and commits on release. Pointer cancellation discards the
+transient move.
+
+Text labels use their visible bounds for hit testing, so a nearby label does
+not cover another object's artwork with an invisible one-cell hit area.
+
+The **Scene progress** slider enters runtime preview. It interpolates object
+positions, routes, and authored cameras and plays entry/exit effects in either
+direction. Runtime preview hides editing overlays and viewport controls, and
+ignores editor-only layer visibility. Click **Edit scene**, or select a scene
+in the topbar or scene tree, to return to an exact authored stop and restore
+your authoring zoom/pan. Scrubbing does not write fractional positions to YAML.
+
 ## Text Editing
 
 When a selected element uses `asset: text`, the inspector exposes content,

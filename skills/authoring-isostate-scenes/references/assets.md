@@ -3,6 +3,12 @@
 Use this when defining `header.assets`, SVG asset paths, sprite sheets, anchors,
 floors, labels, and generated primitive underlays.
 
+Scope host width/height and filter styles to the root scene SVG, for example
+`.scene-host > svg.iso-scene`. Sprite assets contain nested SVG viewports whose
+native dimensions and clipping must remain intact; a broad `.scene-host svg`
+rule can resize them and reveal neighboring sprites. Verify a rendered crop
+in the browser, not only its manifest rectangle.
+
 ## Asset Catalog
 
 ```yaml

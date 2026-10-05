@@ -2,7 +2,6 @@ import { mountScene, resolveTheme } from '@sebastianwessel/isostate';
 import { compileScene } from '@sebastianwessel/isostate/dsl/browser';
 import type { EditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
 import { createEditorRuntimeAdapter } from '@sebastianwessel/isostate/editor-support';
-import { Grid2X2, Minus, Plus, RotateCcw } from 'lucide-react';
 import type { CSSProperties } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createAssetPlacementCommand } from '../assets.ts';
@@ -12,17 +11,11 @@ import type {
 	EditorSelection,
 	EditorWorkspace
 } from '../types.ts';
-import { Button } from '../ui/button.tsx';
-import { Slider } from '../ui/slider.tsx';
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger
-} from '../ui/tooltip.tsx';
+import { CanvasControls } from './CanvasControls.tsx';
 import { createPlacedElement } from './elementFactory.ts';
 import type { EditorGridBounds } from './gridSnapping.ts';
 import { snapGridCell } from './gridSnapping.ts';
+import { parseManifestDrop } from './manifestDrop.ts';
 import { SelectionOverlay } from './SelectionOverlay.tsx';
 import { useCanvasPointer } from './useCanvasPointer.ts';
 
@@ -81,47 +74,6 @@ function getEditorGridBounds(
 	};
 }
 
-function setAdapterProgress(
-	adapter: EditorRuntimeAdapter,
-	progress: number
-): void {
-	const progressAdapter = adapter as EditorRuntimeAdapter & {
-		setProgress?: (progress: number) => void;
-	};
-	if (typeof progressAdapter.setProgress === 'function') {
-		progressAdapter.setProgress(progress);
-		return;
-	}
-	adapter.mounted.engine.setProgress(progress);
-}
-
-function parseManifestDrop(dataTransfer: DataTransfer):
-	| {
-			entry: import('../types.ts').PlaceableAssetManifestEntry;
-			assetBaseUrl: string;
-	  }
-	| undefined {
-	const raw = dataTransfer.getData('application/x-isostate-manifest-asset');
-	if (!raw) return undefined;
-	try {
-		const parsed = JSON.parse(raw) as {
-			entry?: import('../types.ts').PlaceableAssetManifestEntry;
-			assetBaseUrl?: string;
-		};
-		if (
-			parsed.entry &&
-			typeof parsed.entry.id === 'string' &&
-			typeof parsed.entry.path === 'string' &&
-			typeof parsed.assetBaseUrl === 'string'
-		) {
-			return { entry: parsed.entry, assetBaseUrl: parsed.assetBaseUrl };
-		}
-	} catch {
-		return undefined;
-	}
-	return undefined;
-}
-
 export function CanvasView({
 	workspace,
 	onCommand,
@@ -135,9 +87,11 @@ export function CanvasView({
 	const containerRef = useRef<HTMLDivElement>(null);
 	const [adapter, setAdapter] = useState<EditorRuntimeAdapter | null>(null);
 	const [isPanning, setIsPanning] = useState(false);
+	const spaceHeldRef = useRef(false);
 	const panRef = useRef<{
 		startClient: { x: number; y: number };
 		startPan: { x: number; y: number };
+		scale: { x: number; y: number };
 	} | null>(null);
 	const adapterRef = useRef(adapter);
 	adapterRef.current = adapter;
@@ -150,11 +104,13 @@ export function CanvasView({
 	);
 	const previewDocument = useMemo(
 		() =>
-			createEditorPreviewDocument(
-				workspace.document,
-				workspace.viewport.showFloor
-			),
-		[workspace.document, workspace.viewport.showFloor]
+			isRuntimePreview
+				? workspace.document
+				: createEditorPreviewDocument(
+						workspace.document,
+						workspace.viewport.showFloor
+					),
+		[workspace.document, workspace.viewport.showFloor, isRuntimePreview]
 	);
 	const gridBounds = useMemo(
 		() => getEditorGridBounds(workspace.document),
@@ -172,20 +128,22 @@ export function CanvasView({
 		try {
 			const bundle = compileScene(previewDocument);
 			mounted = mountScene(container, bundle, {
-				controller: false,
+				controller: isRuntimePreview ? { transitionDuration: 0 } : false,
 				themeVars
 			});
 			adpt = createEditorRuntimeAdapter(mounted);
 			if (isRuntimePreview) {
-				setAdapterProgress(adpt, previewProgress);
+				adpt.setProgress(previewProgress);
 			} else if (workspace.activeSceneId) {
 				adpt.setActiveScene(workspace.activeSceneId);
 			}
+			adapterRef.current = adpt;
 			setAdapter(adpt);
 		} catch {
 			setAdapter(null);
 		}
 		return () => {
+			adapterRef.current = null;
 			adpt?.destroy();
 			mounted?.destroy();
 			setAdapter(null);
@@ -193,31 +151,48 @@ export function CanvasView({
 	}, [previewDocument, workspace.sourceYaml, themeVars]);
 
 	useEffect(() => {
-		if (!adapter || isRuntimePreview || !workspace.activeSceneId) return;
+		if (
+			!adapter ||
+			adapter !== adapterRef.current ||
+			isRuntimePreview ||
+			!workspace.activeSceneId
+		)
+			return;
 		adapter.setActiveScene(workspace.activeSceneId);
 	}, [adapter, isRuntimePreview, workspace.activeSceneId]);
 
 	useEffect(() => {
-		if (!adapter || !isRuntimePreview) return;
-		setAdapterProgress(adapter, previewProgress);
+		if (!adapter || adapter !== adapterRef.current || !isRuntimePreview) return;
+		adapter.setProgress(previewProgress);
 	}, [adapter, isRuntimePreview, previewProgress]);
 
-	const { ghostCell, onPointerDown, onPointerMove, onPointerUp } =
-		useCanvasPointer({
-			adapterRef,
-			workspace,
-			onCommand,
-			onSelect,
-			onClearDragPayload,
-			gridBounds
-		});
+	const {
+		ghostCell,
+		onPointerDown,
+		onPointerMove,
+		onPointerUp,
+		onPointerCancel
+	} = useCanvasPointer({
+		adapterRef,
+		workspace,
+		onCommand,
+		onSelect,
+		onClearDragPayload,
+		gridBounds
+	});
 
 	const baseViewBox = adapter?.getResolvedViewBox();
 	const zoom = workspace.viewport.zoom || 1;
 	const vb = baseViewBox
 		? {
-				minX: baseViewBox.minX + workspace.viewport.pan.x,
-				minY: baseViewBox.minY + workspace.viewport.pan.y,
+				minX:
+					baseViewBox.minX +
+					(baseViewBox.width - baseViewBox.width / zoom) / 2 +
+					workspace.viewport.pan.x,
+				minY:
+					baseViewBox.minY +
+					(baseViewBox.height - baseViewBox.height / zoom) / 2 +
+					workspace.viewport.pan.y,
 				width: baseViewBox.width / zoom,
 				height: baseViewBox.height / zoom
 			}
@@ -227,9 +202,9 @@ export function CanvasView({
 		: undefined;
 
 	useEffect(() => {
-		if (!adapter?.mounted.svg || !viewBoxStr) return;
+		if (!adapter?.mounted.svg || !viewBoxStr || isRuntimePreview) return;
 		adapter.mounted.svg.setAttribute('viewBox', viewBoxStr);
-	}, [adapter, viewBoxStr]);
+	}, [adapter, viewBoxStr, isRuntimePreview]);
 
 	useEffect(() => {
 		const svg = adapter?.mounted.svg;
@@ -237,14 +212,16 @@ export function CanvasView({
 		for (const node of svg.querySelectorAll<SVGElement>('[data-layer]')) {
 			node.style.display = '';
 		}
-		for (const layerName of workspace.uiState.hiddenLayers ?? []) {
+		for (const layerName of isRuntimePreview
+			? []
+			: (workspace.uiState.hiddenLayers ?? [])) {
 			for (const node of svg.querySelectorAll<SVGElement>(
 				`[data-layer="${escapeCssAttribute(layerName)}"]`
 			)) {
 				node.style.display = 'none';
 			}
 		}
-	}, [adapter, workspace.uiState.hiddenLayers]);
+	}, [adapter, workspace.uiState.hiddenLayers, isRuntimePreview]);
 
 	const updateViewport = useCallback(
 		(patch: Partial<EditorWorkspace['viewport']>) => {
@@ -263,6 +240,44 @@ export function CanvasView({
 		});
 	};
 
+	useEffect(() => {
+		const container = containerRef.current;
+		if (!container || isRuntimePreview) return;
+		const onWheel = (event: WheelEvent) => {
+			if (
+				event.target instanceof Element &&
+				event.target.closest('.isostate-canvas-controls')
+			)
+				return;
+			event.preventDefault();
+			if (event.ctrlKey || event.metaKey) {
+				updateViewport({
+					zoom: Math.min(
+						4,
+						Math.max(0.35, zoom * Math.exp(-event.deltaY * 0.01))
+					)
+				});
+			} else if (adapterRef.current) {
+				const origin = adapterRef.current.clientPointToSvgPoint({
+					clientX: 0,
+					clientY: 0
+				});
+				const offset = adapterRef.current.clientPointToSvgPoint({
+					clientX: event.deltaX,
+					clientY: event.deltaY
+				});
+				updateViewport({
+					pan: {
+						x: workspace.viewport.pan.x + offset.x - origin.x,
+						y: workspace.viewport.pan.y + offset.y - origin.y
+					}
+				});
+			}
+		};
+		container.addEventListener('wheel', onWheel, { passive: false });
+		return () => container.removeEventListener('wheel', onWheel);
+	}, [isRuntimePreview, updateViewport, workspace.viewport.pan, zoom]);
+
 	const resetView = () => {
 		updateViewport({ zoom: 1, pan: { x: 0, y: 0 } });
 	};
@@ -280,7 +295,19 @@ export function CanvasView({
 		event.target.closest('.isostate-canvas-controls');
 
 	const startPan = (event: React.PointerEvent) => {
+		const current = adapterRef.current;
+		if (!current) return;
+		const origin = current.clientPointToSvgPoint({
+			clientX: event.clientX,
+			clientY: event.clientY
+		});
+		const unit = current.clientPointToSvgPoint({
+			clientX: event.clientX + 1,
+			clientY: event.clientY + 1
+		});
+		event.preventDefault();
 		panRef.current = {
+			scale: { x: unit.x - origin.x, y: unit.y - origin.y },
 			startClient: { x: event.clientX, y: event.clientY },
 			startPan: workspace.viewport.pan
 		};
@@ -294,8 +321,14 @@ export function CanvasView({
 
 	const shouldStartPan = (event: React.PointerEvent) => {
 		if (!adapterRef.current || !baseViewBox) return false;
-		if (event.button === 1 || event.altKey || event.metaKey) return true;
-		if (event.button !== 0 || zoom <= 1) return false;
+		if (
+			event.button === 1 ||
+			event.altKey ||
+			event.metaKey ||
+			spaceHeldRef.current
+		)
+			return true;
+		if (event.button !== 0) return false;
 		if (workspace.editState.dragPayload?.kind === 'asset') return false;
 		try {
 			const svgPoint = adapterRef.current.clientPointToSvgPoint({
@@ -303,7 +336,7 @@ export function CanvasView({
 				clientY: event.clientY
 			});
 			return !adapterRef.current.getObjectAtPoint(svgPoint, {
-				kinds: ['element']
+				kinds: ['element', 'connection']
 			});
 		} catch {
 			return false;
@@ -320,10 +353,25 @@ export function CanvasView({
 					'--isostate-editor-grid-opacity': String(effectiveGridOpacity)
 				} as CSSProperties
 			}
+			// biome-ignore lint/a11y/noNoninteractiveTabindex: The interactive SVG canvas supports keyboard panning.
+			tabIndex={0}
+			onKeyDown={(event) => {
+				if (event.code === 'Space' && event.target === event.currentTarget) {
+					event.preventDefault();
+					spaceHeldRef.current = true;
+				}
+			}}
+			onKeyUp={(event) => {
+				if (event.code === 'Space') spaceHeldRef.current = false;
+			}}
+			onBlur={() => {
+				spaceHeldRef.current = false;
+			}}
 			role="application"
 			aria-label="Scene canvas"
 			onPointerDown={(e) => {
 				if (isCanvasControlEvent(e)) return;
+				e.currentTarget.focus({ preventScroll: true });
 				if (isRuntimePreview) return;
 				if (shouldStartPan(e)) {
 					startPan(e);
@@ -335,14 +383,8 @@ export function CanvasView({
 				if (isRuntimePreview) return;
 				const pan = panRef.current;
 				if (pan && baseViewBox) {
-					const rect = e.currentTarget.getBoundingClientRect();
-					if (rect.width === 0 || rect.height === 0) return;
-					const dx =
-						((pan.startClient.x - e.clientX) / rect.width) *
-						(baseViewBox.width / zoom);
-					const dy =
-						((pan.startClient.y - e.clientY) / rect.height) *
-						(baseViewBox.height / zoom);
+					const dx = (pan.startClient.x - e.clientX) * pan.scale.x;
+					const dy = (pan.startClient.y - e.clientY) * pan.scale.y;
 					updateViewport({
 						pan: {
 							x: pan.startPan.x + dx,
@@ -367,10 +409,10 @@ export function CanvasView({
 				}
 				onPointerUp(e);
 			}}
-			onWheel={(e) => {
-				if (!e.ctrlKey && !e.metaKey) return;
-				e.preventDefault();
-				zoomBy(e.deltaY > 0 ? 0.9 : 1.1);
+			onPointerCancel={() => {
+				panRef.current = null;
+				setIsPanning(false);
+				onPointerCancel();
 			}}
 			onDragOver={(e) => {
 				if (isRuntimePreview) return;
@@ -421,87 +463,15 @@ export function CanvasView({
 				}
 			}}
 		>
-			<div
-				className="isostate-canvas-controls"
-				role="toolbar"
-				aria-label="Canvas controls"
-			>
-				<TooltipProvider>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								type="button"
-								variant="secondary"
-								size="icon-sm"
-								onClick={() => zoomBy(1.15)}
-								aria-label="Zoom in"
-							>
-								<Plus aria-hidden="true" />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>Zoom in</TooltipContent>
-					</Tooltip>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								type="button"
-								variant="secondary"
-								size="icon-sm"
-								onClick={() => zoomBy(0.85)}
-								aria-label="Zoom out"
-							>
-								<Minus aria-hidden="true" />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>Zoom out</TooltipContent>
-					</Tooltip>
-					<Tooltip>
-						<TooltipTrigger asChild>
-							<Button
-								type="button"
-								variant="secondary"
-								size="icon-sm"
-								onClick={resetView}
-								aria-label="Reset view"
-							>
-								<RotateCcw aria-hidden="true" />
-							</Button>
-						</TooltipTrigger>
-						<TooltipContent>Reset view</TooltipContent>
-					</Tooltip>
-				</TooltipProvider>
-				<span className="isostate-canvas-zoom">{Math.round(zoom * 100)}%</span>
-				<div className="isostate-grid-opacity-control">
-					<Grid2X2 aria-hidden="true" />
-					<input
-						type="range"
-						className="isostate-grid-opacity isostate-grid-opacity-native"
-						min="0"
-						max="1"
-						step="0.01"
-						value={gridOpacity}
-						onInput={(event) =>
-							updateGridOpacity(Number(event.currentTarget.value))
-						}
-						onPointerUp={(event) =>
-							updateGridOpacity(Number(event.currentTarget.value))
-						}
-						onKeyUp={(event) =>
-							updateGridOpacity(Number(event.currentTarget.value))
-						}
-						aria-label="Grid opacity"
-					/>
-					<Slider
-						className="isostate-grid-opacity-slider"
-						min={0}
-						max={1}
-						step={0.01}
-						value={[gridOpacity]}
-						onValueChange={([value]) => updateGridOpacity(value ?? gridOpacity)}
-						aria-label="Grid opacity"
-					/>
-				</div>
-			</div>
+			{!isRuntimePreview && (
+				<CanvasControls
+					zoom={zoom}
+					gridOpacity={gridOpacity}
+					zoomBy={zoomBy}
+					resetView={resetView}
+					updateGridOpacity={updateGridOpacity}
+				/>
+			)}
 			{adapter && vb && viewBoxStr && !isRuntimePreview && (
 				<svg
 					aria-label="Editor overlay"

@@ -754,10 +754,11 @@ function createElementInstance(
 	if (entryAnim && entryAnim !== "none" && def.presence !== "removed") {
 		const keyName = `iso-anim-${entryAnim}`;
 		animateElement(node, keyName, "enter");
+		const expectedAnimation = node.style.animation;
 		node.addEventListener(
 			"animationend",
 			() => {
-				node.style.animation = "";
+				if (node.style.animation === expectedAnimation) node.style.animation = "";
 			},
 			{ once: true },
 		);
@@ -844,10 +845,11 @@ function createConnectorInstance(def: RuntimeConnectorState, layout: ResolvedLay
 	const entryAnim = def.enter;
 	if (entryAnim && entryAnim !== "none" && def.presence !== "removed") {
 		animateElement(node, `iso-anim-${entryAnim}`, "enter");
+		const expectedAnimation = node.style.animation;
 		node.addEventListener(
 			"animationend",
 			() => {
-				node.style.animation = "";
+				if (node.style.animation === expectedAnimation) node.style.animation = "";
 			},
 			{ once: true },
 		);

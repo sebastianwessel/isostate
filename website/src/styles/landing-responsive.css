@@ -1,0 +1,165 @@
+@keyframes hero-zoom {
+	from {
+		transform: scale(1.035) translate3d(0, 0, 0);
+	}
+	to {
+		transform: scale(1.105) translate3d(-1.4%, -1.2%, 0);
+	}
+}
+
+.landing {
+	/* ── ANIMATIONS ──────────────────────────────────────── */
+	/* ── RESPONSIVE ──────────────────────────────────────── */
+	@media (max-width: 1100px) {
+		.use-cases-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 940px) {
+		.hero {
+			min-height: auto;
+			padding-top: 96px;
+			padding-bottom: 76px;
+		}
+
+		.hero::before {
+			background:
+				linear-gradient(
+					180deg,
+					rgba(5, 18, 15, 0.55) 0%,
+					rgba(5, 18, 15, 0.82) 38%,
+					rgba(5, 18, 15, 0.93) 100%
+				),
+				linear-gradient(90deg, rgba(5, 18, 15, 0.78), rgba(5, 18, 15, 0.3));
+		}
+
+		.hero-photo {
+			object-position: 64% 46%;
+		}
+
+		.story-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.visual-sticky {
+			position: relative;
+			top: auto;
+		}
+
+		.chapter {
+			min-height: auto;
+		}
+
+		.steps {
+			grid-template-columns: 1fr;
+			gap: 0;
+		}
+
+		.step-arrow {
+			display: none;
+		}
+
+		.editor-section {
+			grid-template-columns: 1fr;
+		}
+
+		.editor-shot {
+			transform: none;
+		}
+
+		.features-grid {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.hero {
+			padding-inline: 20px;
+		}
+
+		h1 {
+			font-size: clamp(2.8rem, 13vw, 4rem);
+		}
+
+		.how-section {
+			padding-inline: 20px;
+		}
+
+		.story-grid {
+			padding-inline: 16px;
+		}
+
+		.use-cases-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.chapter {
+			padding: 18px 16px;
+		}
+	}
+}
+.landing {
+	@media (max-width: 940px) {
+		.story-grid {
+			gap: 28px;
+		}
+		.visual-col {
+			position: sticky;
+			top: 66px;
+			z-index: 5;
+			padding: 14px 0;
+			background: var(--paper);
+			border-bottom: 1px solid #cad5c5;
+		}
+		.visual-meta {
+			margin-bottom: 10px;
+			align-items: center;
+		}
+		.visual-meta-text strong {
+			font-size: 1.05rem;
+		}
+		.visual-label {
+			display: none;
+		}
+		.scene-frame {
+			min-height: clamp(220px, 34svh, 330px);
+			margin-bottom: 10px;
+		}
+		.story-toolbar {
+			margin-top: 10px;
+		}
+		.story-hint,
+		.story-legend {
+			display: none;
+		}
+		.chapter {
+			min-height: 70svh;
+			scroll-margin-top: 420px;
+		}
+	}
+	@media (max-width: 640px) {
+		.story-controls button {
+			font-size: 0.57rem;
+			padding-block: 8px;
+			gap: 3px;
+		}
+		.story-toolbar button {
+			padding: 6px 8px;
+			font-size: 0.63rem;
+		}
+		.scene-frame {
+			min-height: clamp(190px, 28svh, 270px);
+		}
+		.chapter-code pre {
+			font-size: 0.7rem;
+		}
+	}
+}
+.landing {
+	@media (max-width: 900px) {
+		.visual-col {
+			top: 104px;
+		}
+	}
+}

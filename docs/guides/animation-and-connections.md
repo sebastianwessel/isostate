@@ -160,20 +160,37 @@ Use scroll control for long-form docs and manual control for presentations.
 ```ts
 const mounted = mountScene(target, bundle, {
   controller: {
-    enabled: true,
-    mode: 'scroll',
     container: document.documentElement
   }
 });
 ```
 
-Manual mode lets your app drive progress:
+For presentation controls, mount with `controller: {}` and let your app drive
+the timeline. Use scene navigation for animated travel and `setProgress` for
+an exact slider or scroll position:
 
 ```ts
 mounted.controller?.setProgress(0.5);
-mounted.controller?.next();
-mounted.controller?.previous();
+mounted.controller?.setSceneIndex(2);
+mounted.controller?.nextScene();
+mounted.controller?.prevScene();
 ```
+
+Scene navigation interpolates over `transitionDuration` (default `600` ms)
+using `transitionEasing` (default `ease-in-out`). Direct progress updates
+interrupt navigation so a scrubber follows the pointer immediately. Use
+`transitionDuration: 0` for immediate navigation, including reduced-motion
+presentations. Pause and resume controls also freeze ongoing ambient motion.
+
+Keep an element's id stable and update its `at` across stops to show it moving.
+Replacing a scene with unrelated ids shows entry/exit effects but cannot show
+one object traveling. The overview follows the same request through client,
+API, storage, worker, AI review, and human approval; its scene buttons travel
+between stops while scrolling continuously scrubs the story.
+
+The overview's **Pause effects** control freezes ongoing messages, status, and
+ambient effects while its reader-directed navigation and entry/exit effects
+remain available.
 
 ## Review Checklist
 

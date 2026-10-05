@@ -58,6 +58,12 @@ Use this skill when creating or reviewing isostate scene definitions and example
    `.isostate.yaml` changes, regenerate its `.isostate.js`/`.isostate.json`
    output in the same change. If the example is meant for static website
    deployment, verify `isostate bundle` output as well.
+   Review movement between stops as well as the final snapshots: retain an
+   element id and update its `at` to animate travel. Use the controller's
+   `setSceneIndex`, `nextScene`, and `prevScene` for animated step buttons;
+   use `setProgress` for exact scroll or slider scrubbing. These are host APIs,
+   not scene YAML fields. In the editor, use **Edit scene** after scrubbing to
+   return to whole-cell authoring before moving objects.
 9. Run available checks after edits:
    ```bash
    bun test tests/nfr/docs-paths.test.ts tests/nfr/assets-manifest.test.ts
@@ -94,7 +100,7 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not put parser, validator, compiler, YAML parsing, or routing packages in browser runtime code.
 - Do not treat static bundle output as source. Author YAML first, then generate
   `scene.isostate.js`, copied assets, `isostate.runtime.js`, and
-  `manifest.json` with the CLI.
+   `manifest.json` with the CLI.
 - Do not add `theme: light` or `header.className` only for light/dark mode.
   Use semantic CSS variables in YAML and let host CSS define defaults plus
   shadcn-compatible `.dark` overrides; target the built-in `.iso-scene` class

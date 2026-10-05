@@ -359,6 +359,19 @@ export function IsostateEditor(props: IsostateEditorProps) {
 					}
 					aria-label="Scene progress"
 				/>
+				{workspace.uiState.previewMode === 'runtime' && (
+					<Button
+						type="button"
+						variant="secondary"
+						size="sm"
+						onClick={() =>
+							workspace.activeSceneId &&
+							setActiveSceneId(workspace.activeSceneId)
+						}
+					>
+						Edit scene
+					</Button>
+				)}
 				<span className="isostate-preview-label">
 					{workspace.uiState.previewMode === 'runtime'
 						? `${previewPercent}%`

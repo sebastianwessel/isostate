@@ -75,6 +75,17 @@ In split mode, visual edits update YAML after commit and YAML edits update the
 canvas after parse. If YAML becomes invalid, the canvas side becomes read-only
 and keeps the last valid scene preview.
 
+## Timeline Preview And Return To Editing
+
+1. Moving **Scene progress** enters runtime preview without changing YAML.
+2. The mounted controller resolves movement, route interpolation, lifecycle
+   effects, and camera focus for the selected progress.
+3. Editing overlays, authoring viewport controls, and editor visibility
+   overrides are suspended during runtime preview.
+4. **Edit scene** or a scene selection restores the exact authored scene stop,
+   selection, zoom, and pan. A subsequent object drag writes whole-cell
+   coordinates to that scene's snapshot or minimal delta.
+
 ## Cleanup
 
 - Closing the editor calls `destroy()` on the mounted editor.
