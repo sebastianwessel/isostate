@@ -1,9 +1,1586 @@
 {
   "format": "isostate.asset-manifest",
   "version": 1,
-  "generatedAt": "2026-10-04T20:57:41.891Z",
+  "generatedAt": "2026-10-05T12:41:31.553Z",
   "assetBaseUrl": "./",
   "assets": [
+    {
+      "id": "agentic-agents-sprites",
+      "path": "agentic/agents-sprites.png",
+      "group": "agentic",
+      "name": "agents-sprites",
+      "digest": "sha256:8dcd561a92363eeef73467875937439dddf2549b4493e72198ec93fef7cb1cb6",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "ai-agent": {
+          "rect": [
+            0,
+            0,
+            443,
+            443
+          ],
+          "anchor": [
+            0.456,
+            0.8916
+          ],
+          "label": "AI agent",
+          "tags": [
+            "ai",
+            "agent",
+            "automation"
+          ]
+        },
+        "ai-orchestrator": {
+          "rect": [
+            443,
+            0,
+            444,
+            431
+          ],
+          "anchor": [
+            0.5,
+            0.7633
+          ],
+          "label": "Agent orchestrator",
+          "tags": [
+            "ai",
+            "agent",
+            "automation",
+            "orchestrator"
+          ]
+        },
+        "ai-planner": {
+          "rect": [
+            887,
+            0,
+            443,
+            444
+          ],
+          "anchor": [
+            0.474,
+            0.8626
+          ],
+          "label": "Planning agent",
+          "tags": [
+            "ai",
+            "agent",
+            "automation",
+            "planner"
+          ]
+        },
+        "ai-researcher": {
+          "rect": [
+            1330,
+            0,
+            444,
+            443
+          ],
+          "anchor": [
+            0.5068,
+            0.833
+          ],
+          "label": "Research agent",
+          "tags": [
+            "ai",
+            "agent",
+            "automation",
+            "researcher"
+          ]
+        },
+        "ai-tool-runner": {
+          "rect": [
+            0,
+            443,
+            443,
+            444
+          ],
+          "anchor": [
+            0.4289,
+            0.8378
+          ],
+          "label": "Tool runner",
+          "tags": [
+            "ai",
+            "agent",
+            "automation",
+            "tool-runner"
+          ]
+        },
+        "ai-reviewer": {
+          "rect": [
+            443,
+            431,
+            444,
+            456
+          ],
+          "anchor": [
+            0.482,
+            0.8246
+          ],
+          "label": "Review agent",
+          "tags": [
+            "ai",
+            "agent",
+            "automation",
+            "reviewer"
+          ]
+        },
+        "ai-memory": {
+          "rect": [
+            887,
+            444,
+            443,
+            443
+          ],
+          "anchor": [
+            0.5102,
+            0.842
+          ],
+          "label": "Agent memory",
+          "tags": [
+            "ai",
+            "agent",
+            "automation",
+            "memory"
+          ]
+        },
+        "ai-knowledge": {
+          "rect": [
+            1330,
+            443,
+            444,
+            444
+          ],
+          "anchor": [
+            0.5135,
+            0.8086
+          ],
+          "label": "Knowledge library",
+          "tags": [
+            "ai",
+            "agent",
+            "automation",
+            "knowledge"
+          ]
+        }
+      },
+      "label": "Agents",
+      "tags": [
+        "agentic",
+        "workflow",
+        "agents"
+      ]
+    },
+    {
+      "id": "agentic-ai-capabilities-sprites",
+      "path": "agentic/ai-capabilities-sprites.png",
+      "group": "agentic",
+      "name": "ai-capabilities-sprites",
+      "digest": "sha256:0bbc48ac7dcc8874fae26e743c99410d025f404f80c05ffaaf27e6b0f3bb69f5",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "ai-rag": {
+          "rect": [
+            0,
+            0,
+            443,
+            443
+          ],
+          "anchor": [
+            0.4628,
+            0.8713
+          ],
+          "label": "Retrieval augmented generation",
+          "tags": [
+            "ai",
+            "capability",
+            "workflow",
+            "rag"
+          ]
+        },
+        "ai-embedding": {
+          "rect": [
+            443,
+            0,
+            444,
+            443
+          ],
+          "anchor": [
+            0.5225,
+            0.7946
+          ],
+          "label": "Embedding encoder",
+          "tags": [
+            "ai",
+            "capability",
+            "workflow",
+            "embedding"
+          ]
+        },
+        "ai-vector-search": {
+          "rect": [
+            887,
+            0,
+            443,
+            443
+          ],
+          "anchor": [
+            0.4447,
+            0.8262
+          ],
+          "label": "Vector search",
+          "tags": [
+            "ai",
+            "capability",
+            "workflow",
+            "vector-search"
+          ]
+        },
+        "ai-context": {
+          "rect": [
+            1330,
+            0,
+            444,
+            437
+          ],
+          "anchor": [
+            0.4775,
+            0.7574
+          ],
+          "label": "Context window",
+          "tags": [
+            "ai",
+            "capability",
+            "workflow",
+            "context"
+          ]
+        },
+        "ai-prompt": {
+          "rect": [
+            0,
+            443,
+            443,
+            444
+          ],
+          "anchor": [
+            0.4831,
+            0.7793
+          ],
+          "label": "Prompt",
+          "tags": [
+            "ai",
+            "capability",
+            "workflow",
+            "prompt"
+          ]
+        },
+        "ai-evaluation": {
+          "rect": [
+            443,
+            443,
+            444,
+            444
+          ],
+          "anchor": [
+            0.4887,
+            0.7297
+          ],
+          "label": "Evaluation",
+          "tags": [
+            "ai",
+            "capability",
+            "workflow",
+            "evaluation"
+          ]
+        },
+        "ai-guardrail": {
+          "rect": [
+            887,
+            443,
+            443,
+            444
+          ],
+          "anchor": [
+            0.4876,
+            0.7748
+          ],
+          "label": "Guardrail",
+          "tags": [
+            "ai",
+            "capability",
+            "workflow",
+            "guardrail"
+          ]
+        },
+        "ai-model-router": {
+          "rect": [
+            1330,
+            437,
+            444,
+            450
+          ],
+          "anchor": [
+            0.5068,
+            0.7022
+          ],
+          "label": "Model router",
+          "tags": [
+            "ai",
+            "capability",
+            "workflow",
+            "model-router"
+          ]
+        }
+      },
+      "label": "Ai Capabilities",
+      "tags": [
+        "agentic",
+        "workflow",
+        "ai-capabilities"
+      ]
+    },
+    {
+      "id": "agentic-channels-sprites",
+      "path": "agentic/channels-sprites.png",
+      "group": "agentic",
+      "name": "channels-sprites",
+      "digest": "sha256:abd0c096ee0fd903034d4eaaf7559d6f2adadc0831eaa95dcc7dc51f32424622",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "channel-email": {
+          "rect": [
+            0,
+            0,
+            443,
+            443
+          ],
+          "anchor": [
+            0.5056,
+            0.8555
+          ],
+          "label": "Email",
+          "tags": [
+            "channel",
+            "communication",
+            "workflow",
+            "email"
+          ]
+        },
+        "channel-phone": {
+          "rect": [
+            443,
+            0,
+            444,
+            441
+          ],
+          "anchor": [
+            0.5203,
+            0.8549
+          ],
+          "label": "Phone",
+          "tags": [
+            "channel",
+            "communication",
+            "workflow",
+            "phone",
+            "call",
+            "voice",
+            "intake"
+          ]
+        },
+        "channel-teams": {
+          "rect": [
+            887,
+            0,
+            443,
+            452
+          ],
+          "anchor": [
+            0.5124,
+            0.8673
+          ],
+          "label": "Microsoft Teams",
+          "tags": [
+            "channel",
+            "communication",
+            "workflow",
+            "teams",
+            "microsoft-teams",
+            "chat",
+            "messaging",
+            "intake"
+          ]
+        },
+        "channel-webform": {
+          "rect": [
+            1330,
+            0,
+            444,
+            446
+          ],
+          "anchor": [
+            0.5563,
+            0.9148
+          ],
+          "label": "Web form",
+          "tags": [
+            "channel",
+            "communication",
+            "workflow",
+            "webform",
+            "web-form",
+            "form",
+            "request",
+            "intake"
+          ]
+        },
+        "channel-chat": {
+          "rect": [
+            0,
+            443,
+            443,
+            444
+          ],
+          "anchor": [
+            0.4537,
+            0.7815
+          ],
+          "label": "Chat",
+          "tags": [
+            "channel",
+            "communication",
+            "workflow",
+            "chat"
+          ]
+        },
+        "channel-issue": {
+          "rect": [
+            443,
+            441,
+            444,
+            446
+          ],
+          "anchor": [
+            0.5023,
+            0.778
+          ],
+          "label": "Issue tracker",
+          "tags": [
+            "channel",
+            "communication",
+            "workflow",
+            "issue",
+            "github",
+            "request",
+            "intake"
+          ]
+        },
+        "channel-document": {
+          "rect": [
+            887,
+            452,
+            443,
+            435
+          ],
+          "anchor": [
+            0.5282,
+            0.8207
+          ],
+          "label": "Document",
+          "tags": [
+            "channel",
+            "communication",
+            "workflow",
+            "document"
+          ]
+        },
+        "channel-webhook": {
+          "rect": [
+            1330,
+            446,
+            444,
+            441
+          ],
+          "anchor": [
+            0.536,
+            0.805
+          ],
+          "label": "Webhook",
+          "tags": [
+            "channel",
+            "communication",
+            "workflow",
+            "webhook"
+          ]
+        }
+      },
+      "label": "Channels",
+      "tags": [
+        "agentic",
+        "workflow",
+        "channels"
+      ]
+    },
+    {
+      "id": "agentic-humans-sprites",
+      "path": "agentic/humans-sprites.png",
+      "group": "agentic",
+      "name": "humans-sprites",
+      "digest": "sha256:237d2610caf91d5c981d2b8d2a1d562b54210f3c589afc111573adb691eea132",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "human-requester": {
+          "rect": [
+            0,
+            0,
+            443,
+            437
+          ],
+          "anchor": [
+            0.5666,
+            0.8581
+          ],
+          "label": "Human requester",
+          "tags": [
+            "human",
+            "collaboration",
+            "workflow",
+            "requester"
+          ]
+        },
+        "human-operator": {
+          "rect": [
+            443,
+            0,
+            444,
+            443
+          ],
+          "anchor": [
+            0.4775,
+            0.851
+          ],
+          "label": "Human operator",
+          "tags": [
+            "human",
+            "collaboration",
+            "workflow",
+            "operator"
+          ]
+        },
+        "human-approver": {
+          "rect": [
+            887,
+            0,
+            443,
+            435
+          ],
+          "anchor": [
+            0.4989,
+            0.9011
+          ],
+          "label": "Human approver",
+          "tags": [
+            "human",
+            "collaboration",
+            "workflow",
+            "approver",
+            "human-in-the-loop",
+            "hitl",
+            "approval"
+          ]
+        },
+        "human-expert": {
+          "rect": [
+            1330,
+            0,
+            444,
+            439
+          ],
+          "anchor": [
+            0.5518,
+            0.8656
+          ],
+          "label": "Domain expert",
+          "tags": [
+            "human",
+            "collaboration",
+            "workflow",
+            "expert"
+          ]
+        },
+        "human-team": {
+          "rect": [
+            0,
+            437,
+            443,
+            450
+          ],
+          "anchor": [
+            0.474,
+            0.7911
+          ],
+          "label": "Human team",
+          "tags": [
+            "human",
+            "collaboration",
+            "workflow",
+            "team"
+          ]
+        },
+        "human-handoff": {
+          "rect": [
+            443,
+            443,
+            444,
+            444
+          ],
+          "anchor": [
+            0.5383,
+            0.8288
+          ],
+          "label": "Human handoff",
+          "tags": [
+            "human",
+            "collaboration",
+            "workflow",
+            "handoff",
+            "human-in-the-loop",
+            "hitl"
+          ]
+        },
+        "human-escalation": {
+          "rect": [
+            887,
+            435,
+            443,
+            452
+          ],
+          "anchor": [
+            0.526,
+            0.8363
+          ],
+          "label": "Human escalation",
+          "tags": [
+            "human",
+            "collaboration",
+            "workflow",
+            "escalation",
+            "human-in-the-loop",
+            "hitl"
+          ]
+        },
+        "human-feedback": {
+          "rect": [
+            1330,
+            439,
+            444,
+            448
+          ],
+          "anchor": [
+            0.536,
+            0.7857
+          ],
+          "label": "Human feedback",
+          "tags": [
+            "human",
+            "collaboration",
+            "workflow",
+            "feedback"
+          ]
+        }
+      },
+      "label": "Humans",
+      "tags": [
+        "agentic",
+        "workflow",
+        "humans"
+      ]
+    },
+    {
+      "id": "agentic-infrastructure-sprites",
+      "path": "agentic/infrastructure-sprites.png",
+      "group": "agentic",
+      "name": "infrastructure-sprites",
+      "digest": "sha256:8e3b95146feda99f3a93e86afc52414ffd63d048c4724a6898d42694218a0e79",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "infra-redis-cache": {
+          "rect": [
+            0,
+            0,
+            450,
+            414
+          ],
+          "anchor": [
+            0.5,
+            0.9493
+          ],
+          "label": "Redis cache",
+          "tags": [
+            "infrastructure",
+            "redis",
+            "cache",
+            "state",
+            "memory"
+          ]
+        },
+        "infra-redis-stream": {
+          "rect": [
+            450,
+            0,
+            445,
+            414
+          ],
+          "anchor": [
+            0.5169,
+            0.8551
+          ],
+          "label": "Redis stream",
+          "tags": [
+            "infrastructure",
+            "redis",
+            "stream",
+            "streams",
+            "event-stream"
+          ]
+        },
+        "infra-redis-pubsub": {
+          "rect": [
+            895,
+            0,
+            440,
+            414
+          ],
+          "anchor": [
+            0.4886,
+            0.8333
+          ],
+          "label": "Redis pub/sub",
+          "tags": [
+            "infrastructure",
+            "redis",
+            "pubsub",
+            "pub-sub",
+            "broadcast"
+          ]
+        },
+        "infra-vector-database": {
+          "rect": [
+            1335,
+            0,
+            439,
+            414
+          ],
+          "anchor": [
+            0.4897,
+            0.9589
+          ],
+          "label": "Vector database",
+          "tags": [
+            "infrastructure",
+            "vector",
+            "database"
+          ]
+        },
+        "infra-object-storage": {
+          "rect": [
+            0,
+            414,
+            450,
+            473
+          ],
+          "anchor": [
+            0.5311,
+            0.8837
+          ],
+          "label": "Object storage",
+          "tags": [
+            "infrastructure",
+            "object",
+            "storage"
+          ]
+        },
+        "infra-knowledge-base": {
+          "rect": [
+            450,
+            414,
+            445,
+            473
+          ],
+          "anchor": [
+            0.4921,
+            0.8562
+          ],
+          "label": "Knowledge base",
+          "tags": [
+            "infrastructure",
+            "knowledge"
+          ]
+        },
+        "infra-api-tool": {
+          "rect": [
+            895,
+            414,
+            440,
+            473
+          ],
+          "anchor": [
+            0.475,
+            0.8605
+          ],
+          "label": "API tool",
+          "tags": [
+            "infrastructure",
+            "api",
+            "tool"
+          ]
+        },
+        "infra-secret-vault": {
+          "rect": [
+            1335,
+            414,
+            439,
+            473
+          ],
+          "anchor": [
+            0.4806,
+            0.8689
+          ],
+          "label": "Secret vault",
+          "tags": [
+            "infrastructure",
+            "secret",
+            "vault"
+          ]
+        }
+      },
+      "label": "Infrastructure",
+      "tags": [
+        "agentic",
+        "workflow",
+        "infrastructure"
+      ]
+    },
+    {
+      "id": "agentic-lifecycle-sprites",
+      "path": "agentic/lifecycle-sprites.png",
+      "group": "agentic",
+      "name": "lifecycle-sprites",
+      "digest": "sha256:31419d221f07d875a33527eba5cfeb7ab1f93a5893bfa28a19f3d2cc3dd9d5c1",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "agent-trigger": {
+          "rect": [
+            0,
+            0,
+            450,
+            430
+          ],
+          "anchor": [
+            0.4667,
+            0.9279
+          ],
+          "label": "Trigger",
+          "tags": [
+            "lifecycle",
+            "trigger"
+          ]
+        },
+        "agent-schedule": {
+          "rect": [
+            450,
+            0,
+            440,
+            430
+          ],
+          "anchor": [
+            0.5159,
+            0.9326
+          ],
+          "label": "Schedule",
+          "tags": [
+            "lifecycle",
+            "schedule"
+          ]
+        },
+        "agent-await-human": {
+          "rect": [
+            890,
+            0,
+            475,
+            430
+          ],
+          "anchor": [
+            0.5179,
+            0.9558
+          ],
+          "label": "Await human",
+          "tags": [
+            "lifecycle",
+            "human",
+            "pause",
+            "human-in-the-loop",
+            "hitl",
+            "wait"
+          ]
+        },
+        "agent-approval": {
+          "rect": [
+            1365,
+            0,
+            409,
+            430
+          ],
+          "anchor": [
+            0.4768,
+            0.9302
+          ],
+          "label": "Approval",
+          "tags": [
+            "lifecycle",
+            "human",
+            "approval"
+          ]
+        },
+        "agent-rejection": {
+          "rect": [
+            0,
+            430,
+            450,
+            457
+          ],
+          "anchor": [
+            0.4689,
+            0.8512
+          ],
+          "label": "Rejection",
+          "tags": [
+            "lifecycle",
+            "human",
+            "rejection"
+          ]
+        },
+        "agent-escalation": {
+          "rect": [
+            450,
+            430,
+            440,
+            457
+          ],
+          "anchor": [
+            0.5,
+            0.8928
+          ],
+          "label": "Escalation",
+          "tags": [
+            "lifecycle",
+            "escalation"
+          ]
+        },
+        "agent-audit": {
+          "rect": [
+            890,
+            430,
+            475,
+            457
+          ],
+          "anchor": [
+            0.5032,
+            0.8512
+          ],
+          "label": "Audit",
+          "tags": [
+            "lifecycle",
+            "audit"
+          ]
+        },
+        "agent-complete": {
+          "rect": [
+            1365,
+            430,
+            409,
+            457
+          ],
+          "anchor": [
+            0.5061,
+            0.9103
+          ],
+          "label": "Complete",
+          "tags": [
+            "lifecycle",
+            "completion"
+          ]
+        }
+      },
+      "label": "Lifecycle",
+      "tags": [
+        "agentic",
+        "workflow",
+        "lifecycle"
+      ]
+    },
+    {
+      "id": "agentic-orchestration-sprites",
+      "path": "agentic/orchestration-sprites.png",
+      "group": "agentic",
+      "name": "orchestration-sprites",
+      "digest": "sha256:db1185d87294db45fe0fcacc63c0c6d19b4bb2988dadaedc9e9f1dbb63d6dbda",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "agent-workflow": {
+          "rect": [
+            0,
+            0,
+            450,
+            430
+          ],
+          "anchor": [
+            0.4889,
+            0.907
+          ],
+          "label": "Agent workflow",
+          "tags": [
+            "orchestration",
+            "workflow"
+          ]
+        },
+        "agent-parallel": {
+          "rect": [
+            450,
+            0,
+            445,
+            430
+          ],
+          "anchor": [
+            0.4966,
+            0.9651
+          ],
+          "label": "Parallel execution",
+          "tags": [
+            "orchestration",
+            "parallel"
+          ]
+        },
+        "agent-router": {
+          "rect": [
+            895,
+            0,
+            440,
+            430
+          ],
+          "anchor": [
+            0.4818,
+            0.9279
+          ],
+          "label": "Agent router",
+          "tags": [
+            "orchestration",
+            "routing"
+          ]
+        },
+        "agent-condition": {
+          "rect": [
+            1335,
+            0,
+            439,
+            430
+          ],
+          "anchor": [
+            0.4875,
+            0.9279
+          ],
+          "label": "Condition",
+          "tags": [
+            "orchestration",
+            "condition"
+          ]
+        },
+        "agent-loop": {
+          "rect": [
+            0,
+            430,
+            450,
+            457
+          ],
+          "anchor": [
+            0.5111,
+            0.8731
+          ],
+          "label": "Loop",
+          "tags": [
+            "orchestration",
+            "iteration"
+          ]
+        },
+        "agent-retry": {
+          "rect": [
+            450,
+            430,
+            445,
+            457
+          ],
+          "anchor": [
+            0.4989,
+            0.8884
+          ],
+          "label": "Retry",
+          "tags": [
+            "orchestration",
+            "retry"
+          ]
+        },
+        "agent-timeout": {
+          "rect": [
+            895,
+            430,
+            440,
+            457
+          ],
+          "anchor": [
+            0.4841,
+            0.8862
+          ],
+          "label": "Timeout",
+          "tags": [
+            "orchestration",
+            "timeout"
+          ]
+        },
+        "agent-error": {
+          "rect": [
+            1335,
+            430,
+            439,
+            457
+          ],
+          "anchor": [
+            0.4784,
+            0.8403
+          ],
+          "label": "Error",
+          "tags": [
+            "orchestration",
+            "error"
+          ]
+        }
+      },
+      "label": "Orchestration",
+      "tags": [
+        "agentic",
+        "workflow",
+        "orchestration"
+      ]
+    },
+    {
+      "id": "agentic-providers-sprites",
+      "path": "agentic/providers-sprites.png",
+      "group": "agentic",
+      "name": "providers-sprites",
+      "digest": "sha256:e945faea5ae760daa331e917e4c814579f101dc5c1e3e94f0689acc709836a18",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "provider-azure-foundry": {
+          "rect": [
+            0,
+            0,
+            443,
+            443
+          ],
+          "anchor": [
+            0.5011,
+            0.8668
+          ],
+          "label": "Microsoft Foundry",
+          "tags": [
+            "provider",
+            "ai",
+            "platform",
+            "azure-foundry",
+            "microsoft-foundry",
+            "azure-ai-foundry",
+            "azure-ai-studio",
+            "azure",
+            "microsoft"
+          ]
+        },
+        "provider-aws-bedrock": {
+          "rect": [
+            443,
+            0,
+            444,
+            443
+          ],
+          "anchor": [
+            0.4887,
+            0.8804
+          ],
+          "label": "AWS Bedrock",
+          "tags": [
+            "provider",
+            "ai",
+            "platform",
+            "aws-bedrock",
+            "aws",
+            "amazon",
+            "bedrock"
+          ]
+        },
+        "provider-anthropic": {
+          "rect": [
+            887,
+            0,
+            443,
+            444
+          ],
+          "anchor": [
+            0.4989,
+            0.8626
+          ],
+          "label": "Anthropic",
+          "tags": [
+            "provider",
+            "ai",
+            "platform",
+            "anthropic",
+            "claude"
+          ]
+        },
+        "provider-openai": {
+          "rect": [
+            1330,
+            0,
+            444,
+            443
+          ],
+          "anchor": [
+            0.4955,
+            0.8623
+          ],
+          "label": "OpenAI",
+          "tags": [
+            "provider",
+            "ai",
+            "platform",
+            "openai",
+            "gpt",
+            "chatgpt"
+          ]
+        },
+        "provider-google-vertex": {
+          "rect": [
+            0,
+            443,
+            443,
+            444
+          ],
+          "anchor": [
+            0.5056,
+            0.8131
+          ],
+          "label": "Google Vertex AI",
+          "tags": [
+            "provider",
+            "ai",
+            "platform",
+            "google-vertex",
+            "google",
+            "gcp",
+            "vertex-ai",
+            "gemini-enterprise-agent-platform"
+          ]
+        },
+        "provider-google-gemini": {
+          "rect": [
+            443,
+            443,
+            444,
+            444
+          ],
+          "anchor": [
+            0.4775,
+            0.8063
+          ],
+          "label": "Google Gemini",
+          "tags": [
+            "provider",
+            "ai",
+            "platform",
+            "google-gemini",
+            "google",
+            "gemini"
+          ]
+        },
+        "provider-local-model": {
+          "rect": [
+            887,
+            444,
+            443,
+            443
+          ],
+          "anchor": [
+            0.5034,
+            0.7765
+          ],
+          "label": "Local model",
+          "tags": [
+            "provider",
+            "ai",
+            "platform",
+            "local-model"
+          ]
+        },
+        "provider-hugging-face": {
+          "rect": [
+            1330,
+            443,
+            444,
+            444
+          ],
+          "anchor": [
+            0.4887,
+            0.8063
+          ],
+          "label": "Hugging Face",
+          "tags": [
+            "provider",
+            "ai",
+            "platform",
+            "hugging-face",
+            "huggingface",
+            "open-models"
+          ]
+        }
+      },
+      "label": "Providers",
+      "tags": [
+        "agentic",
+        "workflow",
+        "providers"
+      ]
+    },
+    {
+      "id": "agentic-servicenow-sprites",
+      "path": "agentic/servicenow-sprites.png",
+      "group": "agentic",
+      "name": "servicenow-sprites",
+      "digest": "sha256:0bdd765157f2465ced10207eec396cbd58ce49edb7c241162a7508028baac0cb",
+      "type": "sprite-sheet",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "servicenow-interaction": {
+          "rect": [
+            0,
+            0,
+            450,
+            430
+          ],
+          "anchor": [
+            0.5067,
+            0.9395
+          ],
+          "label": "ServiceNow interaction",
+          "tags": [
+            "servicenow",
+            "interaction",
+            "interaction-record",
+            "conversation"
+          ]
+        },
+        "servicenow-request": {
+          "rect": [
+            450,
+            0,
+            445,
+            430
+          ],
+          "anchor": [
+            0.4876,
+            0.9395
+          ],
+          "label": "ServiceNow request",
+          "tags": [
+            "servicenow",
+            "request",
+            "req",
+            "sc-request"
+          ]
+        },
+        "servicenow-requested-item": {
+          "rect": [
+            895,
+            0,
+            440,
+            430
+          ],
+          "anchor": [
+            0.4886,
+            0.9442
+          ],
+          "label": "ServiceNow requested item",
+          "tags": [
+            "servicenow",
+            "requested-item",
+            "ritm",
+            "sc-req-item"
+          ]
+        },
+        "servicenow-request-task": {
+          "rect": [
+            1335,
+            0,
+            439,
+            430
+          ],
+          "anchor": [
+            0.5011,
+            0.9651
+          ],
+          "label": "ServiceNow request task",
+          "tags": [
+            "servicenow",
+            "request-task",
+            "sctask",
+            "sc-task",
+            "catalog-task"
+          ]
+        },
+        "servicenow-catalog-item": {
+          "rect": [
+            0,
+            430,
+            450,
+            457
+          ],
+          "anchor": [
+            0.5222,
+            0.849
+          ],
+          "label": "ServiceNow catalog item",
+          "tags": [
+            "servicenow",
+            "catalog-item",
+            "sc-cat-item",
+            "catalog"
+          ]
+        },
+        "servicenow-incident": {
+          "rect": [
+            450,
+            430,
+            445,
+            457
+          ],
+          "anchor": [
+            0.4966,
+            0.8534
+          ],
+          "label": "ServiceNow incident",
+          "tags": [
+            "servicenow",
+            "incident",
+            "inc",
+            "restore-service"
+          ]
+        },
+        "servicenow-problem": {
+          "rect": [
+            895,
+            430,
+            440,
+            457
+          ],
+          "anchor": [
+            0.5318,
+            0.8425
+          ],
+          "label": "ServiceNow problem",
+          "tags": [
+            "servicenow",
+            "problem",
+            "prb",
+            "root-cause"
+          ]
+        },
+        "servicenow-change": {
+          "rect": [
+            1335,
+            430,
+            439,
+            457
+          ],
+          "anchor": [
+            0.4784,
+            0.849
+          ],
+          "label": "ServiceNow change",
+          "tags": [
+            "servicenow",
+            "change",
+            "chg",
+            "change-request"
+          ]
+        }
+      },
+      "label": "Servicenow",
+      "tags": [
+        "agentic",
+        "workflow",
+        "servicenow"
+      ]
+    },
     {
       "id": "architecture-architecture-sprites",
       "path": "architecture/architecture-sprites.png",

@@ -15,6 +15,7 @@ import { Content as LowLevelRendering } from '../../docs/examples/low-level-rend
 import { Content as ExamplesReadme } from '../../docs/examples/README.md';
 import { Content as RuntimeBasic } from '../../docs/examples/runtime-basic.md';
 import { Content as GettingStarted } from '../../docs/getting-started.md';
+import { Content as AgenticWorkflows } from '../../docs/guides/agentic-workflows.md';
 import { Content as AnimationAndConnections } from '../../docs/guides/animation-and-connections.md';
 import { Content as AssetsWorkflow } from '../../docs/guides/assets-workflow.md';
 import { Content as AuthorSceneDeltas } from '../../docs/guides/author-scene-deltas.md';
@@ -57,6 +58,11 @@ type DocNavItem =
 	  };
 
 export const docs: DocEntry[] = [
+	{
+		slug: 'guides/agentic-workflows.md',
+		title: 'AI Agents And Human Workflows',
+		Content: AgenticWorkflows
+	},
 	{
 		slug: 'guides/software-architecture-assets.md',
 		title: 'Software Architecture Assets',
@@ -256,6 +262,7 @@ export const docNav: DocNavSection[] = [
 				items: [
 					'guides/assets-workflow.md',
 					'guides/software-architecture-assets.md',
+					'guides/agentic-workflows.md',
 					'guides/animation-and-connections.md'
 				]
 			}

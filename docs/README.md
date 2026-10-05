@@ -60,7 +60,8 @@ sheets, manifests, anchors, and AI-generated asset sets. Use
 [Animation And Connections](./guides/animation-and-connections.md) for motion,
 connection routes, road paths, flow effects, and camera focus. Use
 [Software Architecture Assets](./guides/software-architecture-assets.md) for the
-included photorealistic architecture, workflow, and process collection.
+included photorealistic collection. [AI Agents And Human Workflows](./guides/agentic-workflows.md)
+adds the full inventory and runnable migration and provider-routing examples.
 
 ### 4. Verify And Publish
 

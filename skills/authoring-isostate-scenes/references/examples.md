@@ -127,3 +127,21 @@ scenes:
           start: none
           end: none
 ```
+
+## AI Agents And Human Workflows
+
+Start from the checked repository examples instead of inventing sprite crops:
+
+- `website/src/scenes/agentic-workflow.isostate.yaml`: four stops from manual
+  email intake and human triage to AI triage, REQ/RITM/catalog tasks, prepared
+  tools, human approval/escalation, execution, and completion with audit.
+- `website/src/scenes/provider-routing.isostate.yaml`: four stops for alternative
+  model providers, selected Bedrock with retrieval and Redis cache, API tools and
+  a Redis Stream, then human review and approved output.
+
+Both use first-scene snapshots, subsequent deltas, native one-cell sprites,
+whole-cell placements, explicit routed arrows, caption labels, and connection
+removals whenever endpoint elements leave. Website editor starters are
+`?example=agentic-workflow` and `?example=provider-routing`. The full inventory and
+semantic mappings live in `docs/guides/agentic-workflows.md`. Regenerate headers,
+compiled bundles, and downloads together with `bun run assets:build`.

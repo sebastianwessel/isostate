@@ -17,6 +17,8 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 	<script>
 		import { mountEditor } from '../../../packages/editor/src/index.ts';
 		import softwareExample from '../scenes/software-architecture.isostate.yaml?raw';
+		import agenticExample from '../scenes/agentic-workflow.isostate.yaml?raw';
+		import providerExample from '../scenes/provider-routing.isostate.yaml?raw';
 
 		const target = document.getElementById('editor-mount');
 		if (!target) throw new Error('Missing #editor-mount target');
@@ -24,9 +26,10 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 		const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 
 		const example = new URLSearchParams(window.location.search).get('example');
-		const initialYaml = example === 'software-architecture'
-			? softwareExample.replace('assetBaseUrl: ./assets/software-architecture', `assetBaseUrl: ${base}/assets/software-architecture`)
-			: undefined;
+		const selectedYaml = example === 'software-architecture' ? softwareExample
+			: example === 'agentic-workflow' ? agenticExample
+			: example === 'provider-routing' ? providerExample : undefined;
+		const initialYaml = selectedYaml?.replace('assetBaseUrl: ./assets/software-architecture', `assetBaseUrl: ${base}/assets/software-architecture`);
 
 		const editor = mountEditor(target, {
 			initialYaml,

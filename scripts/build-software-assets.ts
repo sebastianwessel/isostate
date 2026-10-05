@@ -1,6 +1,7 @@
 import { copyFile, mkdir, readFile, rm } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { regenerateSoftwareManifest } from './regenerate-software-manifest.ts';
+import { softwareCatalogFiles } from './software-catalog-files.ts';
 
 await regenerateSoftwareManifest();
 
@@ -17,14 +18,7 @@ const manifest = JSON.parse(
 
 await rm(destination, { recursive: true, force: true });
 await mkdir(destination, { recursive: true });
-const files = [
-	'manifest.json',
-	'README.md',
-	'LICENSE',
-	'IMAGEGEN-PROMPTS.md',
-	...manifest.assets.map((asset) => asset.path)
-];
-for (const file of files) {
+for (const file of softwareCatalogFiles(manifest.assets)) {
 	const target = join(destination, file);
 	await mkdir(dirname(target), { recursive: true });
 	await copyFile(join(source, file), target);

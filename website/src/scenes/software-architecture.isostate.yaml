@@ -22,30 +22,6 @@ header:
         architecture-database:
           rect: [ 1092, 0, 350, 350 ]
           anchor: [ 0.511, 0.909 ]
-        architecture-cache:
-          rect: [ 6, 340, 350, 350 ]
-          anchor: [ 0.499, 0.837 ]
-        architecture-queue:
-          rect: [ 368, 355, 350, 350 ]
-          anchor: [ 0.634, 0.894 ]
-        architecture-worker:
-          rect: [ 730, 350, 350, 350 ]
-          anchor: [ 0.437, 0.949 ]
-        architecture-load-balancer:
-          rect: [ 1092, 350, 350, 350 ]
-          anchor: [ 0.513, 0.88 ]
-        architecture-storage:
-          rect: [ 6, 690, 350, 350 ]
-          anchor: [ 0.347, 0.943 ]
-        architecture-cloud:
-          rect: [ 368, 704, 350, 350 ]
-          anchor: [ 0.683, 0.914 ]
-        architecture-container:
-          rect: [ 730, 704, 350, 350 ]
-          anchor: [ 0.451, 0.931 ]
-        architecture-observability:
-          rect: [ 1092, 695, 350, 350 ]
-          anchor: [ 0.544, 0.931 ]
     - id: workflow-workflow-process-sprites
       type: sprite-sheet
       path: workflow/workflow-process-sprites.png
@@ -63,9 +39,6 @@ header:
           anchor: [ 0.5, 0.9 ]
         workflow-decision:
           rect: [ 1330, 0, 444, 443 ]
-          anchor: [ 0.5, 0.9 ]
-        workflow-event:
-          rect: [ 0, 443, 443, 444 ]
           anchor: [ 0.5, 0.9 ]
         process-approval:
           rect: [ 443, 443, 444, 444 ]

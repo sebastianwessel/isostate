@@ -292,3 +292,26 @@ The website editor already loads its manifest. The example source is
 package, website, and compiled/downloadable examples with `bun run assets:build`.
 Use native `size: 1`, whole-cell placements, generated text labels, and real
 connections. For decisions, separate branches and label outcomes explicitly.
+
+## Agentic And Human Workflow Vocabulary
+
+The software catalog includes AI roles and retrieval/quality assets, human
+participants, intake channels, control flow, lifecycle events, ServiceNow
+records, provider concepts, Redis variants, tools, and supporting architecture.
+See `docs/guides/agentic-workflows.md` for the complete logical-id inventory.
+
+- Preserve `provider-azure-foundry` as a stable id; its current display label is
+  Microsoft Foundry. Azure Foundry, Azure AI Foundry, and Azure AI Studio are
+  useful discovery aliases. Vertex AI is a platform and Gemini a model family;
+  use labels to describe the actual deployment.
+- Distinguish ServiceNow Interaction (conversation), catalog item (offering),
+  Request/REQ (order), Requested Item/RITM (ordered item), and request/catalog
+  task/SCTASK (fulfillment work). Incident, Problem, and Change have separate
+  restoration, root-cause, and controlled-change roles.
+- Distinguish an AI reviewer, a human approver, and a workflow waiting for a
+  person. Redis cache, Streams, and Pub/Sub also have separate sprite ids.
+- Provider and ServiceNow illustrations are conceptual artwork rather than
+  official vendor logos. Keep product or record identification in clear labels.
+- Use the manifest's source crop and checked anchor, native `size: 1`, captions,
+  and real `connections`. Tell a dense story through deltas, staying within 50
+  active elements plus connections per scene.

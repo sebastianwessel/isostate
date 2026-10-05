@@ -1,13 +1,17 @@
 # Software Architecture Assets
 
-The software collection supplies 20 photorealistic isometric objects for
-architecture diagrams, workflow stories, and business processes. The objects
+The software collection supplies photorealistic isometric objects for AI agents,
+human workflows, ServiceNow records, model providers, architecture diagrams,
+and business processes. The showcase derives its object count from the manifest. The objects
 share a camera angle, material palette, soft lighting, and transparent
 backgrounds so they work together in one scene.
 
 Browse and download the collection on the
 [asset showcase](https://sebastianwessel.github.io/isostate/assets/). Choose
-**Build with these assets** to open the three-scene example in the editor.
+**Build an agentic workflow** to open the four-step migration example in the editor.
+The story selector also offers provider routing and the classic three-scene
+architecture example. See [AI Agents And Human Workflows](./agentic-workflows.md)
+for the full agent, people, channel, provider, and ServiceNow inventory.
 The collection is available in the editor's asset browser alongside the existing
 city, traffic, and AWS catalogs.
 
@@ -103,5 +107,7 @@ bun run assets:build
 ```
 
 This regenerates the source manifest, packaged catalog, website copy, showcase
-asset declarations, compiled sample, and downloadable files. The authored
-timeline remains in `website/src/scenes/software-architecture.isostate.yaml`.
+asset declarations, compiled examples, and downloadable files. The authored
+timelines remain in `website/src/scenes/software-architecture.isostate.yaml`,
+`website/src/scenes/agentic-workflow.isostate.yaml`, and
+`website/src/scenes/provider-routing.isostate.yaml`.

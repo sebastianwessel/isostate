@@ -45,3 +45,16 @@ Row 3 col 4 observability: premium monitor showing a single cyan line chart, gla
 Transparent background with real alpha, no white backdrop and no checkerboard painted into the pixels. No labels, letters, numbers, logos, watermarks, connecting lines between cells, flat illustration, vector outlines, thick ink strokes, flat SVG appearance, emoji, toy plastic, people, repeated subjects.
 ```
 
+
+## Agentic workflow extension
+
+Nine additional original RGBA PNG sheets cover 72 AI, human, channel, workflow,
+ServiceNow, provider, and infrastructure objects. Their exact built-in ImageGen
+prompts and inspected crop/anchor notes are preserved separately:
+
+- [Agent, capability, human, channel, and provider sheets](./agentic/AGENT-VISUAL-PROMPTS.md)
+- [Orchestration, lifecycle, ServiceNow, and infrastructure sheets](./agentic/PROCESS-VISUAL-PROMPTS.md)
+
+All outputs retain generated source bytes; scene and gallery crops are metadata,
+not edited image files. Provider identities are illustrated with original
+material/product metaphors and displayed labels rather than official logo assets.

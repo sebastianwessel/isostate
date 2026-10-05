@@ -291,38 +291,64 @@ Isometric assets use CSS `color-mix()` to create depth shading from a single col
 
 Asset geometry only needs one color variable per material, and all depth shading is handled by CSS.
 
-## Software Architecture Catalog
+## Software Architecture and Agentic Workflow Catalog
 
-`assets/software-architecture/` is a first-party optional catalog of twenty
-premium isometric software and process renders distributed under the repository's
-MIT license. Its logical groups are `architecture` (twelve software and
-infrastructure objects), `workflow` (start, end, task, decision, event), and
-`process` (approval, document, scheduler). Logical ids use these prefixes,
-for example `architecture-database`.
+`assets/software-architecture/` is a first-party optional catalog of 92
+photorealistic isometric software, AI, and process objects distributed under the
+repository's MIT license. The original twenty objects remain available with
+the same identifiers, rectangles, and anchors. Nine additional transparent PNG
+sheets provide 72 objects for agentic work:
 
-Two transparent PNG sprite sheets preserve the original generated image bytes:
-`architecture/architecture-sprites.png` (1448 × 1086 pixels) and
-`workflow/workflow-process-sprites.png` (1774 × 887 pixels). The material palette
-combines graphite metal, cyan glass, teal accents, and amber lights. The prompt
-sources are recorded in `IMAGEGEN-PROMPTS.md` alongside the images.
+| Sheet | Logical ids / purpose |
+| --- | --- |
+| `agents-sprites.png` | `ai-agent`, orchestrator, planner, researcher, tool runner, reviewer, memory, knowledge |
+| `ai-capabilities-sprites.png` | `ai-rag`, embedding, vector search, context, prompt, evaluation, guardrail, model router |
+| `humans-sprites.png` | `human-` requester, operator, approver, expert, team, handoff, escalation, feedback |
+| `channels-sprites.png` | `channel-` email, phone, Teams, web form, chat, issue, document, webhook |
+| `orchestration-sprites.png` | `agent-` workflow, parallel, router, condition, loop, retry, timeout, error |
+| `lifecycle-sprites.png` | `agent-` trigger, schedule, await human, approval, rejection, escalation, audit, complete |
+| `servicenow-sprites.png` | `servicenow-` interaction, request, requested item, request task, catalog item, incident, problem, change |
+| `providers-sprites.png` | `provider-` Azure Foundry, AWS Bedrock, Anthropic, OpenAI, Google Vertex, Google Gemini, local model, Hugging Face |
+| `infrastructure-sprites.png` | `infra-` Redis cache, Redis stream, Redis pub/sub, vector database, object storage, knowledge base, API tool, secret vault |
 
-The metadata source is `.isostate-assets.yaml`. Every sprite has an explicit
-whole-pixel `rect` and checked normalized `anchor`; architecture rectangles are
-350 × 350 pixels with per-object anchors. Workflow/process rectangles follow
-the source's four-column, two-row grid and use `[0.5, 0.9]` anchors. Scenes use
-these existing sprite-sheet declarations at native `size: 1`. A sheet namespace
-is not placeable. Labels remain scene text elements and routes remain scene
-connections.
+All nine new sheets live in `agentic/`. Provider/product assets are original
+conceptual illustrations; catalog labels and search aliases identify the
+corresponding products. They are not official vendor logo files. Provider
+choice, ticket type, human responsibility, and escalation meaning live in the
+scene's authored labels and visual connections; catalog images do not implement
+workflow execution or ticket schemas.
 
-The existing CLI generates `manifest.json`, including sheet dimensions, source
-byte digests, and sprite labels/tags. Its `assetBaseUrl` is `./` because it resides
-beside the group directories. Website publishing may generate a second manifest
-with the hosted base URL while preserving ids, rectangles, anchors, and digests.
+The material palette combines graphite metal, cyan glass, teal accents, amber
+lights, realistic miniature people, and distinguishing product accents. Exact
+prompts are recorded in `IMAGEGEN-PROMPTS.md` and the two provenance documents
+under `agentic/`. Original generated image bytes and genuine alpha channels are
+preserved. Each source sheet must fit the CLI's existing 2 MiB image limit.
 
-The core package build copies this catalog, README, image-generation prompts,
-and MIT LICENSE to `dist/assets/software-architecture/`, exposing the files
-through the static `./assets/software-architecture/*` package export. Consumers
-may copy these files into a public asset directory or use bundler URL imports.
-This distribution does not add runtime imports, browser dependencies, DSL
-fields, or renderer behavior. Asset bytes remain outside the core engine's
-compressed bundle budget.
+The metadata source is `.isostate-assets.yaml`. Every logical sprite has an
+explicit whole-pixel `rect`, checked normalized ground `anchor`, label, and
+search tags. Crop geometry is measured from the actual generated sheet, rather
+than assuming an evenly spaced layout. Scenes use these sprite declarations at
+native `size: 1`; a sheet namespace is not placeable. Labels remain generated
+`text` elements and routes remain scene `connections`.
+
+The existing CLI generates `manifest.json`, including actual dimensions,
+source byte digests, and sprite labels/tags. Its `assetBaseUrl` is `./` because it
+resides beside the group directories. Website copies preserve ids, rectangles,
+anchors, digests, and source bytes. Gallery categories and search expose all 92
+objects; the editor registers the complete manifest.
+
+Three runnable website examples cover software architecture, human-to-agent
+workflow migration, and provider/tool routing. Each source YAML declares only
+the catalog sprites it uses, and the build validates and compiles its generated
+module and public YAML/JS downloads together. Examples show human review,
+escalation, intake channels, ServiceNow records, and model/tool choices using
+ordinary scene deltas and visual connections. Each scene stays within the
+50-object target and uses whole grid cells.
+
+The core package build copies all eleven sheets, the generated manifest,
+README, image-generation provenance, and MIT LICENSE to
+`dist/assets/software-architecture/`, exposing the files through the static
+`./assets/software-architecture/*` package export. Consumers may copy these
+files into a public directory or use bundler URL imports. This distribution
+adds no runtime imports, browser dependencies, public DSL fields, or renderer
+behavior. Asset bytes remain outside the core engine's compressed bundle budget.

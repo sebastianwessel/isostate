@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
+import { softwareCatalogFiles } from '../../scripts/software-catalog-files.ts';
 
 test('published software assets resolve independently of the runtime and match their sources', async () => {
 	const result = spawnSync(
@@ -20,13 +21,7 @@ test('published software assets resolve independently of the runtime and match t
 		assets: Array<{ path: string }>;
 	};
 	const require = createRequire(resolve('packages/core/package.json'));
-	for (const file of [
-		'manifest.json',
-		'README.md',
-		'LICENSE',
-		'IMAGEGEN-PROMPTS.md',
-		...manifest.assets.map((asset) => asset.path)
-	]) {
+	for (const file of softwareCatalogFiles(manifest.assets)) {
 		const installed = require.resolve(
 			`@sebastianwessel/isostate/assets/software-architecture/${file}`
 		);

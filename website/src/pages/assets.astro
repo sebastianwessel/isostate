@@ -2,17 +2,13 @@
 import { Code } from 'astro:components';
 import manifest from '../../../assets/software-architecture/manifest.json';
 import SiteLayout from '../layouts/SiteLayout.astro';
-import { softwareCatalogPreviews } from '../lib/software-catalog';
+import { SOFTWARE_CATALOG_GROUPS, softwareCatalogPreviews } from '../lib/software-catalog';
 import type { AssetManifestEntry } from '../../../packages/editor/src/types';
 
 const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 const assets = softwareCatalogPreviews(manifest.assets as AssetManifestEntry[]);
 const assetRoot = `${base}/assets/software-architecture`;
-const groups = [
-	{ id: 'architecture', title: 'Software architecture', description: 'The components behind a system: from the first request to the last background job.', number: '01' },
-	{ id: 'workflow', title: 'Workflows', description: 'Give each step, event, and decision a recognizable place in the story.', number: '02' },
-	{ id: 'process', title: 'Business processes', description: 'Make schedules, documents, and human approvals part of the same visual language.', number: '03' }
-];
+const groups = SOFTWARE_CATALOG_GROUPS.filter((group) => assets.some((asset) => asset.group === group.id));
 const serviceSheet = manifest.assets.find((asset) => asset.sprites['architecture-service']);
 const service = serviceSheet?.sprites['architecture-service'];
 if (!serviceSheet || !service || !('rect' in service)) throw new Error('Missing service sprite metadata.');
@@ -38,48 +34,59 @@ scenes:
         at: [2, 2]`;
 ---
 
-<SiteLayout title="Software Architecture Assets" description="20 photorealistic isometric assets for software architecture, workflows, and business processes. Preview, download, and build a scene with the included catalog.">
+<SiteLayout title="AI Agent & Software Assets" description={`${assets.length} photorealistic isometric assets for AI agents, human workflows, ServiceNow, model providers, and software architecture.`}>
 	<div class="asset-page">
 		<header class="asset-hero">
 			<div class="hero-copy">
-				<p class="eyebrow">The software collection / 20 assets</p>
-				<h1>Give your system<br />a visual language.</h1>
-				<p class="lede">Services, decisions, and the people in between. A coordinated set of photorealistic isometric renders for explaining how software works.</p>
+				<p class="eyebrow">The software collection / {assets.length} assets</p>
+				<h1>People. Agents.<br />A shared workflow.</h1>
+				<p class="lede">Explain the journey from a human request to an AI-assisted result. Agents, tools, service records, and the people who decide what happens next.</p>
 				<div class="actions">
-					<a class="primary" href={`${base}/editor/?example=software-architecture`}>Build with these assets <span aria-hidden="true">↗</span></a>
+					<a class="primary" href={`${base}/editor/?example=agentic-workflow`}>Build an agentic workflow <span aria-hidden="true">↗</span></a>
 					<a href="#collection">Explore the collection ↓</a>
 				</div>
 				<p class="collection-note">Transparent PNG · MIT licensed · Included with isostate</p>
 			</div>
 			<div class="scene-card">
-				<div class="scene-heading"><span class="live-dot" aria-hidden="true"></span> One collection, three stories <span class="scene-counter" id="asset-scene-counter">01 / 03</span></div>
-				<div id="software-architecture-scene" class="scene-canvas" aria-label="Interactive software architecture, workflow, and process example"></div>
-				<p id="asset-scene-description" class="scene-description" aria-live="polite">A request travels from a client through the gateway and service to data.</p>
+				<div class="scene-heading"><span class="live-dot" aria-hidden="true"></span> From manual work to agentic automation <span class="scene-counter" id="asset-scene-counter">01 / 04</span></div>
+				<div id="software-architecture-scene" class="scene-canvas" aria-label="Interactive example of a human workflow migrating to AI agents"></div>
+				<p id="asset-scene-description" class="scene-description" aria-live="polite">A requester sends an email; a human operator triages and fulfills the interaction.</p>
 				<div class="scene-controls" role="group" aria-label="Choose example scene">
-					<button type="button" data-progress="0" aria-pressed="true">01 Architecture</button>
-					<button type="button" data-progress="0.5" aria-pressed="false">02 Workflow</button>
-					<button type="button" data-progress="1" aria-pressed="false">03 Process</button>
+					<button type="button" data-progress="0" aria-pressed="true">01 Manual</button>
+					<button type="button" data-progress="0.3333333333333333" aria-pressed="false">02 Agents</button>
+					<button type="button" data-progress="0.6666666666666666" aria-pressed="false">03 Review</button>
+					<button type="button" data-progress="1" aria-pressed="false">04 Complete</button>
 				</div>
+				<div class="example-picker"><label for="asset-example">Explore a story</label><select id="asset-example"><option value="agentic-workflow">Human → agentic workflow</option><option value="provider-routing">Providers, retrieval & tools</option><option value="software-architecture">Classic software architecture</option></select><a id="asset-edit-example" href={`${base}/editor/?example=agentic-workflow`}>Edit this story ↗</a></div>
 				<noscript><p class="scene-description">Enable JavaScript to explore the live scene. Every asset is available below.</p></noscript>
 			</div>
 		</header>
 
 		<section id="collection" class="collection" aria-labelledby="collection-title">
 			<div class="collection-heading">
-				<div><p class="eyebrow">Choose your building blocks</p><h2 id="collection-title">Small pieces. Clear stories.</h2></div>
-				<div class="filters" role="group" aria-label="Filter asset collection">
-					<button type="button" data-group="all" aria-pressed="true">All 20</button>
-					{groups.map((group) => <button type="button" data-group={group.id} aria-pressed="false">{group.id[0].toUpperCase() + group.id.slice(1)}</button>)}
-				</div>
+				<div><p class="eyebrow">Choose your building blocks</p><h2 id="collection-title">A place for every role.</h2></div>
+				<p class="collection-total">{assets.length}<span>one-cell objects</span></p>
 			</div>
-			<p class="collection-note">Choose a card to download its transparent sprite sheet. Use the manifest to select individual objects.</p>
-			{groups.map((group) => (
+			<div class="catalog-toolbar">
+				<label class="asset-search" for="asset-search"><span>Search the collection</span><input id="asset-search" type="search" placeholder="Try Claude, RITM, Redis, approval…" autocomplete="off" /></label>
+				<label class="asset-category" for="asset-category"><span>Category</span><select id="asset-category"><option value="all">All categories ({assets.length})</option>{groups.map((group) => <option value={group.id}>{group.title} ({assets.filter((asset) => asset.group === group.id).length})</option>)}</select></label>
+				<button class="clear-filters" id="asset-clear" type="button">Clear filters</button>
+			</div>
+			<p class="collection-note" id="asset-results" aria-live="polite">Showing all {assets.length} objects. Choose a card to download its transparent sprite sheet.</p>
+			<p class="empty-results" id="asset-empty" hidden>No matching objects. Try another name or choose all categories.</p>
+			{groups.map((group, index) => (
 				<section class="asset-group" data-asset-group={group.id} aria-labelledby={`${group.id}-title`}>
-					<header class="group-heading"><span class="group-number">{group.number}</span><div><h3 id={`${group.id}-title`}>{group.title}</h3><p>{group.description}</p></div><span class="group-count">{assets.filter((asset) => asset.group === group.id).length} assets</span></header>
+					<header class="group-heading"><span class="group-number">{String(index + 1).padStart(2, '0')}</span><div><h3 id={`${group.id}-title`}>{group.title}</h3><p>{group.description}</p></div><span class="group-count">{assets.filter((asset) => asset.group === group.id).length} assets</span></header>
 					<div class="asset-grid">
 						{assets.filter((asset) => asset.group === group.id).map((asset) => (
-							<a class="asset-tile" href={`${assetRoot}/${asset.path}`} download aria-label={`Download sprite sheet containing ${asset.label}`}>
-								<div class="asset-image">{asset.rect && asset.sheetSize ? <svg class="sprite-preview" viewBox={asset.rect.join(' ')} aria-hidden="true"><image href={`${assetRoot}/${asset.path}`} width={asset.sheetSize[0]} height={asset.sheetSize[1]} /></svg> : <img src={`${assetRoot}/${asset.path}`} alt="" loading="lazy" decoding="async" width="96" height="96" />}<span class="download-mark" aria-hidden="true">↓</span></div>
+							<a class="asset-tile" data-asset-id={asset.id} data-asset-category={asset.group} data-asset-search={[asset.id, asset.label, ...asset.tags].join(' ').toLowerCase()} href={`${assetRoot}/${asset.path}`} download aria-label={`Download sprite sheet containing ${asset.label}`}>
+								<div class="asset-image">{asset.rect && asset.sheetSize ? (
+									<span class="sprite-preview" aria-hidden="true">
+										<span class="sprite-crop" style={`width: ${asset.rect[2] / Math.max(asset.rect[2], asset.rect[3]) * 100}%; height: ${asset.rect[3] / Math.max(asset.rect[2], asset.rect[3]) * 100}%;`}>
+											<img src={`${assetRoot}/${asset.path}`} alt="" loading="lazy" decoding="async" width={asset.sheetSize[0]} height={asset.sheetSize[1]} style={`width: ${asset.sheetSize[0] / asset.rect[2] * 100}%; height: ${asset.sheetSize[1] / asset.rect[3] * 100}%; left: ${-asset.rect[0] / asset.rect[2] * 100}%; top: ${-asset.rect[1] / asset.rect[3] * 100}%;`} />
+										</span>
+									</span>
+								) : <img src={`${assetRoot}/${asset.path}`} alt="" loading="lazy" decoding="async" width="96" height="96" />}<span class="download-mark" aria-hidden="true">↓</span></div>
 								<span class="asset-name">{asset.label}</span><code>{asset.id}</code>
 							</a>
 						))}
@@ -94,11 +101,14 @@ scenes:
 				<p>Open the sample in the editor, or copy the included asset folder into your website and reference their sprites from YAML. Each asset fits one grid cell with a checked ground-contact anchor.</p>
 				<ol><li>Copy the collection into <code>public/assets/software-architecture</code>.</li><li>Declare the assets you need and place them on whole grid cells.</li><li>Add labels and connections, then validate and compile your scene.</li></ol>
 				<div class="download-links">
-					<a href={`${base}/scenes/software-architecture.isostate.yaml`} download>Sample YAML ↓</a>
-					<a href={`${base}/scenes/software-architecture.isostate.js`} download>Compiled sample ↓</a>
+					<a href={`${base}/scenes/agentic-workflow.isostate.yaml`} download>Agentic workflow YAML ↓</a>
+					<a href={`${base}/scenes/provider-routing.isostate.yaml`} download>Provider routing YAML ↓</a>
+					<a href={`${base}/scenes/software-architecture.isostate.yaml`} download>Architecture YAML ↓</a>
+					<a href={`${base}/scenes/agentic-workflow.isostate.js`} download>Compiled workflow ↓</a>
 					<a href={`${assetRoot}/manifest.json`} download>Editor manifest ↓</a>
 				</div>
 				<p class="guide-link"><a href={`${base}/docs/guides/software-architecture-assets.md`}>Read the setup and usage guide →</a></p>
+				<p class="collection-note">Provider and ServiceNow objects are conceptual illustrations. Use labels to identify the product or record.</p>
 				<p class="license-note">Free to use and adapt under the <a href={`${assetRoot}/LICENSE`}>MIT license</a>. Keep its notice with redistributed assets.</p>
 			</div>
 			<div class="code-card"><div class="code-title">scene.isostate.yaml <span>One asset. One cell.</span></div><Code code={example} lang="yaml" theme="github-dark" /></div>
@@ -106,60 +116,33 @@ scenes:
 	</div>
 
 	<script>
-		import { mountScene } from '../../../packages/core/src/index.ts';
-		import type { RuntimeBundle } from '../../../packages/core/src/types/runtime-bundle.ts';
-		import scene from '../scenes/software-architecture.isostate.js';
-
-		const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
-		const target = document.getElementById('software-architecture-scene');
-		const descriptions = [
-			'A request travels from a client through the gateway and service to data.',
-			'A workflow moves from its starting point through a task and decision to completion.',
-			'A scheduled process creates a document, asks for approval, and delivers the result.'
-		];
-		if (target) {
-			initializeScene(target).catch(() => {
-				target.textContent = 'The live example could not load. Download the sample below to explore it locally.';
-			});
-		}
-		async function initializeScene(container: HTMLElement) {
-			const bundle: RuntimeBundle = structuredClone(scene);
-			for (const asset of Object.values(bundle.assets ?? {})) {
-				if (asset.url) asset.url = `${base}/${asset.url.replace(/^\.\//, '')}`;
+		import { initializeSoftwareExamples } from '../lib/software-examples';
+		initializeSoftwareExamples();
+		const search = document.querySelector<HTMLInputElement>('#asset-search');
+		const category = document.querySelector<HTMLSelectElement>('#asset-category');
+		const tiles = Array.from(document.querySelectorAll<HTMLElement>('[data-asset-id]'));
+		function filterAssets() {
+			const terms = (search?.value ?? '').toLowerCase().trim().split(/\s+/);
+			let count = 0;
+			for (const tile of tiles) {
+				tile.hidden = !(category?.value === 'all' || category?.value === tile.dataset.assetCategory) || !terms.every((term) => tile.dataset.assetSearch?.includes(term));
+				if (!tile.hidden) count++;
 			}
-			const { _digest, ...unsigned } = bundle;
-			const bytes = new TextEncoder().encode(JSON.stringify(normalize(unsigned)));
-			bundle._digest = Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', bytes)), (byte) => byte.toString(16).padStart(2, '0')).join('');
-			const mounted = mountScene(container, bundle, {
-				label: 'Software architecture, workflow, and process examples',
-				controller: { enabled: true, mode: 'manual' }
+			document.querySelectorAll<HTMLElement>('[data-asset-group]').forEach((group) => {
+				group.hidden = !group.querySelector('[data-asset-id]:not([hidden])');
 			});
-			mounted.controller?.setProgress(0);
-			const controls = document.querySelectorAll<HTMLButtonElement>('[data-progress]');
-			controls.forEach((button, index) => {
-				button.addEventListener('click', () => {
-					mounted.controller?.setProgress(Number(button.dataset.progress));
-					controls.forEach((control) => control.setAttribute('aria-pressed', String(control === button)));
-					const counter = document.getElementById('asset-scene-counter');
-					const description = document.getElementById('asset-scene-description');
-					if (counter) counter.textContent = `0${index + 1} / 03`;
-					if (description) description.textContent = descriptions[index];
-				});
-			});
-			window.addEventListener('beforeunload', () => mounted.destroy(), { once: true });
+			const status = document.getElementById('asset-results');
+			const empty = document.getElementById('asset-empty');
+			if (status) status.textContent = `Showing ${count} of ${tiles.length} objects. Choose a card to download its transparent sprite sheet.`;
+			if (empty) empty.hidden = count > 0;
 		}
-		function normalize(value: unknown): unknown {
-			if (Array.isArray(value)) return value.map((item) => normalize(item));
-			if (!value || typeof value !== 'object') return value;
-			return Object.fromEntries(Object.entries(value).filter(([, item]) => item !== undefined).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([key, item]) => [key, normalize(item)]));
-		}
-		document.querySelectorAll<HTMLButtonElement>('[data-group]').forEach((button) => {
-			button.addEventListener('click', () => {
-				document.querySelectorAll<HTMLButtonElement>('[data-group]').forEach((filter) => filter.setAttribute('aria-pressed', String(filter === button)));
-				document.querySelectorAll<HTMLElement>('[data-asset-group]').forEach((group) => {
-					group.hidden = button.dataset.group !== 'all' && group.dataset.assetGroup !== button.dataset.group;
-				});
-			});
+		search?.addEventListener('input', filterAssets);
+		category?.addEventListener('change', filterAssets);
+		document.getElementById('asset-clear')?.addEventListener('click', () => {
+			if (search) search.value = '';
+			if (category) category.value = 'all';
+			filterAssets();
+			search?.focus();
 		});
 	</script>
 </SiteLayout>
@@ -172,22 +155,23 @@ scenes:
 	h1 { font-size: clamp(40px, 4.6vw, 68px); margin: 22px 0; }
 	.lede { max-width: 440px; color: var(--soft-ink); font-size: 1.05rem; line-height: 1.7; }
 	.actions { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; margin-top: 30px; font-size: .83rem; font-weight: 600; }
+	.actions > a:not(.primary) { color: var(--green-dark); }
 	.primary { display: inline-flex; gap: 22px; background: var(--green-dark); color: #fffdf5; border-radius: 5px; padding: 16px 20px; text-decoration: none; }
 	.primary:hover { background: var(--green); }
 	.collection-note, .license-note { font-size: .72rem; color: var(--muted); line-height: 1.7; }
 	.collection-note { margin-top: 22px; }
-	.scene-card { overflow: hidden; border: 1px solid #c5ccbf; border-radius: 8px; background: #fdfcf5; box-shadow: 0 20px 60px #203c2c0c; }
+	.scene-card { min-width: 0; overflow: hidden; border: 1px solid #c5ccbf; border-radius: 8px; background: #fdfcf5; box-shadow: 0 20px 60px #203c2c0c; }
 	.scene-heading { display: flex; align-items: center; gap: 8px; padding: 20px 22px; font-size: .72rem; color: var(--soft-ink); border-bottom: 1px solid #e5e4d8; }
 	.live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
 	.scene-counter { margin-left: auto; font-family: monospace; color: var(--muted); }
-	.scene-canvas { height: 380px; width: 100%; padding: 12px 20px; background: radial-gradient(ellipse at center, #edf4ed, #fffdf500 70%); }
+	.scene-canvas { height: 430px; width: 100%; padding: 12px 20px; background: radial-gradient(ellipse at center, #edf4ed, #fffdf500 70%); }
 	.scene-description { margin: 0; padding: 0 26px 22px; min-height: 58px; font-size: .78rem; line-height: 1.65; color: var(--muted); }
-	.scene-controls { display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #d9dfd2; }
+	.scene-controls { display: grid; grid-template-columns: repeat(var(--scene-steps, 4), 1fr); border-top: 1px solid #d9dfd2; }
 	button { font: inherit; cursor: pointer; }
-	.scene-controls button { padding: 16px 10px; border: 0; background: #edf0e5; color: var(--muted); font-size: .73rem; }
-	.scene-controls button + button { border-left: 1px solid #d9dfd2; }
-	.scene-controls button[aria-pressed='true'] { background: var(--green-dark); color: #fffdf5; }
-	button:focus-visible, a:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+	.scene-controls :global(button) { font: inherit; cursor: pointer; padding: 16px 10px; border: 0; background: #edf0e5; color: var(--muted); font-size: .73rem; }
+	.scene-controls :global(button + button) { border-left: 1px solid #d9dfd2; }
+	.scene-controls :global(button[aria-pressed='true']) { background: var(--green-dark); color: #fffdf5; }
+	.scene-controls :global(button:focus-visible), button:focus-visible, a:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
 	.collection { border-top: 1px solid var(--line); scroll-margin-top: 90px; }
 	.collection-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 44px 0; }
 	h2 { font-size: clamp(32px, 3.5vw, 47px); margin: 12px 0 0; }
@@ -201,11 +185,15 @@ scenes:
 	h3 { margin: 0; font-size: .95rem; font-weight: 650; }
 	.group-heading p { color: var(--muted); margin: 7px 0 0; font-size: .78rem; line-height: 1.5; }
 	.group-count { margin-left: auto; white-space: nowrap; font-size: .68rem; color: var(--muted); }
-	.asset-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+	.asset-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+	.asset-tile[hidden], .empty-results[hidden] { display: none; }
 	.asset-tile { display: block; border: 1px solid #dcdccf; border-radius: 6px; background: #fffdf7; overflow: hidden; text-decoration: none; transition: border-color .2s, transform .2s; }
 	.asset-tile:hover { transform: translateY(-4px); border-color: var(--green); }
 	.asset-image { position: relative; display: grid; place-items: center; height: 190px; background: radial-gradient(ellipse at 50% 75%, #e7eee4, transparent 65%); }
-	.asset-image img, .sprite-preview { width: 152px; height: 152px; }
+	.asset-image > img, .sprite-preview { width: 152px; height: 152px; }
+	.sprite-preview { display: flex; align-items: center; justify-content: center; }
+	.sprite-crop { display: block; position: relative; overflow: hidden; }
+	.sprite-crop img { position: absolute; max-width: none; max-height: none; object-fit: fill; }
 	.download-mark { position: absolute; top: 10px; right: 12px; color: var(--green); opacity: .4; }
 	.asset-name { display: block; padding: 0 12px 6px; color: var(--ink); font-size: .8rem; font-weight: 600; }
 	.asset-tile code { display: block; overflow-wrap: anywhere; padding: 0 12px 14px; font-size: .62rem; color: var(--muted); line-height: 1.45; }
@@ -219,7 +207,21 @@ scenes:
 	.code-title { display: flex; gap: 12px; justify-content: space-between; color: #d5ddd4; font: .72rem monospace; padding: 18px 22px; border-bottom: 1px solid #303835; }
 	.code-title span { color: #a2b0a1; font-family: inherit; }
 	.code-card :global(pre) { margin: 0; padding: 24px; font-size: .78rem; line-height: 1.75; overflow-x: auto; }
+	.collection-total { margin: 0; font: 48px Georgia, serif; color: var(--green-dark); }
+	.collection-total span { display: block; font: .7rem sans-serif; color: var(--muted); margin-top: 8px; }
+	.catalog-toolbar { display: flex; align-items: end; gap: 16px; padding: 20px; border: 1px solid var(--line); background: #f4f3e9; border-radius: 6px; }
+	.catalog-toolbar label { display: grid; gap: 8px; font-size: .72rem; color: var(--soft-ink); }
+	.asset-search { flex: 1; }
+	.asset-category { flex: 0 1 260px; }
+	.catalog-toolbar input, .catalog-toolbar select { width: 100%; min-width: 0; padding: 12px; border: 1px solid #c6cdbd; border-radius: 4px; font-family: inherit; font-size: .8rem; background: #fffdf7; color: var(--ink); }
+	.catalog-toolbar input:focus-visible, select:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+	.clear-filters { border: 0; background: transparent; color: var(--green-dark); padding: 12px 0; font-size: .75rem; white-space: nowrap; }
+	.empty-results { padding: 36px; text-align: center; border: 1px dashed var(--line); color: var(--muted); }
+	.example-picker { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 16px; font-size: .7rem; border-top: 1px solid var(--line); }
+	.example-picker label { color: var(--muted); }
+	.example-picker select { flex: 1; min-width: 0; max-width: 260px; border: 1px solid var(--line); border-radius: 3px; background: #fffdf7; color: var(--ink); padding: 8px; font: inherit; }
+	.example-picker a { color: var(--green-dark); }
 	@media (max-width: 1100px) { .asset-hero { gap: 28px; } .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .collection-heading { align-items: start; flex-direction: column; } .usage { gap: 40px; } }
-	@media (max-width: 720px) { .asset-page { padding-top: 35px; } .asset-hero, .usage { grid-template-columns: 1fr; gap: 32px; } .asset-hero { padding-bottom: 45px; } .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .scene-canvas { height: 250px; } .group-heading { align-items: flex-start; } .group-count { display: none; } .usage { margin-top: 40px; padding-top: 35px; } .code-title span { display: none; } }
+	@media (max-width: 720px) { .asset-page { padding-top: 35px; } .asset-hero, .usage { grid-template-columns: 1fr; gap: 32px; } .asset-hero { padding-bottom: 45px; } .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .scene-canvas { height: 330px; } .catalog-toolbar { flex-wrap: wrap; padding: 14px; gap: 12px; } .asset-search { flex-basis: 100%; } .asset-category { flex: 1; } .collection-heading { flex-direction: row; } .collection-total { font-size: 36px; } .asset-image { height: 160px; } .asset-image > img, .sprite-preview { width: 132px; height: 132px; } .group-heading { align-items: flex-start; } .group-count { display: none; } .usage { margin-top: 40px; padding-top: 35px; } .code-title span { display: none; } }
 	@media (prefers-reduced-motion: reduce) { .asset-tile { transition: none; } }
 </style>

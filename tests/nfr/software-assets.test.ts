@@ -34,7 +34,7 @@ const catalog = JSON.parse(
 ) as Catalog;
 
 describe('software architecture catalog', () => {
-	test('covers both source sheets and all twenty labeled logical sprites', async () => {
+	test('covers all eleven source sheets and ninety-two labeled logical sprites', async () => {
 		const sourceFiles = (await readdir(root, { recursive: true }))
 			.filter((path) => /\.(png|svg|webp)$/.test(path))
 			.sort();
@@ -46,16 +46,31 @@ describe('software architecture catalog', () => {
 		expect(catalog.format).toBe('isostate.asset-manifest');
 		expect(catalog.version).toBe(1);
 		expect(catalog.assetBaseUrl).toBe('./');
-		expect(catalog.assets).toHaveLength(2);
+		expect(catalog.assets).toHaveLength(11);
 		expect(catalog.assets.map((entry) => entry.path).sort()).toEqual(
 			sourceFiles
 		);
 		expect(Object.keys(metadata.assets).sort()).toEqual(sourceFiles);
 		const ids = catalog.assets.flatMap((entry) => Object.keys(entry.sprites));
-		expect(new Set(ids).size).toBe(20);
+		expect(new Set(ids).size).toBe(92);
 		expect(ids.filter((id) => id.startsWith('architecture-'))).toHaveLength(12);
 		expect(ids.filter((id) => id.startsWith('workflow-'))).toHaveLength(5);
 		expect(ids.filter((id) => id.startsWith('process-'))).toHaveLength(3);
+		for (const prefix of [
+			'human',
+			'channel',
+			'servicenow',
+			'provider',
+			'infra'
+		]) {
+			expect(
+				ids.filter((id) => id.startsWith(`${prefix}-`)),
+				prefix
+			).toHaveLength(8);
+		}
+		expect(ids.filter((id) => id.startsWith('ai-'))).toHaveLength(16);
+		expect(ids.filter((id) => id.startsWith('agent-'))).toHaveLength(16);
+
 		for (const entry of catalog.assets)
 			expect(entry).toMatchObject(metadata.assets[entry.path]);
 	});
