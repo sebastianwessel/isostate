@@ -74,6 +74,20 @@
 		filter: drop-shadow(0 16px 32px rgba(15, 95, 79, 0.1));
 	}
 
+	.scene-target .iso-layer-labels text {
+		fill: #173e36;
+		stroke: #fbfcf5;
+		stroke-width: 4px;
+		stroke-linejoin: round;
+		paint-order: stroke fill;
+	}
+
+	@media (max-width: 600px) {
+		.scene-target .iso-layer-labels text {
+			font-size: 32px;
+		}
+	}
+
 	.scene-progress-track {
 		height: 5px;
 		border-radius: 999px;

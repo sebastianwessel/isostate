@@ -11,10 +11,10 @@ export const overviewChapters = [
   elements:
     - id: browser
       asset: architecture-browser
-      at: [1, 5]
+      at: [1, 8]
     - id: request
       asset: process-document
-      at: [1, 4]`
+      at: [1, 7]`
 	},
 	{
 		id: 'api-entry',
@@ -28,12 +28,12 @@ export const overviewChapters = [
     elements:
       - id: gateway
         asset: architecture-api-gateway
-        at: [3, 5]
+        at: [4, 8]
         enter: rise-from-ground
   update:
     elements:
       - id: request
-        at: [3, 4]`
+        at: [4, 7]`
 	},
 	{
 		id: 'service-and-data',
@@ -53,7 +53,7 @@ export const overviewChapters = [
   update:
     elements:
       - id: request
-        at: [5, 4]`
+        at: [7, 7]`
 	},
 	{
 		id: 'background-work',
@@ -67,12 +67,12 @@ export const overviewChapters = [
     elements:
       - id: worker
         asset: architecture-worker
-        at: [5, 2]
+        at: [7, 2]
         activity: {state: processing}
   update:
     elements:
       - id: request
-        at: [5, 1]`
+        at: [7, 1]`
 	},
 	{
 		id: 'ai-review',
@@ -86,13 +86,13 @@ export const overviewChapters = [
     elements:
       - id: reviewer
         asset: ai-reviewer
-        at: [7, 2]
+        at: [10, 2]
         enter: slide-in-right
         activity: {state: processing}
   update:
     elements:
       - id: request
-        at: [7, 1]`
+        at: [10, 1]`
 	},
 	{
 		id: 'human-approval',
@@ -106,14 +106,14 @@ export const overviewChapters = [
     elements:
       - id: approver
         asset: human-approver
-        at: [9, 2]
+        at: [13, 2]
         activity:
           state: waiting
           color: "#c68927"
   update:
     elements:
       - id: request
-        at: [9, 1]`
+        at: [13, 1]`
 	},
 	{
 		id: 'result-delivered',

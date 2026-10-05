@@ -62,15 +62,15 @@ describe('homepage software story', () => {
 		const engine = new AnimationEngine();
 		engine.init(bundle);
 		engine.setProgress(1 / 12);
-		expect(engine.getElementUpdate('request').pos).toEqual([2, 4]);
+		expect(engine.getElementUpdate('request').pos).toEqual([2.5, 7]);
 		engine.setProgress(5 / 12);
-		expect(engine.getElementUpdate('request').pos[0]).toBe(5);
-		expect(engine.getElementUpdate('request').pos[1]).toBeCloseTo(2.5);
+		expect(engine.getElementUpdate('request').pos[0]).toBe(7);
+		expect(engine.getElementUpdate('request').pos[1]).toBeCloseTo(4);
 		engine.setProgress(1);
 		expect(engine.getElementUpdate('request').lifecycle).toBe('exiting');
 		expect(engine.getElementUpdate('result').lifecycle).toBe('entering');
 		engine.setProgress(1 / 12);
-		expect(engine.getElementUpdate('request').pos).toEqual([2, 4]);
+		expect(engine.getElementUpdate('request').pos).toEqual([2.5, 7]);
 		expect(engine.getElementUpdate('request').lifecycle).toBe('present');
 	});
 

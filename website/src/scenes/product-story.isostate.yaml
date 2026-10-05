@@ -1,5 +1,7 @@
 # A request crosses architecture, background work, and human review.
 # Imported catalog sprites retain their checked anchors and native one-cell size.
+# Captions occupy a separate whole-cell band below each asset; rows/columns
+# leave room for artwork, status rings, routes, and two-line labels.
 header:
   version: "1.0"
   name: request-to-delivery
@@ -79,40 +81,40 @@ scenes:
       - id: browser
         asset: architecture-browser
         layer: systems
-        at: [ 1, 5 ]
+        at: [ 1, 8 ]
         size: 1
         enter: rise-from-ground
         activity: { state: processing, color: "#0f9f83" }
       - id: request
         asset: process-document
         layer: payload
-        at: [ 1, 4 ]
+        at: [ 1, 7 ]
         size: 1
         enter: slide-in-left
       - id: browser-label
         asset: text
         layer: labels
-        at: [ 2, 6 ]
+        at: [ 3, 10 ]
         size: 1
         enter: fade-in
-        text: { value: Browser, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+        text: { value: Browser, fontSize: 24, fontWeight: 700, fill: "#344c4a" }
   - id: api-entry
     add:
       elements:
         - id: gateway
           asset: architecture-api-gateway
           layer: systems
-          at: [ 3, 5 ]
+          at: [ 4, 8 ]
           size: 1
           enter: rise-from-ground
           activity: { state: processing, color: "#0f9f83" }
         - id: gateway-label
           asset: text
           layer: labels
-          at: [ 4, 6 ]
+          at: [ 6, 10 ]
           size: 1
           enter: fade-in
-          text: { value: API gateway, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: "API\ngateway", fontSize: 24, fontWeight: 700, fill: "#344c4a" }
       connections:
         - id: browser-to-api
           from: { element: browser }
@@ -128,7 +130,7 @@ scenes:
     update:
       elements:
         - id: request
-          at: [ 3, 4 ]
+          at: [ 4, 7 ]
         - id: browser
           activity: { state: complete, color: "#0f9f83" }
   - id: service-and-data
@@ -137,30 +139,30 @@ scenes:
         - id: service
           asset: architecture-service
           layer: systems
-          at: [ 5, 5 ]
+          at: [ 7, 8 ]
           size: 1
           enter: rise-from-ground
           activity: { state: processing, color: "#0f9f83" }
         - id: database
           asset: architecture-database
           layer: systems
-          at: [ 7, 5 ]
+          at: [ 10, 8 ]
           size: 1
           enter: rise-from-ground
         - id: service-label
           asset: text
           layer: labels
-          at: [ 6, 6 ]
+          at: [ 9, 10 ]
           size: 1
           enter: fade-in
-          text: { value: Service, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: Service, fontSize: 24, fontWeight: 700, fill: "#344c4a" }
         - id: database-label
           asset: text
           layer: labels
-          at: [ 8, 6 ]
+          at: [ 12, 10 ]
           size: 1
           enter: fade-in
-          text: { value: Database, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: Database, fontSize: 24, fontWeight: 700, fill: "#344c4a" }
       connections:
         - id: api-to-service
           from: { element: gateway }
@@ -187,7 +189,7 @@ scenes:
     update:
       elements:
         - id: request
-          at: [ 5, 4 ]
+          at: [ 7, 7 ]
         - id: gateway
           activity: { state: complete, color: "#0f9f83" }
   - id: background-work
@@ -196,31 +198,31 @@ scenes:
         - id: queue
           asset: architecture-queue
           layer: systems
-          at: [ 3, 2 ]
+          at: [ 4, 2 ]
           size: 1
           enter: rise-from-ground
           activity: { state: processing, color: "#0f9f83" }
         - id: worker
           asset: architecture-worker
           layer: systems
-          at: [ 5, 2 ]
+          at: [ 7, 2 ]
           size: 1
           enter: rise-from-ground
           activity: { state: processing, color: "#0f9f83" }
         - id: queue-label
           asset: text
           layer: labels
-          at: [ 4, 3 ]
+          at: [ 6, 4 ]
           size: 1
           enter: fade-in
-          text: { value: Queue, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: Queue, fontSize: 24, fontWeight: 700, fill: "#344c4a" }
         - id: worker-label
           asset: text
           layer: labels
-          at: [ 6, 3 ]
+          at: [ 9, 4 ]
           size: 1
           enter: fade-in
-          text: { value: Worker, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: Worker, fontSize: 24, fontWeight: 700, fill: "#344c4a" }
       connections:
         - id: service-to-queue
           from: { element: service }
@@ -247,7 +249,7 @@ scenes:
     update:
       elements:
         - id: request
-          at: [ 5, 1 ]
+          at: [ 7, 1 ]
         - id: service
           activity: { state: complete, color: "#0f9f83" }
   - id: ai-review
@@ -256,17 +258,17 @@ scenes:
         - id: reviewer
           asset: ai-reviewer
           layer: systems
-          at: [ 7, 2 ]
+          at: [ 10, 2 ]
           size: 1
           enter: slide-in-right
           activity: { state: processing, color: "#0f9f83" }
         - id: reviewer-label
           asset: text
           layer: labels
-          at: [ 8, 3 ]
+          at: [ 12, 4 ]
           size: 1
           enter: fade-in
-          text: { value: AI review, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: AI review, fontSize: 24, fontWeight: 700, fill: "#344c4a" }
       connections:
         - id: worker-to-reviewer
           from: { element: worker }
@@ -282,7 +284,7 @@ scenes:
     update:
       elements:
         - id: request
-          at: [ 7, 1 ]
+          at: [ 10, 1 ]
         - id: worker
           activity: { state: complete, color: "#0f9f83" }
         - id: queue
@@ -293,30 +295,30 @@ scenes:
         - id: approver
           asset: human-approver
           layer: systems
-          at: [ 9, 2 ]
+          at: [ 13, 2 ]
           size: 1
           enter: rise-from-ground
           activity: { state: waiting, color: "#c68927" }
         - id: handoff
           asset: ai-to-human-handoff
           layer: systems
-          at: [ 9, 4 ]
+          at: [ 13, 6 ]
           size: 1
           enter: fade-in-grow
         - id: approver-label
           asset: text
           layer: labels
-          at: [ 10, 3 ]
+          at: [ 15, 4 ]
           size: 1
           enter: fade-in
-          text: { value: Human approval, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: "Human\napproval", fontSize: 24, fontWeight: 700, fill: "#344c4a" }
         - id: handoff-label
           asset: text
           layer: labels
-          at: [ 10, 5 ]
+          at: [ 15, 8 ]
           size: 1
           enter: fade-in
-          text: { value: Review the result, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: "Review the\nresult", fontSize: 24, fontWeight: 700, fill: "#344c4a" }
       connections:
         - id: review-to-approval
           from: { element: reviewer }
@@ -332,7 +334,7 @@ scenes:
     update:
       elements:
         - id: request
-          at: [ 9, 1 ]
+          at: [ 13, 1 ]
         - id: reviewer
           activity: { state: complete, color: "#0f9f83" }
   - id: result-delivered
@@ -348,10 +350,10 @@ scenes:
         - id: result-label
           asset: text
           layer: labels
-          at: [ 2, 3 ]
+          at: [ 3, 4 ]
           size: 1
           enter: fade-in
-          text: { value: Delivered, fontSize: 16, fontWeight: 700, fill: "#344c4a" }
+          text: { value: Delivered, fontSize: 24, fontWeight: 700, fill: "#344c4a" }
       connections:
         - id: approval-to-result
           from: { element: approver }

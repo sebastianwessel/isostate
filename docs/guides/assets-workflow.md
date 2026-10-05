@@ -183,6 +183,18 @@ npx --package @sebastianwessel/isostate-cli isostate assets manifest assets/traf
   --asset-base-url ./traffic
 ```
 
+## Keep Labels Clear
+
+Give labels their own grid space below or beside the artwork. Built-in `cell`
+text is centered half a cell above its `at`, so a `[1, 1]` offset from an icon
+can still put its label through the icon's base. Leave space for nearby sprites,
+status rings, routes, and the longest label. Split longer names over two lines.
+
+The homepage example separates its rows and stages and uses `[2, 2]` offsets
+for below-object captions. Its host CSS adds a light text outline for contrast
+and enlarges text on narrow screens. Check rendered label bounds against every
+visible image at each scene stop; contrast styling does not replace spacing.
+
 ## Publish Assets
 
 Before publishing:

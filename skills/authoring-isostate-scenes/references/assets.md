@@ -184,6 +184,13 @@ Text rules:
   placement with screen pixels, pixel offsets, fractional nudges, or manual
   visual drift; those assumptions can break under zoom, camera focus, different
   containers, or responsive rendering.
+- Reserve a caption band below artwork and check it against neighboring assets,
+  status rings, and routes. `cell` text is centered half a cell above its grid
+  position, so moving a label by `[1, 1]` from an icon only puts the text back
+  on the icon's ground anchor. The homepage uses wider stage spacing and
+  separate `[2, 2]` caption offsets, two-line names, and a host text outline.
+  Verify actual rendered bounds at every stop and responsive width; a text
+  outline improves contrast but cannot fix a collision.
 - Text style communicates hierarchy after placement is correct. Larger or
   heavier text can introduce a region; quieter color or smaller text can demote
   it later. Style must not be used to hide a label that is in the wrong cell or
