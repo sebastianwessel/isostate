@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Isostate Assets"
+  short_description: "Create and maintain assets in the user’s visual style"
+  default_prompt: "Use $creating-isostate-assets to create or maintain an isostate asset catalog in my chosen style, with checked crops, anchors, notices, and validation."

@@ -22,6 +22,7 @@ only loads the runtime, compiled scene data, and referenced SVG assets.
     - [Plan A Scene](./docs/guides/plan-a-scene.md)
     - [Author Scene Deltas](./docs/guides/author-scene-deltas.md)
     - [Assets Workflow](./docs/guides/assets-workflow.md)
+    - [Create Assets With An AI Assistant](./docs/skills/creating-isostate-assets.md)
     - [AI Agents And Human Workflows](./docs/guides/agentic-workflows.md)
     - [Animation And Connections](./docs/guides/animation-and-connections.md)
     - [Convert Mermaid Diagrams](./docs/guides/convert-mermaid.md)

@@ -26,6 +26,8 @@ docs/                     end-user documentation
 tests/                    shared test fixtures and helpers
 skills/                   AI agent skills (workflow guides, not runtime code)
   authoring-isostate-scenes/  # Skill: writing/reviewing scene DSL, assets, examples
+  creating-isostate-assets/   # Skill: user-styled artwork, crops, catalogs, distribution
+  converting-mermaid-to-isostate-stories/  # Skill: faithful diagram-to-story conversion
 ```
 
 ## Spec Hierarchy
@@ -109,6 +111,11 @@ The `skills/` directory contains AI agent workflow guides. These are **not runti
 - **`authoring-isostate-scenes/`** — Writing and reviewing valid
   `.isostate.yaml` scene files, asset anchors, generated primitives, text
   labels, connections, examples, and converter outputs.
+- **`creating-isostate-assets/`** — Creating and maintaining artwork in the
+  user's chosen style, with checked crops/anchors, catalog metadata, provenance,
+  and package/website distribution.
+- **`converting-mermaid-to-isostate-stories/`** — Preserving diagram semantics
+  when converting Mermaid into cumulative visual stories.
 
 ## Gotchas
 

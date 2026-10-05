@@ -35,13 +35,14 @@ npm install --save-dev @sebastianwessel/isostate-cli yaml
 npx skills add sebastianwessel/isostate \\
   --skill authoring-isostate-scenes
 npx skills add sebastianwessel/isostate \\
-  --skill converting-mermaid-to-isostate-stories`;
+  --skill converting-mermaid-to-isostate-stories
+npx skills add sebastianwessel/isostate --skill creating-isostate-assets`;
 
 const fileSnippet = `# diagram.mmd
 ${sourceMermaid}`;
 
 const promptSnippet = `Use the converting-mermaid-to-isostate-stories skill and
-the authoring-isostate-scenes skill.
+the authoring-isostate-scenes and creating-isostate-assets skills.
 
 Read ./diagram.mmd and create a production-quality isostate story.
 
@@ -53,7 +54,7 @@ Hard requirement: Mermaid fidelity wins over visual polish.
 - introduce each element with its label before activating its first connection
 - use real isostate connections with routed paths, not SVG arrow assets
 
-Asset requirement:
+Asset requirement (the visual style for this example is realistic isometric):
 - design a small realistic isometric asset set in ./assets
 - create separate objects for roles such as client/request, router, auth,
   app/service, cache, database, queue, worker, response, success, and error
@@ -199,12 +200,13 @@ const chapters = [
 
 				<section class="chapter" data-progress={chapters[1].progress} data-title={chapters[1].title} data-index={chapters[1].index}>
 					<p class="chapter-kicker">Install the skills</p>
-					<h2>2. Teach the AI both the DSL and the conversion workflow.</h2>
+					<h2>2. Install scene, conversion, and asset guidance.</h2>
 					<p>
 						The authoring skill covers valid isostate YAML, assets, text,
 						connections, and scene stops. The Mermaid skill adds the conversion
 						workflow: extract the diagram facts first, then design a visual story
-						without losing any source information.
+						without losing any source information. The asset skill covers crops, anchors,
+						catalog maintenance, and notices in your chosen visual style.
 					</p>
 					<Code code={installSnippet} lang="sh" theme="github-dark" wrap />
 				</section>

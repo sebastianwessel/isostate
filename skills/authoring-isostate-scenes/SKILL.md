@@ -47,6 +47,9 @@ Use this skill when creating or reviewing isostate scene definitions and example
    - use `from`/`to` instead of fractional manual routes when connecting to element sides
    - omit unchanged objects in later scenes
 5. Treat assets as their own publishable catalog:
+   - for creating, restyling, importing, or maintaining artwork, use
+     `skills/creating-isostate-assets/`; take the visual style from the user
+     or their existing catalog rather than inventing a default aesthetic
    - standalone SVGs for one object per file
    - sprite sheets for generated raster catalogs or many small objects
    - one manifest per asset family; do not mix catalog ownership

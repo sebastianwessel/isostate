@@ -367,3 +367,12 @@ licensing. Build/sync scripts copy the notice and licence with downloadable
 assets; the core package includes the software catalog's notice. Other asset
 families retain their own source/licensing records. Generation credit is kept
 outside the public scene/manifest schema and browser runtime.
+
+## Asset Authoring Skill
+
+`skills/creating-isostate-assets/` provides creation, import, repair, and catalog
+maintenance guidance. Visual style comes from the user's brief, references, or
+existing catalog. The skill must not impose a palette, medium, or material
+style. It applies the existing format, viewport-anchor, manifest, provenance,
+and distribution contracts without adding runtime or DSL fields. Scene
+composition remains covered by `authoring-isostate-scenes`.

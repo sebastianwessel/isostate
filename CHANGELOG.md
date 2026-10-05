@@ -2,6 +2,8 @@
 
 ## 0.6.0
 
+- Add the `creating-isostate-assets` agent skill for user-defined visual styles, SVG/raster creation, checked sprite crops and anchors, catalog lifecycle, provenance, and package/website distribution.
+
 - Disclose OpenAI image-model generation in asset licence/provenance notices, website credits, downloadable catalogs, and the npm asset distribution.
 
 - Add a local Mermaid workbench with source examples, line diagnostics, YAML copy/download, and direct editor handoff; preserve node and branch labels, reverse reading directions, fan-out, and dotted/thick links in deterministic conversion.

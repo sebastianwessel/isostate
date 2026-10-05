@@ -32,6 +32,7 @@ import { Content as Errors } from '../../docs/reference/errors.md';
 import { Content as PublicApi } from '../../docs/reference/public-api.md';
 import { Content as RuntimeBundle } from '../../docs/reference/runtime-bundle.md';
 import { Content as Types } from '../../docs/reference/types.md';
+import { Content as CreatingIsostateAssets } from '../../docs/skills/creating-isostate-assets.md';
 
 export type DocEntry = {
 	slug: string;
@@ -58,6 +59,11 @@ type DocNavItem =
 	  };
 
 export const docs: DocEntry[] = [
+	{
+		slug: 'skills/creating-isostate-assets.md',
+		title: 'Create Assets With An AI Assistant',
+		Content: CreatingIsostateAssets
+	},
 	{
 		slug: 'guides/agentic-workflows.md',
 		title: 'AI Agents And Human Workflows',
@@ -261,6 +267,7 @@ export const docNav: DocNavSection[] = [
 				title: 'Visual Language',
 				items: [
 					'guides/assets-workflow.md',
+					'skills/creating-isostate-assets.md',
 					'guides/software-architecture-assets.md',
 					'guides/agentic-workflows.md',
 					'guides/animation-and-connections.md'

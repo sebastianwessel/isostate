@@ -63,6 +63,8 @@ Keep the original `.mmd` alongside generated YAML so fidelity stays reviewable.
    syntax. Do not duplicate shared storytelling rules there.
 6. If writing YAML, also use `skills/authoring-isostate-scenes/` as the DSL
    contract source and read only the relevant reference files there.
+   For creating or maintaining external artwork, use
+   `skills/creating-isostate-assets/` with the user's chosen style or reference.
 7. Build a source fidelity table before writing YAML:
    - every Mermaid node/participant/message/edge
    - every Mermaid state, transition, start/end marker, composite state, or
