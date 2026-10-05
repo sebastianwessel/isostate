@@ -1,0 +1,285 @@
+.mermaid-story {
+	background:
+		linear-gradient(
+			180deg,
+			rgba(238, 243, 242, 0.92),
+			rgba(255, 253, 245, 0.96)
+		),
+		#eef3f2;
+	min-height: calc(100svh - 64px);
+}
+
+.story-shell {
+	display: grid;
+	grid-template-columns: minmax(360px, 0.96fr) minmax(0, 1.04fr);
+	gap: clamp(28px, 5vw, 76px);
+	max-width: 1440px;
+	margin: 0 auto;
+	padding: clamp(28px, 5vw, 76px) clamp(20px, 5vw, 80px);
+}
+
+.story-visual {
+	position: sticky;
+	top: 92px;
+	align-self: start;
+	min-width: 0;
+}
+
+.visual-card {
+	border: 1px solid rgba(15, 95, 79, 0.14);
+	border-radius: 12px;
+	background: rgba(255, 253, 245, 0.82);
+	box-shadow: var(--shadow);
+	overflow: hidden;
+}
+
+.visual-head {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 18px;
+	padding: 18px 20px 12px;
+	border-bottom: 1px solid rgba(15, 95, 79, 0.1);
+}
+
+.eyebrow,
+.chapter-kicker {
+	margin: 0 0 10px;
+	color: var(--green-dark);
+	font-size: 0.72rem;
+	font-weight: 800;
+	letter-spacing: 0.07em;
+	text-transform: uppercase;
+}
+
+.visual-head h2 {
+	margin: 0;
+	color: var(--ink);
+	font-size: clamp(1.15rem, 2.2vw, 1.7rem);
+	line-height: 1.05;
+}
+
+.visual-head span {
+	flex: 0 0 auto;
+	color: var(--green-dark);
+	font-size: 0.82rem;
+	font-weight: 800;
+}
+
+.scene-target {
+	aspect-ratio: 1;
+	min-height: 0;
+	background: linear-gradient(
+		180deg,
+		rgba(255, 255, 255, 0.58),
+		rgba(238, 243, 242, 0.5)
+	);
+}
+
+.scene-target > svg {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+
+.progress-track {
+	height: 5px;
+	background: rgba(15, 95, 79, 0.12);
+}
+
+.progress-track span {
+	display: block;
+	inline-size: 5%;
+	block-size: 100%;
+	background: var(--green);
+	transition: inline-size 180ms ease;
+}
+
+.story-copy {
+	min-width: 0;
+}
+
+.story-hero {
+	padding: clamp(24px, 4vw, 48px) 0 clamp(28px, 5vw, 64px);
+}
+
+.story-hero h2 {
+	max-width: 780px;
+	margin: 0;
+	color: var(--ink);
+	font-size: clamp(2.35rem, 5vw, 4.9rem);
+	line-height: 0.96;
+	letter-spacing: 0;
+}
+
+.story-hero p:last-child,
+.chapter p {
+	color: var(--soft-ink);
+	font-size: clamp(1rem, 1.5vw, 1.12rem);
+	line-height: 1.72;
+}
+
+.story-hero p:last-child {
+	max-width: 740px;
+	margin: 22px 0 0;
+}
+
+.chapter {
+	margin: 0 0 clamp(44px, 8vw, 110px);
+	padding-block: clamp(22px, 4vw, 52px);
+	border-top: 1px solid rgba(15, 95, 79, 0.12);
+}
+
+.chapter h2 {
+	max-width: 760px;
+	margin: 0;
+	color: var(--ink);
+	font-size: clamp(1.65rem, 3.2vw, 2.8rem);
+	line-height: 1.04;
+	letter-spacing: 0;
+}
+
+.chapter p {
+	max-width: 720px;
+	margin: 18px 0 22px;
+}
+
+.chapter pre {
+	margin-block: 18px 0;
+}
+
+.next-link a {
+	display: inline-flex;
+	align-items: center;
+	min-height: 44px;
+	padding: 0 18px;
+	border-radius: 8px;
+	background: var(--green-dark);
+	color: #fffdf5;
+	font-weight: 800;
+	text-decoration: none;
+}
+
+@media (max-width: 980px) {
+	.story-shell {
+		grid-template-columns: 1fr;
+	}
+
+	.story-visual {
+		position: relative;
+		top: auto;
+		order: 1;
+	}
+
+	.story-copy {
+		order: 2;
+	}
+
+	.scene-target,
+	.scene-target > svg {
+		height: auto;
+		min-height: 0;
+	}
+}
+
+@media (max-width: 640px) {
+	.story-shell {
+		padding-inline: 16px;
+	}
+
+	.visual-head {
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.scene-target,
+	.scene-target > svg {
+		height: auto;
+		min-height: 0;
+	}
+}
+
+#mermaid-story {
+	scroll-margin-top: 90px;
+}
+.story-controls {
+	border-top: 1px solid rgba(15, 95, 79, 0.12);
+	padding: 12px 20px;
+}
+.story-steps {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 6px;
+}
+.story-controls button {
+	min-height: 36px;
+	border: 1px solid rgba(15, 95, 79, 0.2);
+	border-radius: 5px;
+	background: transparent;
+	color: var(--green-dark);
+	font: inherit;
+	font-size: 0.72rem;
+	font-weight: 700;
+	cursor: pointer;
+}
+.story-controls button:hover {
+	background: rgba(15, 95, 79, 0.08);
+}
+.story-controls button[aria-pressed="true"] {
+	background: var(--green-dark);
+	color: var(--panel);
+}
+.story-controls button:focus-visible {
+	outline: 2px solid var(--green);
+	outline-offset: 2px;
+}
+.story-options {
+	display: flex;
+	gap: 8px;
+	justify-content: space-between;
+	margin-top: 8px;
+}
+.story-options button {
+	padding-inline: 10px;
+}
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
+	border: 0;
+}
+#mermaid-workflow-scene.effects-paused * {
+	animation-play-state: paused;
+}
+@media (max-width: 980px) {
+	.story-visual {
+		max-width: 600px;
+		width: 100%;
+		margin-inline: auto;
+	}
+	.scene-target {
+		aspect-ratio: 1.25;
+	}
+	.story-hero {
+		padding-top: 0;
+	}
+}
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+	.progress-track span {
+		transition: none;
+	}
+}
+.scene-target svg text {
+	paint-order: stroke fill;
+	stroke: var(--panel);
+	stroke-width: 3px;
+	stroke-linejoin: round;
+}

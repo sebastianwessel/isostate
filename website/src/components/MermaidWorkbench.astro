@@ -1,0 +1,82 @@
+---
+import '../styles/mermaid-workbench.css';
+
+interface Props {
+	editorUrl: string;
+	guideUrl: string;
+}
+const { editorUrl, guideUrl } = Astro.props;
+---
+
+<section class="mermaid-workbench" aria-labelledby="mermaid-heading" data-editor-url={editorUrl}>
+	<div class="workbench-heading">
+		<div>
+			<p class="workbench-eyebrow">Mermaid → isostate</p>
+			<h1 id="mermaid-heading">Your diagram.<br />A new dimension.</h1>
+		</div>
+		<div class="workbench-intro">
+			<p>Start with a Mermaid flowchart. Get editable isostate YAML with its nodes, labels, branches, and connections intact.</p>
+			<p>Convert here, then shape the scene in the editor. For custom assets and a cumulative story, <a href="#mermaid-story">follow the workflow below ↘</a>.</p>
+		</div>
+	</div>
+	<div class="conversion-panel">
+		<form id="mermaid-convert-form" class="conversion-source">
+			<div class="conversion-pane-head">
+				<label for="mermaid-input"><span class="pane-number">01</span> Mermaid source</label>
+				<label class="file-button">Load .mmd<input id="mermaid-file" type="file" accept=".mmd,.mermaid,.txt,text/plain" /></label>
+			</div>
+			<div class="source-settings">
+				<label for="mermaid-example">Example</label>
+				<select id="mermaid-example">
+					<option value="request">Request &amp; async work</option>
+					<option value="decision">Approval branches</option>
+					<option value="pipeline">Left-to-right pipeline</option>
+					<option value="cycle">Retry loop</option>
+				</select>
+			</div>
+			<textarea id="mermaid-input" name="source" spellcheck="false" aria-describedby="mermaid-support" maxlength="100000">flowchart TD
+  Request --> Router
+  Router --> Auth
+  Auth -- ok --> App
+  Auth -- denied --> Response
+  App --> Cache
+  Cache -- hit --> Response
+  Cache -- miss --> DB
+  DB --> Response
+  App -. async .-> Queue
+  Queue --> Worker
+  Worker --> DB</textarea>
+			<div class="conversion-source-foot">
+				<p id="mermaid-support">Flowcharts: TD, TB, LR, RL, BT. Solid, dotted, thick, and labeled connections.</p>
+				<button type="submit" class="workbench-button primary">Convert to YAML <span aria-hidden="true">→</span></button>
+			</div>
+		</form>
+		<div class="conversion-output">
+			<div class="conversion-pane-head">
+				<label for="mermaid-output"><span class="pane-number">02</span> isostate YAML</label>
+				<span id="mermaid-output-state" class="output-state">Ready to convert</span>
+			</div>
+			<textarea id="mermaid-output" readonly spellcheck="false" placeholder="Your converted scene will appear here." aria-describedby="mermaid-result-status"></textarea>
+			<div class="conversion-actions">
+				<button id="mermaid-copy" type="button" class="workbench-button" disabled>Copy YAML</button>
+				<button id="mermaid-download" type="button" class="workbench-button" disabled>Download YAML</button>
+				<button id="mermaid-editor" type="button" class="workbench-button primary" disabled>Open in editor <span aria-hidden="true">↗</span></button>
+			</div>
+		</div>
+	</div>
+	<div id="mermaid-diagnostics" class="conversion-diagnostics" hidden>
+		<p id="mermaid-result-status" role="status" aria-live="polite"></p>
+		<ul id="mermaid-warnings"></ul>
+		<button id="mermaid-error-line" type="button" class="workbench-button" hidden>Go to source line</button>
+	</div>
+	<div class="workbench-note">
+		<p><strong>A starting scene, ready to refine.</strong> Conversion uses generated shapes and a deterministic layout. Subgraphs, styling directives, and sequence/state/class/ER diagrams need the AI workflow below.</p>
+		<a href={guideUrl}>Syntax &amp; CLI guide ↗</a>
+	</div>
+	<noscript><p class="conversion-diagnostics">Enable JavaScript to convert here, or use <code>isostate mermaid2dsl diagram.mmd</code> with the CLI.</p></noscript>
+</section>
+
+<script>
+	import { initializeMermaidWorkbench } from '../lib/mermaid-workbench';
+	initializeMermaidWorkbench();
+</script>

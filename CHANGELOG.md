@@ -2,6 +2,10 @@
 
 ## 0.6.0
 
+- Add a local Mermaid workbench with source examples, line diagnostics, YAML copy/download, and direct editor handoff; preserve node and branch labels, reverse reading directions, fan-out, and dotted/thick links in deterministic conversion.
+- Refresh the Mermaid tutorial illustrations and native-cell layout, add manual story navigation and reduced-motion controls, and keep conversion docs, agent skills, source examples, and compiled bundles in sync.
+- Give homepage showcase captions a separate layout band and a contrasting outline for readable desktop and mobile scenes.
+
 - Rebuild the overview around a moving request through software architecture, asynchronous processing, AI review, and human approval, with smooth step navigation, scroll scrubbing, pause, and reduced-motion controls.
 - Restore lifecycle transitions when timeline seeks skip scene stops; prioritize scrubbing over in-flight navigation and preserve runtime camera/effects in editor preview.
 - Fix editor pan scaling, centered zoom, object grab offsets, pointer capture/cancellation, and return-to-edit navigation after timeline scrubbing; synchronize the authoring docs and skill.

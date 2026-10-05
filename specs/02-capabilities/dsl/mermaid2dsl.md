@@ -1,196 +1,133 @@
 # Capability: mermaid2dsl Converter
 
-Status: implemented (wave 06)
+Status: implemented
 
-Converts a Mermaid flowchart definition into a valid `.isostate.yaml`
-`SceneDocument`. Dev-time only. Delivers the converter input source promised
-in `00-vision.md` (C7 input sources) for the flowchart subset below —
-nothing more.
+Converts the explicitly supported Mermaid flowchart syntax into a deterministic
+single-scene `.isostate.yaml`. It is an authoring adapter, not a Mermaid renderer
+or a replacement for a designed multi-scene story.
 
-## Placement
+## Placement And Boundary
 
-- Implementation module: `packages/cli/src/mermaid2dsl.ts` (pure conversion
-  logic, no filesystem access) plus command wiring in
-  `packages/cli/src/commands.ts`.
-- Public CLI command: `isostate mermaid2dsl` (see `03-contracts/cli.md`).
-- The conversion function is exported from `packages/cli/src/index.ts` as
-  `convertMermaidToDsl(source: string): MermaidConversionResult`.
-- MUST NOT be imported by `packages/core` or shipped to the browser.
-- Zero new dependencies: the Mermaid subset below is parsed with a
-  hand-written line parser. The `mermaid` npm package is NOT used.
+- `packages/cli/src/mermaid-source.ts`: dependency-free, filesystem-free
+  `convertMermaidSource(source, { name? })` for isolated authoring tools.
+- Parser, layout, emitter, and conversion types live in neighboring
+  `mermaid-*.ts` modules; structured errors retain code/message/details.line.
+- `packages/cli/src/mermaid2dsl.ts`: public `convertMermaidToDsl` wrapper;
+  parses and validates the emitted YAML before returning it.
+- `packages/cli/src/commands.ts`: filesystem CLI command wiring.
+- The website Mermaid workbench may import the pure source converter. This
+  authoring-only exception does not add parsing to scene playback. Neither
+  converter nor YAML/parser/validator/compiler belongs in the core runtime or
+  precompiled scene embeds. The editor validates handed-off YAML independently.
+- No Mermaid dependency or full Mermaid layout engine is added.
 
 ```ts
 interface MermaidConversionResult {
-  /** Serialized .isostate.yaml document text. */
   yaml: string;
-  /** Non-fatal conversion notices (see warning codes). */
   warnings: Array<{ code: string; message: string; line: number }>;
 }
+interface MermaidConversionOptions { name?: string }
 ```
 
 ## Supported Input (exhaustive)
 
-Line-oriented parsing after trimming; blank lines and lines starting with
-`%%` (comments) are skipped.
+The syntax follows the [official Mermaid flowchart reference](https://mermaid.js.org/syntax/flowchart.html)
+within this intentionally bounded subset:
 
-1. Header (first non-blank, non-comment line, required):
-   `graph <DIR>` or `flowchart <DIR>` where `<DIR>` is one of
-   `TD`, `TB` (synonyms, top-down) or `LR` (left-right). `RL` and `BT` are
-   NOT supported.
-2. Node statements — a bare node reference, either alone on a line or inside
-   an edge statement:
-   - `id` (plain, no label)
-   - `id[text]` → shape `rectangle`
-   - `id(text)` → shape `circle`
-   - `id((text))` → shape `circle`
-   - `id{text}` → shape `polygon` (diamond)
-   Node ids match `/^[A-Za-z0-9_-]+$/`. Label text is everything between the
-   brackets, with surrounding double quotes stripped when present. A node's
-   shape/label is fixed by its first bracketed occurrence; later bracketed
-   occurrences with a different shape or label fail with
-   `MERMAID_NODE_REDEFINED`.
-3. Edge statements:
-   - `A --> B` (directed)
-   - `A --- B` (undirected)
-   - `A -->|text| B` and `A ---|text| B` (edge label)
-   - `A -- text --> B` and `A -- text --- B` (edge label)
-   Whitespace around tokens is flexible. Chained edges
-   (`A --> B --> C`) are supported and expand pairwise left to right.
-   Multiple edges on one line separated by `&` are NOT supported.
+- Required `graph` or `flowchart` header with `TD`, `TB`, `LR`, `RL`, or `BT`.
+  `TB` normalizes to `TD`; reverse directions mirror layers without negatives.
+- Statements separated by newlines or semicolons; blank lines and `%%` comments
+  are ignored outside labels. Quoted delimiter characters remain label text.
+- Node identifiers contain letters, digits, underscores, and hyphens. IDs are
+  normalized to DSL identifiers as described below.
+- Bare `A` uses a rectangle and visible original-id caption.
+- Shapes: `A[text]` rectangle, `A(text)` rounded rectangle, `A([text])`
+  stadium, `A((text))` circle, `A{text}` diamond, `A{{text}}` hexagon,
+  `A[/text/]`/`A[\text\]` parallelograms, and
+  `A[/text\]`/`A[\text/]` trapezoids.
+- Labels may be double-quoted, including delimiters inside the quotes. Escaped
+  quotes and backslashes are decoded. HTML, Markdown, and entity labels are
+  rejected rather than silently changing their meaning.
+- Ordinary `-->`/`---`, dotted `-.->`/`-.-`, and thick `==>`/`===` links.
+  Arrow forms are directed; the others are undirected.
+- Pipe labels after operators (`A -->|yes| B`) and infix labels (`A -- yes --> B`,
+  `A -. async .-> B`, `A == main ==> B`) are preserved as visible text.
+- Chains expand pairwise. `A & B --> C & D` expands the Cartesian product,
+  preserving all four connections and their labels/styles.
 
-Any other statement (subgraphs, `classDef`, `class`, `style`, `click`,
-`linkStyle`, `direction`, other arrow types like `-.->`/`==>`, other node
-shapes like `[[..]]`/`[(..)]`/`>..]`) fails with `MERMAID_UNSUPPORTED` and
-the 1-based line number in `details.line`. An input with zero nodes fails
-with `MERMAID_EMPTY`.
+Subgraphs, local `direction`, class/style/click/linkStyle directives, frontmatter,
+configuration directives, cylinder/subroutine/flag/double-circle/new `@{}`
+shapes, other diagram types, and other arrowheads/edge annotations are outside
+this subset. They produce a structured error; unsupported features must not be
+silently discarded. Later contradictory definitions of an existing node fail
+with `MERMAID_NODE_REDEFINED`.
 
-## Id Normalization (deterministic)
+## Identifiers
 
-Mermaid node id → DSL element id:
+Node ID normalization: lowercase, replace non-`[a-z0-9]` characters with `-`,
+collapse hyphens and trim their ends, prefix `n-` for a leading digit, and reject
+an empty result. Different original IDs that normalize to the same value fail
+with `MERMAID_ID_COLLISION`. Every node reserves `<node-id>-label`; a collision
+with another node is also an error.
 
-1. lowercase;
-2. every character outside `[a-z0-9]` becomes `-`;
-3. consecutive `-` collapse to one; leading/trailing `-` stripped;
-4. if the result starts with a digit, prefix `n-`;
-5. if the result is empty, fail `MERMAID_PARSE_ERROR`.
+Connection IDs use `<from>-to-<to>` with deterministic `-2`, `-3`, … suffixes
+for repeated edges. Edge-caption IDs derive from the connection ID and are
+uniquified against node and caption IDs, preserving authored node identity.
 
-If two distinct Mermaid ids normalize to the same DSL id, fail
-`MERMAID_ID_COLLISION` naming both originals. The label element for node
-`x` is `x-label`; if that collides with another normalized node id, fail
-`MERMAID_ID_COLLISION` as well.
+## Layout And Emission
 
-## Layout Algorithm (deterministic)
+1. Build layering using written edge order (undirected links also contribute).
+   Ignore only DFS cycle-closing edges for longest-path layering; emit
+   `MERMAID_CYCLE_BROKEN` per ignored edge. Every edge remains in output.
+   Start DFS from zero-indegree sources in document order; when there are none,
+   start from the first node. Process disconnected components deterministically.
+2. Within each layer, retain first node appearance order. Four-cell spacing:
+   TD/TB/BT use `[index * 4, layer * 4]`; LR/RL use
+   `[layer * 4, index * 4]`. RL/BT replace layer with `maxLayer - layer`.
+3. Emit every shape with its primitive payload and a text caption at the
+   same `at` on `labels`, `align: middle`, `placement: caption`. An explicit
+   label overrides the bare original ID, and an explicitly empty label suppresses that caption.
+4. Shape colors use `var(--iso-node-fill, #dbeafe)` and
+   `var(--iso-node-stroke, #2563eb)`, stroke width 1, opacity 0.9. Rounded rectangles and stadiums use polygons with 20 sampled corner points,
+   rounded to six decimals. Corner radii are 0.15 and 0.25 respectively; stadium
+   bounds are x=[0,1], y=[0.25,0.75] for a 2:1 pill. Quarter arcs use
+   22.5-degree sampling. Polygon point arrays approximate these silhouettes
+   without relying on unsupported rectangle rounding in the renderer. These are generic starter primitives.
+5. Connections go on `ground`, with element endpoints and `end: arrow` or
+   `none`; dotted links use `style.pattern: dotted`, thick links use
+   `style.strokeWidth: 4`.
+6. Nonempty edge captions occupy a rounded whole-cell midpoint between endpoint
+   coordinates; move to the next free x cell if another node/caption already
+   occupies that cell. This is deterministic starter placement, not a guarantee
+   against measured text overlap or route ambiguity; review the rendered draft.
+7. Header contains normalized name (default `mermaid-scene`), empty assets, and
+   `ground`, `nodes`, `labels` layers. Scene ID is `initial`. No floor, camera,
+   custom asset mapping, activity, or scene deltas are inferred.
 
-1. Build the directed graph from all edges (undirected edges count as
-   directed for layering, using their written order).
-2. `layer(node)` = longest-path distance from any source node (node with
-   in-degree 0). Nodes on a cycle: break cycles by ignoring the edge that
-   closes a cycle in document order (depth-first from sources in
-   first-appearance order); emit warning `MERMAID_CYCLE_BROKEN` for each
-   ignored edge.
-   When the graph has no in-degree-0 node (a pure cycle), the layering
-   depth-first search starts from the first node in document order.
-3. Within a layer, nodes are ordered by first appearance in the document.
-4. Grid placement with spacing of 2 whole cells starting at `[0, 0]`:
-   - `TD`/`TB`: `at = [indexInLayer * 2, layer * 2]`
-   - `LR`: `at = [layer * 2, indexInLayer * 2]`
-5. Every node emits two elements:
-   - the shape element: `id`, `asset` per shape mapping, `at` as computed,
-     `layer: nodes`, and the primitive payload below;
-   - when the node has a label: a text element `<id>-label`,
-     `asset: text`, same `at`, `layer: labels`,
-     `text: { value: <label>, align: middle, placement: caption }`.
-6. Shape payloads (fixed, no options):
-   - `rectangle` → `primitive: { rectangle: { fill: "var(--iso-node-fill, #dbeafe)", stroke: "var(--iso-node-stroke, #2563eb)", strokeWidth: 1, opacity: 0.9 } }`
-   - `circle` → `primitive: { circle: { fill: "var(--iso-node-fill, #dbeafe)", stroke: "var(--iso-node-stroke, #2563eb)", strokeWidth: 1, opacity: 0.9 } }`
-   - `polygon` (diamond) → `primitive: { polygon: { points: [[0.5, 0], [1, 0.5], [0.5, 1], [0, 0.5]], fill: "var(--iso-node-fill, #dbeafe)", stroke: "var(--iso-node-stroke, #2563eb)", strokeWidth: 1, opacity: 0.9 } }`
-7. Edges → connections in document order:
-   `id: <fromId>-to-<toId>` (on duplicate connection ids append `-2`, `-3`,
-   ... in document order), `from: { element: <fromId> }`,
-   `to: { element: <toId> }`, `layer: ground`, and `end: arrow` for `-->`
-   or `end: none` for `---`. Edge labels are dropped with warning
-   `MERMAID_LABEL_DROPPED` (the DSL has no connection labels).
-8. Header of the generated document:
+Emission uses two-space YAML indentation and flow-style numeric tuples. Strings
+are quoted when needed to avoid YAML type coercion or syntax ambiguity. Same
+source/options yields byte-identical YAML.
 
-```yaml
-header:
-  name: <basename of the input file without extension, id-normalized; "mermaid-scene" when converting from a string>
-  assets: []
-  layers:
-    - name: ground
-    - name: nodes
-    - name: labels
-scenes:
-  - id: initial
-    elements: [...]
-    connections: [...]
-```
+## Diagnostics And Verification
 
-Single scene only. No `grid`, `floor`, `assetBaseUrl`, camera, or ambient
-output in v1.
-
-## Output Contract
-
-- The generated YAML MUST parse via `parseScene` and validate via
-  `validateScene` with zero errors. The converter runs both before
-  returning; an internal failure here is a converter bug and surfaces as
-  `MERMAID_INTERNAL` with the underlying issue list in `details`.
-- Conversion is deterministic: identical input text yields byte-identical
-  YAML.
-- YAML is emitted with 2-space indentation, keys in the exact order shown
-  in this spec, flow-style `[x, y]` tuples and `points`, and double-quoted
-  strings only when YAML requires quoting.
-
-## Error and Warning Codes
-
-Errors (thrown as `ParseError`-shaped structured errors with `code`,
-`message`, `details.line` where applicable; the error `message` also ends
-with `(line N)` when a line number is known, so CLI output shows it):
-`MERMAID_PARSE_ERROR`, `MERMAID_UNSUPPORTED`, `MERMAID_EMPTY`,
+Errors: `MERMAID_PARSE_ERROR`, `MERMAID_UNSUPPORTED`, `MERMAID_EMPTY`,
 `MERMAID_NODE_REDEFINED`, `MERMAID_ID_COLLISION`, `MERMAID_INTERNAL`.
+Line-specific errors expose the one-based line in `details.line` and append it
+to the readable message. Cycle notices use `MERMAID_CYCLE_BROKEN`.
+`MERMAID_LABEL_DROPPED` is no longer emitted: edge labels are text elements.
 
-Warnings (returned, never thrown): `MERMAID_LABEL_DROPPED`,
-`MERMAID_CYCLE_BROKEN`.
+The validating CLI wrapper MUST parse and validate with zero DSL errors. An
+invalid generated document fails with `MERMAID_INTERNAL` and underlying issues.
+The pure website converter emits the same YAML; opening it in the editor runs
+editor validation. CLI warnings print `WARN <code> ...`, exit 0 on success, and
+exit 1 on an error. See `03-contracts/cli.md`.
 
-All codes are added to `03-contracts/errors.md` (new "Converter" section)
-and `docs/reference/errors.md`.
+Focused tests cover supported shapes/directions/operator styles, exact labels,
+quoting and statement boundaries, Cartesian fan-out/chains, ID collisions,
+cycle connection retention, byte determinism, pure/wrapper parity, CLI output,
+and unsupported or malformed input with lines. Website tests cover invalid
+input disabling exports, copy/download result identity, and editor handoff.
+`examples/mermaid/` keeps source, generated YAML, and compiled JS together.
 
-## CLI Command
-
-See `03-contracts/cli.md` "isostate mermaid2dsl". Summary:
-`isostate mermaid2dsl <input.mmd> [--out <file>]`, default `--out` is the
-input path with its extension replaced by `.isostate.yaml`; prints warnings
-with the standard `WARN <code> ...` format; exit 0 on success (with or
-without warnings), exit 1 on any error.
-
-## Testing (required)
-
-`tests/cli/mermaid2dsl.test.ts`:
-
-- full happy path: a TD flowchart with all three shapes, labeled and
-  unlabeled nodes, chained edges, and an undirected edge converts to YAML
-  that parses, validates with zero errors, and matches an inline expected
-  YAML snapshot byte-for-byte;
-- LR direction transposes coordinates;
-- id normalization cases (`Web_Server` → `web-server`, `2tier` → `n-2tier`),
-  collision error;
-- node redefinition error, unsupported statement error with line number,
-  empty input error;
-- cycle input produces `MERMAID_CYCLE_BROKEN` warning and still lays out;
-- edge label produces `MERMAID_LABEL_DROPPED` warning;
-- CLI command writes the output file, honors `--out`, exits 1 with
-  `MERMAID_UNSUPPORTED` on a subgraph input.
-
-## Documentation (required)
-
-- `docs/guides/convert-mermaid.md`: guide with a worked example (input
-  flowchart, generated YAML, rendered result description).
-- `docs/guides/use-the-cli.md`: command section.
-- README doc tree link.
-
-## Out of Scope (v1)
-
-- Sequence/class/state/ER diagrams, subgraphs, styling statements.
-- Edge labels rendered as text elements.
-- Multi-scene output, scene deltas, custom spacing or asset mapping.
-- Using the `mermaid` npm package for parsing.
+Docs, error references, both authoring skills, website examples, and generated
+bundles must change together when this contract changes.

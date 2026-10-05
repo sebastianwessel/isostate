@@ -190,7 +190,6 @@ Common fixes, grouped by the owner that raises each code (matching
 | `ELEMENT_OUTSIDE_FLOOR` | Move the element inside the floor bounds or adjust the floor size. |
 | `CONNECTOR_OUTSIDE_FLOOR` | Adjust the connector route or the floor size so the route stays inside floor bounds. |
 | `CONNECTOR_INTERSECTS_OBJECT` | Reroute the manual connector to avoid crossing the unrelated object. |
-| `MERMAID_LABEL_DROPPED` | Remove the edge label or accept that DSL connections carry no label. |
 | `MERMAID_CYCLE_BROKEN` | Remove or restructure the cycle-closing edge if explicit layering is required. |
 | `CONNECTOR_ROUTE_DETOUR` | Shorten the route with a manual `route`, or accept the longer auto-routed path. |
 

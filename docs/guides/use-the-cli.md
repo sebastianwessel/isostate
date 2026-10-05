@@ -177,8 +177,9 @@ bundle.
 ### mermaid2dsl
 
 Converts a supported Mermaid flowchart subset into a starting
-`.isostate.yaml` scene: shapes, labels, grid layout, and connections. Dev-time
-only; never adds the `mermaid` package as a dependency.
+`.isostate.yaml` scene: shapes, labels, grid layout, and connections. The CLI validates before writing. The website workbench offers the same
+source conversion locally, with copy/download and editor handoff. Neither
+path adds a Mermaid parser dependency to the scene runtime.
 
 ```bash
 npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl flow.mmd
@@ -187,7 +188,7 @@ npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl flow.mmd --out 
 
 `--out` defaults to the input path with its extension replaced by
 `.isostate.yaml`. The generated document is validated before writing;
-conversion warnings (`MERMAID_LABEL_DROPPED`, `MERMAID_CYCLE_BROKEN`) print
+conversion warnings (`MERMAID_CYCLE_BROKEN`) print
 but do not fail the command. See
 [Convert A Mermaid Flowchart](./convert-mermaid.md) for the supported input
 subset and a worked example.

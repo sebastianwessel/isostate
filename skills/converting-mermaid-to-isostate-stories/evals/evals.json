@@ -18,6 +18,12 @@
       "prompt": "Review this Mermaid-to-isostate plan. It creates one scene for every sequence message and hides the old arrows each time. Is that the right approach?",
       "expected_output": "A critique explaining that sequence conversions should be cumulative, with stable participants and previous arrows retained in muted form while current/optional/error flows are styled distinctly.",
       "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Convert this flowchart deterministically, then describe the visual review required: flowchart RL; A[\"Read [config]; continue\"] & B -->|approved| C; C -. async .-> Queue; Queue ==> A",
+      "expected_output": "Use the current CLI/workbench supported subset. Preserve quoted syntax as exact text, expand fan-out to every pair, retain visible approved/async captions and dotted/thick link styling, mirror layers for RL without negative cells, keep cycle edges despite a layout warning, and review captions and perceived endpoints before replacing primitives with native-cell catalog assets. Do not claim support for subgraphs, sequence diagrams, or HTML labels in the deterministic converter.",
+      "files": []
     }
   ]
 }

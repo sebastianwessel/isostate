@@ -184,8 +184,7 @@ Behavior:
 - validates the generated document through `@sebastianwessel/isostate/dsl`
   before writing; a validation failure is a converter bug and fails with
   `MERMAID_INTERNAL`;
-- prints conversion warnings (`MERMAID_LABEL_DROPPED`,
-  `MERMAID_CYCLE_BROKEN`) to stderr using the standard `WARN <code> ...`
+- prints conversion warnings (`MERMAID_CYCLE_BROKEN`) to stderr using the standard `WARN <code> ...`
   format (conversion notices are not validation results and are exempt from
   the validation output grouping);
 - exits `0` on success (with or without warnings), `1` on any error.

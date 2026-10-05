@@ -202,8 +202,7 @@ successfully when no errors are present.
 | `ELEMENT_OUTSIDE_FLOOR` | Element lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_OUTSIDE_FLOOR` | Connector route lies outside floor bounds while floor-bounded layout is requested. |
 | `CONNECTOR_INTERSECTS_OBJECT` | Manual connector route crosses an unrelated visible object. |
-| `MERMAID_LABEL_DROPPED` | A Mermaid edge label was dropped; the DSL has no connection labels. |
-| `MERMAID_CYCLE_BROKEN` | A cycle-closing edge was ignored for layout layering. |
+| `MERMAID_CYCLE_BROKEN` | A cycle-closing edge was ignored only for layout layering; its rendered connection is retained. |
 | `CONNECTOR_ROUTE_DETOUR` | Auto route is valid but much longer than the direct route. |
 
 ## Documentation Completeness

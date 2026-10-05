@@ -18,7 +18,11 @@ Use this skill when creating or reviewing isostate scene definitions and example
      `docs/guides/use-the-cli.md` → `docs/guides/deploy-static-bundle.md`
    - choose an authoring path: manual YAML, website editor, or AI-assisted draft
    - identify required assets before writing a long timeline
-2. Read the relevant reference file only when needed:
+2. For Mermaid input, use `skills/converting-mermaid-to-isostate-stories/`.
+   The CLI/workbench can generate a deterministic flowchart draft; keep its
+   visible node/edge labels and source directions when replacing primitives
+   with checked artwork. Review conversion diagnostics before story authoring.
+   Read the relevant reference file only when needed:
    - DSL shape and scene deltas: `references/dsl.md`
    - Connections, routing, markers, and removal rules: `references/connections.md`
    - Asset catalogs, anchors, floor, text labels, and generated primitives:

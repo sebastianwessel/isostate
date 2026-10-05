@@ -4,14 +4,15 @@ Use this reference only for Mermaid `flowchart` or `graph` extraction details.
 Apply shared storytelling, branch, label, marker, camera, layout, and
 verification rules from `story-mapping.md`.
 
-For a plain `graph`/`flowchart` with direction `TD`/`TB`/`LR`, only
-rectangle/circle/diamond nodes, and `-->`/`---` edges, the deterministic
-`isostate mermaid2dsl` CLI (`docs/guides/convert-mermaid.md`) can generate a
-starting `.isostate.yaml` directly. This reference is for richer or cumulative
-story conversion, semantic styling, subgraph zones, and diagram features the
-CLI does not support (`RL`/`BT` direction, other node shapes, `&`-separated
-edges, edge labels as visible text). See
-`specs/02-capabilities/dsl/mermaid2dsl.md` for the exact CLI subset.
+For supported flowcharts, the deterministic `isostate mermaid2dsl` CLI or
+website Mermaid workbench generates a single-scene draft with visible node
+and edge labels, ordinary/dotted/thick connections, fan-out and all five
+reading directions. See `docs/guides/convert-mermaid.md` and
+`specs/02-capabilities/dsl/mermaid2dsl.md` for exact syntax and shape coverage.
+This reference governs richer cumulative stories, semantic styling, subgraph
+zones, and diagram features the converter rejects. Preserve rejected source
+features through explicit authoring; do not silently delete them to make the
+source parse.
 
 ## Interpret The Flow
 
@@ -67,7 +68,7 @@ without crossing elements or each other.
 
 | Mermaid concept | Isostate mapping |
 |---|---|
-| Node | element plus optional text label |
+| Node | element plus visible text label (explicit text or original id) |
 | Edge | connection with `from`/`to`; manual route only as a last resort |
 | Edge label | nearby `text` element in a clear route-adjacent grid cell, or explicit omission reason |
 | Subgraph | translucent `rectangle` zone plus label |

@@ -42,13 +42,14 @@ the server's lifetime.
 
 ## Dev-Time Packages
 
-These packages are used only in the build/dev pipeline and **never shipped to the browser**:
+These modules belong to the build pipeline or isolated authoring tools and
+are **never included in the browser playback runtime**:
 
 | Package | Purpose |
 |---|---|
 | `yaml` | Parse `.isostate.yaml` files into typed `SceneDocument` objects |
 | `@sebastianwessel/isostate-cli` (approved next wave) | CLI for validate, compile, bundle, inspect commands |
-| `mermaid2dsl` (planned) | Convert Mermaid diagrams to `.isostate.yaml` DSL |
+| `mermaid2dsl` | Convert supported flowcharts to `.isostate.yaml`; a dependency-free source adapter also powers the isolated website authoring workbench |
 
 ## Runtime Packages
 

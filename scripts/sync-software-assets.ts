@@ -129,4 +129,17 @@ for (const path of softwareCatalogFiles(manifest.assets)) {
 	await cp(resolve(source, path), output);
 }
 for (const name of sceneNames) await syncScene(name);
-console.log('Software assets and three showcase examples synchronized.');
+const mermaidAssets = resolve(root, 'website/public/assets/isostate-story');
+await mkdir(mermaidAssets, { recursive: true });
+for (const path of [
+	'mermaid-workflow-sheet.png',
+	'mermaid-workflow.manifest.json'
+]) {
+	await cp(
+		resolve(root, 'assets/isostate-story', path),
+		resolve(mermaidAssets, path)
+	);
+}
+console.log(
+	'Software assets, Mermaid illustrations, and three showcase examples synchronized.'
+);

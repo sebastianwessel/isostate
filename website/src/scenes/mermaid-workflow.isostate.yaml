@@ -1,35 +1,41 @@
+# Native one-cell sprites retain the original stage palettes and isometric view.
+# Each caption has its own whole-cell band below the artwork.
 header:
   version: "1.0"
   name: mermaid-workflow-story
   className: mermaid-workflow-surface
-  theme: light
   assetBaseUrl: ../../../assets/isostate-story
   assets:
-    - id: mermaid-source-workspace
-      path: mermaid-source-workspace
-      anchor: [0.5, 1]
-    - id: mermaid-skill-pack
-      path: mermaid-skill-pack
-      anchor: [0.5, 1]
-    - id: mermaid-ai-workbench
-      path: mermaid-ai-workbench
-      anchor: [0.5, 1]
-    - id: mermaid-yaml-blueprint
-      path: mermaid-yaml-blueprint
-      anchor: [0.5, 1]
-    - id: mermaid-asset-kit
-      path: mermaid-asset-kit
-      anchor: [0.5, 1]
-    - id: mermaid-verified-bundle
-      path: mermaid-verified-bundle
-      anchor: [0.5, 1]
-    - id: mermaid-editor-console
-      path: mermaid-editor-console
-      anchor: [0.5, 1]
+    - id: mermaid-workflow-sheet
+      type: sprite-sheet
+      path: mermaid-workflow-sheet.png
+      sheetSize: [1774, 887]
+      sprites:
+        mermaid-source-workspace:
+          rect: [0, 0, 443, 443]
+          anchor: [0.5, 0.93]
+        mermaid-skill-pack:
+          rect: [443, 0, 444, 443]
+          anchor: [0.5, 0.94]
+        mermaid-ai-workbench:
+          rect: [887, 0, 443, 443]
+          anchor: [0.5, 0.94]
+        mermaid-yaml-blueprint:
+          rect: [1330, 0, 444, 443]
+          anchor: [0.5, 0.94]
+        mermaid-asset-kit:
+          rect: [0, 443, 466, 444]
+          anchor: [0.5, 0.91]
+        mermaid-verified-bundle:
+          rect: [480, 443, 407, 444]
+          anchor: [0.5, 0.92]
+        mermaid-editor-console:
+          rect: [887, 443, 443, 444]
+          anchor: [0.5, 0.93]
   grid:
     cellSize: 64
   floor:
-    visible: true
+    visible: false
     layer: ground
   layers:
     - name: ground
@@ -37,68 +43,52 @@ header:
     - name: routes
     - name: cards
     - name: labels
-
 scenes:
   - id: workspace
     camera:
       target:
         area:
-          at: [0, 3]
-          size: [6, 6]
-      padding: 24
+          at: [4, 4]
+          size: [1, 1]
+      padding: 72
       duration: 500
       easing: ease-out
     elements:
       - id: workspace-zone
         asset: rectangle
         layer: zones
-        at: [1, 4]
-        size: 5
+        at: [2, 2]
+        size: 3
         enter: fade-in-grow
         primitive:
           rectangle:
             fill: "#ecfdf5"
             stroke: "#5eead4"
-            strokeWidth: 2
-            opacity: 0.36
-      - id: workspace-label
-        asset: text
-        layer: labels
-        at: [3, 3]
-        enter: fade-in
-        text:
-          value: Workspace
-          placement: cell
-          align: middle
-          fontSize: 18
-          fontWeight: 900
-          fill: "#0f5f4f"
+            strokeWidth: 1
+            opacity: 0.12
       - id: mermaid-source
         asset: mermaid-source-workspace
         layer: cards
-        at: [3, 7]
-        size: 2
+        at: [3, 3]
+        size: 1
         enter: rise-from-ground
       - id: mermaid-source-label
         asset: text
         layer: labels
-        at: [3, 5]
-        enter: fade-in
+        at: [5, 5]
         text:
-          value: Mermaid
-          placement: cell
-          align: middle
-          fontSize: 18
-          fontWeight: 900
-          fill: "#111827"
-
+          value: |-
+            Mermaid
+            source
+          fontSize: 21
+          fill: var(--mermaid-label)
   - id: skills-installed
     camera:
       target:
         area:
-          at: [0, 1]
-          size: [10, 8]
-      padding: 28
+          at: [4, 3]
+          size: [4, 2]
+      padding: 72
       duration: 500
       easing: ease-in-out
     add:
@@ -106,33 +96,31 @@ scenes:
         - id: skills-zone
           asset: rectangle
           layer: zones
-          at: [6, 1]
-          size: 5
+          at: [6, 2]
+          size: 3
           enter: fade-in-grow
           primitive:
             rectangle:
               fill: "#fffbeb"
               stroke: "#fbbf24"
-              strokeWidth: 2
-              opacity: 0.34
-        - id: skills-label
-          asset: text
-          layer: labels
-          at: [8, 2]
-          enter: fade-in
-          text:
-            value: Skills
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#9a6b00"
+              strokeWidth: 1
+              opacity: 0.12
         - id: skill-pack
           asset: mermaid-skill-pack
           layer: cards
-          at: [8, 5]
-          size: 2
+          at: [7, 3]
+          size: 1
           enter: slide-in-right
+        - id: skill-pack-label
+          asset: text
+          layer: labels
+          at: [9, 5]
+          text:
+            value: |-
+              Agent
+              skills
+            fontSize: 21
+            fill: var(--mermaid-label)
       connections:
         - id: source-to-skills
           from:
@@ -144,26 +132,24 @@ scenes:
           routing:
             mode: orthogonal
             avoid: objects
-            clearance: 1
+            clearance: 0.5
           layer: routes
           enter: slide-in-right
           style:
             pattern: dotted
             stroke: "#0f766e"
-            strokeWidth: 6
-            opacity: 1
+            strokeWidth: 3
           start: dot
           end: arrow
           ambient:
             - name: flow
-
   - id: ai-generation
     camera:
       target:
         area:
-          at: [5, 4]
-          size: [8, 9]
-      padding: 28
+          at: [7, 5]
+          size: [1, 1]
+      padding: 136
       duration: 500
       easing: ease-in-out
     add:
@@ -171,45 +157,31 @@ scenes:
         - id: ai-zone
           asset: rectangle
           layer: zones
-          at: [6, 7]
-          size: 5
+          at: [6, 6]
+          size: 3
           enter: fade-in-grow
           primitive:
             rectangle:
               fill: "#f5f3ff"
               stroke: "#a78bfa"
-              strokeWidth: 2
-              opacity: 0.32
-        - id: ai-zone-label
-          asset: text
-          layer: labels
-          at: [8, 8]
-          enter: fade-in
-          text:
-            value: AI Pass
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#6d28d9"
+              strokeWidth: 1
+              opacity: 0.12
         - id: ai-agent
           asset: mermaid-ai-workbench
           layer: cards
-          at: [8, 11]
-          size: 2
+          at: [7, 7]
+          size: 1
           enter: rise-from-ground
         - id: ai-agent-label
           asset: text
           layer: labels
-          at: [8, 9]
-          enter: fade-in
+          at: [9, 9]
           text:
-            value: Plan
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#111827"
+            value: |-
+              AI
+              workbench
+            fontSize: 21
+            fill: var(--mermaid-label)
       connections:
         - id: skills-to-ai
           from:
@@ -221,14 +193,13 @@ scenes:
           routing:
             mode: orthogonal
             avoid: objects
-            clearance: 1
+            clearance: 0.5
           layer: routes
           enter: rise-from-ground
           style:
             pattern: dotted
             stroke: "#7c3aed"
-            strokeWidth: 6
-            opacity: 1
+            strokeWidth: 3
           start: none
           end: arrow
           ambient:
@@ -241,14 +212,13 @@ scenes:
             strokeWidth: 3
             opacity: 0.38
           ambient: []
-
   - id: output-created
     camera:
       target:
         area:
-          at: [6, 5]
-          size: [11, 10]
-      padding: 28
+          at: [7, 6]
+          size: [5, 2]
+      padding: 160
       duration: 500
       easing: ease-in-out
     add:
@@ -256,63 +226,59 @@ scenes:
         - id: output-zone
           asset: rectangle
           layer: zones
-          at: [12, 4]
-          size: 5
+          at: [10, 4]
+          size: 3
           enter: fade-in-grow
           primitive:
             rectangle:
               fill: "#eff6ff"
               stroke: "#60a5fa"
-              strokeWidth: 2
-              opacity: 0.32
-        - id: output-label
-          asset: text
-          layer: labels
-          at: [14, 5]
-          enter: fade-in
-          text:
-            value: Output
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#2563eb"
+              strokeWidth: 1
+              opacity: 0.12
         - id: yaml-file
           asset: mermaid-yaml-blueprint
           layer: cards
-          at: [14, 8]
-          size: 2
+          at: [11, 5]
+          size: 1
           enter: slide-in-right
         - id: yaml-file-label
           asset: text
           layer: labels
-          at: [14, 6]
-          enter: fade-in
+          at: [13, 7]
           text:
-            value: YAML
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#111827"
+            value: |-
+              Scene
+              YAML
+            fontSize: 21
+            fill: var(--mermaid-label)
         - id: asset-kit
           asset: mermaid-asset-kit
           layer: cards
-          at: [13, 13]
-          size: 2
+          at: [12, 11]
+          size: 1
           enter: slide-in-right
         - id: asset-kit-label
           asset: text
           layer: labels
-          at: [13, 11]
-          enter: fade-in
+          at: [14, 13]
           text:
-            value: Assets
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#111827"
+            value: |-
+              Asset
+              catalog
+            fontSize: 21
+            fill: var(--mermaid-label)
+        - id: assets-zone
+          asset: rectangle
+          layer: zones
+          at: [11, 10]
+          size: 3
+          enter: fade-in-grow
+          primitive:
+            rectangle:
+              fill: "#fff7ed"
+              stroke: "#fb923c"
+              strokeWidth: 1
+              opacity: 0.12
       connections:
         - id: ai-to-yaml
           from:
@@ -324,14 +290,13 @@ scenes:
           routing:
             mode: orthogonal
             avoid: objects
-            clearance: 1
+            clearance: 0.5
           layer: routes
           enter: slide-in-right
           style:
             pattern: solid
             stroke: "#2563eb"
-            strokeWidth: 6
-            opacity: 1
+            strokeWidth: 3
           start: none
           end: arrow
           ambient:
@@ -339,21 +304,20 @@ scenes:
         - id: ai-to-assets
           from:
             element: ai-agent
-            side: right
+            side: bottom
           to:
             element: asset-kit
             side: left
           routing:
             mode: orthogonal
             avoid: objects
-            clearance: 1
+            clearance: 0.5
           layer: routes
           enter: fade-in
           style:
             pattern: dashed
             stroke: "#ea580c"
-            strokeWidth: 5
-            opacity: 1
+            strokeWidth: 3
           start: none
           end: arrow
           ambient:
@@ -366,14 +330,13 @@ scenes:
             strokeWidth: 3
             opacity: 0.44
           ambient: []
-
   - id: validated-bundled
     camera:
       target:
         area:
-          at: [10, 2]
-          size: [8, 9]
-      padding: 28
+          at: [8, 5]
+          size: [6, 2]
+      padding: 152
       duration: 500
       easing: ease-in-out
     add:
@@ -381,45 +344,31 @@ scenes:
         - id: validation-zone
           asset: rectangle
           layer: zones
-          at: [11, 1]
-          size: 4
+          at: [14, 4]
+          size: 3
           enter: fade-in-grow
           primitive:
             rectangle:
               fill: "#f0fdf4"
               stroke: "#22c55e"
-              strokeWidth: 2
-              opacity: 0.32
-        - id: validation-label
-          asset: text
-          layer: labels
-          at: [13, 2]
-          enter: fade-in
-          text:
-            value: Validated
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#15803d"
+              strokeWidth: 1
+              opacity: 0.12
         - id: runtime-bundle
           asset: mermaid-verified-bundle
           layer: cards
-          at: [13, 5]
-          size: 2
+          at: [15, 5]
+          size: 1
           enter: rise-from-ground
         - id: runtime-bundle-label
           asset: text
           layer: labels
-          at: [13, 3]
-          enter: fade-in
+          at: [17, 7]
           text:
-            value: Bundle
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#111827"
+            value: |-
+              Runtime
+              bundle
+            fontSize: 21
+            fill: var(--mermaid-label)
       connections:
         - id: yaml-to-bundle
           from:
@@ -431,14 +380,13 @@ scenes:
           routing:
             mode: orthogonal
             avoid: objects
-            clearance: 1
+            clearance: 0.5
           layer: routes
           enter: rise-from-ground
           style:
             pattern: dotted
             stroke: "#16a34a"
-            strokeWidth: 6
-            opacity: 1
+            strokeWidth: 3
           start: none
           end: arrow
           ambient:
@@ -458,14 +406,13 @@ scenes:
             strokeWidth: 3
             opacity: 0.48
           ambient: []
-
   - id: editor-finetune
     camera:
       target:
         area:
-          at: [9, 7]
-          size: [9, 10]
-      padding: 28
+          at: [7, 6]
+          size: [8, 1]
+      padding: 160
       duration: 500
       easing: ease-in-out
     add:
@@ -473,45 +420,31 @@ scenes:
         - id: editor-zone
           asset: rectangle
           layer: zones
-          at: [11, 11]
-          size: 5
+          at: [14, 9]
+          size: 3
           enter: fade-in-grow
           primitive:
             rectangle:
               fill: "#f8fafc"
               stroke: "#94a3b8"
-              strokeWidth: 2
-              opacity: 0.34
-        - id: editor-label
-          asset: text
-          layer: labels
-          at: [13, 12]
-          enter: fade-in
-          text:
-            value: Editor
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#475569"
+              strokeWidth: 1
+              opacity: 0.12
         - id: editor-window
           asset: mermaid-editor-console
           layer: cards
-          at: [13, 15]
-          size: 2
+          at: [15, 10]
+          size: 1
           enter: slide-in-right
         - id: editor-window-label
           asset: text
           layer: labels
-          at: [13, 13]
-          enter: fade-in
+          at: [17, 12]
           text:
-            value: Tune
-            placement: cell
-            align: middle
-            fontSize: 16
-            fontWeight: 900
-            fill: "#111827"
+            value: |-
+              Visual
+              editor
+            fontSize: 21
+            fill: var(--mermaid-label)
       connections:
         - id: bundle-to-editor
           from:
@@ -523,14 +456,13 @@ scenes:
           routing:
             mode: orthogonal
             avoid: objects
-            clearance: 1
+            clearance: 0.5
           layer: routes
           enter: slide-in-left
           style:
             pattern: dotted
             stroke: "#0f766e"
-            strokeWidth: 6
-            opacity: 1
+            strokeWidth: 3
           start: none
           end: arrow
           ambient:
@@ -545,7 +477,7 @@ scenes:
           routing:
             mode: orthogonal
             avoid: objects
-            clearance: 1
+            clearance: 0.5
           layer: routes
           enter: fade-in
           style:

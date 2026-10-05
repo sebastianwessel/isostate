@@ -108,3 +108,17 @@ bun run lint
 
 Browser automation is not required for v1. Default verification uses unit and
 component-level tests only.
+
+## Mermaid Workbench Handoff
+
+The website Mermaid authoring workbench converts supported flowcharts locally
+and offers copy/download plus opening the generated YAML in the same-tab
+editor. A dedicated session-storage key carries the exact current result;
+`?import=mermaid` triggers one-time consumption. Invalid or stale conversion
+results disable export/handoff. Storage failure produces a recoverable message
+and leaves copy/download available. The editor validates imports through its
+existing authoring boundary. Scene runtime embeds remain precompiled.
+
+The illustrated Mermaid tutorial uses checked one-cell sprite anchors and
+separate caption bands. Its manual scene navigation must remain usable without
+scroll-follow behavior and respect the user's reduced-motion preference.
