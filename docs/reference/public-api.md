@@ -122,7 +122,9 @@ mounted.controller?.setProgress(0.45); // exact scroll/slider seek
 
 Step navigation uses `transitionDuration` (default `600` ms) and
 `transitionEasing` (default `ease-in-out`). An exact seek interrupts a pending
-navigation. Entry and exit effects retain their direction even when a seek
+navigation and moves the current scene index to the last scene stop at or
+before the new progress, so `nextScene()`/`prevScene()` continue from where
+scroll or a slider left the timeline. Entry and exit effects retain their direction even when a seek
 skips intermediate stops. `pause()` cancels navigation and freezes ambient
 motion; `resume()` renders the stored progress. Use duration `0` for
 reduced-motion step controls.

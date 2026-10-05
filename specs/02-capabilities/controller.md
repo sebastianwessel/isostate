@@ -182,6 +182,12 @@ Scroll input has the same priority. A scheduled navigation frame must not
 overwrite a later seek. Hosts use scene navigation for step buttons and exact
 seeks for scroll or range sliders.
 
+An exact seek also updates the current scene index: after `setProgress()` (and
+therefore after scroll input) the index is the last scene stop whose progress
+is at or before the new progress, and `scene-change` fires when it changes.
+`nextScene()` and `prevScene()` then continue from the scene the reader
+reached, not from the last navigated index.
+
 Pausing cancels in-flight scene navigation and freezes ambient motion. Resume
 applies the stored progress without completing the canceled navigation.
 

@@ -178,7 +178,9 @@ mounted.controller?.prevScene();
 
 Scene navigation interpolates over `transitionDuration` (default `600` ms)
 using `transitionEasing` (default `ease-in-out`). Direct progress updates
-interrupt navigation so a scrubber follows the pointer immediately. Use
+interrupt navigation so a scrubber follows the pointer immediately; they also
+move the current scene index to the last stop at or before that progress, so
+`nextScene()` after scrolling goes to the following stop. Use
 `transitionDuration: 0` for immediate navigation, including reduced-motion
 presentations. Pause and resume controls also freeze ongoing ambient motion.
 

@@ -105,6 +105,9 @@ type ResolvedControllerConfig = Required<Omit<ControllerConfig, "container" | "s
 	sceneElement?: SVGSVGElement;
 };
 
+/** Tolerance when matching a progress value to a compiled scene stop. */
+const SCENE_PROGRESS_EPSILON = 1e-9;
+
 const DEFAULT_CONFIG: Required<Omit<ControllerConfig, "container" | "sceneElement">> = {
 	scrollDirection: "vertical",
 	scrollOffset: {},
@@ -220,6 +223,10 @@ export class AnimationController {
 
 	/**
 	 * Set scroll progress (0–1, clamped) and trigger frame update.
+	 *
+	 * The current scene index follows the seek: it becomes the last scene stop
+	 * at or before the new progress, so `nextScene()`/`prevScene()` continue
+	 * from where scroll or a slider left the timeline.
 	 */
 	setProgress(progress: number): void {
 		this._assertNotDestroyed();
@@ -228,6 +235,18 @@ export class AnimationController {
 		}
 		this._cancelTransition();
 		this._setProgress(progress);
+		this._syncSceneIndex(this._progress);
+	}
+
+	private _syncSceneIndex(progress: number): void {
+		const scenes = this.scenes;
+		let index = 0;
+		for (let i = 0; i < scenes.length; i++) {
+			if (scenes[i].progress <= progress + SCENE_PROGRESS_EPSILON) index = i;
+		}
+		if (index === this._sceneIndex) return;
+		this._sceneIndex = index;
+		this._emit("scene-change", index);
 	}
 
 	private _setProgress(progress: number): void {
