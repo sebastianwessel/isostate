@@ -126,6 +126,12 @@ npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml 
   --public-asset-base ./assets
 ```
 
+`--public-asset-base <url>` is the URL prefix written into the compiled scene
+for copied assets (default `./assets`). The browser resolves it against the
+page that mounts the scene, so pass the path from that page to the bundle's
+`assets/` directory (for example `./isostate/scene/assets` for a page in the
+public root) or a root-relative URL.
+
 `--scene-name <name>` sets the output scene bundle basename (default `scene`,
 producing `<name>.isostate.js`). `--runtime <copy|external|none>` controls the
 runtime artifact (default `copy`): `copy` writes `isostate.runtime.js` into the

@@ -48,13 +48,32 @@ imported from `./diagrams/network/isostate.runtime.js` and
 `./diagrams/network/scene.isostate.js` when the page is served from the public
 root.
 
+The module imports resolve relative to the importing page or script, but the
+asset URLs inside the compiled scene do not: the renderer resolves each asset
+URL against the page's base URL (`document.baseURI`). For the page above,
+which sits in the public root while the bundle lives in `isostate/scene/`,
+generate the bundle with a matching asset base, otherwise the default
+`./assets` points at `/assets/` and every image is missing:
+
+```bash
+npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml \
+  --out public/isostate/scene \
+  --public-asset-base ./isostate/scene/assets
+```
+
+The default `--public-asset-base ./assets` fits a page served from the bundle
+directory itself.
+
 ## Asset Paths
 
 By default, copied external asset source files are referenced as
-`./assets/<file>` from the compiled scene bundle. Normal SVG assets still append
-`.svg` during resolution when omitted; sprite sheet paths keep their explicit
-image extension. Use `--public-asset-base` when the website serves assets from a
-different relative path or CDN prefix.
+`./assets/<file>` in the compiled scene bundle. The browser resolves these URLs
+against the page that mounts the scene, not against the bundle module, so the
+default only works for a page served from the bundle directory. Normal SVG
+assets still append `.svg` during resolution when omitted; sprite sheet paths
+keep their explicit image extension. Use `--public-asset-base` with the path
+from the page to the copied `assets/` directory, a root-relative path, or a CDN
+prefix.
 
 ```bash
 npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml \

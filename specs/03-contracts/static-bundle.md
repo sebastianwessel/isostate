@@ -80,6 +80,11 @@ The bundle command resolves assets from authored `header.assets` entries:
 - compiled bundle URLs are rewritten to
   `<public-asset-base>/<copied-file-name>`.
 
+The browser runtime resolves compiled asset URLs against the mounting page's
+base URL (`document.baseURI`), not against the scene module's URL. A relative
+`--public-asset-base` is therefore relative to the page; the default `./assets`
+matches a page served from the bundle directory.
+
 Built-in generated assets are not copied and do not appear in the manifest.
 
 ## Runtime Artifact
