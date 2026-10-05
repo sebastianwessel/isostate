@@ -68,6 +68,10 @@ describe('Astro website', () => {
 			join(root, 'website/src/pages/mermaid.astro'),
 			'utf8'
 		);
+		const mermaidStory = await readFile(
+			join(root, 'website/src/lib/mermaid-story.ts'),
+			'utf8'
+		);
 		const editorPage = await readFile(
 			join(root, 'website/src/pages/editor.astro'),
 			'utf8'
@@ -89,11 +93,11 @@ describe('Astro website', () => {
 		);
 
 		expect(packageJson.devDependencies?.astro).toMatch(/^7\.\d+\.\d+$/);
-		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.3');
-		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.13.0');
+		expect(packageJson.devDependencies?.['@astrojs/sitemap']).toBe('^3.7.4');
+		expect(packageJson.devDependencies?.['astro-og-canvas']).toBe('^0.13.2');
 		expect(packageJson.devDependencies?.['beautiful-mermaid']).toBe('1.1.3');
 		expect(packageJson.scripts?.['site:build']).toBe(
-			'bun --bun node_modules/.bin/astro build --root website'
+			'bun scripts/sync-software-assets.ts && bun --bun node_modules/.bin/astro build --root website'
 		);
 		expect(config).toContain("output: 'static'");
 		expect(config).toContain("base: '/isostate'");
@@ -113,11 +117,13 @@ describe('Astro website', () => {
 		expect(docs).toContain("title: 'Ship'");
 		expect(index).toContain('Isometric scenes from YAML');
 		expect(index).toContain('id="isostate-demo"');
-		expect(index).toContain('mountScene');
+		expect(index).toContain('initializeOverview');
 		expect(index).toContain("import { Code } from 'astro:components'");
-		expect(index).toContain('sceneSnippets');
-		expect(index).toContain('route-car');
-		expect(index).toContain('Scroll to watch a route come to life');
+		expect(index).toContain('overviewChapters');
+		expect(index).toContain('Architecture → workflow → process');
+		expect(index).toContain('Follow a request.');
+		expect(index).toContain('data-scene-index');
+		expect(index).toContain('Pause effects');
 		expect(index).not.toContain('PUBLIC_ISOSTATE_VERSION');
 		expect(layout).toContain(
 			"import { renderMermaidSVGAsync } from 'beautiful-mermaid'"
@@ -136,8 +142,8 @@ describe('Astro website', () => {
 		expect(layout).toContain("href={href('/mermaid')}");
 		expect(layout).not.toContain("href={href('/city-growth')}");
 		expect(layout).not.toContain('City Scene');
-		expect(mermaidPage).toContain('mermaid-workflow.isostate.js');
-		expect(mermaidPage).toContain('mountScene');
+		expect(mermaidStory).toContain('mermaid-workflow.isostate.js');
+		expect(mermaidStory).toContain('mountScene');
 		expect(mermaidPage).not.toContain('pre data-language="mermaid"');
 		expect(mermaidPage).toContain('converting-mermaid-to-isostate-stories');
 		expect(mermaidPage).toContain('npm install @sebastianwessel/isostate');
@@ -145,7 +151,7 @@ describe('Astro website', () => {
 			'npm install --save-dev @sebastianwessel/isostate-cli yaml'
 		);
 		expect(mermaidPage).toContain(
-			'design a small enterprise-grade 3D isometric SVG asset set'
+			'design a small realistic isometric asset set'
 		);
 		expect(mermaidPage).toContain(
 			'use camera focus for each story beat so the active region fills the preview'
@@ -232,7 +238,9 @@ describe('Astro website', () => {
 			expect(home).not.toContain('City Scene');
 			expect(home).not.toContain('View city scene');
 			const mermaid = await readFile(join(dist, 'mermaid/index.html'), 'utf8');
-			expect(mermaid).toContain('Turn existing Mermaid diagrams');
+			expect(mermaid).toContain('Your diagram.');
+			expect(mermaid).toContain('Convert to YAML');
+			expect(mermaid).toContain('Open in editor');
 			expect(mermaid).toContain('mermaid-workflow-scene');
 			expect(mermaid).not.toContain('data-language="mermaid"');
 			expect(mermaid).not.toContain('data-language=mermaid');
@@ -240,7 +248,7 @@ describe('Astro website', () => {
 			expect(mermaid).toContain('@sebastianwessel/isostate');
 			expect(mermaid).toContain('@sebastianwessel/isostate-cli');
 			expect(mermaid).toContain('yaml');
-			expect(mermaid).toContain('enterprise-grade 3D isometric SVG asset set');
+			expect(mermaid).toContain('realistic isometric asset set');
 			const editor = await readFile(join(dist, 'editor/index.html'), 'utf8');
 			expect(editor).not.toContain('Text labels:');
 			expect(editor).not.toContain('Use cell placement');

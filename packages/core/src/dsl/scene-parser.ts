@@ -8,8 +8,10 @@ import type {
 	ConnectionPlacement,
 	ConnectionRemoval,
 	ConnectorEndpointRef,
+	ConnectorMessage,
 	ConnectorRouting,
 	ConnectorStyle,
+	ElementActivity,
 	ElementPatch,
 	ElementPlacement,
 	ElementRemoval,
@@ -408,11 +410,32 @@ function parsePrimitiveContent(raw: unknown, context: string, requireGeometry = 
 	return parsed as PrimitiveContent;
 }
 
+function parseActivity(raw: unknown, context: string): ElementActivity {
+	const value = requireObject(raw, context);
+	assertKnownFields(value, new Set(["state", "color"]), context);
+	const parsed: ElementActivity = { state: requireString(value.state, `${context}.state`) as ElementActivity["state"] };
+	if (value.color !== undefined) parsed.color = requireString(value.color, `${context}.color`);
+	return parsed;
+}
+
+function parseMessage(raw: unknown, context: string): ConnectorMessage {
+	const value = requireObject(raw, context);
+	assertKnownFields(value, new Set(["kind", "color", "size", "duration", "count", "enabled"]), context);
+	const parsed: ConnectorMessage = {};
+	if (value.kind !== undefined) parsed.kind = requireString(value.kind, `${context}.kind`) as ConnectorMessage["kind"];
+	if (value.color !== undefined) parsed.color = requireString(value.color, `${context}.color`);
+	if (value.size !== undefined) parsed.size = requireNumber(value.size, `${context}.size`);
+	if (value.duration !== undefined) parsed.duration = requireNumber(value.duration, `${context}.duration`);
+	if (value.count !== undefined) parsed.count = requireNumber(value.count, `${context}.count`);
+	if (value.enabled !== undefined) parsed.enabled = requireBoolean(value.enabled, `${context}.enabled`);
+	return parsed;
+}
+
 function parsePlacement(raw: unknown, context: string): ElementPlacement {
 	const element = requireObject(raw, context);
 	assertKnownFields(
 		element,
-		new Set(["id", "asset", "at", "size", "layer", "enter", "exit", "ambient", "text", "primitive"]),
+		new Set(["id", "asset", "at", "size", "layer", "enter", "exit", "ambient", "text", "primitive", "activity"]),
 		context,
 	);
 	const parsed: ElementPlacement = {
@@ -438,6 +461,7 @@ function parsePlacement(raw: unknown, context: string): ElementPlacement {
 	if (element.text !== undefined) {
 		parsed.text = parseTextContent(element.text, `${context}.text`);
 	}
+	if (element.activity !== undefined) parsed.activity = parseActivity(element.activity, `${context}.activity`);
 	if (element.primitive !== undefined) {
 		parsed.primitive = parsePrimitiveContent(element.primitive, `${context}.primitive`);
 	}
@@ -448,12 +472,14 @@ function parsePatch(raw: unknown, context: string): ElementPatch {
 	const patch = requireObject(raw, context);
 	assertKnownFields(
 		patch,
-		new Set(["id", "at", "size", "layer", "enter", "exit", "ambient", "text", "primitive"]),
+		new Set(["id", "asset", "at", "size", "layer", "enter", "exit", "ambient", "text", "primitive", "activity"]),
 		context,
 	);
 	const parsed: ElementPatch = {
 		id: requireIdentifier(patch.id, `${context}.id`),
 	};
+	if (patch.asset !== undefined) parsed.asset = requireIdentifier(patch.asset, `${context}.asset`);
+	if (patch.activity !== undefined) parsed.activity = parseActivity(patch.activity, `${context}.activity`);
 	if (patch.at !== undefined) {
 		parsed.at = parseTuple2(patch.at, `${context}.at`);
 	}
@@ -551,10 +577,27 @@ function parseConnectorStyle(raw: unknown, context: string): ConnectorStyle {
 	const style = requireObject(raw, context);
 	assertKnownFields(
 		style,
-		new Set(["variant", "pattern", "stroke", "strokeWidth", "opacity", "dash", "outline", "outlineWidth", "lane"]),
+		new Set([
+			"variant",
+			"pattern",
+			"stroke",
+			"strokeWidth",
+			"opacity",
+			"dash",
+			"outline",
+			"outlineWidth",
+			"lane",
+			"cornerRadius",
+			"glow",
+			"glowWidth",
+		]),
 		context,
 	);
 	const parsed: ConnectorStyle = {};
+	if (style.cornerRadius !== undefined)
+		parsed.cornerRadius = requireNumber(style.cornerRadius, `${context}.cornerRadius`);
+	if (style.glowWidth !== undefined) parsed.glowWidth = requireNumber(style.glowWidth, `${context}.glowWidth`);
+	if (style.glow !== undefined) parsed.glow = requireString(style.glow, `${context}.glow`);
 	if (style.variant !== undefined) {
 		parsed.variant = requireString(style.variant, `${context}.variant`) as never;
 	}
@@ -600,6 +643,7 @@ function parseConnectionCommon(raw: unknown, context: string): ConnectionPlaceme
 			"start",
 			"end",
 			"direction",
+			"message",
 			"enter",
 			"exit",
 			"ambient",
@@ -609,6 +653,7 @@ function parseConnectionCommon(raw: unknown, context: string): ConnectionPlaceme
 	const parsed: ConnectionPlacement | ConnectionPatch = {
 		id: requireIdentifier(connection.id, `${context}.id`),
 	};
+	if (connection.message !== undefined) parsed.message = parseMessage(connection.message, `${context}.message`);
 	if (connection.route !== undefined) {
 		parsed.route = parseRoute(connection.route, `${context}.route`);
 	}

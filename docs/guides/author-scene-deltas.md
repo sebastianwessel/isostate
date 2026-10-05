@@ -257,3 +257,16 @@ Common validation failures:
 | `INVALID_CONNECTOR_ENDPOINT` | Use a supported start/end endpoint value. |
 | `LAYER_NOT_FOUND` | Declare the layer in `header.layers`. |
 | `DUPLICATE_ELEMENT_ID` | Use unique element ids in the resolved timeline. |
+
+## Replace Activity, Messages, Or An External Asset
+
+An `activity` update replaces the whole prior activity object; a `message`
+update does the same for a connection message. Omission keeps the prior value.
+Use `activity: { state: idle }` or `message: { enabled: false }` to stop work
+explicitly. These differ from sparse nested text, primitive, and style patches.
+
+An external image or sprite can change with `update.elements[].asset` while
+keeping its id, position, and connections. Declare the destination asset in
+the header; swapping to or from generated text/primitives is invalid. Asset,
+activity, and message changes take effect at the destination scene stop. See
+[Animation And Connections](./animation-and-connections.md) for examples.

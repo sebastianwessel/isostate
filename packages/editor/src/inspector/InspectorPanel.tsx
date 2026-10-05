@@ -26,15 +26,16 @@ import {
 import type { EditorCommand, EditorWorkspace } from '../types.ts';
 import { Button } from '../ui/button.tsx';
 import { Input } from '../ui/input.tsx';
-import {
-	Select,
-	SelectContent,
-	SelectGroup,
-	SelectItem,
-	SelectTrigger,
-	SelectValue
-} from '../ui/select.tsx';
 import { Textarea } from '../ui/textarea.tsx';
+import { ConnectorEffectsFields } from './ConnectorEffectsFields.tsx';
+import { ElementActivityFields } from './ElementActivityFields.tsx';
+import {
+	FormRow,
+	InspectorSelect,
+	SELECT_NONE_VALUE,
+	SectionHeader,
+	selectOptions
+} from './fields.tsx';
 
 interface InspectorPanelProps {
 	workspace: EditorWorkspace;
@@ -66,39 +67,19 @@ const AMBIENT_ANIMATIONS = ['pulse', 'float', 'bounce', 'shake'];
 const ROUTING_MODES = ['straight', 'orthogonal', 'manual'];
 const ROUTING_AVOID = ['objects', 'none'];
 const ROUTING_PREFER = ['direct', 'fewest-bends', 'shortest'];
-const CONNECTOR_VARIANTS = ['line', 'road'];
+const CONNECTOR_VARIANTS = ['line', 'road', 'beam'];
 const CONNECTOR_PATTERNS = ['solid', 'dashed', 'dotted'];
 const CONNECTOR_LANES = ['none', 'center-dashed'];
 const ENDPOINT_TYPES = ['none', 'arrow', 'dot', 'circle', 'diamond', 'bar'];
 const DIRECTIONS = ['route', 'reverse'];
 const SIDES = ['auto', 'top', 'right', 'bottom', 'left', 'front', 'back'];
 const EASINGS = ['linear', 'ease-in-out', 'ease-out'];
-const SELECT_NONE_VALUE = '__none';
 
 function getActiveSceneIndex(workspace: EditorWorkspace): number {
 	if (!workspace.document || !workspace.activeSceneId) return -1;
 	return workspace.document.scenes.findIndex(
 		(s) => s.id === workspace.activeSceneId
 	);
-}
-
-function FormRow({
-	label,
-	children
-}: {
-	label: string;
-	children: React.ReactNode;
-}) {
-	return (
-		<div className="isostate-inspector-row">
-			<span className="isostate-inspector-label">{label}</span>
-			<div className="isostate-inspector-control">{children}</div>
-		</div>
-	);
-}
-
-function SectionHeader({ title }: { title: string }) {
-	return <div className="isostate-inspector-section">{title}</div>;
 }
 
 function EditableIdInput({
@@ -139,47 +120,6 @@ function EditableIdInput({
 			}}
 		/>
 	);
-}
-
-function InspectorSelect({
-	value,
-	options,
-	placeholder,
-	onChange
-}: {
-	value: string | undefined;
-	options: Array<{ value: string; label: string }>;
-	placeholder?: string;
-	onChange: (value: string) => void;
-}) {
-	const selectValue =
-		value === undefined || value === '' ? SELECT_NONE_VALUE : value;
-
-	return (
-		<Select
-			value={selectValue}
-			onValueChange={(nextValue) =>
-				onChange(nextValue === SELECT_NONE_VALUE ? '' : nextValue)
-			}
-		>
-			<SelectTrigger className="isostate-select">
-				<SelectValue placeholder={placeholder} />
-			</SelectTrigger>
-			<SelectContent position="popper">
-				<SelectGroup>
-					{options.map((option) => (
-						<SelectItem key={option.value} value={option.value}>
-							{option.label}
-						</SelectItem>
-					))}
-				</SelectGroup>
-			</SelectContent>
-		</Select>
-	);
-}
-
-function selectOptions(values: string[]) {
-	return values.map((value) => ({ value, label: value }));
 }
 
 function formatRoute(route: [number, number][] | undefined): string {
@@ -432,6 +372,7 @@ export function InspectorPanel({
 
 function ElementInspector({
 	element,
+	workspace,
 	layerNames,
 	onUpdate,
 	onRemove,
@@ -462,14 +403,11 @@ function ElementInspector({
 					onCommit={onRename}
 				/>
 			</FormRow>
-			<FormRow label="Asset">
-				<Input
-					type="text"
-					value={element.asset}
-					readOnly
-					className="isostate-input isostate-input--readonly"
-				/>
-			</FormRow>
+			<ElementActivityFields
+				element={element}
+				assets={workspace.document?.header.assets ?? []}
+				onUpdate={onUpdate}
+			/>
 			<FormRow label="Position X">
 				<Input
 					type="number"
@@ -1409,6 +1347,8 @@ function ConnectionInspector({
 					{hasFlow ? 'Flow on' : 'Flow off'}
 				</Button>
 			</FormRow>
+
+			<ConnectorEffectsFields connection={connection} onUpdate={onUpdate} />
 
 			<SectionHeader title="Endpoints" />
 			<FormRow label="Start">

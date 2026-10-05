@@ -1,216 +1,141 @@
 # Convert A Mermaid Flowchart
 
-Use `isostate mermaid2dsl` when you already have a Mermaid flowchart and want
-a starting `.isostate.yaml` scene instead of authoring one from scratch. The
-converter is dev-time only: it never ships to the browser and never adds the
-`mermaid` package as a dependency.
+Use the CLI or the website's Mermaid workbench to turn a supported flowchart
+into an editable `.isostate.yaml` starting scene. Both preserve node names,
+branch labels, connection directions, and ordinary/dotted/thick links. The CLI
+validates before writing; the workbench converts locally and can open its exact
+result in the editor for validation and visual refinement.
 
-This guide belongs after [Plan A Scene](./plan-a-scene.md) for scenes you
-intend to keep iterating on by hand. Treat the converted YAML as a starting
-point, not a final layout: the converter only emits the fixed shapes,
-grid layout, and connections described below, then hands the file to you for
-further authoring (custom assets, connector routing, animation, camera).
+The converter is authoring tooling. Your deployed scene still uses only the
+small playback engine and a compiled bundle. No Mermaid parser or converter is
+added to the scene runtime.
+
+## Website Workflow
+
+1. Open **Mermaid** in the website navigation.
+2. Paste a `flowchart` or `graph`, upload a `.mmd` file, or choose an example.
+3. Convert and review line-specific errors or cycle warnings.
+4. Copy or download the resulting YAML, or choose **Open in editor**.
+5. Validate and refine the scene: replace primitives with catalog artwork,
+   give labels clear space, review routes, and add cumulative story scenes.
+
+Editor handoff uses this browser tab's session storage; it does not upload your
+source. If browser storage is unavailable, download YAML and import it in the
+editor. Unsupported source features produce an error rather than a partial
+conversion with hidden omissions.
+
+## CLI Workflow
+
+```bash
+npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl flow.mmd
+npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl flow.mmd --out scenes/flow.isostate.yaml
+npx --package @sebastianwessel/isostate-cli isostate validate scenes/flow.isostate.yaml
+npx --package @sebastianwessel/isostate-cli isostate compile scenes/flow.isostate.yaml --out public/flow.isostate.js
+```
+
+Without `--out`, conversion replaces the input extension with `.isostate.yaml`.
+Node and label IDs are normalized and checked for collisions. Repeated edges
+receive distinct deterministic connection IDs.
 
 ## Supported Input
 
-The converter understands a small, exact subset of Mermaid flowcharts:
+| Mermaid syntax | Starting scene |
+|---|---|
+| `graph` / `flowchart` with `TD`, `TB`, `LR`, `RL`, `BT` | Reading direction with nonnegative grid cells |
+| `A`, `A[text]` | Rectangle with visible text or original ID |
+| `A(text)`, `A([text])` | Rounded rectangle / stadium (sampled polygons) |
+| `A((text))`, `A{text}`, `A{{text}}` | Circle / diamond / hexagon |
+| `A[/text/]`, `A[\text\]` | Parallelograms |
+| `A[/text\]`, `A[\text/]` | Trapezoids |
+| `-->`, `---` | Directed / undirected ordinary links |
+| `-.->`, `-.-` | Directed / undirected dotted links |
+| `==>`, `===` | Directed / undirected thick links |
+| `A -->|yes| B`, `A -- yes --> B` | Connection plus separate visible branch text |
+| `A -. async .-> B`, `A == main ==> B` | Labeled dotted / thick links |
+| `A --> B --> C` | Pairwise connections |
+| `A & B --> C & D` | All four source-to-target connections |
 
-- a `graph TD`/`graph TB` (top-down) or `graph LR` (left-right) header —
-  `flowchart` is accepted as a synonym for `graph`; `RL` and `BT` are not
-  supported;
-- node statements: `id`, `id[text]` (rectangle), `id(text)` or `id((text))`
-  (circle), and `id{text}` (diamond);
-- edge statements: `A --> B` (directed), `A --- B` (undirected), and both with
-  an optional edge label (`A -->|text| B`, `A -- text --> B`);
-- chained edges (`A --> B --> C`), expanded pairwise.
+Statements may use newlines or semicolons. `%%` comments are ignored outside
+labels. Double-quote labels containing delimiters: `A["Read [config]; continue"]`.
+Quoted syntax characters remain text; escaped quotes/backslashes are preserved.
 
-Subgraphs, `classDef`/`class`/`style`/`click`/`linkStyle`, `direction`, other
-arrow types (`-.->`, `==>`), other node shapes (`[[..]]`, `[(..)]`, `>..]`),
-and multi-edge `&` fan-out are not supported and fail the conversion with
-`MERMAID_UNSUPPORTED`. See [Errors](../reference/errors.md) for the full list
-of converter error and warning codes.
+Subgraphs, styling/click/configuration directives, local `direction`, cylinder
+(`[(...)]`), subroutine (`[[...]]`), flag and other unsupported shapes,
+Markdown/HTML/entity labels, other arrowheads, and sequence/state/class/ER
+syntax are rejected. Use the AI authoring skill for a faithful richer story;
+do not delete meaningful source features merely to satisfy the parser. The
+exhaustive contract lives in `specs/02-capabilities/dsl/mermaid2dsl.md`.
 
 ## Worked Example
 
-Given `flow.mmd`:
-
 ```mermaid
-graph TD
-Start[Begin Here] --> Process(Do Work) --> Decision{Ready?}
-Decision --> Done
-Done --- Skip
+flowchart TD
+  Request[Request] --> Router(Request router)
+  Router --> Auth{Authorized?}
+  Auth -- ok --> App[Application]
+  Auth -- denied --> Response([Response])
+  App --> Cache[Cache]
+  Cache -- hit --> Response
+  Cache -- miss --> DB[Database]
+  DB --> Response
+  App -. async .-> Queue[Queue]
+  Queue --> Worker[Worker]
+  Worker --> DB
 ```
 
-```bash
-npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl flow.mmd
-```
+The complete runnable source and generated files are in
+`examples/mermaid/`. The output contains nine nodes, eleven connections,
+visible node captions, and five additional branch captions: `ok`, `denied`,
+`hit`, `miss`, and `async`. The asynchronous connection stays dotted.
 
-Writes `flow.isostate.yaml` next to the input (replace the extension with
-`.isostate.yaml`, or pass `--out` for a different path):
+For example, the async connection retains its actual endpoints:
 
 ```yaml
-header:
-  name: flow
-  assets: []
-  layers:
-    - name: ground
-    - name: nodes
-    - name: labels
-scenes:
-  - id: initial
-    elements:
-      - id: start
-        asset: rectangle
-        at: [0, 0]
-        layer: nodes
-        primitive:
-          rectangle:
-            fill: "var(--iso-node-fill, #dbeafe)"
-            stroke: "var(--iso-node-stroke, #2563eb)"
-            strokeWidth: 1
-            opacity: 0.9
-      - id: start-label
-        asset: text
-        at: [0, 0]
-        layer: labels
-        text:
-          value: Begin Here
-          align: middle
-          placement: caption
-      - id: process
-        asset: circle
-        at: [0, 2]
-        layer: nodes
-        primitive:
-          circle:
-            fill: "var(--iso-node-fill, #dbeafe)"
-            stroke: "var(--iso-node-stroke, #2563eb)"
-            strokeWidth: 1
-            opacity: 0.9
-      - id: process-label
-        asset: text
-        at: [0, 2]
-        layer: labels
-        text:
-          value: Do Work
-          align: middle
-          placement: caption
-      - id: decision
-        asset: polygon
-        at: [0, 4]
-        layer: nodes
-        primitive:
-          polygon:
-            points: [[0.5, 0], [1, 0.5], [0.5, 1], [0, 0.5]]
-            fill: "var(--iso-node-fill, #dbeafe)"
-            stroke: "var(--iso-node-stroke, #2563eb)"
-            strokeWidth: 1
-            opacity: 0.9
-      - id: decision-label
-        asset: text
-        at: [0, 4]
-        layer: labels
-        text:
-          value: Ready?
-          align: middle
-          placement: caption
-      - id: done
-        asset: rectangle
-        at: [0, 6]
-        layer: nodes
-        primitive:
-          rectangle:
-            fill: "var(--iso-node-fill, #dbeafe)"
-            stroke: "var(--iso-node-stroke, #2563eb)"
-            strokeWidth: 1
-            opacity: 0.9
-      - id: skip
-        asset: rectangle
-        at: [0, 8]
-        layer: nodes
-        primitive:
-          rectangle:
-            fill: "var(--iso-node-fill, #dbeafe)"
-            stroke: "var(--iso-node-stroke, #2563eb)"
-            strokeWidth: 1
-            opacity: 0.9
-    connections:
-      - id: start-to-process
-        from:
-          element: start
-        to:
-          element: process
-        layer: ground
-        end: arrow
-      - id: process-to-decision
-        from:
-          element: process
-        to:
-          element: decision
-        layer: ground
-        end: arrow
-      - id: decision-to-done
-        from:
-          element: decision
-        to:
-          element: done
-        layer: ground
-        end: arrow
-      - id: done-to-skip
-        from:
-          element: done
-        to:
-          element: skip
-        layer: ground
-        end: none
+- id: app-to-queue
+  from:
+    element: app
+  to:
+    element: queue
+  layer: ground
+  end: arrow
+  style:
+    pattern: dotted
 ```
 
-Rendered, this produces four stacked nodes in document order — a rectangle
-labeled "Begin Here", a circle labeled "Do Work", a diamond labeled "Ready?",
-and a plain rectangle ("Done") — connected top-to-bottom by arrow connectors,
-plus a fifth plain rectangle ("Skip") linked to "Done" with a plain
-(arrowless) connector, since the source used `---`. Node ids come from
-lowercased, kebab-cased Mermaid ids; label elements reuse the node id with a
-`-label` suffix.
+Its label is a separate generated `text` element, not a new logical edge or a
+custom DSL field. This lets you move the label while retaining the connection.
 
-## Layout
+## Layout And Warnings
 
-Nodes are placed on a grid with 2-cell spacing based on their longest-path
-layer from a source node (`TD`/`TB` stacks layers vertically; `LR` stacks them
-horizontally), and ordered within a layer by first appearance in the
-document. This keeps the converted scene readable but generic — expect to
-adjust `at` positions, swap in real assets, or add camera focuses by hand
-once you start iterating.
+The starting layout uses longest-path layers with four-cell spacing and source
+appearance order within each layer. `LR`/`RL` transpose the layout axis;
+`RL`/`BT` mirror the layer order. All coordinates remain whole and nonnegative.
 
-## Cycles And Dropped Labels
+Cycle-closing edges emit `MERMAID_CYCLE_BROKEN` because only their contribution
+to layout layering is ignored. Their rendered connections stay in the YAML.
+Branch labels are retained; `MERMAID_LABEL_DROPPED` is no longer emitted.
 
-Mermaid flowcharts may contain cycles or edge labels that the DSL has no
-equivalent for. The converter still produces a valid scene in both cases and
-reports what it changed:
+The layout is a starting point. Automatic label placement cannot guarantee
+clear text at every font size or an unambiguous route in dense graphs. Review
+all branches in the editor, adjust whole-cell placement, wrap long labels, and
+verify every perceived arrow source and target against the original Mermaid.
 
-- a cycle-closing edge is ignored for layout purposes, with warning
-  `MERMAID_CYCLE_BROKEN`;
-- an edge label is dropped, since DSL connections carry no label, with
-  warning `MERMAID_LABEL_DROPPED`.
+## From Draft To Visual Story
+
+Keep the `.mmd` source alongside the YAML. For a polished story, install both
+skills:
 
 ```bash
-npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl flow.mmd
-WARN MERMAID_CYCLE_BROKEN (4) Edge at line 4 closes a cycle and was ignored for layout layering
-WROTE flow.isostate.yaml
+npx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
+npx skills add sebastianwessel/isostate --skill converting-mermaid-to-isostate-stories
 ```
 
-Warnings never fail the command; only a structural problem in the Mermaid
-source (see [Errors](../reference/errors.md)) exits non-zero.
+Inventory every node, edge, direction, label, and branch before adding story
+beats. Choose recognizable assets in one visual style, keep their checked
+anchors at native one-cell size, reserve separate caption bands, and introduce
+labels before actions depend on them. Use cumulative scene deltas, retain
+completed context, and review each stop on desktop and mobile.
 
-## Next Steps
-
-Validate the generated file like any other authored scene, then keep
-iterating with the normal authoring workflow:
-
-```bash
-npx --package @sebastianwessel/isostate-cli isostate validate flow.isostate.yaml
-```
-
-See [Author Scene Deltas](./author-scene-deltas.md) to add further scenes, and
-[Assets Workflow](./assets-workflow.md) to replace the generated shapes with
-real SVG assets.
+Next: [Assets Workflow](./assets-workflow.md),
+[Animation And Connections](./animation-and-connections.md), and
+[Deploy A Static Bundle](./deploy-static-bundle.md).

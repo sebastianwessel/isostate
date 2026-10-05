@@ -262,6 +262,12 @@ function serializeElementItem(
 			serializeAmbientItem
 		);
 	}
+	if (element.activity !== undefined) {
+		buf.push('activity:');
+		buf.push(`  state: ${serializeScalarString(element.activity.state)}`);
+		if (element.activity.color !== undefined)
+			buf.push(`  color: ${serializeScalarString(element.activity.color)}`);
+	}
 	if (element.text !== undefined) {
 		serializeTextToBuf(buf, element.text);
 	}
@@ -333,6 +339,12 @@ function serializeStyleToBuf(buf: string[], style: ConnectorStyle): void {
 		buf.push(`  outline: ${serializeScalarString(style.outline)}`);
 	if (style.outlineWidth !== undefined)
 		buf.push(`  outlineWidth: ${style.outlineWidth}`);
+	if (style.cornerRadius !== undefined)
+		buf.push(`  cornerRadius: ${style.cornerRadius}`);
+	if (style.glow !== undefined)
+		buf.push(`  glow: ${serializeScalarString(style.glow)}`);
+	if (style.glowWidth !== undefined)
+		buf.push(`  glowWidth: ${style.glowWidth}`);
 	if (style.lane !== undefined)
 		buf.push(`  lane: ${serializeScalarString(style.lane)}`);
 }
@@ -359,6 +371,22 @@ function serializeConnectionItem(
 	}
 	if (conn.style !== undefined) {
 		serializeStyleToBuf(buf, conn.style);
+	}
+	if (conn.message !== undefined) {
+		buf.push(
+			Object.values(conn.message).some((value) => value !== undefined)
+				? 'message:'
+				: 'message: {}'
+		);
+		for (const key of ['kind', 'color'] as const) {
+			const value = conn.message[key];
+			if (value !== undefined)
+				buf.push(`  ${key}: ${serializeScalarString(value)}`);
+		}
+		for (const key of ['size', 'duration', 'count', 'enabled'] as const) {
+			const value = conn.message[key];
+			if (value !== undefined) buf.push(`  ${key}: ${value}`);
+		}
 	}
 	if (conn.start !== undefined) {
 		buf.push(`start: ${serializeScalarString(conn.start)}`);

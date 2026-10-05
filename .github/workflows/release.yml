@@ -9,17 +9,23 @@ on:
       - package.json
       - packages/core/package.json
       - packages/cli/package.json
+      - packages/editor/package.json
 
 permissions:
-  contents: write
-  id-token: write
-  pages: write
+  contents: read
+
+concurrency:
+  group: isostate-production
+  cancel-in-progress: false
 
 jobs:
   release:
     name: Publish npm packages
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -29,7 +35,7 @@ jobs:
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          bun-version: 1.4.2
 
       - name: Setup Node registry
         uses: actions/setup-node@v6
@@ -47,41 +53,17 @@ jobs:
         run: git diff --exit-code
 
       - name: Verify package versions
+        run: bun scripts/check-release-versions.ts >> "$GITHUB_ENV"
+
+      - name: Verify git tag is new
         run: |
-          CORE_VERSION="$(node -p "require('./packages/core/package.json').version")"
-          CLI_VERSION="$(node -p "require('./packages/cli/package.json').version")"
-          CLI_CORE_DEP="$(node -p "require('./packages/cli/package.json').dependencies['@sebastianwessel/isostate']")"
-
-          if [ "$CORE_VERSION" != "$CLI_VERSION" ]; then
-            echo "Package versions must match: core=$CORE_VERSION cli=$CLI_VERSION" >&2
+          if git show-ref --verify --quiet "refs/tags/$tag"; then
+            echo "Tag $tag already exists" >&2
             exit 1
           fi
-
-          if [ "$CLI_CORE_DEP" != "$CORE_VERSION" ]; then
-            echo "CLI dependency on @sebastianwessel/isostate must equal package version: dep=$CLI_CORE_DEP version=$CORE_VERSION" >&2
-            exit 1
-          fi
-
-          TAG="v$CORE_VERSION"
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists" >&2
-            exit 1
-          fi
-
-          echo "version=$CORE_VERSION" >> "$GITHUB_ENV"
-          echo "tag=$TAG" >> "$GITHUB_ENV"
 
       - name: Verify npm versions are new
-        run: |
-          if npm view "@sebastianwessel/isostate@$version" version >/dev/null 2>&1; then
-            echo "@sebastianwessel/isostate@$version is already published" >&2
-            exit 1
-          fi
-
-          if npm view "@sebastianwessel/isostate-cli@$version" version >/dev/null 2>&1; then
-            echo "@sebastianwessel/isostate-cli@$version is already published" >&2
-            exit 1
-          fi
+        run: bun scripts/check-npm-release.ts "$version"
 
       - name: Lint
         run: bun run lint
@@ -112,11 +94,24 @@ jobs:
         with:
           path: .
           node-version: 24
-          package-manager: bun@latest
+          package-manager: bun@1.4.2
           build-cmd: bun run site:build
           out-dir: website/dist
         env:
           PUBLIC_ISOSTATE_VERSION: ${{ env.version }}
+
+      - name: Verify lockfile remained unchanged
+        run: git diff --exit-code -- bun.lock package.json packages/core/package.json packages/cli/package.json packages/editor/package.json
+
+      - name: Verify npm CLI supports trusted publishing
+        run: |
+          NPM_VERSION="$(npm --version)" node --input-type=module -e '
+            const version = process.env.NPM_VERSION;
+            const [major, minor, patch] = version.split(".").map(Number);
+            if (!(major > 11 || (major === 11 && (minor > 5 || (minor === 5 && patch >= 1))))) {
+              throw new Error(`npm >=11.5.1 is required for trusted publishing; found ${version}`);
+            }
+          '
 
       - name: Publish core package
         run: npm publish --access public --provenance ./packages/core
@@ -146,6 +141,9 @@ jobs:
     name: Deploy website to GitHub Pages
     runs-on: ubuntu-latest
     needs: release
+    permissions:
+      pages: write
+      id-token: write
     if: github.ref == 'refs/heads/main'
     environment:
       name: github-pages

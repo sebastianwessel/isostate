@@ -12,6 +12,7 @@ import type {
 } from '../types.ts';
 import { Input } from '../ui/input.tsx';
 import { ScrollArea } from '../ui/scroll-area.tsx';
+import { getAssetPanelGroup } from './asset-groups.ts';
 
 interface AssetPanelProps {
 	workspace: EditorWorkspace;
@@ -184,9 +185,10 @@ export function AssetPanel({
 	const groupedAssets = useMemo(() => {
 		const map = new Map<string, typeof filteredAssets>();
 		for (const asset of filteredAssets) {
-			const list = map.get(asset.group) ?? [];
+			const group = getAssetPanelGroup(asset);
+			const list = map.get(group) ?? [];
 			list.push(asset);
-			map.set(asset.group, list);
+			map.set(group, list);
 		}
 		return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
 	}, [filteredAssets]);

@@ -16,17 +16,44 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 
 	<script>
 		import { mountEditor } from '../../../packages/editor/src/index.ts';
+		import { MERMAID_HANDOFF_KEY, readMermaidHandoff } from '../lib/mermaid-handoff';
+		import softwareExample from '../scenes/software-architecture.isostate.yaml?raw';
+		import agenticExample from '../scenes/agentic-workflow.isostate.yaml?raw';
+		import providerExample from '../scenes/provider-routing.isostate.yaml?raw';
+		import mermaidExample from '../scenes/mermaid-workflow.isostate.yaml?raw';
 
 		const target = document.getElementById('editor-mount');
 		if (!target) throw new Error('Missing #editor-mount target');
 
 		const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 
+		const params = new URLSearchParams(window.location.search);
+		const example = params.get('example');
+		let importedYaml: string | null = null;
+		if (params.get('import') === 'mermaid') {
+			try { importedYaml = readMermaidHandoff(window.sessionStorage); } catch { /* Storage may be disabled. */ }
+			if (!importedYaml) {
+				const notice = document.createElement('p');
+				notice.className = 'editor-import-notice';
+				notice.setAttribute('role', 'status');
+				notice.textContent = 'The Mermaid handoff is no longer available. Download the YAML from the converter and use Import to load it here.';
+				target.before(notice);
+			}
+		}
+		const selectedYaml = example === 'software-architecture' ? softwareExample
+			: example === 'agentic-workflow' ? agenticExample
+			: example === 'provider-routing' ? providerExample
+			: example === 'mermaid-workflow' ? mermaidExample : agenticExample;
+		const initialYaml = importedYaml ?? selectedYaml?.replace('assetBaseUrl: ./assets/software-architecture', `assetBaseUrl: ${base}/assets/software-architecture`).replace('assetBaseUrl: ../../../assets/isostate-story', `assetBaseUrl: ${base}/assets/isostate-story`);
+
 		const editor = mountEditor(target, {
+			initialYaml,
 			assetManifestUrls: [
+				`${base}/assets/software-architecture/manifest.json`,
 				`${base}/assets/aws-3d.manifest.json`,
 				`${base}/assets/traffic.manifest.json`,
-				`${base}/assets/city-growth.manifest.json`
+				`${base}/assets/city-growth.manifest.json`,
+				`${base}/assets/isostate-story/mermaid-workflow.manifest.json`
 			],
 			theme: 'system',
 			onChange(event) {
@@ -35,7 +62,16 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 			}
 		});
 
-		window.addEventListener('beforeunload', () => editor.destroy(), { once: true });
+		if (importedYaml) {
+			try { window.sessionStorage.removeItem(MERMAID_HANDOFF_KEY); } catch { /* No persistent handoff is required. */ }
+			params.delete('import');
+			const cleanUrl = new URL(window.location.href);
+			cleanUrl.search = params.toString();
+			window.history.replaceState(null, '', cleanUrl);
+		}
+		window.addEventListener('pagehide', (event) => {
+			if (!event.persisted) editor.destroy();
+		});
 	</script>
 </SiteLayout>
 
@@ -46,6 +82,21 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 		overflow: hidden;
 		display: flex;
 		flex-direction: column;
+	}
+
+	.editor-import-notice {
+		margin: 0;
+		padding: 12px 20px;
+		background: var(--paper-2);
+		font-size: 0.85rem;
+	}
+
+	.editor-target :global(.isostate-editor) {
+		--mermaid-label: #182d28;
+	}
+
+	.editor-target :global(.isostate-editor[data-theme="dark"]) {
+		--mermaid-label: #e6f5ed;
 	}
 
 	.editor-target {

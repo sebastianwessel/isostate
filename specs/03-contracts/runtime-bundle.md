@@ -58,6 +58,7 @@ interface RuntimeElementState {
   ambient?: AmbientAnimation[];
   text?: TextContent;
   primitive?: PrimitiveContent;
+  activity?: ElementActivity;
 }
 
 interface CompiledAsset {
@@ -73,7 +74,7 @@ interface CompiledSprite {
 }
 
 type ConnectorPattern = 'solid' | 'dashed' | 'dotted';
-type ConnectorVariant = 'line' | 'road';
+type ConnectorVariant = 'line' | 'road' | 'beam';
 type ConnectorEndpoint = 'none' | 'arrow' | 'dot' | 'circle' | 'diamond' | 'bar';
 type ConnectorDirection = 'route' | 'reverse';
 
@@ -87,6 +88,9 @@ interface RuntimeConnectorStyle {
   outline?: string;
   outlineWidth: number;
   lane: 'none' | 'center-dashed';
+  cornerRadius?: number;
+  glow?: string;
+  glowWidth?: number;
 }
 
 interface RuntimeConnectorState {
@@ -101,6 +105,7 @@ interface RuntimeConnectorState {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
+  message?: ConnectorMessage;
 }
 ```
 
@@ -112,8 +117,9 @@ snapshot and is rendered as a zero-scale element; it is not equivalent to
 Runtime bundles use `scenes` as the only compiled timeline. Compatibility fields such as top-level `states`, top-level `elements`, or per-element `keyframes` are not emitted or accepted by the runtime contract.
 
 `connectors` is always present on each runtime scene stop. It may be an empty
-array. Connector style values are fully defaulted by the compiler so the browser
-runtime does not need authored-style fallback logic.
+array. Existing connector style fields are fully defaulted by the compiler.
+The additive `cornerRadius`, `glow`, and `glowWidth` fields remain optional so
+previous bundles render unchanged; runtime defaults are `0`, no glow, and `8`.
 
 `camera` is optional on each runtime scene stop. It is non-persistent metadata:
 omitting `camera` from a scene stop means navigation to that stop leaves the
@@ -239,12 +245,12 @@ Connector defaults are normalized during compilation:
 - `style.variant`: `line`
 - `style.pattern`: `solid`
 - `style.stroke`: `#2563eb`
-- `style.strokeWidth`: `3` for `line`, `14` for `road`
+- `style.strokeWidth`: `3` for `line`, `14` for `road`, `6` for `beam`
 - `style.opacity`: `1`
 - `style.dash`: omitted for `solid`, `[12, 8]` for `dashed`, `[0, 8]` for
   `dotted`, unless authored
-- `style.outline`: `#ffffff` for `road`, omitted for `line`, unless authored
-- `style.outlineWidth`: `2` for `road`, `0` for `line`, unless authored
+- `style.outline`: `#ffffff` for `road`, `#263746` for `beam`, omitted for `line`, unless authored
+- `style.outlineWidth`: `2` for `road` and `beam`, `0` for `line`, unless authored
 - `style.lane`: `none`
 - `start`: `none`
 - `end`: `arrow`
@@ -363,7 +369,7 @@ JSON output:
 ```json
 {
   "_format": "isostate-runtime-bundle",
-  "_version": "0.5.0",
+  "_version": "0.6.0",
   "_digest": "...",
   "grid": { "cellSize": 64 },
   "floor": { "size": [5, 4], "origin": [0, 0], "visible": true, "layer": "ground" },
@@ -457,3 +463,13 @@ Budgets:
 | dev-time DSL entrypoint | no browser budget; excluded from runtime bundle |
 
 The root build must fail if `yaml` appears in the runtime bundle dependency graph.
+
+## Presentation State Compatibility
+
+`RuntimeElementState.activity` and `RuntimeConnectorState.message` are optional
+validated data using `ElementActivity` and `ConnectorMessage` from the scene
+schema. Omitted values preserve the appearance of older bundles. All new data
+participates in canonical serialization and digest generation. The runtime
+consumes resolved snapshots; it does not merge patches or resolve asset ids
+through a YAML catalog. Every external asset used at any stop, including assets
+introduced solely by an update, must exist in `RuntimeBundle.assets`.

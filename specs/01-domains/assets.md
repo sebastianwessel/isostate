@@ -290,3 +290,89 @@ Isometric assets use CSS `color-mix()` to create depth shading from a single col
 | `iso-back`  | Back face (darkest) | base color 100% |
 
 Asset geometry only needs one color variable per material, and all depth shading is handled by CSS.
+
+## Software Architecture and Agentic Workflow Catalog
+
+`assets/software-architecture/` is a first-party optional catalog of 94
+photorealistic isometric software, AI, and process objects distributed under the
+repository's MIT license. The original twenty objects remain available with
+the same identifiers, rectangles, and anchors. Nine additional transparent PNG
+sheets provide 72 objects for agentic work. Two additional single-object PNGs
+provide directional human/AI handoffs:
+
+| Sheet | Logical ids / purpose |
+| --- | --- |
+| `agents-sprites.png` | `ai-agent`, orchestrator, planner, researcher, tool runner, reviewer, memory, knowledge |
+| `ai-capabilities-sprites.png` | `ai-rag`, embedding, vector search, context, prompt, evaluation, guardrail, model router |
+| `humans-sprites.png` | `human-` requester, operator, approver, expert, team, handoff, escalation, feedback |
+| `channels-sprites.png` | `channel-` email, phone, Teams, web form, chat, issue, document, webhook |
+| `orchestration-sprites.png` | `agent-` workflow, parallel, router, condition, loop, retry, timeout, error |
+| `lifecycle-sprites.png` | `agent-` trigger, schedule, await human, approval, rejection, escalation, audit, complete |
+| `servicenow-sprites.png` | `servicenow-` interaction, request, requested item, request task, catalog item, incident, problem, change |
+| `providers-sprites.png` | `provider-` Azure Foundry, AWS Bedrock, Anthropic, OpenAI, Google Vertex, Google Gemini, local model, Hugging Face |
+| `infrastructure-sprites.png` | `infra-` Redis cache, Redis stream, Redis pub/sub, vector database, object storage, knowledge base, API tool, secret vault |
+| `human-to-ai-handoff.png` | Human delegates a payload to an AI worker. |
+| `ai-to-human-handoff.png` | AI worker presents a payload to a human reviewer. |
+
+The nine sheets and two directional images live in `agentic/`. The new images
+use full-image 1254 × 1254 crops with anchors `[0.51, 0.936]` and `[0.5, 0.91]`,
+respectively. `human-handoff` retains its existing human-to-human artwork. Provider/product assets are original
+conceptual illustrations; catalog labels and search aliases identify the
+corresponding products. They are not official vendor logo files. Provider
+choice, ticket type, human responsibility, and escalation meaning live in the
+scene's authored labels and visual connections; catalog images do not implement
+workflow execution or ticket schemas.
+
+The material palette combines graphite metal, cyan glass, teal accents, amber
+lights, realistic miniature people, and distinguishing product accents. Exact
+prompts are recorded in `IMAGEGEN-PROMPTS.md` and the three provenance documents
+under `agentic/`. Original generated image bytes and genuine alpha channels are
+preserved. Each source sheet must fit the CLI's existing 2 MiB image limit.
+
+The metadata source is `.isostate-assets.yaml`. Every logical sprite has an
+explicit whole-pixel `rect`, checked normalized ground `anchor`, label, and
+search tags. Crop geometry is measured from the actual generated sheet, rather
+than assuming an evenly spaced layout. Scenes use these sprite declarations at
+native `size: 1`; a sheet namespace is not placeable. Labels remain generated
+`text` elements and routes remain scene `connections`.
+
+The existing CLI generates `manifest.json`, including actual dimensions,
+source byte digests, and sprite labels/tags. Its `assetBaseUrl` is `./` because it
+resides beside the group directories. Website copies preserve ids, rectangles,
+anchors, digests, and source bytes. Gallery categories and search expose all 94
+objects; the editor registers the complete manifest.
+
+Three runnable website examples cover software architecture, human-to-agent
+workflow migration, and provider/tool routing. Each source YAML declares only
+the catalog sprites it uses, and the build validates and compiles its generated
+module and public YAML/JS downloads together. Examples show human review,
+escalation, intake channels, ServiceNow records, and model/tool choices using
+ordinary scene deltas and visual connections. Each scene stays within the
+50-object target and uses whole grid cells.
+
+The core package build copies all thirteen source PNGs, the generated manifest,
+README, image-generation provenance, and MIT LICENSE to
+`dist/assets/software-architecture/`, exposing the files through the static
+`./assets/software-architecture/*` package export. Consumers may copy these
+files into a public directory or use bundler URL imports. This distribution
+adds no runtime imports, browser dependencies, public DSL fields, or renderer
+behavior. Asset bytes remain outside the core engine's compressed bundle budget.
+
+## Generated Artwork Provenance
+
+The software-architecture catalog and Mermaid workflow sheet disclose generation
+using OpenAI image-generation models in their adjacent `NOTICE.md`, README or
+provenance document, and website credit. Their project distribution retains MIT
+licensing. Build/sync scripts copy the notice and licence with downloadable
+assets; the core package includes the software catalog's notice. Other asset
+families retain their own source/licensing records. Generation credit is kept
+outside the public scene/manifest schema and browser runtime.
+
+## Asset Authoring Skill
+
+`skills/creating-isostate-assets/` provides creation, import, repair, and catalog
+maintenance guidance. Visual style comes from the user's brief, references, or
+existing catalog. The skill must not impose a palette, medium, or material
+style. It applies the existing format, viewport-anchor, manifest, provenance,
+and distribution contracts without adding runtime or DSL fields. Scene
+composition remains covered by `authoring-isostate-scenes`.

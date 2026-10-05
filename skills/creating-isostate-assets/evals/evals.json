@@ -1,0 +1,47 @@
+{
+  "skill_name": "creating-isostate-assets",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create an isostate asset family for a browser, queue, and worker. Use soft watercolor, muted earth tones, paper texture, and the attached isometric reference. Keep the objects transparent and reusable.",
+      "expected_output": "Use the watercolor brief and inspect the reference; do not replace it with photorealistic metal or a fixed teal palette. Deliver independent alpha-capable sprites or style-compatible SVGs, measured crops/viewport anchors, metadata, generated manifest, source/provider notices, and a validated/compiled native-cell sample. Review rendered family consistency and captions.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Extend our existing software-architecture catalog with human-to-AI and AI-to-human handoffs. Keep our current visual style and stable IDs; integrate them into the gallery and npm catalog.",
+      "expected_output": "Inspect the existing artwork and preserve its style. Make the transfer direction and participant roles distinguishable. Check crops and per-sprite anchors, generate metadata/digests, sync source/package/website files and notices, compile changed samples, and review both variants at actual viewing sizes.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "Import a supplied 300 by 180 PNG with contact point at (150, 150) into isostate. It is one whole object; its caption must remain outside the image.",
+      "expected_output": "Declare an explicit full-image sprite rect and sheetSize with unique namespace and sprite IDs. Compute square-viewport anchor [0.5, 0.9] for bottom-aligned fitting, use native size 1, generate/validate/compile, then check rendered contact, clipping and separate caption bounds. Do not use raw py/H or declare a URL PNG asset.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "pls fix teh asset catalog, replaced handoff-sheet.png with a new size, keep teh same sprite id and update website downloads too",
+      "expected_output": "Measure replacement dimensions and contact, retain the logical ID when semantics match, update metadata/crops/anchors and regenerated digests, inspect references and distribution wiring, regenerate affected bundles and copied files/notices, verify rendered geometry and hosted paths; do not generate new art for maintenance alone.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Move the database in our scene to [3, 2] and make the connection turn right. The current artwork is fine.",
+      "expected_output": "Route the request to scene authoring and connection/layout guidance. Preserve image bytes, catalog metadata and styling; do not regenerate assets or introduce an asset-generation service.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Create a new family of isostate assets for our payment process. There is no existing catalog or visual reference.",
+      "expected_output": "Ask one focused visual-style question while inventorying payment concepts and integration paths. Do not choose a default palette/material/medium or generate artwork until the user supplies direction.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Import these vendor-provided SVGs into our isostate catalog. They have their own attribution and licence. Please include them in downloads.",
+      "expected_output": "Inspect source permissions and safe SVG/viewBox requirements; preserve vendor attribution and licence instead of adding OpenAI generation credit. Generate manifest with stable IDs/checked anchors, verify placement and copied notices, and do not invent a model ID or change licensing.",
+      "files": []
+    }
+  ]
+}

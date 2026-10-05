@@ -1,0 +1,16 @@
+/** Static catalog files copied into both npm distribution and website downloads. */
+export function softwareCatalogFiles(
+	assets: Array<{ path: string }>
+): string[] {
+	return [
+		'manifest.json',
+		'README.md',
+		'LICENSE',
+		'NOTICE.md',
+		'IMAGEGEN-PROMPTS.md',
+		'agentic/AGENT-VISUAL-PROMPTS.md',
+		'agentic/PROCESS-VISUAL-PROMPTS.md',
+		'agentic/HANDOFF-PROMPTS.md',
+		...new Set(assets.map((asset) => asset.path))
+	];
+}

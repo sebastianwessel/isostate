@@ -12,14 +12,13 @@ const initialYaml = `header:
     - name: default
 scenes:
   - id: initial
-    add:
-      elements:
-        - id: box-1
-          asset: rectangle
-          at: [1, 1]
-          primitive:
-            rectangle:
-              fill: "#3b82f6"
+    elements:
+      - id: box-1
+        asset: rectangle
+        at: [1, 1]
+        primitive:
+          rectangle:
+            fill: "#3b82f6"
 `;
 
 const target = document.getElementById('editor');

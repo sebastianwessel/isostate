@@ -75,6 +75,10 @@ export function createEditorRuntimeAdapter(mounted: MountedScene): EditorRuntime
 		},
 
 		setProgress(progress: number): void {
+			if (mounted.controller) {
+				mounted.controller.setProgress(progress);
+				return;
+			}
 			mounted.engine.setProgress(progress);
 			applyEditorFrame(mounted);
 		},
@@ -87,7 +91,7 @@ export function createEditorRuntimeAdapter(mounted: MountedScene): EditorRuntime
 
 			// Elements from current engine frame
 			for (const update of mounted.engine.getFrameUpdates()) {
-				const bounds = getCurrentElementBounds(mounted.svg, update.id);
+				const bounds = getEditorElementBounds(mounted, update.id, update.asset);
 				result.push({
 					id: update.id,
 					kind: "element",
@@ -122,7 +126,7 @@ export function createEditorRuntimeAdapter(mounted: MountedScene): EditorRuntime
 
 			const elementUpdate = mounted.engine.getElementUpdate(id);
 			if (elementUpdate && elementUpdate.asset !== "") {
-				const bounds = getCurrentElementBounds(mounted.svg, id);
+				const bounds = getEditorElementBounds(mounted, id, elementUpdate.asset);
 				return {
 					id: elementUpdate.id,
 					kind: "element",
@@ -190,6 +194,18 @@ export function createEditorRuntimeAdapter(mounted: MountedScene): EditorRuntime
 	};
 }
 
+function getEditorElementBounds(mounted: MountedScene, id: string, asset: string): ViewBoxRect | undefined {
+	if (asset === "text") {
+		const rect = getElementState(mounted.svg, id)?.node.getBoundingClientRect();
+		if (rect && rect.width > 0 && rect.height > 0) {
+			const topLeft = geometryClientPointToSvgPoint(mounted.svg, { clientX: rect.left, clientY: rect.top });
+			const bottomRight = geometryClientPointToSvgPoint(mounted.svg, { clientX: rect.right, clientY: rect.bottom });
+			return { minX: topLeft.x, minY: topLeft.y, width: bottomRight.x - topLeft.x, height: bottomRight.y - topLeft.y };
+		}
+	}
+	return getCurrentElementBounds(mounted.svg, id);
+}
+
 function applyEditorFrame(mounted: MountedScene): void {
 	const elements: RuntimeElementState[] = mounted.engine.getFrameUpdates().map((update) => ({
 		id: update.id,
@@ -203,6 +219,7 @@ function applyEditorFrame(mounted: MountedScene): void {
 		ambient: update.ambient,
 		text: update.text,
 		primitive: update.primitive,
+		activity: update.activity,
 	}));
 	const connectors: RuntimeConnectorState[] = mounted.engine.getConnectorFrameUpdates().map((update) => ({
 		id: update.id,
@@ -216,6 +233,7 @@ function applyEditorFrame(mounted: MountedScene): void {
 		enter: update.entry as RuntimeConnectorState["enter"],
 		exit: update.exit as RuntimeConnectorState["exit"],
 		ambient: update.ambient,
+		message: update.message,
 	}));
 
 	for (const element of elements) {

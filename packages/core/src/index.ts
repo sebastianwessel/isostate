@@ -66,6 +66,8 @@ export type {
 	ConnectionPatch,
 	ConnectionPlacement,
 	ConnectionRemoval,
+	ConnectorMessage,
+	ElementActivity,
 	ElementPatch,
 	ElementPlacement,
 	ElementRemoval,

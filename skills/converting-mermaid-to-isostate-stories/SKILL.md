@@ -23,26 +23,22 @@ the Mermaid flow unreconstructable is a failed conversion.
 ## Relationship To `isostate mermaid2dsl`
 
 The CLI ships a deterministic converter, `isostate mermaid2dsl`
-(`docs/guides/convert-mermaid.md`), that turns a narrow Mermaid flowchart
-subset into a single starting `.isostate.yaml` with no AI involved. Choose the
-right tool:
+(`docs/guides/convert-mermaid.md`), for supported flowcharts. The website's
+Mermaid workbench uses the same source converter to produce YAML locally.
 
-- Use `isostate mermaid2dsl` when the source is a plain `graph`/`flowchart`
-  with direction `TD`/`TB`/`LR`, only rectangle/circle/diamond nodes, and
-  `-->`/`---` edges, and a single generic starting scene (primitive shapes,
-  auto grid layout, no styling) is enough. It is fast, reproducible, and
-  requires no asset design. Its output is a valid `.isostate.yaml` you can then
-  author on top of with this skill.
-- Use this skill when you need anything richer: a cumulative multi-scene story,
-  semantic connection styling (active/completed/optional/alternative/async/
-  error), real assets instead of generic primitives, subgraphs mapped to zones,
-  sequence or state diagrams, or any Mermaid feature the CLI rejects (`RL`/`BT`
-  direction, other node shapes, `&`-separated edges, edge labels rendered as
-  visible text). See `specs/02-capabilities/dsl/mermaid2dsl.md` for the exact
-  CLI-supported subset.
+- Use the CLI or workbench for a reproducible single-scene starting point:
+  `TD`/`TB`/`LR`/`RL`/`BT`, supported primitive shapes, ordinary/dotted/thick
+  links, chains, and `&` fan-out. Node names and edge labels remain visible.
+  The CLI validates before writing. The workbench offers copy, download, and
+  opening the exact result in the editor for validation and refinement.
+- Use this skill for cumulative story beats, recognizable assets, semantic
+  emphasis, subgraph zones, sequence/state diagrams, or features the converter
+  explicitly rejects. Do not promise full Mermaid syntax support. Read
+  `specs/02-capabilities/dsl/mermaid2dsl.md` for the exhaustive support list.
 
-A common path is to run the CLI first for a structurally-correct skeleton, then
-redesign it into a story with this skill.
+A common path is to convert a supported source first, review all diagnostics,
+then replace primitives with checked assets and author cumulative scenes.
+Keep the original `.mmd` alongside generated YAML so fidelity stays reviewable.
 
 ## Workflow
 
@@ -67,6 +63,8 @@ redesign it into a story with this skill.
    syntax. Do not duplicate shared storytelling rules there.
 6. If writing YAML, also use `skills/authoring-isostate-scenes/` as the DSL
    contract source and read only the relevant reference files there.
+   For creating or maintaining external artwork, use
+   `skills/creating-isostate-assets/` with the user's chosen style or reference.
 7. Build a source fidelity table before writing YAML:
    - every Mermaid node/participant/message/edge
    - every Mermaid state, transition, start/end marker, composite state, or
@@ -142,9 +140,11 @@ When the user asks for a design or plan, return:
 ```
 
 When the user asks for files, create a `.isostate.yaml` draft and include the
-validation result. If the result needs custom assets, prefer generated
-primitives and text first; propose external or generated image assets only when
-they materially improve comprehension.
+validation result. Choose assets that fit the requested visual style. For polished architecture
+stories, use recognizable catalog artwork or coordinated image-generated
+assets with checked one-cell anchors; generic primitives are appropriate for
+a structural converter draft. Give captions their own clear whole-cell band
+and verify they do not intersect any artwork at desktop and mobile sizes.
 
 ## Guardrails
 

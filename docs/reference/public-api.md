@@ -109,6 +109,24 @@ after `mounted.destroy()`. Listener exceptions are not caught, matching
 [Interactive Elements](../examples/interactive-elements.md) and
 [Errors](./errors.md).
 
+## Timeline Navigation
+
+Mount with `controller: {}` for step controls, or supply a scroll container.
+
+```ts
+mounted.controller?.setSceneIndex(2); // animated travel to a scene stop
+mounted.controller?.nextScene();
+mounted.controller?.prevScene();
+mounted.controller?.setProgress(0.45); // exact scroll/slider seek
+```
+
+Step navigation uses `transitionDuration` (default `600` ms) and
+`transitionEasing` (default `ease-in-out`). An exact seek interrupts a pending
+navigation. Entry and exit effects retain their direction even when a seek
+skips intermediate stops. `pause()` cancels navigation and freezes ambient
+motion; `resume()` renders the stored progress. Use duration `0` for
+reduced-motion step controls.
+
 ## Camera Focus
 
 When a mounted scene has a controller, applications can focus the SVG camera on
@@ -367,3 +385,13 @@ manually.
 | `guardEntryAnimation(v)` | Narrow an unknown value to `EntryAnimation`; returns `undefined` if invalid. |
 | `guardExitAnimation(v)` | Narrow an unknown value to `ExitAnimation`; returns `undefined` if invalid. |
 | `guardLifecycleStatus(v)` | Narrow an unknown value to `LifecycleStatus`; returns `undefined` if invalid. |
+
+## Workflow State And Motion
+
+Author element `activity`, connection `message`, and rounded `beam` styling in
+scene YAML, then compile normally. `ElementPatch.asset` can replace a declared
+external image or sprite at a scene stop while preserving its identity.
+`ConnectorMessage` and `ElementActivity` are public type exports. Existing
+controller `pause()`/`resume()` control message and processing-indicator motion;
+reduced-motion preference renders static indicators. See
+[Animation And Connections](../guides/animation-and-connections.md).

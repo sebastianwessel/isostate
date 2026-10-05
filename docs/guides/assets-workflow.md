@@ -48,6 +48,11 @@ assets. The browser loads the compiled URL with an SVG `<image>` element.
 
 ## Sprite Sheets
 
+When styling the mounted scene, target its root SVG, for example
+`.scene-host > svg.iso-scene { width: 100%; height: 100%; }`. Avoid applying
+dimensions to every descendant `svg`: sprites use nested viewports to crop
+their sheet, and resizing those viewports can expose neighboring assets.
+
 Use sprite sheets when many assets share one image file. Sprite sheets are also
 the recommended path for generated PNG or WebP sprites.
 
@@ -178,6 +183,18 @@ npx --package @sebastianwessel/isostate-cli isostate assets manifest assets/traf
   --asset-base-url ./traffic
 ```
 
+## Keep Labels Clear
+
+Give labels their own grid space below or beside the artwork. Built-in `cell`
+text is centered half a cell above its `at`, so a `[1, 1]` offset from an icon
+can still put its label through the icon's base. Leave space for nearby sprites,
+status rings, routes, and the longest label. Split longer names over two lines.
+
+The homepage example separates its rows and stages and uses `[2, 2]` offsets
+for below-object captions. Its host CSS adds a light text outline for contrast
+and enlarges text on narrow screens. Check rendered label bounds against every
+visible image at each scene stop; contrast styling does not replace spacing.
+
 ## Publish Assets
 
 Before publishing:
@@ -193,3 +210,10 @@ referenced assets, and digests. It should not contain the editor, YAML parser,
 validator, compiler, CLI, or authored YAML.
 
 Next: [Animation And Connections](./animation-and-connections.md).
+
+## Included Software Collection
+
+The [Software Architecture Assets](./software-architecture-assets.md) guide covers
+the packaged transparent sprite sheets, their editor catalog, logical object ids,
+and the three-scene website example. Start there when explaining services,
+workflows, or business processes with an existing visual vocabulary.

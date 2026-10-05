@@ -3,6 +3,12 @@
 Use this when defining `header.assets`, SVG asset paths, sprite sheets, anchors,
 floors, labels, and generated primitive underlays.
 
+Scope host width/height and filter styles to the root scene SVG, for example
+`.scene-host > svg.iso-scene`. Sprite assets contain nested SVG viewports whose
+native dimensions and clipping must remain intact; a broad `.scene-host svg`
+rule can resize them and reveal neighboring sprites. Verify a rendered crop
+in the browser, not only its manifest rectangle.
+
 ## Asset Catalog
 
 ```yaml
@@ -90,8 +96,13 @@ After generation:
 
 ## Enterprise Diagram Asset Quality
 
-For architecture and process diagrams, prefer polished one-cell SVG assets over
+For architecture and process diagrams, prefer polished one-cell assets over
 rough placeholders:
+
+Choose SVG for vector artwork and transparent PNG/WebP sprites for detailed
+photorealistic isometric renders. The software architecture catalog below is
+the ready-made raster option; do not substitute simple geometric icons when
+the requested visual direction calls for realistic materials and lighting.
 
 - Use one consistent isometric camera angle, light direction, shadow style,
   edge treatment, and scale across the set.
@@ -173,6 +184,13 @@ Text rules:
   placement with screen pixels, pixel offsets, fractional nudges, or manual
   visual drift; those assumptions can break under zoom, camera focus, different
   containers, or responsive rendering.
+- Reserve a caption band below artwork and check it against neighboring assets,
+  status rings, and routes. `cell` text is centered half a cell above its grid
+  position, so moving a label by `[1, 1]` from an icon only puts the text back
+  on the icon's ground anchor. The homepage uses wider stage spacing and
+  separate `[2, 2]` caption offsets, two-line names, and a host text outline.
+  Verify actual rendered bounds at every stop and responsive width; a text
+  outline improves contrast but cannot fix a collision.
 - Text style communicates hierarchy after placement is correct. Larger or
   heavier text can introduce a region; quieter color or smaller text can demote
   it later. Style must not be used to hide a label that is in the wrong cell or
@@ -270,3 +288,62 @@ objects. Do not let those drift against the grid:
 - Do not compensate with fractional `at` or fractional `size` values.
 - Do not fix repeated placement drift in scene YAML. Fix the asset catalog
   `anchor` so every placement behaves the same.
+
+## Included Software Architecture Catalog
+
+Use `assets/software-architecture/manifest.json` when authoring architecture,
+workflow, or process diagrams in this repository. This photorealistic collection
+uses transparent PNG sprite sheets. Preserve the declared sheet dimensions,
+per-sprite rectangles, and checked anchors from source metadata. Place logical
+sprite ids (`architecture-service`, `workflow-decision`, `process-approval`, etc.),
+never the sheet namespace. Do not assume each sprite has a standalone SVG path.
+
+The npm runtime package distributes the static catalog under
+`dist/assets/software-architecture`; copy it into the host public asset folder.
+The website editor already loads its manifest. The example source is
+`website/src/scenes/software-architecture.isostate.yaml`. Regenerate catalog,
+package, website, and compiled/downloadable examples with `bun run assets:build`.
+Use native `size: 1`, whole-cell placements, generated text labels, and real
+connections. For decisions, separate branches and label outcomes explicitly.
+
+## Agentic And Human Workflow Vocabulary
+
+The software catalog includes AI roles and retrieval/quality assets, human
+participants, intake channels, control flow, lifecycle events, ServiceNow
+records, provider concepts, Redis variants, tools, and supporting architecture.
+See `docs/guides/agentic-workflows.md` for the complete logical-id inventory.
+
+- Preserve `provider-azure-foundry` as a stable id; its current display label is
+  Microsoft Foundry. Azure Foundry, Azure AI Foundry, and Azure AI Studio are
+  useful discovery aliases. Vertex AI is a platform and Gemini a model family;
+  use labels to describe the actual deployment.
+- Distinguish ServiceNow Interaction (conversation), catalog item (offering),
+  Request/REQ (order), Requested Item/RITM (ordered item), and request/catalog
+  task/SCTASK (fulfillment work). Incident, Problem, and Change have separate
+  restoration, root-cause, and controlled-change roles.
+- Distinguish an AI reviewer, a human approver, and a workflow waiting for a
+  person. Redis cache, Streams, and Pub/Sub also have separate sprite ids.
+- Provider and ServiceNow illustrations are conceptual artwork rather than
+  official vendor logos. Keep product or record identification in clear labels.
+- Use the manifest's source crop and checked anchor, native `size: 1`, captions,
+  and real `connections`. Tell a dense story through deltas, staying within 50
+  active elements plus connections per scene.
+
+## Directional Handoffs And State Variants
+
+The software catalog distinguishes `human-handoff` (human to human),
+`human-to-ai-handoff`, and `ai-to-human-handoff`. Use the directional sprite and
+connection direction that match the story. Preserve checked one-cell anchors.
+For a changing worker, keep the element id and patch its external `asset` to a
+declared state sprite. Do not replace or resize the PNG source to communicate
+processing: use the generated `activity` indicator and an explanatory label.
+
+### Generation credit and licence notices
+
+When distributing generated image catalogs, retain their accompanying licence
+and provenance files. The software catalog and Mermaid workflow artwork were
+generated using OpenAI image-generation models; their `NOTICE.md` records that
+origin and links to the relevant OpenAI terms. Keep the project MIT licence and
+AI generation credit visible in website/download documentation. Attribute each
+asset family according to its actual source; do not label imported third-party
+artwork as AI-generated. No licence/provenance fields are added to scene YAML.

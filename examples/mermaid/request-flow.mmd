@@ -1,0 +1,12 @@
+flowchart TD
+  Request[Request] --> Router(Request router)
+  Router --> Auth{Authorized?}
+  Auth -- ok --> App[Application]
+  Auth -- denied --> Response([Response])
+  App --> Cache[Cache]
+  Cache -- hit --> Response
+  Cache -- miss --> DB[Database]
+  DB --> Response
+  App -. async .-> Queue[Queue]
+  Queue --> Worker[Worker]
+  Worker --> DB

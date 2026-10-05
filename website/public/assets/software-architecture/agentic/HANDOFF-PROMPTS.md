@@ -1,0 +1,19 @@
+# Directional handoff assets
+
+Generated with the built-in ImageGen tool and `transparent_background: true`.
+Source PNG bytes and genuine alpha are preserved. Both images are 1254 × 1254 RGBA;
+full-image sprite rectangles and inspected ground anchors are in `../.isostate-assets.yaml`.
+The existing `human-handoff` remains human-to-human. These two assets make delegation
+and escalation visually distinct through the giver/receiver arrangement and an embossed pointer.
+
+## Human to AI
+
+```text
+Use case: stylized-concept. Asset type: one production transparent PNG isometric software workflow asset, square framing. Create a premium nearly photoreal miniature 3D scene of HUMAN TO AI HANDOFF: a realistic professional woman wearing a teal jacket stands on the LEFT, actively extending a glowing translucent cyan document/data tablet toward an unmistakably nonhuman AI compute appliance on the RIGHT. The AI appliance is sculptural graphite-and-brushed-silver machine with a luminous cyan glass cognition core, no robot human silhouette. Human's outstretched arm and a short physical illuminated receiving slot communicate direction from person to AI. A small cyan rightward triangular embossed pointer on the shared low plinth reinforces transfer without a long arrow. Same orthographic isometric camera, elevated front-right view, thirty-degree diamond axes, tight studio lighting upper-left, fine textiles, natural realistic skin/hair, machined silver, graphite metal, porcelain white, luminous teal/cyan glass; believable volume, precise bevels and reflections. Both subjects grounded on one compact elegant diamond footing, whole scene fully visible, centered with generous transparent padding all around and tight soft contact shadow. Ground contact near center x50%, y85%. Human and machine clearly distinct and readable at 96px thumbnail. Genuine RGBA alpha transparent background. No scenery, white backdrop, painted checkerboard, labels, letters, logos, watermark, flat vector appearance, simple rectangular pictogram, cartoon, big platform. Single coherent asset, not a sprite sheet.
+```
+
+## AI to human
+
+```text
+Use case: stylized-concept. Asset type: one production transparent PNG isometric software workflow asset with square framing. Create a premium nearly photoreal miniature 3D scene of AI TO HUMAN HANDOFF: unmistakably nonhuman sculptural graphite-and-brushed-silver AI compute appliance on the LEFT, with luminous cyan glass cognition core and a compact mechanical dispenser extending a translucent cyan document/data tablet toward a realistic professional man on the RIGHT. Human wears charcoal business casual clothes, has natural skin and hair, and reaches with both hands to RECEIVE the tablet from the machine. A restrained amber status beacon on the appliance signals a request for human attention. A small cyan rightward triangular embossed pointer on their shared low plinth reinforces direction machine-to-human without a long arrow. Same orthographic isometric camera, elevated front-right view, thirty-degree diamond axes, tight studio lighting upper-left, fine textiles, machined silver, graphite metal, porcelain white, luminous teal/cyan glass, tiny amber accents, believable volume, precise bevels and reflections. Both subjects grounded on one compact elegant diamond footing, whole scene fully visible and centered with generous transparent padding all around, tight soft contact shadow. Ground contact near x50%, y85%. Man is visibly receiving, AI appliance is visibly supplying, readable at 96px thumbnail. Genuine RGBA alpha transparent background. No scenery, white backdrop, painted checkerboard, labels, letters, logos, watermark, flat vector appearance, rectangular pictogram, cartoon, big platform, humanoid robot. Single coherent asset, not sprite sheet.
+```

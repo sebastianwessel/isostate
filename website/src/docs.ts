@@ -15,6 +15,7 @@ import { Content as LowLevelRendering } from '../../docs/examples/low-level-rend
 import { Content as ExamplesReadme } from '../../docs/examples/README.md';
 import { Content as RuntimeBasic } from '../../docs/examples/runtime-basic.md';
 import { Content as GettingStarted } from '../../docs/getting-started.md';
+import { Content as AgenticWorkflows } from '../../docs/guides/agentic-workflows.md';
 import { Content as AnimationAndConnections } from '../../docs/guides/animation-and-connections.md';
 import { Content as AssetsWorkflow } from '../../docs/guides/assets-workflow.md';
 import { Content as AuthorSceneDeltas } from '../../docs/guides/author-scene-deltas.md';
@@ -22,6 +23,7 @@ import { Content as ConvertMermaid } from '../../docs/guides/convert-mermaid.md'
 import { Content as DeployStaticBundle } from '../../docs/guides/deploy-static-bundle.md';
 import { Content as InstallAuthoringSkill } from '../../docs/guides/install-authoring-skill.md';
 import { Content as PlanAScene } from '../../docs/guides/plan-a-scene.md';
+import { Content as SoftwareArchitectureAssets } from '../../docs/guides/software-architecture-assets.md';
 import { Content as UseEditorInAstro } from '../../docs/guides/use-editor-in-astro.md';
 import { Content as UseTheCli } from '../../docs/guides/use-the-cli.md';
 import { Content as DocsReadme } from '../../docs/README.md';
@@ -30,6 +32,7 @@ import { Content as Errors } from '../../docs/reference/errors.md';
 import { Content as PublicApi } from '../../docs/reference/public-api.md';
 import { Content as RuntimeBundle } from '../../docs/reference/runtime-bundle.md';
 import { Content as Types } from '../../docs/reference/types.md';
+import { Content as CreatingIsostateAssets } from '../../docs/skills/creating-isostate-assets.md';
 
 export type DocEntry = {
 	slug: string;
@@ -56,6 +59,21 @@ type DocNavItem =
 	  };
 
 export const docs: DocEntry[] = [
+	{
+		slug: 'skills/creating-isostate-assets.md',
+		title: 'Create Assets With An AI Assistant',
+		Content: CreatingIsostateAssets
+	},
+	{
+		slug: 'guides/agentic-workflows.md',
+		title: 'AI Agents And Human Workflows',
+		Content: AgenticWorkflows
+	},
+	{
+		slug: 'guides/software-architecture-assets.md',
+		title: 'Software Architecture Assets',
+		Content: SoftwareArchitectureAssets
+	},
 	{
 		slug: 'README.md',
 		title: 'Documentation',
@@ -249,6 +267,9 @@ export const docNav: DocNavSection[] = [
 				title: 'Visual Language',
 				items: [
 					'guides/assets-workflow.md',
+					'skills/creating-isostate-assets.md',
+					'guides/software-architecture-assets.md',
+					'guides/agentic-workflows.md',
 					'guides/animation-and-connections.md'
 				]
 			}

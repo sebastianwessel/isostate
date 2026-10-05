@@ -1,0 +1,295 @@
+header:
+  name: request-flow
+  assets: []
+  layers:
+    - name: ground
+    - name: nodes
+    - name: labels
+scenes:
+  - id: initial
+    elements:
+      - id: request
+        asset: rectangle
+        at: [0, 0]
+        layer: nodes
+        primitive:
+          rectangle:
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: request-label
+        asset: text
+        at: [0, 0]
+        layer: labels
+        text:
+          value: Request
+          align: middle
+          placement: caption
+      - id: router
+        asset: polygon
+        at: [0, 4]
+        layer: nodes
+        primitive:
+          polygon:
+            points: [[0.85, 0], [0.907403, 0.011418], [0.956066, 0.043934], [0.988582, 0.092597], [1, 0.15], [1, 0.85], [0.988582, 0.907403], [0.956066, 0.956066], [0.907403, 0.988582], [0.85, 1], [0.15, 1], [0.092597, 0.988582], [0.043934, 0.956066], [0.011418, 0.907403], [0, 0.85], [0, 0.15], [0.011418, 0.092597], [0.043934, 0.043934], [0.092597, 0.011418], [0.15, 0]]
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: router-label
+        asset: text
+        at: [0, 4]
+        layer: labels
+        text:
+          value: Request router
+          align: middle
+          placement: caption
+      - id: auth
+        asset: polygon
+        at: [0, 8]
+        layer: nodes
+        primitive:
+          polygon:
+            points: [[0.5, 0], [1, 0.5], [0.5, 1], [0, 0.5]]
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: auth-label
+        asset: text
+        at: [0, 8]
+        layer: labels
+        text:
+          value: Authorized?
+          align: middle
+          placement: caption
+      - id: app
+        asset: rectangle
+        at: [0, 12]
+        layer: nodes
+        primitive:
+          rectangle:
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: app-label
+        asset: text
+        at: [0, 12]
+        layer: labels
+        text:
+          value: Application
+          align: middle
+          placement: caption
+      - id: response
+        asset: polygon
+        at: [0, 28]
+        layer: nodes
+        primitive:
+          polygon:
+            points: [[0.75, 0.25], [0.845671, 0.26903], [0.926777, 0.323223], [0.98097, 0.404329], [1, 0.5], [1, 0.5], [0.98097, 0.595671], [0.926777, 0.676777], [0.845671, 0.73097], [0.75, 0.75], [0.25, 0.75], [0.154329, 0.73097], [0.073223, 0.676777], [0.01903, 0.595671], [0, 0.5], [0, 0.5], [0.01903, 0.404329], [0.073223, 0.323223], [0.154329, 0.26903], [0.25, 0.25]]
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: response-label
+        asset: text
+        at: [0, 28]
+        layer: labels
+        text:
+          value: Response
+          align: middle
+          placement: caption
+      - id: cache
+        asset: rectangle
+        at: [0, 16]
+        layer: nodes
+        primitive:
+          rectangle:
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: cache-label
+        asset: text
+        at: [0, 16]
+        layer: labels
+        text:
+          value: Cache
+          align: middle
+          placement: caption
+      - id: db
+        asset: rectangle
+        at: [0, 24]
+        layer: nodes
+        primitive:
+          rectangle:
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: db-label
+        asset: text
+        at: [0, 24]
+        layer: labels
+        text:
+          value: Database
+          align: middle
+          placement: caption
+      - id: queue
+        asset: rectangle
+        at: [4, 16]
+        layer: nodes
+        primitive:
+          rectangle:
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: queue-label
+        asset: text
+        at: [4, 16]
+        layer: labels
+        text:
+          value: Queue
+          align: middle
+          placement: caption
+      - id: worker
+        asset: rectangle
+        at: [0, 20]
+        layer: nodes
+        primitive:
+          rectangle:
+            fill: "var(--iso-node-fill, #dbeafe)"
+            stroke: "var(--iso-node-stroke, #2563eb)"
+            strokeWidth: 1
+            opacity: 0.9
+      - id: worker-label
+        asset: text
+        at: [0, 20]
+        layer: labels
+        text:
+          value: Worker
+          align: middle
+          placement: caption
+      - id: auth-to-app-label
+        asset: text
+        at: [0, 10]
+        layer: labels
+        text:
+          value: ok
+          align: middle
+          placement: caption
+      - id: auth-to-response-label
+        asset: text
+        at: [0, 18]
+        layer: labels
+        text:
+          value: denied
+          align: middle
+          placement: caption
+      - id: cache-to-response-label
+        asset: text
+        at: [0, 22]
+        layer: labels
+        text:
+          value: hit
+          align: middle
+          placement: caption
+      - id: cache-to-db-label
+        asset: text
+        at: [1, 20]
+        layer: labels
+        text:
+          value: miss
+          align: middle
+          placement: caption
+      - id: app-to-queue-label
+        asset: text
+        at: [2, 14]
+        layer: labels
+        text:
+          value: async
+          align: middle
+          placement: caption
+    connections:
+      - id: request-to-router
+        from:
+          element: request
+        to:
+          element: router
+        layer: ground
+        end: arrow
+      - id: router-to-auth
+        from:
+          element: router
+        to:
+          element: auth
+        layer: ground
+        end: arrow
+      - id: auth-to-app
+        from:
+          element: auth
+        to:
+          element: app
+        layer: ground
+        end: arrow
+      - id: auth-to-response
+        from:
+          element: auth
+        to:
+          element: response
+        layer: ground
+        end: arrow
+      - id: app-to-cache
+        from:
+          element: app
+        to:
+          element: cache
+        layer: ground
+        end: arrow
+      - id: cache-to-response
+        from:
+          element: cache
+        to:
+          element: response
+        layer: ground
+        end: arrow
+      - id: cache-to-db
+        from:
+          element: cache
+        to:
+          element: db
+        layer: ground
+        end: arrow
+      - id: db-to-response
+        from:
+          element: db
+        to:
+          element: response
+        layer: ground
+        end: arrow
+      - id: app-to-queue
+        from:
+          element: app
+        to:
+          element: queue
+        layer: ground
+        end: arrow
+        style:
+          pattern: dotted
+      - id: queue-to-worker
+        from:
+          element: queue
+        to:
+          element: worker
+        layer: ground
+        end: arrow
+      - id: worker-to-db
+        from:
+          element: worker
+        to:
+          element: db
+        layer: ground
+        end: arrow

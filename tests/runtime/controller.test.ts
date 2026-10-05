@@ -235,6 +235,130 @@ describe('AnimationController', () => {
 		expect(controller.engine.getElementUpdate('box-a').pos).toEqual([1.6, 1.6]);
 	});
 
+	test('manual scrubbing cancels scene navigation without interrupting ordinary navigation frames', () => {
+		installRaf();
+		const controller = new AnimationController();
+		controller.init(bundle(), { transitionDuration: 600, transitionEasing: 'linear' });
+		const start = performance.now();
+		controller.setSceneIndex(1);
+		flushRaf(start + 150);
+		flushRaf(start + 300);
+		expect(controller.getProgress()).toBeGreaterThan(0.4);
+		expect(controller.getProgress()).toBeLessThan(0.6);
+
+		controller.setProgress(0.1);
+		flushRaf(start + 900);
+		flushRaf(start + 1000);
+		expect(controller.getProgress()).toBe(0.1);
+		expect(controller.engine.getElementUpdate('box-a').pos).toEqual([0.2, 0.2]);
+		expect(rafCallbacks.size).toBe(0);
+		controller.destroy();
+	});
+
+	test('pause freezes scene navigation at the current progress until resume', () => {
+		installRaf();
+		const controller = new AnimationController();
+		controller.init(bundle(), { transitionDuration: 600, transitionEasing: 'linear' });
+		const start = performance.now();
+		controller.setSceneIndex(1);
+		flushRaf(start + 150);
+		flushRaf(start + 300);
+		controller.pause();
+		const progress = controller.getProgress();
+		flushRaf(start + 900);
+		expect(controller.getProgress()).toBe(progress);
+		expect(rafCallbacks.size).toBe(0);
+		controller.resume();
+		flushRaf(start + 1000);
+		expect(controller.engine.getProgress()).toBe(progress);
+		controller.destroy();
+	});
+
+	test.each(['element', 'connector'] as const)('plays directional %s lifecycle effects when seeking across add and remove stops', (kind) => {
+		installRaf();
+		const source = bundle();
+		const element = { ...source.scenes[0].elements[0], enter: 'fall-in' as const, exit: 'slide-out-right' as const };
+		source.scenes = [
+			{ id: 'before', progress: 0, elements: [] },
+			{ id: 'add', progress: 0.25, elements: [{ ...element, presence: 'entering' }] },
+			{ id: 'hold', progress: 0.5, elements: [{ ...element, presence: 'present' }] },
+			{ id: 'exit', progress: 0.75, elements: [{ ...element, presence: 'exiting' }] },
+			{ id: 'after', progress: 0.9, elements: [] },
+			{ id: 'later', progress: 1, elements: [] }
+		];
+		if (kind === 'connector') {
+			for (const scene of source.scenes) {
+				scene.connectors = scene.elements.map((state) => ({
+					id: state.id,
+					layer: state.layer,
+					presence: state.presence,
+					enter: state.enter,
+					exit: state.exit,
+					route: [[0, 0], [2, 0]],
+					style: { variant: 'line', pattern: 'solid', stroke: '#123456', strokeWidth: 2, opacity: 1, outlineWidth: 0, lane: 'none' },
+					start: 'none', end: 'arrow', direction: 'route'
+				}));
+				scene.elements = [];
+			}
+		}
+		const svg = buildRealSvg(source);
+		const controller = new AnimationController();
+		controller.init(source, { sceneElement: svg });
+		const node = svg.querySelector('[data-id="box-a"]') as SVGElement;
+
+		controller.setProgress(0.6);
+		flushRaf();
+		expect(node.style.animation).toContain('iso-anim-fall-in');
+		expect(node.style.visibility).toBe('visible');
+
+		controller.setProgress(1);
+		flushRaf();
+		expect(node.style.animation).toContain('iso-anim-slide-out-right');
+		expect(node.style.visibility).toBe('visible');
+		node.dispatchEvent(new Event('animationend'));
+		expect(node.style.visibility).toBe('hidden');
+
+		controller.setProgress(0.6);
+		flushRaf();
+		expect(node.style.animation).toContain('iso-anim-slide-in-right');
+		expect(node.style.visibility).toBe('visible');
+
+		controller.setProgress(0);
+		flushRaf();
+		expect(node.style.animation).toContain('iso-anim-rise-away');
+		controller.destroy();
+	});
+
+	test('restarts entry after an adjacent removal and reverses the re-add when scrubbing backward', () => {
+		installRaf();
+		const source = bundle();
+		const element = { ...source.scenes[0].elements[0], enter: 'fall-in' as const, exit: 'slide-out-right' as const };
+		source.scenes = [
+			{ id: 'before', progress: 0, elements: [element] },
+			{ id: 'remove', progress: 0.5, elements: [{ ...element, presence: 'exiting' }] },
+			{ id: 'readd', progress: 1, elements: [{ ...element, presence: 'entering' }] }
+		];
+		const svg = buildRealSvg(source);
+		const controller = new AnimationController();
+		controller.init(source, { sceneElement: svg });
+		const node = svg.querySelector('[data-id="box-a"]') as SVGElement;
+		// Scrub before the initial entry finishes: its stale cleanup must not cancel the exit.
+		controller.setProgress(0.5);
+		flushRaf();
+		node.dispatchEvent(new Event('animationend'));
+		expect(node.style.visibility).toBe('hidden');
+
+		controller.setProgress(1);
+		flushRaf();
+		expect(node.style.visibility).toBe('visible');
+		expect(node.style.animation).toContain('iso-anim-fall-in');
+
+		controller.setProgress(0.75);
+		flushRaf();
+		expect(node.style.animation).toContain('iso-anim-rise-away');
+		controller.destroy();
+	});
+
 	test('maps scroll position to batched progress', () => {
 		installRaf();
 		const listeners = new Map<string, EventListener>();

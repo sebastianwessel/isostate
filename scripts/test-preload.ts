@@ -11,6 +11,15 @@ function installHappyDom() {
 	g.SVGElement = window.SVGElement;
 	g.Element = window.Element;
 	g.Node = window.Node;
+	// DOM libraries dispatch through global constructors; use the same DOM
+	// implementation as document instead of Bun's native Event/CustomEvent.
+	g.Event = window.Event;
+	g.CustomEvent = window.CustomEvent;
+	g.FocusEvent = window.FocusEvent;
+	g.KeyboardEvent = window.KeyboardEvent;
+	g.MouseEvent = window.MouseEvent;
+	g.PointerEvent = window.PointerEvent;
+	g.InputEvent = window.InputEvent;
 	g.DocumentFragment = window.DocumentFragment;
 	g.DOMRect =
 		window.DOMRect ??

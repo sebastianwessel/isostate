@@ -29,6 +29,8 @@ interface EditorRuntimeAdapter {
   getObject(id: string): RuntimeObjectMetadata | undefined;
   getLayerOrder(): Array<{ name: string; order: number }>;
   getResolvedViewBox(): ViewBoxRect;
+  setProgress(progress: number): void;
+  setActiveScene(sceneId: string): boolean;
   projectGridPoint(point: [number, number]): EditorScreenPoint;
   unprojectScreenPoint(point: EditorScreenPoint): [number, number];
   clientPointToSvgPoint(point: EditorClientPoint): EditorScreenPoint;
@@ -50,6 +52,10 @@ Rules:
 - `destroy()` removes only adapter-owned listeners and cached metadata. It must
   not destroy the wrapped `MountedScene`; the editor owns mounted scene cleanup.
 - All coordinates use SVG user units unless explicitly named CSS pixels.
+- `setProgress()` delegates to the mounted controller when one exists so
+  scrubbing preserves runtime lifecycle and camera behavior. Without a
+  controller it updates the engine and renderer directly. `setActiveScene()`
+  resolves an exact authored stop for editing and returns whether it was found.
 
 ## Object Metadata
 
@@ -76,6 +82,10 @@ Rules:
   resolution.
 - Connection metadata uses resolved runtime route points.
 - Bounds are computed by core geometry helpers and match renderer behavior.
+- Text hit areas and selection outlines use the measured rendered text bounds,
+  converted through the root SVG screen transform. A label's generic one-cell
+  square must not mask neighboring artwork. If measurement is unavailable,
+  the adapter falls back to core geometry bounds.
 
 ## Geometry Helpers
 

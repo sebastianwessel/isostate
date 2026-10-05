@@ -291,3 +291,11 @@ Default tests must cover:
 - deterministic route output for equal-cost paths
 - route simplification removes collinear interior points
 - routing code is absent from browser runtime bundle
+
+## Render-Time Rounding
+
+`style.cornerRadius` affects projected SVG geometry only. The dev-time router
+continues emitting axis-aligned grid segments and obstacle-aware routes.
+Rendering rounds bends with bounded quadratic curves; it never re-routes the
+connector. Messages follow that same rounded projected path in the effective
+direction. No runtime routing dependency or asset loading is introduced.

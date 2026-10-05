@@ -138,7 +138,7 @@ Use camera metadata when the story should zoom to a part of the scene.
   camera:
     target:
       element: api
-      padding: 48
+    padding: 48
     duration: 400
 ```
 
@@ -160,20 +160,37 @@ Use scroll control for long-form docs and manual control for presentations.
 ```ts
 const mounted = mountScene(target, bundle, {
   controller: {
-    enabled: true,
-    mode: 'scroll',
     container: document.documentElement
   }
 });
 ```
 
-Manual mode lets your app drive progress:
+For presentation controls, mount with `controller: {}` and let your app drive
+the timeline. Use scene navigation for animated travel and `setProgress` for
+an exact slider or scroll position:
 
 ```ts
 mounted.controller?.setProgress(0.5);
-mounted.controller?.next();
-mounted.controller?.previous();
+mounted.controller?.setSceneIndex(2);
+mounted.controller?.nextScene();
+mounted.controller?.prevScene();
 ```
+
+Scene navigation interpolates over `transitionDuration` (default `600` ms)
+using `transitionEasing` (default `ease-in-out`). Direct progress updates
+interrupt navigation so a scrubber follows the pointer immediately. Use
+`transitionDuration: 0` for immediate navigation, including reduced-motion
+presentations. Pause and resume controls also freeze ongoing ambient motion.
+
+Keep an element's id stable and update its `at` across stops to show it moving.
+Replacing a scene with unrelated ids shows entry/exit effects but cannot show
+one object traveling. The overview follows the same request through client,
+API, storage, worker, AI review, and human approval; its scene buttons travel
+between stops while scrolling continuously scrubs the story.
+
+The overview's **Pause effects** control freezes ongoing messages, status, and
+ambient effects while its reader-directed navigation and entry/exit effects
+remain available.
 
 ## Review Checklist
 
@@ -187,3 +204,83 @@ mounted.controller?.previous();
 - Validation passes before compile or bundle.
 
 Next: [Use The CLI](./use-the-cli.md).
+
+## Rounded Tracks And Moving Messages
+
+Use `beam` for a dimensional track. Round its corners in projected SVG pixels
+and add a restrained glow to mark the active route. Messages are generated SVG
+glyphs that travel along the actual rounded track, including reverse routes.
+They do not need an asset declaration.
+
+```yaml
+connections:
+  - id: agent-to-reviewer
+    from: { element: agent }
+    to: { element: reviewer }
+    style:
+      variant: beam
+      stroke: "#15997e"
+      cornerRadius: 12
+      glow: "#63d9ba"
+      glowWidth: 8
+    message:
+      kind: envelope
+      color: "#ecfff7"
+      size: 10
+      duration: 2200
+      count: 1
+```
+
+Choose `packet` for a payload, `orb` for a signal, and `envelope` for a request
+or human handoff. Size is `2..32` SVG pixels; duration is `200..30000`
+milliseconds; count is an integer `1..4`. Defaults are `packet`, size `10`,
+duration `1800`, count `1`, and enabled `true`. `cornerRadius` defaults to `0`
+and must be non-negative; `glowWidth` defaults to `8` and must be positive.
+Colors support safe CSS values, including semantic `var(--token)` colors.
+
+A message object persists until changed. Turn completed work off explicitly:
+
+```yaml
+- id: review-received
+  update:
+    connections:
+      - id: agent-to-reviewer
+        message: { enabled: false }
+    elements:
+      - id: agent
+        activity: { state: waiting, color: "#c68927" }
+      - id: reviewer
+        activity: { state: processing, color: "#15997e" }
+```
+
+Unlike nested text and primitive patches, each new `message` or `activity`
+object replaces the whole previous object. Repeat any custom values you want
+to retain. Omitting the object retains it unchanged.
+
+## Show Work On An Element
+
+Set `activity.state` to `processing`, `waiting`, `complete`, or `error` to add
+a status indicator to a placed object. Use `idle` when work ends and no status
+should remain. Processing adds motion; reduced-motion users see a static
+indicator. Labels should explain the meaning as well as color.
+
+An existing image or sprite can also change its visual while retaining its id
+and connections. Declare both assets in the header, then update the asset:
+
+```yaml
+- id: approval-needed
+  update:
+    elements:
+      - id: agent
+        asset: agent-await-human
+        activity: { state: waiting, color: "#c68927" }
+```
+
+Asset replacement works between declared images and logical sprites. It cannot
+convert an element to or from generated text or primitives. Activity, messages,
+and asset swaps change at the destination scene stop when navigating forward
+or backward. The target asset uses its own crop and anchor.
+
+`mounted.controller?.pause()` freezes message and processing animations;
+`resume()` continues them. Reduced-motion preference keeps the glyphs visible
+and static. Use a pause button for previews with ongoing motion.

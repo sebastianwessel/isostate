@@ -1,0 +1,238 @@
+---
+import { Code } from 'astro:components';
+import manifest from '../../../assets/software-architecture/manifest.json';
+import SiteLayout from '../layouts/SiteLayout.astro';
+import { SOFTWARE_CATALOG_GROUPS, softwareCatalogPreviews } from '../lib/software-catalog';
+import type { AssetManifestEntry } from '../../../packages/editor/src/types';
+
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+const assets = softwareCatalogPreviews(manifest.assets as AssetManifestEntry[]);
+const assetRoot = `${base}/assets/software-architecture`;
+const groups = SOFTWARE_CATALOG_GROUPS.filter((group) => assets.some((asset) => asset.group === group.id));
+const serviceSheet = manifest.assets.find((asset) => asset.sprites['architecture-service']);
+const service = serviceSheet?.sprites['architecture-service'];
+if (!serviceSheet || !service || !('rect' in service)) throw new Error('Missing service sprite metadata.');
+const example = `header:
+  version: "1.0"
+  assetBaseUrl: ./assets/software-architecture
+  assets:
+    - id: software
+      type: sprite-sheet
+      path: ${serviceSheet.path}
+      sheetSize: [${serviceSheet.sheetSize.join(', ')}]
+      sprites:
+        service:
+          rect: [${service.rect.join(', ')}]
+          anchor: [${service.anchor.join(', ')}]
+  layers:
+    - name: structures
+scenes:
+  - id: initial
+    elements:
+      - id: api
+        asset: service
+        at: [2, 2]`;
+---
+
+<SiteLayout title="AI Agent & Software Assets" description={`${assets.length} photorealistic isometric assets for AI agents, human workflows, ServiceNow, model providers, and software architecture.`}>
+	<div class="asset-page">
+		<header class="asset-hero">
+			<div class="hero-copy">
+				<p class="eyebrow">The software collection / {assets.length} assets</p>
+				<h1>People. Agents.<br />A shared workflow.</h1>
+				<p class="lede">Explain the journey from a human request to an AI-assisted result. Agents, tools, service records, and the people who decide what happens next.</p>
+				<div class="actions">
+					<a class="primary" href={`${base}/editor/?example=agentic-workflow`}>Build an agentic workflow <span aria-hidden="true">↗</span></a>
+					<a href="#collection">Explore the collection ↓</a>
+				</div>
+				<p class="collection-note">Generated with OpenAI models · Transparent PNG · MIT licensed</p>
+			</div>
+			<div class="scene-card">
+				<div class="scene-heading"><span class="live-dot" aria-hidden="true"></span> From manual work to agentic automation <span class="scene-counter" id="asset-scene-counter">01 / 04</span></div>
+				<div id="software-architecture-scene" class="scene-canvas" aria-label="Interactive example of a human workflow migrating to AI agents"></div>
+				<p id="asset-scene-description" class="scene-description" aria-live="polite">Follow the mint messages from the requester into email intake and manual triage. Status rings identify the current work.</p>
+				<div class="scene-motion"><div class="scene-legend" aria-label="Activity legend"><span><i class="processing" aria-hidden="true"></i>Processing</span><span><i class="waiting" aria-hidden="true"></i>Waiting</span><span><i class="complete" aria-hidden="true"></i>Complete</span></div><button id="asset-motion" type="button" aria-pressed="false" aria-controls="software-architecture-scene">Pause motion</button></div>
+				<div class="scene-controls" role="group" aria-label="Choose example scene">
+					<button type="button" data-progress="0" aria-pressed="true">01 Manual</button>
+					<button type="button" data-progress="0.3333333333333333" aria-pressed="false">02 Agents</button>
+					<button type="button" data-progress="0.6666666666666666" aria-pressed="false">03 Review</button>
+					<button type="button" data-progress="1" aria-pressed="false">04 Complete</button>
+				</div>
+				<div class="example-picker"><label for="asset-example">Explore a story</label><select id="asset-example"><option value="agentic-workflow">Human → agentic workflow</option><option value="provider-routing">Providers, retrieval & tools</option><option value="software-architecture">Classic software architecture</option></select><a id="asset-edit-example" href={`${base}/editor/?example=agentic-workflow`}>Edit this story ↗</a></div>
+				<noscript><p class="scene-description">Enable JavaScript to explore the live scene. Every asset is available below.</p></noscript>
+			</div>
+		</header>
+
+		<section id="collection" class="collection" aria-labelledby="collection-title">
+			<div class="collection-heading">
+				<div><p class="eyebrow">Choose your building blocks</p><h2 id="collection-title">A place for every role.</h2></div>
+				<p class="collection-total">{assets.length}<span>one-cell objects</span></p>
+			</div>
+			<div class="catalog-toolbar">
+				<label class="asset-search" for="asset-search"><span>Search the collection</span><input id="asset-search" type="search" placeholder="Try Claude, RITM, Redis, approval…" autocomplete="off" /></label>
+				<label class="asset-category" for="asset-category"><span>Category</span><select id="asset-category"><option value="all">All categories ({assets.length})</option>{groups.map((group) => <option value={group.id}>{group.title} ({assets.filter((asset) => asset.group === group.id).length})</option>)}</select></label>
+				<button class="clear-filters" id="asset-clear" type="button">Clear filters</button>
+			</div>
+			<p class="collection-note" id="asset-results" aria-live="polite">Showing all {assets.length} objects. Choose a card to download its transparent sprite sheet.</p>
+			<p class="empty-results" id="asset-empty" hidden>No matching objects. Try another name or choose all categories.</p>
+			{groups.map((group, index) => (
+				<section class="asset-group" data-asset-group={group.id} aria-labelledby={`${group.id}-title`}>
+					<header class="group-heading"><span class="group-number">{String(index + 1).padStart(2, '0')}</span><div><h3 id={`${group.id}-title`}>{group.title}</h3><p>{group.description}</p></div><span class="group-count">{assets.filter((asset) => asset.group === group.id).length} assets</span></header>
+					<div class="asset-grid">
+						{assets.filter((asset) => asset.group === group.id).map((asset) => (
+							<a class="asset-tile" data-asset-id={asset.id} data-asset-category={asset.group} data-asset-search={[asset.id, asset.label, ...asset.tags].join(' ').toLowerCase()} href={`${assetRoot}/${asset.path}`} download aria-label={`Download sprite sheet containing ${asset.label}`}>
+								<div class="asset-image">{asset.rect && asset.sheetSize ? (
+									<span class="sprite-preview" aria-hidden="true">
+										<span class="sprite-crop" style={`width: ${asset.rect[2] / Math.max(asset.rect[2], asset.rect[3]) * 100}%; height: ${asset.rect[3] / Math.max(asset.rect[2], asset.rect[3]) * 100}%;`}>
+											<img src={`${assetRoot}/${asset.path}`} alt="" loading="lazy" decoding="async" width={asset.sheetSize[0]} height={asset.sheetSize[1]} style={`width: ${asset.sheetSize[0] / asset.rect[2] * 100}%; height: ${asset.sheetSize[1] / asset.rect[3] * 100}%; left: ${-asset.rect[0] / asset.rect[2] * 100}%; top: ${-asset.rect[1] / asset.rect[3] * 100}%;`} />
+										</span>
+									</span>
+								) : <img src={`${assetRoot}/${asset.path}`} alt="" loading="lazy" decoding="async" width="96" height="96" />}<span class="download-mark" aria-hidden="true">↓</span></div>
+								<span class="asset-name">{asset.label}</span><code>{asset.id}</code>
+							</a>
+						))}
+					</div>
+				</section>
+			))}
+		</section>
+
+		<section class="usage" aria-labelledby="usage-title">
+			<div class="usage-copy">
+				<p class="eyebrow">From collection to canvas</p><h2 id="usage-title">Ready for your<br />next explanation.</h2>
+				<p>Open the sample in the editor, or copy the included asset folder into your website and reference their sprites from YAML. Each asset fits one grid cell with a checked ground-contact anchor.</p>
+				<ol><li>Copy the collection into <code>public/assets/software-architecture</code>.</li><li>Declare the assets you need and place them on whole grid cells.</li><li>Add labels and connections, then validate and compile your scene.</li></ol>
+				<div class="download-links">
+					<a href={`${base}/scenes/agentic-workflow.isostate.yaml`} download>Agentic workflow YAML ↓</a>
+					<a href={`${base}/scenes/provider-routing.isostate.yaml`} download>Provider routing YAML ↓</a>
+					<a href={`${base}/scenes/software-architecture.isostate.yaml`} download>Architecture YAML ↓</a>
+					<a href={`${base}/scenes/agentic-workflow.isostate.js`} download>Compiled workflow ↓</a>
+					<a href={`${assetRoot}/manifest.json`} download>Editor manifest ↓</a>
+				</div>
+				<p class="guide-link"><a href={`${base}/docs/guides/software-architecture-assets.md`}>Read the setup and usage guide →</a></p>
+				<p class="guide-link"><a href={`${base}/docs/skills/creating-isostate-assets.md`}>Create or extend a catalog in your own visual style →</a></p>
+				<p class="collection-note">Provider and ServiceNow objects are conceptual illustrations. Use labels to identify the product or record.</p>
+				<p class="license-note">AI-generated using OpenAI image-generation models. Free to use and adapt under the <a href={`${assetRoot}/LICENSE`}>MIT license</a>. Keep its notice with redistributed assets. <a href={`${assetRoot}/NOTICE.md`}>Generation notice and terms →</a></p>
+			</div>
+			<div class="code-card"><div class="code-title">scene.isostate.yaml <span>One asset. One cell.</span></div><Code code={example} lang="yaml" theme="github-dark" /></div>
+		</section>
+	</div>
+
+	<script>
+		import { initializeSoftwareExamples } from '../lib/software-examples';
+		initializeSoftwareExamples();
+		const search = document.querySelector<HTMLInputElement>('#asset-search');
+		const category = document.querySelector<HTMLSelectElement>('#asset-category');
+		const tiles = Array.from(document.querySelectorAll<HTMLElement>('[data-asset-id]'));
+		function filterAssets() {
+			const terms = (search?.value ?? '').toLowerCase().trim().split(/\s+/);
+			let count = 0;
+			for (const tile of tiles) {
+				tile.hidden = !(category?.value === 'all' || category?.value === tile.dataset.assetCategory) || !terms.every((term) => tile.dataset.assetSearch?.includes(term));
+				if (!tile.hidden) count++;
+			}
+			document.querySelectorAll<HTMLElement>('[data-asset-group]').forEach((group) => {
+				group.hidden = !group.querySelector('[data-asset-id]:not([hidden])');
+			});
+			const status = document.getElementById('asset-results');
+			const empty = document.getElementById('asset-empty');
+			if (status) status.textContent = `Showing ${count} of ${tiles.length} objects. Choose a card to download its transparent sprite sheet.`;
+			if (empty) empty.hidden = count > 0;
+		}
+		search?.addEventListener('input', filterAssets);
+		category?.addEventListener('change', filterAssets);
+		document.getElementById('asset-clear')?.addEventListener('click', () => {
+			if (search) search.value = '';
+			if (category) category.value = 'all';
+			filterAssets();
+			search?.focus();
+		});
+	</script>
+</SiteLayout>
+
+<style>
+	.asset-page { max-width: 1440px; margin: 0 auto; padding: 70px clamp(24px, 4vw, 64px) 100px; --iso-label: #344c4a; --iso-flow: #658e87; }
+	.asset-hero { display: grid; grid-template-columns: 0.95fr 1.15fr; gap: 64px; align-items: center; padding-bottom: 80px; }
+	.eyebrow { color: var(--green); font-size: .7rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
+	h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; letter-spacing: -.055em; line-height: 1.05; }
+	h1 { font-size: clamp(40px, 4.6vw, 68px); margin: 22px 0; }
+	.lede { max-width: 440px; color: var(--soft-ink); font-size: 1.05rem; line-height: 1.7; }
+	.actions { display: flex; gap: 22px; align-items: center; flex-wrap: wrap; margin-top: 30px; font-size: .83rem; font-weight: 600; }
+	.actions > a:not(.primary) { color: var(--green-dark); }
+	.primary { display: inline-flex; gap: 22px; background: var(--green-dark); color: #fffdf5; border-radius: 5px; padding: 16px 20px; text-decoration: none; }
+	.primary:hover { background: var(--green); }
+	.collection-note, .license-note { font-size: .72rem; color: var(--muted); line-height: 1.7; }
+	.collection-note { margin-top: 22px; }
+	.scene-card { min-width: 0; overflow: hidden; border: 1px solid #c5ccbf; border-radius: 8px; background: #fdfcf5; box-shadow: 0 20px 60px #203c2c0c; }
+	.scene-heading { display: flex; align-items: center; gap: 8px; padding: 20px 22px; font-size: .72rem; color: var(--soft-ink); border-bottom: 1px solid #e5e4d8; }
+	.live-dot { width: 6px; height: 6px; background: var(--green); border-radius: 50%; }
+	.scene-counter { margin-left: auto; font-family: monospace; color: var(--muted); }
+	.scene-canvas { height: 430px; width: 100%; padding: 12px 20px; background: radial-gradient(ellipse at center, #edf4ed, #fffdf500 70%); }
+	.scene-description { margin: 0; padding: 0 26px 22px; min-height: 58px; font-size: .78rem; line-height: 1.65; color: var(--muted); }
+	.scene-motion { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 22px 18px; }
+	.scene-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: .64rem; color: var(--muted); }
+	.scene-legend span { display: inline-flex; align-items: center; gap: 5px; }
+	.scene-legend i { width: 7px; height: 7px; border-radius: 50%; }
+	.scene-legend .processing { background: #0f9f83; }
+	.scene-legend .waiting { background: #c68927; }
+	.scene-legend .complete { background: #418653; }
+	#asset-motion { background: transparent; border: 1px solid #b9c7bc; border-radius: 4px; padding: 7px 10px; font-size: .67rem; color: var(--green-dark); }
+	#asset-motion[aria-pressed="true"] { background: #e2ebe2; }
+	.scene-controls { display: grid; grid-template-columns: repeat(var(--scene-steps, 4), 1fr); border-top: 1px solid #d9dfd2; }
+	button { font: inherit; cursor: pointer; }
+	.scene-controls :global(button) { font: inherit; cursor: pointer; padding: 16px 10px; border: 0; background: #edf0e5; color: var(--muted); font-size: .73rem; }
+	.scene-controls :global(button + button) { border-left: 1px solid #d9dfd2; }
+	.scene-controls :global(button[aria-pressed='true']) { background: var(--green-dark); color: #fffdf5; }
+	.scene-controls :global(button:focus-visible), button:focus-visible, a:focus-visible { outline: 3px solid var(--blue); outline-offset: 4px; }
+	.collection { border-top: 1px solid var(--line); scroll-margin-top: 90px; }
+	.collection-heading { display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; padding: 44px 0; }
+	h2 { font-size: clamp(32px, 3.5vw, 47px); margin: 12px 0 0; }
+	.filters { display: flex; flex-wrap: wrap; gap: 5px; }
+	.filters button { border: 1px solid var(--line); background: transparent; border-radius: 4px; padding: 9px 13px; font-size: .72rem; color: var(--soft-ink); }
+	.filters button[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+	.asset-group { margin-bottom: 44px; }
+	.asset-group[hidden] { display: none; }
+	.group-heading { display: flex; gap: 18px; align-items: center; margin-bottom: 22px; }
+	.group-number { font-family: Georgia, serif; font-size: 30px; color: #afb5a4; }
+	h3 { margin: 0; font-size: .95rem; font-weight: 650; }
+	.group-heading p { color: var(--muted); margin: 7px 0 0; font-size: .78rem; line-height: 1.5; }
+	.group-count { margin-left: auto; white-space: nowrap; font-size: .68rem; color: var(--muted); }
+	.asset-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+	.asset-tile[hidden], .empty-results[hidden] { display: none; }
+	.asset-tile { display: block; border: 1px solid #dcdccf; border-radius: 6px; background: #fffdf7; overflow: hidden; text-decoration: none; transition: border-color .2s, transform .2s; }
+	.asset-tile:hover { transform: translateY(-4px); border-color: var(--green); }
+	.asset-image { position: relative; display: grid; place-items: center; height: 190px; background: radial-gradient(ellipse at 50% 75%, #e7eee4, transparent 65%); }
+	.asset-image > img, .sprite-preview { width: 152px; height: 152px; }
+	.sprite-preview { display: flex; align-items: center; justify-content: center; }
+	.sprite-crop { display: block; position: relative; overflow: hidden; }
+	.sprite-crop img { position: absolute; max-width: none; max-height: none; object-fit: fill; }
+	.download-mark { position: absolute; top: 10px; right: 12px; color: var(--green); opacity: .4; }
+	.asset-name { display: block; padding: 0 12px 6px; color: var(--ink); font-size: .8rem; font-weight: 600; }
+	.asset-tile code { display: block; overflow-wrap: anywhere; padding: 0 12px 14px; font-size: .62rem; color: var(--muted); line-height: 1.45; }
+	.usage { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; border-top: 1px solid var(--line); padding-top: 65px; margin-top: 65px; align-items: start; }
+	.usage-copy > p:not(.eyebrow):not(.license-note) { font-size: .87rem; color: var(--soft-ink); line-height: 1.8; }
+	.usage-copy ol { padding-left: 20px; margin: 24px 0; color: var(--soft-ink); font-size: .8rem; line-height: 1.9; }
+	.usage-copy code { font-size: .72rem; overflow-wrap: anywhere; }
+	.download-links { display: flex; flex-wrap: wrap; gap: 18px; font-size: .76rem; font-weight: 600; }
+	.guide-link { margin-top: 24px; }
+	.code-card { overflow: hidden; border-radius: 6px; background: #0d1117; }
+	.code-title { display: flex; gap: 12px; justify-content: space-between; color: #d5ddd4; font: .72rem monospace; padding: 18px 22px; border-bottom: 1px solid #303835; }
+	.code-title span { color: #a2b0a1; font-family: inherit; }
+	.code-card :global(pre) { margin: 0; padding: 24px; font-size: .78rem; line-height: 1.75; overflow-x: auto; }
+	.collection-total { margin: 0; font: 48px Georgia, serif; color: var(--green-dark); }
+	.collection-total span { display: block; font: .7rem sans-serif; color: var(--muted); margin-top: 8px; }
+	.catalog-toolbar { display: flex; align-items: end; gap: 16px; padding: 20px; border: 1px solid var(--line); background: #f4f3e9; border-radius: 6px; }
+	.catalog-toolbar label { display: grid; gap: 8px; font-size: .72rem; color: var(--soft-ink); }
+	.asset-search { flex: 1; }
+	.asset-category { flex: 0 1 260px; }
+	.catalog-toolbar input, .catalog-toolbar select { width: 100%; min-width: 0; padding: 12px; border: 1px solid #c6cdbd; border-radius: 4px; font-family: inherit; font-size: .8rem; background: #fffdf7; color: var(--ink); }
+	.catalog-toolbar input:focus-visible, select:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+	.clear-filters { border: 0; background: transparent; color: var(--green-dark); padding: 12px 0; font-size: .75rem; white-space: nowrap; }
+	.empty-results { padding: 36px; text-align: center; border: 1px dashed var(--line); color: var(--muted); }
+	.example-picker { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; padding: 16px; font-size: .7rem; border-top: 1px solid var(--line); }
+	.example-picker label { color: var(--muted); }
+	.example-picker select { flex: 1; min-width: 0; max-width: 260px; border: 1px solid var(--line); border-radius: 3px; background: #fffdf7; color: var(--ink); padding: 8px; font: inherit; }
+	.example-picker a { color: var(--green-dark); }
+	@media (max-width: 1100px) { .asset-hero { gap: 28px; } .asset-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } .collection-heading { align-items: start; flex-direction: column; } .usage { gap: 40px; } }
+	@media (max-width: 720px) { .asset-page { padding-top: 35px; } .asset-hero, .usage { grid-template-columns: 1fr; gap: 32px; } .asset-hero { padding-bottom: 45px; } .asset-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .scene-canvas { height: 330px; } .catalog-toolbar { flex-wrap: wrap; padding: 14px; gap: 12px; } .asset-search { flex-basis: 100%; } .asset-category { flex: 1; } .collection-heading { flex-direction: row; } .collection-total { font-size: 36px; } .asset-image { height: 160px; } .asset-image > img, .sprite-preview { width: 132px; height: 132px; } .group-heading { align-items: flex-start; } .group-count { display: none; } .usage { margin-top: 40px; padding-top: 35px; } .code-title span { display: none; } }
+	@media (prefers-reduced-motion: reduce) { .asset-tile { transition: none; } }
+</style>

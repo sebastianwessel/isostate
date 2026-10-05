@@ -18,7 +18,11 @@ Use this skill when creating or reviewing isostate scene definitions and example
      `docs/guides/use-the-cli.md` → `docs/guides/deploy-static-bundle.md`
    - choose an authoring path: manual YAML, website editor, or AI-assisted draft
    - identify required assets before writing a long timeline
-2. Read the relevant reference file only when needed:
+2. For Mermaid input, use `skills/converting-mermaid-to-isostate-stories/`.
+   The CLI/workbench can generate a deterministic flowchart draft; keep its
+   visible node/edge labels and source directions when replacing primitives
+   with checked artwork. Review conversion diagnostics before story authoring.
+   Read the relevant reference file only when needed:
    - DSL shape and scene deltas: `references/dsl.md`
    - Connections, routing, markers, and removal rules: `references/connections.md`
    - Asset catalogs, anchors, floor, text labels, and generated primitives:
@@ -43,6 +47,9 @@ Use this skill when creating or reviewing isostate scene definitions and example
    - use `from`/`to` instead of fractional manual routes when connecting to element sides
    - omit unchanged objects in later scenes
 5. Treat assets as their own publishable catalog:
+   - for creating, restyling, importing, or maintaining artwork, use
+     `skills/creating-isostate-assets/`; take the visual style from the user
+     or their existing catalog rather than inventing a default aesthetic
    - standalone SVGs for one object per file
    - sprite sheets for generated raster catalogs or many small objects
    - one manifest per asset family; do not mix catalog ownership
@@ -58,6 +65,12 @@ Use this skill when creating or reviewing isostate scene definitions and example
    `.isostate.yaml` changes, regenerate its `.isostate.js`/`.isostate.json`
    output in the same change. If the example is meant for static website
    deployment, verify `isostate bundle` output as well.
+   Review movement between stops as well as the final snapshots: retain an
+   element id and update its `at` to animate travel. Use the controller's
+   `setSceneIndex`, `nextScene`, and `prevScene` for animated step buttons;
+   use `setProgress` for exact scroll or slider scrubbing. These are host APIs,
+   not scene YAML fields. In the editor, use **Edit scene** after scrubbing to
+   return to whole-cell authoring before moving objects.
 9. Run available checks after edits:
    ```bash
    bun test tests/nfr/docs-paths.test.ts tests/nfr/assets-manifest.test.ts
@@ -71,6 +84,9 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not write old authored `states`, `keyframes`, scene `at`, element `pos`, or top-level `elements` outside the first scene.
 - Do not use `addConnectors`, `updateConnectors`, or `removeConnectors`; use nested `add.connections`, `update.connections`, and `remove.connections`.
 - Do not stretch SVG arrow assets for flows. Use `connections`.
+- Use generated rounded `beam` tracks, selective `message` traffic, and element
+  `activity` for workflow status. End prior work explicitly with idle/complete
+  states and disabled messages; activity/message patches replace whole objects.
 - Do not declare built-in generated assets in `header.assets`: `text`,
   `rectangle`, `circle`, `polygon`, or `line`.
 - For theme-aware colors, use semantic CSS variables such as
@@ -91,7 +107,7 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not put parser, validator, compiler, YAML parsing, or routing packages in browser runtime code.
 - Do not treat static bundle output as source. Author YAML first, then generate
   `scene.isostate.js`, copied assets, `isostate.runtime.js`, and
-  `manifest.json` with the CLI.
+   `manifest.json` with the CLI.
 - Do not add `theme: light` or `header.className` only for light/dark mode.
   Use semantic CSS variables in YAML and let host CSS define defaults plus
   shadcn-compatible `.dark` overrides; target the built-in `.iso-scene` class

@@ -50,6 +50,7 @@ starts.
 
 ```bash
 bun ci
+bun scripts/check-release-versions.ts
 bun run format
 bun run lint
 bun run typecheck
@@ -79,6 +80,8 @@ Opt-in checks:
 
 ## Supply Chain
 
+- CI, releases, and the Astro build action use Bun 1.4.2, matching the root
+  `packageManager` pin. Node 24 supplies the development and publishing tools.
 - Publish only `dist` files declared in package `files`.
 - Run `publint` before release for `@sebastianwessel/isostate` and `@sebastianwessel/isostate-cli`.
 - Lock runtime exports so `@sebastianwessel/isostate` and `@sebastianwessel/isostate/dsl` remain separate entrypoints.
@@ -89,9 +92,23 @@ Opt-in checks:
   tests, the coverage gate (`bun run coverage`, minimum 80% line coverage),
   size, package lint, basic example bundle generation, and the static
   website build.
-- Manual releases from `main` must verify package versions, reject already
-  published npm versions, run `bun ci`/format/lint/typecheck/build/tests/
-  coverage/size/publint/basic example bundle generation, publish both npm
-  packages, create
-  a `v<version>` git tag, create a GitHub release, and deploy the Astro static
-  documentation site to GitHub Pages.
+- PR and release checks share a version verifier: root, core, CLI, and internal
+  editor versions must agree, and CLI/editor must depend on the exact core
+  version. Compiler and runtime version constants must also match. The
+  verifier checks the Bun package-manager pin against the workflow inputs.
+- Releases from `main`, triggered manually or by package manifest changes,
+  reject existing git tags and already published core/CLI npm versions.
+  npm availability checks treat only an explicit registry 404 as unpublished;
+  network, authentication, and other registry failures stop the release.
+- Releases run `bun ci`/format/lint/typecheck/build/tests/coverage/size/publint/
+  basic example bundle generation and the website build, publish only core
+  and CLI, create a `v<version>` git tag and GitHub release, and deploy the
+  static documentation site to GitHub Pages. The editor remains internal.
+- Publishing uses npm's trusted-publishing OIDC support with an optional
+  `NPM_TOKEN` fallback. The publishing CLI must meet npm's minimum version
+  requirement (11.5.1). Release and manual website workflows share a
+  concurrency group with cancellation disabled to prevent overlapping npm
+  publication or Pages deployments. Job permissions are scoped to their
+  publishing and deployment responsibilities.
+- Manual website deployment builds workspace packages before the Astro site,
+  because the website editor resolves the core package's compiled exports.

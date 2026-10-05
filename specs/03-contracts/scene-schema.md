@@ -318,6 +318,11 @@ Rules:
 ## Element Placement And Delta Patches
 
 ```ts
+interface ElementActivity {
+  state: 'idle' | 'processing' | 'waiting' | 'complete' | 'error';
+  color?: string;
+}
+
 interface ElementPlacement {
   id: string;
   asset: string;
@@ -329,6 +334,7 @@ interface ElementPlacement {
   ambient?: AmbientAnimation[];
   text?: TextContent;
   primitive?: PrimitiveContent;
+  activity?: ElementActivity;
 }
 
 interface ElementPatch {
@@ -341,6 +347,8 @@ interface ElementPatch {
   ambient?: AmbientAnimation[];
   text?: TextContentPatch;
   primitive?: PrimitiveContentPatch;
+  activity?: ElementActivity;
+  asset?: string;
 }
 
 interface ElementRemoval {
@@ -426,9 +434,18 @@ Validation rules:
 
 ```ts
 type ConnectorPattern = 'solid' | 'dashed' | 'dotted';
-type ConnectorVariant = 'line' | 'road';
+type ConnectorVariant = 'line' | 'road' | 'beam';
 type ConnectorEndpoint = 'none' | 'arrow' | 'dot' | 'circle' | 'diamond' | 'bar';
 type ConnectorDirection = 'route' | 'reverse';
+
+interface ConnectorMessage {
+  kind?: 'packet' | 'orb' | 'envelope';
+  color?: string;
+  size?: number;
+  duration?: number;
+  count?: number;
+  enabled?: boolean;
+}
 
 interface ConnectorStyle {
   variant?: ConnectorVariant;
@@ -440,6 +457,9 @@ interface ConnectorStyle {
   outline?: string;
   outlineWidth?: number;
   lane?: 'none' | 'center-dashed';
+  cornerRadius?: number;
+  glow?: string;
+  glowWidth?: number;
 }
 
 interface ConnectorEndpointRef {
@@ -472,6 +492,7 @@ interface ConnectionPlacement {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
+  message?: ConnectorMessage;
 }
 
 interface ConnectionPatch {
@@ -488,6 +509,7 @@ interface ConnectionPatch {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
+  message?: ConnectorMessage;
 }
 
 interface ConnectionRemoval {
@@ -530,8 +552,8 @@ Validation rules:
 - Every route coordinate must be a finite number `>= 0`.
 - `style.pattern` defaults to `solid`; valid values are `solid`, `dashed`, and
   `dotted`.
-- `style.variant` defaults to `line`; valid values are `line` and `road`.
-- `style.stroke`, `style.outline`, and any future CSS color fields use the same
+- `style.variant` defaults to `line`; valid values are `line`, `road`, and `beam`.
+- `style.stroke`, `style.outline`, `style.glow`, and message/activity color fields use the same
   safe color-token rules as `text.fill`.
 - `style.strokeWidth`, `style.outlineWidth`, and `style.dash[]` values must be
   positive finite numbers.
@@ -641,3 +663,23 @@ infinite values with `DSL_SCHEMA_TYPE_ERROR` before validation runs.
 The parser must reject unknown fields inside `header`, `assets`, `grid`, `floor`, `layers`, `scenes`, `elements`, `add`, `update`, `remove`, and `ambient` objects with `UNKNOWN_FIELD`. Authored scenes do not accept progress fields such as `scenes[].at`; scene order is the step order.
 
 This keeps generated YAML deterministic and prevents typo-driven behavior.
+
+## Activity, Messages, And Asset Patch Validation
+
+- `activity.state` is required and restricted to `idle`, `processing`,
+  `waiting`, `complete`, or `error`; optional `activity.color` is a safe CSS color.
+- `ElementPatch.asset` references a declared external image or logical sprite.
+  Existing and destination assets must both be external: generated text and
+  primitive elements cannot change asset through a patch.
+- `style.cornerRadius` is finite and `>= 0`, default `0` projected SVG units.
+  `style.glowWidth` is finite and `> 0`, default `8` projected SVG units.
+- `message.kind` is `packet` (default), `orb`, or `envelope`; `color` is safe CSS;
+  `size` is finite `2..32` SVG units (default `10`); `duration` is finite
+  `200..30000` milliseconds (default `1800`); `count` is integer `1..4`
+  (default `1`); `enabled` is boolean (default `true`).
+- Activity and message objects use whole-object replacement in updates.
+  Omitting the object preserves it; `activity: { state: idle }` clears active
+  work and `message: { enabled: false }` turns messages off.
+- Asset, activity, and message updates apply discretely at destination stops.
+  See the [element domain](../01-domains/node.md) and
+  [connector domain](../01-domains/connector.md) for rendering semantics.

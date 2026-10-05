@@ -50,6 +50,20 @@ rules for:
 - preserving the browser runtime boundary so parser, validator, compiler, and
   `yaml` stay out of browser bundles
 
+## Create Or Maintain Artwork
+
+For artwork production and catalog maintenance, install the asset skill too:
+
+```bash
+npx skills add sebastianwessel/isostate --skill creating-isostate-assets
+```
+
+Supply your visual style or a reference catalog. The skill covers safe SVGs,
+raster sprite crops, anchors, metadata, provenance notices, and package/website
+copies. It supports the medium you choose, rather than imposing an aesthetic.
+See [Create Assets With An AI Assistant](../skills/creating-isostate-assets.md)
+for a complete brief and deliverables.
+
 ## Verify
 
 List installed project skills:

@@ -306,11 +306,11 @@
 	cursor: grabbing;
 }
 
-.isostate-editor-canvas-view .iso-floor-grid {
+.isostate-editor-canvas-view[data-preview-mode="edit"] .iso-floor-grid {
 	opacity: 1;
 }
 
-.isostate-editor-canvas-view .iso-floor-grid .iso-floor-slab {
+.isostate-editor-canvas-view[data-preview-mode="edit"] .iso-floor-grid .iso-floor-slab {
 	fill: var(--isostate-editor-grid-fill);
 	fill-opacity: 0.12;
 	stroke: var(--isostate-editor-grid-boundary);
@@ -318,7 +318,7 @@
 	stroke-width: 1.25;
 }
 
-.isostate-editor-canvas-view .iso-floor-grid line {
+.isostate-editor-canvas-view[data-preview-mode="edit"] .iso-floor-grid line {
 	stroke: var(--isostate-editor-grid-line);
 	stroke-opacity: var(--isostate-editor-grid-opacity);
 	stroke-width: 1.35;
@@ -347,7 +347,7 @@
 	bottom: 1rem;
 	z-index: 6;
 	display: grid;
-	grid-template-columns: minmax(12rem, 22rem) minmax(3.25rem, auto);
+	grid-template-columns: minmax(6rem, 22rem) auto auto;
 	align-items: center;
 	gap: 0.625rem;
 	max-width: calc(100% - 2rem);
@@ -367,7 +367,7 @@
 
 .isostate-preview-player input[type="range"] {
 	width: 100%;
-	min-width: 12rem;
+	min-width: 0;
 	margin: 0;
 	accent-color: #0f9f8f;
 	cursor: pointer;

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, test } from 'bun:test';
 import { createHash } from 'node:crypto';
 import { createEditorRuntimeAdapter } from '../../packages/core/src/editor-support/adapter.ts';
+import { getElementState } from '../../packages/core/src/rendering/rendering-engine.ts';
 import { mountScene } from '../../packages/core/src/index';
 import type { RuntimeBundle } from '../../packages/core/src/types/index.ts';
 
@@ -26,6 +27,40 @@ describe('editor-support adapter', () => {
 			height: expect.any(Number),
 		});
 
+		mounted.destroy();
+	});
+
+	test('runtime preview delegates progress to the mounted controller', () => {
+		const mounted = mountScene(document.createElement('div'), createBundle());
+		let progress: number | undefined;
+		mounted.controller = {
+			setProgress(value: number) {
+				progress = value;
+			}
+		} as NonNullable<typeof mounted.controller>;
+		const adapter = createEditorRuntimeAdapter(mounted);
+		adapter.setProgress(0.4);
+		expect(progress).toBe(0.4);
+		// The controller owns frame scheduling; the adapter must not render a second frame.
+		expect(mounted.engine.getCurrentState()?.id).toBe('start');
+		mounted.destroy();
+	});
+
+	test('text hit testing uses visible glyph bounds instead of covering neighboring artwork', () => {
+		const bundle = createBundle();
+		bundle.scenes[0].elements.push({ id: 'label', asset: 'text', layer: 'base', pos: [0, 0], size: 1, presence: 'present', text: { value: 'Label' } });
+		const mounted = mountScene(document.createElement('div'), withDigest(bundle));
+		mounted.svg.createSVGPoint = () => ({
+			x: 0, y: 0,
+			matrixTransform(matrix: DOMMatrix) { return { x: this.x * matrix.a + matrix.e, y: this.y * matrix.d + matrix.f }; }
+		}) as DOMPoint;
+		const label = getElementState(mounted.svg, 'label')!;
+		label.node.getBoundingClientRect = () => ({ left: 1000, top: 1200, right: 1060, bottom: 1212, width: 60, height: 12 }) as DOMRect;
+		const adapter = createEditorRuntimeAdapter(mounted);
+		const block = adapter.getObject('block-1')!.bounds;
+		expect(adapter.getObjectAtPoint({ x: block.minX + block.width / 2, y: block.minY + block.height / 2 })?.id).toBe('block-1');
+		expect(adapter.getObjectAtPoint({ x: 1030, y: 1206 })?.id).toBe('label');
+		expect(adapter.getSelectionBounds(['label'])).toEqual({ minX: 1000, minY: 1200, width: 60, height: 12 });
 		mounted.destroy();
 	});
 

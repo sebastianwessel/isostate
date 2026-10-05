@@ -30,6 +30,8 @@ specs/                  # All spec documents
   02-capabilities/dsl/compiler.md  # Compiler pipeline architecture
 skills/                 # AI agent skills for workflow guidance
   authoring-isostate-scenes/  # Skill for scene DSL, assets, examples
+  creating-isostate-assets/   # Skill for user-styled artwork and catalog lifecycle
+  converting-mermaid-to-isostate-stories/  # Skill for faithful diagram stories
 docs/                   # End-user documentation
 tests/                  # Shared test fixtures and helpers
 ```

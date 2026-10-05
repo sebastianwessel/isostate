@@ -13,7 +13,7 @@ const cli = [process.execPath, 'packages/cli/src/bin.ts'];
 const tempDirs: string[] = [];
 
 const HAPPY_PATH_SOURCE = `graph TD
-Start[Begin Here] --> Process(Do Work) --> Decision{Ready?}
+Start[Begin Here] --> Process((Do Work)) --> Decision{Ready?}
 Decision --> Done
 Done --- Skip
 `;
@@ -48,7 +48,7 @@ scenes:
           placement: caption
       - id: process
         asset: circle
-        at: [0, 2]
+        at: [0, 4]
         layer: nodes
         primitive:
           circle:
@@ -58,7 +58,7 @@ scenes:
             opacity: 0.9
       - id: process-label
         asset: text
-        at: [0, 2]
+        at: [0, 4]
         layer: labels
         text:
           value: Do Work
@@ -66,7 +66,7 @@ scenes:
           placement: caption
       - id: decision
         asset: polygon
-        at: [0, 4]
+        at: [0, 8]
         layer: nodes
         primitive:
           polygon:
@@ -77,7 +77,7 @@ scenes:
             opacity: 0.9
       - id: decision-label
         asset: text
-        at: [0, 4]
+        at: [0, 8]
         layer: labels
         text:
           value: Ready?
@@ -85,7 +85,7 @@ scenes:
           placement: caption
       - id: done
         asset: rectangle
-        at: [0, 6]
+        at: [0, 12]
         layer: nodes
         primitive:
           rectangle:
@@ -93,9 +93,17 @@ scenes:
             stroke: "var(--iso-node-stroke, #2563eb)"
             strokeWidth: 1
             opacity: 0.9
+      - id: done-label
+        asset: text
+        at: [0, 12]
+        layer: labels
+        text:
+          value: Done
+          align: middle
+          placement: caption
       - id: skip
         asset: rectangle
-        at: [0, 8]
+        at: [0, 16]
         layer: nodes
         primitive:
           rectangle:
@@ -103,6 +111,14 @@ scenes:
             stroke: "var(--iso-node-stroke, #2563eb)"
             strokeWidth: 1
             opacity: 0.9
+      - id: skip-label
+        asset: text
+        at: [0, 16]
+        layer: labels
+        text:
+          value: Skip
+          align: middle
+          placement: caption
     connections:
       - id: start-to-process
         from:
@@ -168,8 +184,8 @@ B --> C{Three}
 			document.scenes[0]?.elements?.find((element) => element.id === id)?.at;
 
 		expect(at('a')).toEqual([0, 0]);
-		expect(at('b')).toEqual([2, 0]);
-		expect(at('c')).toEqual([4, 0]);
+		expect(at('b')).toEqual([4, 0]);
+		expect(at('c')).toEqual([8, 0]);
 	});
 
 	test('id normalization: underscores and mixed case become kebab-case', () => {
@@ -258,39 +274,31 @@ B --> C{Three}
 		expect(report.isValid).toBe(true);
 		expect(document.scenes[0]?.elements?.map((element) => element.id)).toEqual([
 			'a',
+			'a-label',
 			'b',
-			'c'
+			'b-label',
+			'c',
+			'c-label'
 		]);
 		expect(document.scenes[0]?.connections?.length).toBe(3);
 	});
 
-	test('an edge label produces MERMAID_LABEL_DROPPED and the connection carries no label', () => {
-		const result = convertMermaidToDsl(`graph TD\nA -->|yes| B\n`);
-
-		expect(result.warnings).toEqual([
-			{
-				code: 'MERMAID_LABEL_DROPPED',
-				message:
-					'Edge label "yes" was dropped; the DSL has no connection labels',
-				line: 2
-			}
-		]);
-
-		const document = parseScene(result.yaml);
-		const report = validateScene(document);
-		expect(report.isValid).toBe(true);
+	test('preserves edge labels as ordinary text elements', () => {
+		const result = convertMermaidToDsl('graph TD\nA -->|yes| B');
+		expect(result.warnings).toEqual([]);
+		const scene = parseScene(result.yaml).scenes[0];
+		expect(
+			scene?.elements?.find((element) => element.id === 'a-to-b-label')
+		).toMatchObject({ asset: 'text', at: [0, 2], text: { value: 'yes' } });
 	});
-
-	test('an edge label on an undirected `-- text ---` edge also warns', () => {
-		const result = convertMermaidToDsl(`graph TD\nA -- plain --- B\n`);
-		expect(result.warnings).toEqual([
-			{
-				code: 'MERMAID_LABEL_DROPPED',
-				message:
-					'Edge label "plain" was dropped; the DSL has no connection labels',
-				line: 2
-			}
-		]);
+	test('preserves inline undirected edge labels', () => {
+		const result = convertMermaidToDsl('graph TD\nA -- plain --- B');
+		expect(result.warnings).toEqual([]);
+		expect(
+			parseScene(result.yaml).scenes[0]?.elements?.find(
+				(element) => element.id === 'a-to-b-label'
+			)?.text?.value
+		).toBe('plain');
 	});
 
 	test('duplicate connection ids get -2, -3, ... suffixes in document order', () => {
@@ -358,12 +366,12 @@ describe('isostate mermaid2dsl', () => {
 	test('prints warnings using the standard WARN <code> ... format and still exits 0', async () => {
 		const dir = await makeTempDir();
 		const input = join(dir, 'flow.mmd');
-		await writeFile(input, `graph TD\nA -->|yes| B\n`, 'utf8');
+		await writeFile(input, `graph TD\nA --> B --> A\n`, 'utf8');
 
 		const result = await runCli(['mermaid2dsl', input]);
 
 		expect(result.exitCode).toBe(0);
-		expect(result.stderr).toContain('WARN MERMAID_LABEL_DROPPED');
+		expect(result.stderr).toContain('WARN MERMAID_CYCLE_BROKEN');
 	});
 });
 

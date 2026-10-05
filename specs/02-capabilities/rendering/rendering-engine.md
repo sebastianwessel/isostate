@@ -236,6 +236,10 @@ When an element is instantiated (first appearance or re-addition after removal):
 
 For `asset: text`, the renderer must not call the asset resolver. It creates a `<text>` node with one `<tspan>` child per normalized line in `text.value`, assigns line strings through `textContent`, applies the validated text style attributes, and then follows the same transform, class, layer, lifecycle, and animation pipeline as every other element. Missing runtime text content is terminal `TEXT_CONTENT_MISSING`.
 
+## Workflow Presentation
+
+Render beam depth, optional glow, rounded bends, and message glyphs as SVG geometry. CSS messages follow the rounded path and effective direction. Activity indicators, message motion, and their static reduced-motion states obey controller pause. Asset swaps recreate image/sprite content with destination crop and anchor while preserving element identity. See the connector and element domains for the complete contract.
+
 ## Connector Rendering
 
 Connectors are generated SVG nodes, not URL-loaded assets.
@@ -319,7 +323,7 @@ Connector groups expose:
 ```text
 .iso-connector
 .iso-connector-<id>
-.iso-connector-variant-line | .iso-connector-variant-road
+.iso-connector-variant-line | .iso-connector-variant-road | .iso-connector-variant-beam
 .iso-connector-pattern-solid | .iso-connector-pattern-dashed | .iso-connector-pattern-dotted
 .iso-connector-direction-route | .iso-connector-direction-reverse
 .iso-layer-<layer>

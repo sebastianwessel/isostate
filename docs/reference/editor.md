@@ -104,6 +104,27 @@ interface IsostateEditorProps {
   YAML so SVG assets and sprite sheets can coexist under one `assetBaseUrl`
   without broken URLs.
 
+## Canvas Navigation And Timeline
+
+In edit mode, drag an object to move it by whole cells. Drag empty canvas to
+pan, or use middle mouse, Alt/Meta-drag, or Space-drag. Ordinary wheel/trackpad
+gestures pan; Ctrl/Meta-wheel zooms. Toolbar zoom keeps the scene center fixed,
+and **Reset view** restores the authoring viewport. Selection and movement use
+the SVG's current transform, including zoom, pan, and empty space around the
+scene. A click selects without moving; a drag retains the point where you
+grabbed the object and commits on release. Pointer cancellation discards the
+transient move.
+
+Text labels use their visible bounds for hit testing, so a nearby label does
+not cover another object's artwork with an invisible one-cell hit area.
+
+The **Scene progress** slider enters runtime preview. It interpolates object
+positions, routes, and authored cameras and plays entry/exit effects in either
+direction. Runtime preview hides editing overlays and viewport controls, and
+ignores editor-only layer visibility. Click **Edit scene**, or select a scene
+in the topbar or scene tree, to return to an exact authored stop and restore
+your authoring zoom/pan. Scrubbing does not write fractional positions to YAML.
+
 ## Text Editing
 
 When a selected element uses `asset: text`, the inspector exposes content,
@@ -324,3 +345,18 @@ app or trigger `onExport`.
 
 Core parser, validator, compiler, runtime, and CLI error codes are preserved in
 diagnostics when those subsystems report failures.
+
+## Workflow Preview And Inspector
+
+The hosted editor opens the human-to-agentic workflow by default. Explicit
+`?example=provider-routing` and `?example=software-architecture` links select
+the other examples. Embedding `mountEditor` without initial content still
+starts a minimal valid document.
+
+Use **Glowing beam** or **Message link** presets as a starting point.
+Use the connection inspector to choose a beam, round its corners, tune its
+glow, and enable a packet, orb, or envelope with size, duration, and count.
+Use the element inspector to change activity state/color or replace an external
+image/sprite. YAML, preview, and exported runtime bundles share the same
+semantics. Activity and message objects replace prior objects in later stops;
+use idle and disabled states to stop earlier work explicitly.

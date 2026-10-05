@@ -1,0 +1,503 @@
+# One-cell catalog sprites with rounded SVG beam tracks, selective messages, and explicit activity changes.
+
+# One-cell catalog sprites; labels and arrows explain this illustrative workflow.
+header:
+  version: "1.0"
+  name: human-to-agentic-service-request
+  assetBaseUrl: ./assets/software-architecture
+  assets:
+    - id: agentic-agents-sprites
+      type: sprite-sheet
+      path: agentic/agents-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        ai-agent:
+          rect: [ 0, 0, 443, 443 ]
+          anchor: [ 0.456, 0.8916 ]
+    - id: agentic-ai-to-human-handoff
+      type: sprite-sheet
+      path: agentic/ai-to-human-handoff.png
+      sheetSize: [ 1254, 1254 ]
+      anchor: [ 0.5, 0.91 ]
+      sprites:
+        ai-to-human-handoff:
+          rect: [ 0, 0, 1254, 1254 ]
+          anchor: [ 0.5, 0.91 ]
+    - id: agentic-channels-sprites
+      type: sprite-sheet
+      path: agentic/channels-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        channel-email:
+          rect: [ 0, 0, 443, 443 ]
+          anchor: [ 0.5056, 0.8555 ]
+    - id: agentic-human-to-ai-handoff
+      type: sprite-sheet
+      path: agentic/human-to-ai-handoff.png
+      sheetSize: [ 1254, 1254 ]
+      anchor: [ 0.51, 0.936 ]
+      sprites:
+        human-to-ai-handoff:
+          rect: [ 0, 0, 1254, 1254 ]
+          anchor: [ 0.51, 0.936 ]
+    - id: agentic-humans-sprites
+      type: sprite-sheet
+      path: agentic/humans-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        human-requester:
+          rect: [ 0, 0, 443, 437 ]
+          anchor: [ 0.5666, 0.8581 ]
+        human-operator:
+          rect: [ 443, 0, 444, 443 ]
+          anchor: [ 0.4775, 0.851 ]
+        human-approver:
+          rect: [ 887, 0, 443, 435 ]
+          anchor: [ 0.4989, 0.9011 ]
+        human-expert:
+          rect: [ 1330, 0, 444, 439 ]
+          anchor: [ 0.5518, 0.8656 ]
+    - id: agentic-infrastructure-sprites
+      type: sprite-sheet
+      path: agentic/infrastructure-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        infra-knowledge-base:
+          rect: [ 450, 414, 445, 473 ]
+          anchor: [ 0.4921, 0.8562 ]
+        infra-api-tool:
+          rect: [ 895, 414, 440, 473 ]
+          anchor: [ 0.475, 0.8605 ]
+    - id: agentic-lifecycle-sprites
+      type: sprite-sheet
+      path: agentic/lifecycle-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        agent-await-human:
+          rect: [ 890, 0, 475, 430 ]
+          anchor: [ 0.5179, 0.9558 ]
+        agent-audit:
+          rect: [ 890, 430, 475, 457 ]
+          anchor: [ 0.5032, 0.8512 ]
+        agent-complete:
+          rect: [ 1365, 430, 409, 457 ]
+          anchor: [ 0.5061, 0.9103 ]
+    - id: agentic-servicenow-sprites
+      type: sprite-sheet
+      path: agentic/servicenow-sprites.png
+      sheetSize: [ 1774, 887 ]
+      sprites:
+        servicenow-interaction:
+          rect: [ 0, 0, 450, 430 ]
+          anchor: [ 0.5067, 0.9395 ]
+        servicenow-request:
+          rect: [ 450, 0, 445, 430 ]
+          anchor: [ 0.4876, 0.9395 ]
+        servicenow-requested-item:
+          rect: [ 895, 0, 440, 430 ]
+          anchor: [ 0.4886, 0.9442 ]
+        servicenow-request-task:
+          rect: [ 1335, 0, 439, 430 ]
+          anchor: [ 0.5011, 0.9651 ]
+  grid:
+    cellSize: 96
+  floor:
+    visible: false
+  layers:
+    - name: ground
+    - name: connections
+    - name: structures
+    - name: labels
+scenes:
+  - id: manual-baseline
+    camera:
+      target: { area: { at: [ 0, 0 ], size: [ 9, 6 ] } }
+      padding: 48
+      duration: 0
+    elements:
+      - id: requester
+        asset: human-requester
+        at: [ 1, 1 ]
+        size: 1
+        enter: fade-in
+      - id: requester-label
+        asset: text
+        layer: labels
+        at: [ 1, 1 ]
+        text: { value: "Requester", placement: caption, fontSize: 10, fill: var(--iso-label) }
+      - id: intake
+        asset: channel-email
+        at: [ 4, 1 ]
+        size: 1
+        enter: fade-in
+        activity: { state: processing, color: "#0f9f83" }
+      - id: intake-label
+        asset: text
+        layer: labels
+        at: [ 4, 1 ]
+        text: { value: "Email intake", placement: caption, fontSize: 10, fill: var(--iso-label) }
+      - id: interaction
+        asset: servicenow-interaction
+        at: [ 7, 1 ]
+        size: 1
+        enter: fade-in
+      - id: interaction-label
+        asset: text
+        layer: labels
+        at: [ 7, 1 ]
+        text: { value: "Interaction", placement: caption, fontSize: 10, fill: var(--iso-label) }
+      - id: operator
+        asset: human-operator
+        at: [ 7, 4 ]
+        size: 1
+        enter: fade-in
+        activity: { state: processing, color: "#0f9f83" }
+      - id: operator-label
+        asset: text
+        layer: labels
+        at: [ 7, 4 ]
+        text: { value: "Manual triage", placement: caption, fontSize: 10, fill: var(--iso-label) }
+      - id: manual-complete
+        asset: agent-complete
+        at: [ 4, 4 ]
+        size: 1
+        enter: fade-in
+      - id: manual-complete-label
+        asset: text
+        layer: labels
+        at: [ 4, 4 ]
+        text: { value: "Fulfilled", placement: caption, fontSize: 10, fill: var(--iso-label) }
+    connections:
+      - id: requester-email
+        layer: connections
+        from: { element: requester, side: auto }
+        to: { element: intake, side: auto }
+        routing: { mode: orthogonal, avoid: objects }
+        style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
+        end: arrow
+        message: { kind: envelope, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
+      - id: email-interaction
+        layer: connections
+        from: { element: intake, side: auto }
+        to: { element: interaction, side: auto }
+        routing: { mode: orthogonal, avoid: objects }
+        style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
+        end: arrow
+      - id: manual-triage
+        layer: connections
+        from: { element: interaction, side: auto }
+        to: { element: operator, side: auto }
+        routing: { mode: orthogonal, avoid: objects }
+        style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
+        end: arrow
+        message: { kind: packet, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
+      - id: manual-fulfillment
+        layer: connections
+        from: { element: operator, side: auto }
+        to: { element: manual-complete, side: auto }
+        routing: { mode: orthogonal, avoid: objects }
+        style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
+        end: arrow
+  - id: agentic-automation
+    camera:
+      target: { area: { at: [ 0, 0 ], size: [ 9, 9 ] } }
+      padding: 48
+      duration: 0
+    remove:
+      elements:
+        - id: operator
+        - id: operator-label
+        - id: manual-complete
+        - id: manual-complete-label
+      connections:
+        - id: manual-triage
+        - id: manual-fulfillment
+    add:
+      elements:
+        - id: triage
+          asset: ai-agent
+          at: [ 7, 4 ]
+          size: 1
+          enter: fade-in
+          activity: { state: processing, color: "#0f9f83" }
+        - id: triage-label
+          asset: text
+          layer: labels
+          at: [ 7, 4 ]
+          text: { value: "AI triage", placement: caption, fontSize: 10, fill: var(--iso-label) }
+        - id: request
+          asset: servicenow-request
+          at: [ 4, 4 ]
+          size: 1
+          enter: fade-in
+        - id: request-label
+          asset: text
+          layer: labels
+          at: [ 4, 4 ]
+          text: { value: "Request (REQ)", placement: caption, fontSize: 10, fill: var(--iso-label) }
+        - id: requested-item
+          asset: servicenow-requested-item
+          at: [ 1, 4 ]
+          size: 1
+          enter: fade-in
+        - id: requested-item-label
+          asset: text
+          layer: labels
+          at: [ 1, 4 ]
+          text: { value: "Requested item", placement: caption, fontSize: 10, fill: var(--iso-label) }
+        - id: task
+          asset: servicenow-request-task
+          at: [ 1, 7 ]
+          size: 1
+          enter: fade-in
+        - id: task-label
+          asset: text
+          layer: labels
+          at: [ 1, 7 ]
+          text: { value: "Catalog task", placement: caption, fontSize: 10, fill: var(--iso-label) }
+        - id: tools
+          asset: infra-api-tool
+          at: [ 4, 7 ]
+          size: 1
+          enter: fade-in
+          activity: { state: waiting, color: "#c68927" }
+        - id: tools-label
+          asset: text
+          layer: labels
+          at: [ 4, 7 ]
+          text: { value: "Prepare tool action", placement: caption, fontSize: 10, fill: var(--iso-label) }
+        - id: knowledge
+          asset: infra-knowledge-base
+          at: [ 7, 7 ]
+          size: 1
+          enter: fade-in
+          activity: { state: processing, color: "#0f9f83" }
+        - id: knowledge-label
+          asset: text
+          layer: labels
+          at: [ 7, 7 ]
+          text: { value: "Knowledge lookup", placement: caption, fontSize: 10, fill: var(--iso-label) }
+      connections:
+        - id: interaction-triage
+          layer: connections
+          from: { element: interaction, side: auto }
+          to: { element: triage, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
+          end: arrow
+          message: { kind: packet, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
+        - id: triage-request
+          layer: connections
+          from: { element: triage, side: auto }
+          to: { element: request, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
+          end: arrow
+        - id: request-item
+          layer: connections
+          from: { element: request, side: auto }
+          to: { element: requested-item, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
+          end: arrow
+        - id: item-task
+          layer: connections
+          from: { element: requested-item, side: auto }
+          to: { element: task, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
+          end: arrow
+        - id: task-tools
+          layer: connections
+          from: { element: task, side: auto }
+          to: { element: tools, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
+          end: arrow
+          message: { kind: packet, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
+        - id: triage-knowledge
+          layer: connections
+          from: { element: triage, side: auto }
+          to: { element: knowledge, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
+          end: arrow
+          message: { kind: orb, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
+    update:
+      elements:
+        - id: intake
+          activity: { state: idle, color: "#90a19b" }
+          asset: human-to-ai-handoff
+        - id: interaction
+          activity: { state: complete, color: "#418653" }
+        - id: intake-label
+          text: { value: Human → AI handoff }
+      connections:
+        - id: requester-email
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
+  - id: human-review
+    camera:
+      target: { area: { at: [ 0, 3 ], size: [ 9, 9 ] } }
+      padding: 48
+      duration: 0
+    update:
+      elements:
+        - id: tools-label
+          text: { value: "Action prepared" }
+        - id: triage
+          activity: { state: waiting, color: "#c68927" }
+          asset: agent-await-human
+        - id: knowledge
+          activity: { state: idle, color: "#90a19b" }
+        - id: task
+          activity: { state: waiting, color: "#c68927" }
+        - id: triage-label
+          text: { value: AI awaiting approval }
+      connections:
+        - id: interaction-triage
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
+        - id: triage-knowledge
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
+        - id: task-tools
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
+    add:
+      elements:
+        - id: wait
+          asset: ai-to-human-handoff
+          at: [ 1, 10 ]
+          size: 1
+          enter: fade-in
+          activity: { state: waiting, color: "#c68927" }
+        - id: wait-label
+          asset: text
+          layer: labels
+          at: [ 1, 10 ]
+          text: { value: "AI → human review", placement: caption, fontSize: 10, fill: var(--iso-label) }
+        - id: approver
+          asset: human-approver
+          at: [ 4, 10 ]
+          size: 1
+          enter: fade-in
+          activity: { state: processing, color: "#0f9f83" }
+        - id: approver-label
+          asset: text
+          layer: labels
+          at: [ 4, 10 ]
+          text: { value: "Human approval", placement: caption, fontSize: 10, fill: var(--iso-label) }
+        - id: expert
+          asset: human-expert
+          at: [ 7, 10 ]
+          size: 1
+          enter: fade-in
+        - id: expert-label
+          asset: text
+          layer: labels
+          at: [ 7, 10 ]
+          text: { value: "Escalate if unclear", placement: caption, fontSize: 10, fill: var(--iso-label) }
+      connections:
+        - id: task-wait
+          layer: connections
+          from: { element: task, side: auto }
+          to: { element: wait, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
+          end: arrow
+        - id: wait-approver
+          layer: connections
+          from: { element: wait, side: auto }
+          to: { element: approver, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#c68927", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#c68927", glowWidth: 9 }
+          end: arrow
+          message: { kind: envelope, color: "#c68927", size: 10, duration: 2200, count: 1 }
+        - id: approver-expert
+          layer: connections
+          from: { element: approver, side: auto }
+          to: { element: expert, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
+          end: arrow
+  - id: completed
+    camera:
+      target: { area: { at: [ 0, 3 ], size: [ 9, 9 ] } }
+      padding: 48
+      duration: 0
+    remove:
+      elements:
+        - id: wait
+        - id: wait-label
+        - id: expert
+        - id: expert-label
+      connections:
+        - id: task-wait
+        - id: wait-approver
+        - id: approver-expert
+    update:
+      elements:
+        - id: approver-label
+          text: { value: "Approved" }
+        - id: task-label
+          text: { value: "Task closed" }
+        - id: triage
+          activity: { state: complete, color: "#418653" }
+          asset: agent-complete
+        - id: task
+          activity: { state: complete, color: "#418653" }
+        - id: tools
+          activity: { state: complete, color: "#418653" }
+        - id: approver
+          activity: { state: complete, color: "#418653" }
+        - id: triage-label
+          text: { value: AI work complete }
+    add:
+      elements:
+        - id: complete
+          asset: agent-complete
+          at: [ 7, 10 ]
+          size: 1
+          enter: fade-in
+          activity: { state: complete, color: "#418653" }
+        - id: complete-label
+          asset: text
+          layer: labels
+          at: [ 7, 10 ]
+          text: { value: "Completed", placement: caption, fontSize: 10, fill: var(--iso-label) }
+        - id: audit
+          asset: agent-audit
+          at: [ 1, 10 ]
+          size: 1
+          enter: fade-in
+          activity: { state: complete, color: "#418653" }
+        - id: audit-label
+          asset: text
+          layer: labels
+          at: [ 1, 10 ]
+          text: { value: "Decision audit", placement: caption, fontSize: 10, fill: var(--iso-label) }
+      connections:
+        - id: approval-execute
+          layer: connections
+          from: { element: approver, side: auto }
+          to: { element: tools, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
+          end: arrow
+        - id: tools-complete
+          layer: connections
+          from: { element: tools, side: auto }
+          to: { element: complete, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#418653", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#418653", glowWidth: 9 }
+          end: arrow
+          message: { kind: packet, color: "#418653", size: 10, duration: 2200, count: 1 }
+        - id: approval-audit
+          layer: connections
+          from: { element: approver, side: auto }
+          to: { element: audit, side: auto }
+          routing: { mode: orthogonal, avoid: objects }
+          style: { variant: beam, pattern: solid, stroke: "#418653", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#418653", glowWidth: 9 }
+          end: arrow
+          message: { kind: envelope, color: "#418653", size: 10, duration: 2200, count: 1 }

@@ -1,6 +1,8 @@
 ---
 import { Code } from 'astro:components';
 import SiteLayout from '../layouts/SiteLayout.astro';
+import MermaidWorkbench from '../components/MermaidWorkbench.astro';
+import '../styles/mermaid-story.css';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
@@ -33,13 +35,14 @@ npm install --save-dev @sebastianwessel/isostate-cli yaml
 npx skills add sebastianwessel/isostate \\
   --skill authoring-isostate-scenes
 npx skills add sebastianwessel/isostate \\
-  --skill converting-mermaid-to-isostate-stories`;
+  --skill converting-mermaid-to-isostate-stories
+npx skills add sebastianwessel/isostate --skill creating-isostate-assets`;
 
 const fileSnippet = `# diagram.mmd
 ${sourceMermaid}`;
 
 const promptSnippet = `Use the converting-mermaid-to-isostate-stories skill and
-the authoring-isostate-scenes skill.
+the authoring-isostate-scenes and creating-isostate-assets skills.
 
 Read ./diagram.mmd and create a production-quality isostate story.
 
@@ -51,18 +54,18 @@ Hard requirement: Mermaid fidelity wins over visual polish.
 - introduce each element with its label before activating its first connection
 - use real isostate connections with routed paths, not SVG arrow assets
 
-Asset requirement:
-- design a small enterprise-grade 3D isometric SVG asset set in ./assets
-- create separate SVG assets for roles such as client/request, router, auth,
+Asset requirement (the visual style for this example is realistic isometric):
+- design a small realistic isometric asset set in ./assets
+- create separate objects for roles such as client/request, router, auth,
   app/service, cache, database, queue, worker, response, success, and error
-- keep each asset browser-loadable, one logical object per file, with checked
-  anchors in header.assets
-- use consistent camera angle, light direction, stroke weight, shadows, and
+- keep each asset browser-loadable as a transparent PNG sprite or SVG,
+  one logical object per asset, with checked anchors in header.assets
+- use consistent camera angle, light direction, material detail, shadows, and
   material palette across the whole asset set
 - prefer polished product/enterprise metaphors over generic colored cubes;
   each asset should still read clearly at one grid cell
-- create assets as standalone SVG files first, then reference them from YAML;
-  do not hide important meaning inside text labels alone
+- create transparent PNG sprite sheets or standalone SVG files first, then
+  reference them from YAML; do not hide important meaning inside text labels alone
 - do not use emoji or font glyphs as semantic markers
 - use generated primitives only for zones, route markers, and simple underlays
 
@@ -115,7 +118,7 @@ const chapters = [
 	{
 		progress: '0.4',
 		index: '03 / 06',
-		title: 'Add Mermaid source'
+		title: 'Inventory source'
 	},
 	{
 		progress: '0.6',
@@ -137,9 +140,10 @@ const chapters = [
 
 <SiteLayout
 	title="Use Mermaid diagrams for isostate visualizations"
-	description="Install the isostate agent skills, place Mermaid source in a folder, let an AI create the scene and assets, then fine-tune the result in the editor."
+	description="Convert a Mermaid flowchart to isostate YAML, open it in the editor, or follow the guide to create a richer visual story with custom assets."
 >
-	<section class="mermaid-story" aria-label="Mermaid to isostate workflow">
+	<MermaidWorkbench editorUrl={href('/editor/')} guideUrl={href('/docs/guides/convert-mermaid.md')} />
+	<section id="mermaid-story" class="mermaid-story" aria-label="Mermaid to isostate workflow">
 		<div class="story-shell">
 			<aside class="story-visual" aria-label="Animated Mermaid conversion workflow">
 				<div class="visual-card">
@@ -151,6 +155,17 @@ const chapters = [
 						<span id="scene-index">01 / 06</span>
 					</div>
 					<div id="mermaid-workflow-scene" class="scene-target" aria-label="isostate workflow scene"></div>
+					<div class="story-controls" aria-label="Workflow scene controls">
+						<div class="story-steps">
+							{chapters.map((chapter, index) => <button type="button" data-mermaid-step={index} aria-label={`Step ${index + 1}: ${chapter.title}`} aria-pressed={index === 0}>{String(index + 1).padStart(2, '0')}</button>)}
+						</div>
+						<div class="story-options">
+							<button type="button" id="mermaid-follow" aria-pressed="true">Follow page scroll</button>
+							<button type="button" id="mermaid-effects" aria-pressed="false">Pause effects</button>
+						</div>
+						<p id="mermaid-scene-status" class="visually-hidden" aria-live="polite"></p>
+					</div>
+					<p class="artwork-note">Artwork generated with OpenAI models · <a href={`${base}/assets/isostate-story/NOTICE.md`}>MIT licence &amp; generation notice</a></p>
 					<div class="progress-track" aria-hidden="true">
 						<span id="scene-progress-bar"></span>
 					</div>
@@ -160,7 +175,7 @@ const chapters = [
 			<article class="story-copy">
 				<header class="story-hero">
 					<p class="eyebrow">Mermaid to isostate</p>
-					<h1>Turn existing Mermaid diagrams into isostate visual stories.</h1>
+					<h2>Give the diagram a story worth following.</h2>
 					<p>
 						For a plain flowchart, the <code>isostate mermaid2dsl</code> CLI turns
 						a <code>.mmd</code> file into a starting scene in one command — see the
@@ -185,30 +200,32 @@ const chapters = [
 
 				<section class="chapter" data-progress={chapters[1].progress} data-title={chapters[1].title} data-index={chapters[1].index}>
 					<p class="chapter-kicker">Install the skills</p>
-					<h2>2. Teach the AI both the DSL and the conversion workflow.</h2>
+					<h2>2. Install scene, conversion, and asset guidance.</h2>
 					<p>
 						The authoring skill covers valid isostate YAML, assets, text,
 						connections, and scene stops. The Mermaid skill adds the conversion
 						workflow: extract the diagram facts first, then design a visual story
-						without losing any source information.
+						without losing any source information. The asset skill covers crops, anchors,
+						catalog maintenance, and notices in your chosen visual style.
 					</p>
 					<Code code={installSnippet} lang="sh" theme="github-dark" wrap />
 				</section>
 
 				<section class="chapter" data-progress={chapters[2].progress} data-title={chapters[2].title} data-index={chapters[2].index}>
 					<p class="chapter-kicker">Add the input</p>
-					<h2>3. Place the Mermaid diagram in the folder.</h2>
+					<h2>3. Place and inventory the Mermaid source.</h2>
 					<p>
-						The Mermaid file remains the source material, not a rendered widget
-						on this page. For flowcharts,
+						Keep the Mermaid file as the source of truth. Ask your AI to extract a
+						fidelity table of nodes, connections, labels, and branches before
+						designing the scene. For flowcharts,
 						sequence diagrams, state diagrams, and `graph` aliases, the agent
 						should preserve every participant, state, edge, label, return, async
 						path, and branch.
 					</p>
 					<p>
 						Prefer a deterministic starting point for a plain flowchart? Run
-						<code>npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl diagram.mmd</code>
-						first to emit a generic-but-correct <code>scene.isostate.yaml</code>,
+						<code>npx --package @sebastianwessel/isostate-cli isostate mermaid2dsl diagram.mmd --out scene.isostate.yaml</code>
+						first to emit <code>scene.isostate.yaml</code>,
 						then let the AI and editor steps below redesign it with real assets
 						and a cumulative story.
 					</p>
@@ -222,7 +239,7 @@ const chapters = [
 						The prompt should make data correctness non-negotiable. Visual
 						choices are allowed, but they must make the original Mermaid easier
 						to understand. Ask the AI to generate a small, consistent set of
-						3D isometric SVG assets, wire them into `header.assets`, then use
+						realistic isometric assets, wire them into `header.assets`, then use
 						routed connections and cumulative scenes to tell the flow.
 					</p>
 					<Code code={promptSnippet} lang="text" theme="github-dark" wrap />
@@ -250,7 +267,7 @@ const chapters = [
 					</p>
 					<Code code={editorSnippet} lang="text" theme="github-dark" wrap />
 					<p class="next-link">
-						<a href={href('/editor')}>Open the editor</a>
+						<a href={href('/editor/?example=mermaid-workflow')}>Open the editor</a>
 					</p>
 				</section>
 			</article>
@@ -258,327 +275,7 @@ const chapters = [
 	</section>
 
 	<script>
-		import { mountScene } from '../../../packages/core/src/index.ts';
-		import mermaidAiWorkbenchUrl from '../../../assets/isostate-story/mermaid-ai-workbench.svg?url';
-		import mermaidAssetKitUrl from '../../../assets/isostate-story/mermaid-asset-kit.svg?url';
-		import mermaidEditorConsoleUrl from '../../../assets/isostate-story/mermaid-editor-console.svg?url';
-		import mermaidSkillPackUrl from '../../../assets/isostate-story/mermaid-skill-pack.svg?url';
-		import mermaidSourceWorkspaceUrl from '../../../assets/isostate-story/mermaid-source-workspace.svg?url';
-		import mermaidVerifiedBundleUrl from '../../../assets/isostate-story/mermaid-verified-bundle.svg?url';
-		import mermaidYamlBlueprintUrl from '../../../assets/isostate-story/mermaid-yaml-blueprint.svg?url';
-		import scene from '../scenes/mermaid-workflow.isostate.js';
-
-		const assetUrls = {
-			'mermaid-ai-workbench': mermaidAiWorkbenchUrl,
-			'mermaid-asset-kit': mermaidAssetKitUrl,
-			'mermaid-editor-console': mermaidEditorConsoleUrl,
-			'mermaid-skill-pack': mermaidSkillPackUrl,
-			'mermaid-source-workspace': mermaidSourceWorkspaceUrl,
-			'mermaid-verified-bundle': mermaidVerifiedBundleUrl,
-			'mermaid-yaml-blueprint': mermaidYamlBlueprintUrl
-		};
-
-		const target = document.querySelector('#mermaid-workflow-scene');
-		const title = document.querySelector('#scene-title');
-		const index = document.querySelector('#scene-index');
-		const bar = document.querySelector('#scene-progress-bar');
-		const chapters = [...document.querySelectorAll('.chapter')];
-
-		if (target instanceof HTMLElement) {
-			initMermaidScene(target).catch((error) => {
-				target.dataset.error = error instanceof Error ? error.message : String(error);
-			});
-		}
-
-		async function initMermaidScene(target) {
-			const runtimeBundle = structuredClone(scene);
-			for (const [assetId, url] of Object.entries(assetUrls)) {
-				if (runtimeBundle.assets[assetId]) runtimeBundle.assets[assetId].url = url;
-			}
-			runtimeBundle._digest = await digestBundle(runtimeBundle);
-
-			const mounted = mountScene(target, runtimeBundle, {
-				controller: { enabled: true, mode: 'manual' },
-				themeVars: {
-					'--isostate-floor-stroke': 'rgba(17, 20, 23, 0.1)',
-					'--isostate-floor-fill': 'rgba(255, 255, 255, 0.22)'
-				}
-			});
-			mounted.controller?.setProgress(0);
-
-			function setScene(chapter, progress) {
-				if (!(chapter instanceof HTMLElement)) return;
-				mounted.controller?.setProgress(progress);
-				chapters.forEach((item) => item.classList.toggle('is-active', item === chapter));
-				if (title) title.textContent = chapter.dataset.title ?? '';
-				if (index) index.textContent = chapter.dataset.index ?? '';
-				if (bar instanceof HTMLElement) bar.style.inlineSize = `${Math.max(5, progress * 100)}%`;
-			}
-
-			let pendingFrame = 0;
-			function scheduleScrollUpdate() {
-				if (pendingFrame) return;
-				pendingFrame = requestAnimationFrame(() => {
-					pendingFrame = 0;
-					updateSceneFromScroll();
-				});
-			}
-
-			function updateSceneFromScroll() {
-				const stops = chapters
-					.filter((chapter) => chapter instanceof HTMLElement)
-					.map((chapter) => {
-						const rect = chapter.getBoundingClientRect();
-						return {
-							chapter,
-							progress: Number(chapter.dataset.progress ?? '0'),
-							anchor: window.scrollY + rect.top + rect.height * 0.42
-						};
-					});
-				if (stops.length === 0) return;
-
-				const marker = window.scrollY + window.innerHeight * 0.52;
-				let active = stops[0];
-				for (const stop of stops) {
-					if (Math.abs(stop.anchor - marker) < Math.abs(active.anchor - marker)) active = stop;
-				}
-
-				let progress = stops[0].progress;
-				for (let i = 1; i < stops.length; i += 1) {
-					const previous = stops[i - 1];
-					const next = stops[i];
-					if (marker <= next.anchor) {
-						const range = Math.max(1, next.anchor - previous.anchor);
-						const local = Math.min(1, Math.max(0, (marker - previous.anchor) / range));
-						progress = previous.progress + (next.progress - previous.progress) * local;
-						break;
-					}
-					progress = next.progress;
-				}
-
-				setScene(active.chapter, progress);
-			}
-
-			window.addEventListener('scroll', scheduleScrollUpdate, { passive: true });
-			window.addEventListener('resize', scheduleScrollUpdate);
-			updateSceneFromScroll();
-		}
-
-		async function digestBundle(bundle) {
-			const { _digest, ...unsignedBundle } = bundle;
-			const encoded = new TextEncoder().encode(canonicalStringify(unsignedBundle));
-			const bytes = new Uint8Array(await crypto.subtle.digest('SHA-256', encoded));
-			return [...bytes].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-		}
-
-		function canonicalStringify(value) {
-			return JSON.stringify(normalizeValue(value));
-		}
-
-		function normalizeValue(value) {
-			if (Array.isArray(value)) return value.map((item) => (item === undefined ? null : normalizeValue(item)));
-			if (!value || typeof value !== 'object' || Object.getPrototypeOf(value) !== Object.prototype) return value;
-			return Object.fromEntries(
-				Object.keys(value)
-					.sort()
-					.filter((key) => value[key] !== undefined)
-					.map((key) => [key, normalizeValue(value[key])])
-			);
-		}
+		import { initializeMermaidStory } from '../lib/mermaid-story';
+		initializeMermaidStory();
 	</script>
-
-	<style>
-		.mermaid-story {
-			background:
-				linear-gradient(180deg, rgba(238, 243, 242, 0.92), rgba(255, 253, 245, 0.96)),
-				#eef3f2;
-			min-height: calc(100svh - 64px);
-		}
-
-		.story-shell {
-			display: grid;
-			grid-template-columns: minmax(360px, 0.96fr) minmax(0, 1.04fr);
-			gap: clamp(28px, 5vw, 76px);
-			max-width: 1440px;
-			margin: 0 auto;
-			padding: clamp(28px, 5vw, 76px) clamp(20px, 5vw, 80px);
-		}
-
-		.story-visual {
-			position: sticky;
-			top: 92px;
-			align-self: start;
-			min-width: 0;
-		}
-
-		.visual-card {
-			border: 1px solid rgba(15, 95, 79, 0.14);
-			border-radius: 12px;
-			background: rgba(255, 253, 245, 0.82);
-			box-shadow: var(--shadow);
-			overflow: hidden;
-		}
-
-		.visual-head {
-			display: flex;
-			align-items: flex-start;
-			justify-content: space-between;
-			gap: 18px;
-			padding: 18px 20px 12px;
-			border-bottom: 1px solid rgba(15, 95, 79, 0.1);
-		}
-
-		.eyebrow,
-		.chapter-kicker {
-			margin: 0 0 10px;
-			color: var(--green-dark);
-			font-size: 0.72rem;
-			font-weight: 800;
-			letter-spacing: 0.07em;
-			text-transform: uppercase;
-		}
-
-		.visual-head h2 {
-			margin: 0;
-			color: var(--ink);
-			font-size: clamp(1.15rem, 2.2vw, 1.7rem);
-			line-height: 1.05;
-		}
-
-		.visual-head span {
-			flex: 0 0 auto;
-			color: var(--green-dark);
-			font-size: 0.82rem;
-			font-weight: 800;
-		}
-
-		.scene-target {
-			aspect-ratio: 1;
-			min-height: 0;
-			background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(238, 243, 242, 0.5));
-		}
-
-		.scene-target :global(svg) {
-			display: block;
-			width: 100%;
-			height: 100%;
-		}
-
-		.progress-track {
-			height: 5px;
-			background: rgba(15, 95, 79, 0.12);
-		}
-
-		.progress-track span {
-			display: block;
-			inline-size: 5%;
-			block-size: 100%;
-			background: var(--green);
-			transition: inline-size 180ms ease;
-		}
-
-		.story-copy {
-			min-width: 0;
-		}
-
-		.story-hero {
-			padding: clamp(24px, 4vw, 48px) 0 clamp(28px, 5vw, 64px);
-		}
-
-		.story-hero h1 {
-			max-width: 780px;
-			margin: 0;
-			color: var(--ink);
-			font-size: clamp(2.35rem, 5vw, 4.9rem);
-			line-height: 0.96;
-			letter-spacing: 0;
-		}
-
-		.story-hero p:last-child,
-		.chapter p {
-			color: var(--soft-ink);
-			font-size: clamp(1rem, 1.5vw, 1.12rem);
-			line-height: 1.72;
-		}
-
-		.story-hero p:last-child {
-			max-width: 740px;
-			margin: 22px 0 0;
-		}
-
-		.chapter {
-			margin: 0 0 clamp(44px, 8vw, 110px);
-			padding-block: clamp(22px, 4vw, 52px);
-			border-top: 1px solid rgba(15, 95, 79, 0.12);
-		}
-
-		.chapter h2 {
-			max-width: 760px;
-			margin: 0;
-			color: var(--ink);
-			font-size: clamp(1.65rem, 3.2vw, 2.8rem);
-			line-height: 1.04;
-			letter-spacing: 0;
-		}
-
-		.chapter p {
-			max-width: 720px;
-			margin: 18px 0 22px;
-		}
-
-		.chapter :global(pre) {
-			margin-block: 18px 0;
-		}
-
-		.next-link a {
-			display: inline-flex;
-			align-items: center;
-			min-height: 44px;
-			padding: 0 18px;
-			border-radius: 8px;
-			background: var(--green-dark);
-			color: #fffdf5;
-			font-weight: 800;
-			text-decoration: none;
-		}
-
-		@media (max-width: 980px) {
-			.story-shell {
-				grid-template-columns: 1fr;
-			}
-
-			.story-visual {
-				position: relative;
-				top: auto;
-				order: 2;
-			}
-
-			.story-copy {
-				order: 1;
-			}
-
-			.scene-target,
-			.scene-target :global(svg) {
-				height: auto;
-				min-height: 0;
-			}
-		}
-
-		@media (max-width: 640px) {
-			.story-shell {
-				padding-inline: 16px;
-			}
-
-			.visual-head {
-				flex-direction: column;
-				gap: 8px;
-			}
-
-			.scene-target,
-			.scene-target :global(svg) {
-				height: auto;
-				min-height: 0;
-			}
-		}
-	</style>
 </SiteLayout>

@@ -397,6 +397,7 @@ interface RuntimeElementState {
 	ambient?: AmbientAnimation[];
 	text?: TextContent;
 	primitive?: PrimitiveContent;
+	activity?: ElementActivity;
 }
 
 interface RuntimeSceneStop {
@@ -427,6 +428,7 @@ interface FrameUpdate {
 	exit?: string;
 	text?: TextContent;
 	primitive?: PrimitiveContent;
+	activity?: ElementActivity;
 }
 ```
 
@@ -469,3 +471,41 @@ import type { CompileOptions, RuntimeBundle } from '@sebastianwessel/isostate/ds
 
 Parser, validator, compiler, serializers, and bundle inspection helpers belong
 to `@sebastianwessel/isostate/dsl` and must stay out of browser runtime bundles.
+
+## Workflow Presentation
+
+```ts
+import type {
+  ConnectorMessage,
+  ElementActivity,
+  ConnectorStyle,
+  ConnectionPatch,
+  ElementPatch
+} from '@sebastianwessel/isostate';
+
+interface ElementActivity {
+  state: 'idle' | 'processing' | 'waiting' | 'complete' | 'error';
+  color?: string;
+}
+
+interface ConnectorMessage {
+  kind?: 'packet' | 'orb' | 'envelope';
+  color?: string;
+  size?: number;     // 2..32 SVG pixels; default 10
+  duration?: number; // 200..30000 milliseconds; default 1800
+  count?: number;    // integer 1..4; default 1
+  enabled?: boolean; // default true
+}
+```
+
+`ConnectorStyle.variant` accepts `line`, `road`, or `beam`; optional
+`cornerRadius` is a non-negative SVG pixel radius (default `0`), `glow` is a
+safe CSS color, and `glowWidth` is positive (default `8`). These new style fields
+are also optional in `RuntimeConnectorStyle` for bundle compatibility.
+
+`activity` is optional on element placement, patch, and runtime element state;
+`message` is optional on connection placement, patch, and runtime connector
+state. Both objects replace their prior value when supplied in an update.
+`ElementPatch.asset` can change an external image or logical sprite to another
+external asset; generated text and primitives cannot be swapped. See
+[Animation And Connections](../guides/animation-and-connections.md) for examples.

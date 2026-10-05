@@ -1,7 +1,7 @@
 {
   "format": "isostate-static-bundle",
-  "version": "0.5.0",
-  "generatedAt": "2026-07-07T23:21:54.119Z",
+  "version": "0.6.0",
+  "generatedAt": "2026-10-05T14:22:06.787Z",
   "source": {
     "file": "examples/city-growth/source.isostate.yaml"
   },
@@ -12,7 +12,7 @@
   "scene": {
     "file": "scene.isostate.js",
     "format": "js",
-    "digest": "8d240bd9ad9c813dd0cbad8241cf343b346cf5afd3876161ff93907112734546"
+    "digest": "b4ce08f8c7fed47745b152cf99d0a1e69d6dc648e641d79ca836507674b84018"
   },
   "assets": [
     {

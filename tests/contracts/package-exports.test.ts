@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 
 describe('package export contract', () => {
-	test('@sebastianwessel/isostate publishes only runtime and DSL entrypoints', async () => {
+	test('@sebastianwessel/isostate publishes runtime, authoring, and static asset entrypoints', async () => {
 		const pkg = JSON.parse(
 			await readFile(join(process.cwd(), 'packages/core/package.json'), 'utf8')
 		) as {
@@ -14,11 +14,15 @@ describe('package export contract', () => {
 
 		expect(Object.keys(pkg.exports).sort()).toEqual([
 			'.',
+			'./assets/software-architecture/*',
 			'./dsl',
 			'./dsl/browser',
 			'./editor-support',
 			'./runtime'
 		]);
+		expect(pkg.exports['./assets/software-architecture/*']).toBe(
+			'./dist/assets/software-architecture/*'
+		);
 		expect(pkg.main).toBe('./dist/index.js');
 		expect(pkg.types).toBe('./dist/index.d.ts');
 	});

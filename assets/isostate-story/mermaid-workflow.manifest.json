@@ -1,0 +1,116 @@
+{
+  "format": "isostate.asset-manifest",
+  "version": 1,
+  "generatedAt": "2026-10-05T14:58:59.443Z",
+  "assetBaseUrl": "./",
+  "assets": [
+    {
+      "id": "mermaid-workflow-sheet",
+      "type": "sprite-sheet",
+      "path": "mermaid-workflow-sheet.png",
+      "group": "mermaid",
+      "name": "mermaid-workflow-sheet",
+      "label": "Mermaid authoring workflow",
+      "width": 1774,
+      "height": 887,
+      "sheetSize": [
+        1774,
+        887
+      ],
+      "sprites": {
+        "mermaid-source-workspace": {
+          "rect": [
+            0,
+            0,
+            443,
+            443
+          ],
+          "anchor": [
+            0.5,
+            0.93
+          ],
+          "label": "Mermaid source workspace"
+        },
+        "mermaid-skill-pack": {
+          "rect": [
+            443,
+            0,
+            444,
+            443
+          ],
+          "anchor": [
+            0.5,
+            0.94
+          ],
+          "label": "Installed agent skills"
+        },
+        "mermaid-ai-workbench": {
+          "rect": [
+            887,
+            0,
+            443,
+            443
+          ],
+          "anchor": [
+            0.5,
+            0.94
+          ],
+          "label": "AI generation workbench"
+        },
+        "mermaid-yaml-blueprint": {
+          "rect": [
+            1330,
+            0,
+            444,
+            443
+          ],
+          "anchor": [
+            0.5,
+            0.94
+          ],
+          "label": "Generated YAML blueprint"
+        },
+        "mermaid-asset-kit": {
+          "rect": [
+            0,
+            443,
+            466,
+            444
+          ],
+          "anchor": [
+            0.5,
+            0.91
+          ],
+          "label": "Generated enterprise asset kit"
+        },
+        "mermaid-verified-bundle": {
+          "rect": [
+            480,
+            443,
+            407,
+            444
+          ],
+          "anchor": [
+            0.5,
+            0.92
+          ],
+          "label": "Validated runtime bundle"
+        },
+        "mermaid-editor-console": {
+          "rect": [
+            887,
+            443,
+            443,
+            444
+          ],
+          "anchor": [
+            0.5,
+            0.93
+          ],
+          "label": "Visual editor console"
+        }
+      },
+      "digest": "sha256:ed5ab499581b66abd3c61716b5095f586b60593017655b69f142f363da50da46"
+    }
+  ]
+}

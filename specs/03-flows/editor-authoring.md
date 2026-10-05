@@ -75,6 +75,17 @@ In split mode, visual edits update YAML after commit and YAML edits update the
 canvas after parse. If YAML becomes invalid, the canvas side becomes read-only
 and keeps the last valid scene preview.
 
+## Timeline Preview And Return To Editing
+
+1. Moving **Scene progress** enters runtime preview without changing YAML.
+2. The mounted controller resolves movement, route interpolation, lifecycle
+   effects, and camera focus for the selected progress.
+3. Editing overlays, authoring viewport controls, and editor visibility
+   overrides are suspended during runtime preview.
+4. **Edit scene** or a scene selection restores the exact authored scene stop,
+   selection, zoom, and pan. A subsequent object drag writes whole-cell
+   coordinates to that scene's snapshot or minimal delta.
+
 ## Cleanup
 
 - Closing the editor calls `destroy()` on the mounted editor.
@@ -97,3 +108,17 @@ bun run lint
 
 Browser automation is not required for v1. Default verification uses unit and
 component-level tests only.
+
+## Mermaid Workbench Handoff
+
+The website Mermaid authoring workbench converts supported flowcharts locally
+and offers copy/download plus opening the generated YAML in the same-tab
+editor. A dedicated session-storage key carries the exact current result;
+`?import=mermaid` triggers one-time consumption. Invalid or stale conversion
+results disable export/handoff. Storage failure produces a recoverable message
+and leaves copy/download available. The editor validates imports through its
+existing authoring boundary. Scene runtime embeds remain precompiled.
+
+The illustrated Mermaid tutorial uses checked one-cell sprite anchors and
+separate caption bands. Its manual scene navigation must remain usable without
+scroll-follow behavior and respect the user's reduced-motion preference.

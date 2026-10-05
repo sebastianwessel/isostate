@@ -265,10 +265,15 @@ connections:
       - name: flow
 ```
 
+Connector presentation also supports `style.cornerRadius`, `glow`, and
+`glowWidth`, plus whole-object `message` updates. Element `activity` and external
+`asset` patches describe workflow state. See the scene-schema contract for
+ranges, replacement semantics, and destination-stop behavior.
+
 Connector style supports:
 
 - `pattern: solid | dashed | dotted`
-- `variant: line | road`
+- `variant: line | road | beam`
 - `start` and `end` endpoint indicators: `none`, `arrow`, `dot`, `circle`,
   `diamond`, or `bar`
 - fixed dash arrays in SVG user units so route length does not stretch dots or
