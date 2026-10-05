@@ -203,6 +203,7 @@ function applyEditorFrame(mounted: MountedScene): void {
 		ambient: update.ambient,
 		text: update.text,
 		primitive: update.primitive,
+		activity: update.activity,
 	}));
 	const connectors: RuntimeConnectorState[] = mounted.engine.getConnectorFrameUpdates().map((update) => ({
 		id: update.id,
@@ -216,6 +217,7 @@ function applyEditorFrame(mounted: MountedScene): void {
 		enter: update.entry as RuntimeConnectorState["enter"],
 		exit: update.exit as RuntimeConnectorState["exit"],
 		ambient: update.ambient,
+		message: update.message,
 	}));
 
 	for (const element of elements) {

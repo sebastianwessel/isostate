@@ -315,3 +315,12 @@ See `docs/guides/agentic-workflows.md` for the complete logical-id inventory.
 - Use the manifest's source crop and checked anchor, native `size: 1`, captions,
   and real `connections`. Tell a dense story through deltas, staying within 50
   active elements plus connections per scene.
+
+## Directional Handoffs And State Variants
+
+The software catalog distinguishes `human-handoff` (human to human),
+`human-to-ai-handoff`, and `ai-to-human-handoff`. Use the directional sprite and
+connection direction that match the story. Preserve checked one-cell anchors.
+For a changing worker, keep the element id and patch its external `asset` to a
+declared state sprite. Do not replace or resize the PNG source to communicate
+processing: use the generated `activity` indicator and an explanatory label.

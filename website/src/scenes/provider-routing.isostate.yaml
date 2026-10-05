@@ -1,3 +1,5 @@
+# One-cell catalog sprites with rounded SVG beam tracks, selective messages, and explicit activity changes.
+
 # One-cell catalog sprites; labels and arrows explain this illustrative workflow.
 header:
   version: "1.0"
@@ -90,116 +92,100 @@ scenes:
     camera:
       target:
         area:
-          at: [0, 0]
-          size: [9, 9]
+          at: [ 0, 0 ]
+          size: [ 9, 9 ]
       padding: 48
       duration: 0
     elements:
       - id: orchestrator
         asset: ai-orchestrator
-        at: [1, 4]
+        at: [ 1, 4 ]
         size: 1
         enter: fade-in
+        activity: { state: processing, color: "#0f9f83" }
       - id: orchestrator-label
         asset: text
         layer: labels
-        at: [1, 4]
-        text:
-          value: "Orchestrator"
-          placement: caption
-          fontSize: 10
-          fill: var(--iso-label)
+        at: [ 1, 4 ]
+        text: { value: "Orchestrator", placement: caption, fontSize: 10, fill: var(--iso-label) }
       - id: router
         asset: ai-model-router
-        at: [4, 4]
+        at: [ 4, 4 ]
         size: 1
         enter: fade-in
+        activity: { state: processing, color: "#0f9f83" }
       - id: router-label
         asset: text
         layer: labels
-        at: [4, 4]
-        text:
-          value: "Choose provider"
-          placement: caption
-          fontSize: 10
-          fill: var(--iso-label)
+        at: [ 4, 4 ]
+        text: { value: "Choose provider", placement: caption, fontSize: 10, fill: var(--iso-label) }
       - id: foundry
         asset: provider-azure-foundry
-        at: [7, 1]
+        at: [ 7, 1 ]
         size: 1
         enter: fade-in
       - id: foundry-label
         asset: text
         layer: labels
-        at: [7, 1]
-        text:
-          value: "Microsoft Foundry"
-          placement: caption
-          fontSize: 10
-          fill: var(--iso-label)
+        at: [ 7, 1 ]
+        text: { value: "Microsoft Foundry", placement: caption, fontSize: 10, fill: var(--iso-label) }
       - id: bedrock
         asset: provider-aws-bedrock
-        at: [7, 4]
+        at: [ 7, 4 ]
         size: 1
         enter: fade-in
       - id: bedrock-label
         asset: text
         layer: labels
-        at: [7, 4]
-        text:
-          value: "Amazon Bedrock"
-          placement: caption
-          fontSize: 10
-          fill: var(--iso-label)
+        at: [ 7, 4 ]
+        text: { value: "Amazon Bedrock", placement: caption, fontSize: 10, fill: var(--iso-label) }
       - id: vertex
         asset: provider-google-vertex
-        at: [7, 7]
+        at: [ 7, 7 ]
         size: 1
         enter: fade-in
       - id: vertex-label
         asset: text
         layer: labels
-        at: [7, 7]
-        text:
-          value: "Vertex AI"
-          placement: caption
-          fontSize: 10
-          fill: var(--iso-label)
+        at: [ 7, 7 ]
+        text: { value: "Vertex AI", placement: caption, fontSize: 10, fill: var(--iso-label) }
     connections:
       - id: agent-router
         layer: connections
         from: { element: orchestrator, side: auto }
         to: { element: router, side: auto }
         routing: { mode: orthogonal, avoid: objects }
-        style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+        style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
         end: arrow
+        message: { kind: packet, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
       - id: route-foundry
         layer: connections
         from: { element: router, side: auto }
         to: { element: foundry, side: auto }
         routing: { mode: orthogonal, avoid: objects }
-        style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+        style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
         end: arrow
       - id: route-bedrock
         layer: connections
         from: { element: router, side: auto }
         to: { element: bedrock, side: auto }
         routing: { mode: orthogonal, avoid: objects }
-        style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+        style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
         end: arrow
+        message: { kind: orb, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
       - id: route-vertex
         layer: connections
         from: { element: router, side: auto }
         to: { element: vertex, side: auto }
         routing: { mode: orthogonal, avoid: objects }
-        style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+        style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
         end: arrow
   - id: retrieve-context
     camera:
       target:
         area:
-          at: [0, 0]
-          size: [9, 9]
+          at: [ 0, 0 ]
+          size: [ 9, 9 ]
       padding: 48
       duration: 0
     remove:
@@ -215,217 +201,239 @@ scenes:
       elements:
         - id: rag
           asset: ai-rag
-          at: [4, 1]
+          at: [ 4, 1 ]
           size: 1
           enter: fade-in
+          activity: { state: processing, color: "#0f9f83" }
         - id: rag-label
           asset: text
           layer: labels
-          at: [4, 1]
-          text:
-            value: "Retrieve context"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 4, 1 ]
+          text: { value: "Retrieve context", placement: caption, fontSize: 10, fill: var(--iso-label) }
         - id: vector
           asset: infra-vector-database
-          at: [7, 1]
+          at: [ 7, 1 ]
           size: 1
           enter: fade-in
+          activity: { state: processing, color: "#0f9f83" }
         - id: vector-label
           asset: text
           layer: labels
-          at: [7, 1]
-          text:
-            value: "Vector store"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 7, 1 ]
+          text: { value: "Vector store", placement: caption, fontSize: 10, fill: var(--iso-label) }
         - id: cache
           asset: infra-redis-cache
-          at: [1, 1]
+          at: [ 1, 1 ]
           size: 1
           enter: fade-in
         - id: cache-label
           asset: text
           layer: labels
-          at: [1, 1]
-          text:
-            value: "Redis cache"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 1, 1 ]
+          text: { value: "Redis cache", placement: caption, fontSize: 10, fill: var(--iso-label) }
       connections:
         - id: agent-rag
           layer: connections
           from: { element: orchestrator, side: auto }
           to: { element: rag, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
           end: arrow
         - id: rag-vector
           layer: connections
           from: { element: rag, side: auto }
           to: { element: vector, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
           end: arrow
+          message: { kind: orb, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
         - id: agent-cache
           layer: connections
           from: { element: orchestrator, side: auto }
           to: { element: cache, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: dashed, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
           end: arrow
+          message: { kind: packet, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
+    update:
+      elements:
+        - id: orchestrator
+          activity: { state: idle, color: "#90a19b" }
+        - id: router
+          activity: { state: complete, color: "#418653" }
+        - id: bedrock
+          activity: { state: processing, color: "#0f9f83" }
+      connections:
+        - id: agent-router
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
+        - id: route-bedrock
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
   - id: execute-tools
     camera:
       target:
         area:
-          at: [0, 0]
-          size: [9, 12]
+          at: [ 0, 0 ]
+          size: [ 9, 12 ]
       padding: 48
       duration: 0
     add:
       elements:
         - id: runner
           asset: ai-tool-runner
-          at: [1, 7]
+          at: [ 1, 7 ]
           size: 1
           enter: fade-in
+          activity: { state: processing, color: "#0f9f83" }
         - id: runner-label
           asset: text
           layer: labels
-          at: [1, 7]
-          text:
-            value: "Tool runner"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 1, 7 ]
+          text: { value: "Tool runner", placement: caption, fontSize: 10, fill: var(--iso-label) }
         - id: api
           asset: infra-api-tool
-          at: [4, 7]
+          at: [ 4, 7 ]
           size: 1
           enter: fade-in
+          activity: { state: processing, color: "#0f9f83" }
         - id: api-label
           asset: text
           layer: labels
-          at: [4, 7]
-          text:
-            value: "API tool"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 4, 7 ]
+          text: { value: "API tool", placement: caption, fontSize: 10, fill: var(--iso-label) }
         - id: stream
           asset: infra-redis-stream
-          at: [7, 7]
+          at: [ 7, 7 ]
           size: 1
           enter: fade-in
         - id: stream-label
           asset: text
           layer: labels
-          at: [7, 7]
-          text:
-            value: "Redis Stream"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 7, 7 ]
+          text: { value: "Redis Stream", placement: caption, fontSize: 10, fill: var(--iso-label) }
         - id: guardrail
           asset: ai-guardrail
-          at: [4, 10]
+          at: [ 4, 10 ]
           size: 1
           enter: fade-in
+          activity: { state: waiting, color: "#c68927" }
         - id: guardrail-label
           asset: text
           layer: labels
-          at: [4, 10]
-          text:
-            value: "Validate result"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 4, 10 ]
+          text: { value: "Validate result", placement: caption, fontSize: 10, fill: var(--iso-label) }
       connections:
         - id: agent-runner
           layer: connections
           from: { element: orchestrator, side: auto }
           to: { element: runner, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
           end: arrow
         - id: runner-api
           layer: connections
           from: { element: runner, side: auto }
           to: { element: api, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
           end: arrow
+          message: { kind: packet, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
         - id: api-stream
           layer: connections
           from: { element: api, side: auto }
           to: { element: stream, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#0f9f83", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#0f9f83", glowWidth: 9 }
           end: arrow
+          message: { kind: envelope, color: "#0f9f83", size: 10, duration: 2200, count: 1 }
         - id: api-guardrail
           layer: connections
           from: { element: api, side: auto }
           to: { element: guardrail, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
           end: arrow
+    update:
+      elements:
+        - id: bedrock
+          activity: { state: idle, color: "#90a19b" }
+        - id: rag
+          activity: { state: idle, color: "#90a19b" }
+        - id: vector
+          activity: { state: idle, color: "#90a19b" }
+      connections:
+        - id: rag-vector
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
+        - id: agent-cache
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
   - id: review-and-complete
     camera:
       target:
         area:
-          at: [0, 0]
-          size: [9, 12]
+          at: [ 0, 0 ]
+          size: [ 9, 12 ]
       padding: 48
       duration: 0
     update:
       elements:
         - id: router-label
           text: { value: "Bedrock selected" }
+        - id: runner
+          activity: { state: complete, color: "#418653" }
+          asset: agent-complete
+        - id: api
+          activity: { state: complete, color: "#418653" }
+        - id: guardrail
+          activity: { state: complete, color: "#418653" }
+        - id: runner-label
+          text: { value: Tool work complete }
+      connections:
+        - id: runner-api
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
+        - id: api-stream
+          message: { enabled: false }
+          style: { stroke: "#a5b9b1", glow: "#d6e3dc", glowWidth: 3 }
     add:
       elements:
         - id: reviewer
           asset: human-approver
-          at: [1, 10]
+          at: [ 1, 10 ]
           size: 1
           enter: fade-in
+          activity: { state: complete, color: "#418653" }
         - id: reviewer-label
           asset: text
           layer: labels
-          at: [1, 10]
-          text:
-            value: "Human review"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 1, 10 ]
+          text: { value: "Human review", placement: caption, fontSize: 10, fill: var(--iso-label) }
         - id: complete
           asset: agent-complete
-          at: [7, 10]
+          at: [ 7, 10 ]
           size: 1
           enter: fade-in
+          activity: { state: complete, color: "#418653" }
         - id: complete-label
           asset: text
           layer: labels
-          at: [7, 10]
-          text:
-            value: "Approved output"
-            placement: caption
-            fontSize: 10
-            fill: var(--iso-label)
+          at: [ 7, 10 ]
+          text: { value: "Approved output", placement: caption, fontSize: 10, fill: var(--iso-label) }
       connections:
         - id: guardrail-review
           layer: connections
           from: { element: guardrail, side: auto }
           to: { element: reviewer, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#9bb5aa", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12 }
           end: arrow
         - id: review-complete
           layer: connections
           from: { element: reviewer, side: auto }
           to: { element: complete, side: auto }
           routing: { mode: orthogonal, avoid: objects }
-          style: { pattern: solid, stroke: var(--iso-flow), strokeWidth: 2 }
+          style: { variant: beam, pattern: solid, stroke: "#418653", strokeWidth: 5, outline: "#496d62", outlineWidth: 1, cornerRadius: 12, glow: "#418653", glowWidth: 9 }
           end: arrow
+          message: { kind: envelope, color: "#418653", size: 10, duration: 2200, count: 1 }

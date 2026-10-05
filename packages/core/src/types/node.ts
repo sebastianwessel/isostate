@@ -60,6 +60,29 @@ export interface AmbientAnimation {
 	iterations?: number;
 }
 
+/** Focus treatment for a node at a scene stop; idle clears the treatment. */
+export interface ElementActivity {
+	state: "idle" | "processing" | "waiting" | "complete" | "error";
+	/** Optional safe CSS color overriding the state's default accent. */
+	color?: string;
+}
+
+/** Generated message token traveling along a connection's projected path. */
+export interface ConnectorMessage {
+	/** Built-in polished token asset. Defaults to packet. */
+	kind?: "packet" | "orb" | "envelope";
+	/** Optional safe CSS accent color; defaults to the connector stroke. */
+	color?: string;
+	/** Token size in SVG units, from 2 to 32. Defaults to 10. */
+	size?: number;
+	/** One journey duration in milliseconds, from 200 to 30000. Defaults to 1800. */
+	duration?: number;
+	/** Staggered token count, an integer from 1 to 4. Defaults to 1. */
+	count?: number;
+	/** False removes traveling tokens. Defaults to true. */
+	enabled?: boolean;
+}
+
 /** Camera transition easing curve. */
 export type CameraEasing = "linear" | "ease-in-out" | "ease-out";
 
@@ -205,11 +228,14 @@ export interface ElementPlacement {
 	ambient?: AmbientAnimation[];
 	text?: TextContent;
 	primitive?: PrimitiveContent;
+	activity?: ElementActivity;
 }
 
 /** Element patch used by scene update operations. */
 export interface ElementPatch {
 	id: string;
+	/** Replace a placed external image/sprite at the destination scene stop. */
+	asset?: string;
 	at?: [number, number];
 	size?: number;
 	layer?: string;
@@ -218,6 +244,7 @@ export interface ElementPatch {
 	ambient?: AmbientAnimation[];
 	text?: TextContentPatch;
 	primitive?: PrimitiveContentPatch;
+	activity?: ElementActivity;
 }
 
 /** Element removal used by scene remove operations. */
@@ -230,7 +257,7 @@ export interface ElementRemoval {
 export type ConnectorPattern = "solid" | "dashed" | "dotted";
 
 /** Visual connector geometry variant. */
-export type ConnectorVariant = "line" | "road";
+export type ConnectorVariant = "line" | "road" | "beam";
 
 /** Generated endpoint indicator placed at the start or end of a connector. */
 export type ConnectorEndpoint = "none" | "arrow" | "dot" | "circle" | "diamond" | "bar";
@@ -258,6 +285,12 @@ export interface ConnectorStyle {
 	outlineWidth?: number;
 	/** Optional road lane treatment. */
 	lane?: "none" | "center-dashed";
+	/** Projected bend radius in SVG units; defaults to zero. */
+	cornerRadius?: number;
+	/** Optional safe CSS color for a soft layered path halo. */
+	glow?: string;
+	/** Halo extension in SVG units; defaults to 8 when glow is set. */
+	glowWidth?: number;
 }
 
 /** Authored endpoint reference for compiler-routed visual connections. */
@@ -303,6 +336,7 @@ export interface ConnectionPlacement {
 	enter?: EntryAnimation;
 	exit?: ExitAnimation;
 	ambient?: AmbientAnimation[];
+	message?: ConnectorMessage;
 }
 
 /** Connection patch used by scene update operations. */
@@ -320,6 +354,8 @@ export interface ConnectionPatch {
 	enter?: EntryAnimation;
 	exit?: ExitAnimation;
 	ambient?: AmbientAnimation[];
+	/** Replaces the entire message configuration; enabled:false disables it. */
+	message?: ConnectorMessage;
 }
 
 /** Connection removal used by scene remove operations. */
@@ -339,6 +375,9 @@ export interface RuntimeConnectorStyle {
 	outline?: string;
 	outlineWidth: number;
 	lane: "none" | "center-dashed";
+	cornerRadius?: number;
+	glow?: string;
+	glowWidth?: number;
 }
 
 /** Runtime-resolved connector state in a compiled scene stop. */
@@ -354,6 +393,7 @@ export interface RuntimeConnectorState {
 	enter?: EntryAnimation;
 	exit?: ExitAnimation;
 	ambient?: AmbientAnimation[];
+	message?: ConnectorMessage;
 }
 
 /** Runtime-resolved element state in a compiled scene stop. */
@@ -369,6 +409,7 @@ export interface RuntimeElementState {
 	ambient?: AmbientAnimation[];
 	text?: TextContent;
 	primitive?: PrimitiveContent;
+	activity?: ElementActivity;
 }
 
 // ── Type guards ──────────────────────────────────────────────────────────────

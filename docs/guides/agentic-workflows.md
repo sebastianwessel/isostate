@@ -21,6 +21,7 @@ containers and cannot be used as an element's `asset`.
 | AI roles | `ai-agent`, `ai-orchestrator`, `ai-planner`, `ai-researcher`, `ai-tool-runner`, `ai-reviewer`, `ai-memory`, `ai-knowledge` | A general agent, coordination, planning, research, tool execution, result review, retained state, or knowledge available to an agent. |
 | Knowledge and quality | `ai-rag`, `ai-embedding`, `ai-vector-search`, `ai-context`, `ai-prompt`, `ai-evaluation`, `ai-guardrail`, `ai-model-router` | Retrieval, embedding creation, similarity search, supplied context, instructions, quality measurement, validation boundaries, or model selection. |
 | People | `human-requester`, `human-operator`, `human-approver`, `human-expert`, `human-team`, `human-handoff`, `human-escalation`, `human-feedback` | Who requests, handles, approves, advises, owns, receives, escalates, or improves the work. |
+| Handoffs | `human-to-ai-handoff`, `ai-to-human-handoff` | Human delegation to AI, or AI handback to human review. `human-handoff` remains human to human. |
 | Intake | `channel-email`, `channel-phone`, `channel-teams`, `channel-webform`, `channel-chat`, `channel-issue`, `channel-document`, `channel-webhook` | How a request or event arrives. |
 | Control flow | `agent-workflow`, `agent-parallel`, `agent-router`, `agent-condition`, `agent-loop`, `agent-retry`, `agent-timeout`, `agent-error` | A workflow, parallel work, dispatch, decision, repetition, retry, deadline, or failure. |
 | Workflow events | `agent-trigger`, `agent-schedule`, `agent-await-human`, `agent-approval`, `agent-rejection`, `agent-escalation`, `agent-audit`, `agent-complete` | When work starts, waits, receives a decision, transfers ownership, records a decision, or completes. |
@@ -184,3 +185,26 @@ Define `--iso-label` and `--iso-flow` in your host CSS. Split a large workflow
 into scene stops so the active objects and connections stay within 50 objects
 and remain legible on a phone. The examples keep each resolved stop under that
 limit. Validate and compile after editing; see [Use The CLI](./use-the-cli.md).
+
+## Read The Active Work
+
+The live examples use rounded dimensional beam tracks and a small number of
+moving messages. Mint marks processing, amber marks a wait, and green marks
+completed work. The text labels and status glyphs carry the meaning alongside
+the color. Use **Pause motion** in the gallery to inspect a step; your system's
+reduced-motion setting keeps messages and activity indicators static.
+
+In the migration story, the existing `triage` element changes from `ai-agent`
+to `agent-await-human`, then to `agent-complete`. Its id and connected routes
+stay stable. Review stops disable earlier message streams explicitly and
+return prior processing nodes to idle or a completed state. In the provider
+story only the selected Bedrock branch carries traffic; retrieval and tool
+messages take over at later stops.
+
+Human-to-human, human-to-AI, and AI-to-human handoffs are distinct roles. The
+catalog labels and sprite ids `human-handoff`, `human-to-ai-handoff`, and
+`ai-to-human-handoff` make that direction explicit. Pair a directional handoff
+object with the corresponding connection direction and a short caption.
+
+See [Animation And Connections](./animation-and-connections.md#rounded-tracks-and-moving-messages)
+for message ranges, status states, and whole-object patch semantics.

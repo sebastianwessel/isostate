@@ -23,6 +23,8 @@ import type {
 	EasingFn,
 	EasingType,
 	ElementPatch,
+	ElementActivity,
+	ConnectorMessage,
 	ElementPlacement,
 	ElementRemoval,
 	EntryAnimation,
@@ -153,6 +155,8 @@ describe('root entrypoint export surface', () => {
 		typeGuard<ConnectionPlacement>({} as ConnectionPlacement);
 		typeGuard<ConnectionRemoval>({} as ConnectionRemoval);
 		typeGuard<ElementPatch>({} as ElementPatch);
+		typeGuard<ElementActivity>({ state: 'processing' });
+		typeGuard<ConnectorMessage>({ kind: 'envelope', count: 2 });
 		typeGuard<ElementPlacement>({} as ElementPlacement);
 		typeGuard<ElementRemoval>({} as ElementRemoval);
 		typeGuard<EntryAnimation>({} as EntryAnimation);

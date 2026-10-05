@@ -26,9 +26,18 @@ authored YAML.
 
 ```ts
 type ConnectorPattern = 'solid' | 'dashed' | 'dotted';
-type ConnectorVariant = 'line' | 'road';
+type ConnectorVariant = 'line' | 'road' | 'beam';
 type ConnectorEndpoint = 'none' | 'arrow' | 'dot' | 'circle' | 'diamond' | 'bar';
 type ConnectorDirection = 'route' | 'reverse';
+
+interface ConnectorMessage {
+  kind?: 'packet' | 'orb' | 'envelope';
+  color?: string;
+  size?: number;
+  duration?: number;
+  count?: number;
+  enabled?: boolean;
+}
 
 interface ConnectorStyle {
   variant?: ConnectorVariant;
@@ -40,6 +49,9 @@ interface ConnectorStyle {
   outline?: string;
   outlineWidth?: number;
   lane?: 'none' | 'center-dashed';
+  cornerRadius?: number;
+  glow?: string;
+  glowWidth?: number;
 }
 
 interface ConnectorEndpointRef {
@@ -72,6 +84,7 @@ interface ConnectionPlacement {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
+  message?: ConnectorMessage;
 }
 
 interface ConnectionPatch {
@@ -88,6 +101,7 @@ interface ConnectionPatch {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
+  message?: ConnectorMessage;
 }
 
 interface ConnectionRemoval {
@@ -104,11 +118,11 @@ interface ConnectionRemoval {
 | `style.variant` | `line` |
 | `style.pattern` | `solid` |
 | `style.stroke` | `#2563eb` |
-| `style.strokeWidth` | `3` for `line`, `14` for `road` |
+| `style.strokeWidth` | `3` for `line`, `14` for `road`, `6` for `beam` |
 | `style.opacity` | `1` |
 | `style.dash` | derived from `pattern` |
-| `style.outline` | `#ffffff` for `road`, omitted for `line` |
-| `style.outlineWidth` | `2` for `road`, `0` for `line` |
+| `style.outline` | `#ffffff` for `road`, `#263746` for `beam`, omitted for `line` |
+| `style.outlineWidth` | `2` for `road` and `beam`, `0` for `line` |
 | `style.lane` | `none` |
 | `start` | `none` |
 | `end` | `arrow` |
@@ -191,7 +205,7 @@ Every connector root must expose stable CSS hooks:
 ```text
 .iso-connector
 .iso-connector-<id>
-.iso-connector-variant-line | .iso-connector-variant-road
+.iso-connector-variant-line | .iso-connector-variant-road | .iso-connector-variant-beam
 .iso-connector-pattern-solid | .iso-connector-pattern-dashed | .iso-connector-pattern-dotted
 .iso-connector-direction-route | .iso-connector-direction-reverse
 .iso-layer-<layer>
@@ -267,3 +281,30 @@ Connectors render on the ground plane. The default render bucket is:
 selection, but it does not make a connector participate in object depth sorting.
 Future overlay connectors require a separate explicit contract and are out of
 scope for this primitive.
+
+## Rounded Tracks And Messages
+
+`variant: beam` renders a dimensional track from layered SVG strokes with a
+raised highlight and dark base. It uses the same route, endpoint, lifecycle, and
+layer rules as line and road. All variants accept `cornerRadius`: a finite,
+non-negative distance in projected SVG user units, default `0`. Round each
+interior bend with a quadratic curve, clamping the trim to adjacent segment
+lengths; do not change the authored or compiled route points.
+
+`glow` is an optional safe CSS color for an outer glow. `glowWidth` is a finite
+positive SVG width, default `8` when omitted. These fields are independent of
+route length. Generated beam, glow, and message geometry never load assets.
+
+`message` adds small moving SVG packets (`packet`), luminous dots (`orb`), or
+mail glyphs (`envelope`). Defaults are kind `packet`, size `10` SVG units,
+duration `1800` milliseconds, count `1`, and enabled `true`. Size is finite
+`2..32`; duration is finite `200..30000`; count is an integer `1..4`; enabled
+is boolean. Optional `color` follows the safe CSS color contract. Messages
+follow the actual rounded shaft path and effective `direction`, remain a
+constant size, and are staggered evenly when count exceeds one.
+
+Omitting `message` from a patch preserves it. Supplying `message` replaces the
+whole previous object and reapplies defaults to omitted members. Use
+`message: { enabled: false }` to stop messages without removing the track.
+CSS motion is paused by the controller, and reduced-motion preference displays
+static messages. Message changes apply discretely at the destination stop.

@@ -71,6 +71,9 @@ Use this skill when creating or reviewing isostate scene definitions and example
 - Do not write old authored `states`, `keyframes`, scene `at`, element `pos`, or top-level `elements` outside the first scene.
 - Do not use `addConnectors`, `updateConnectors`, or `removeConnectors`; use nested `add.connections`, `update.connections`, and `remove.connections`.
 - Do not stretch SVG arrow assets for flows. Use `connections`.
+- Use generated rounded `beam` tracks, selective `message` traffic, and element
+  `activity` for workflow status. End prior work explicitly with idle/complete
+  states and disabled messages; activity/message patches replace whole objects.
 - Do not declare built-in generated assets in `header.assets`: `text`,
   `rectangle`, `circle`, `polygon`, or `line`.
 - For theme-aware colors, use semantic CSS variables such as

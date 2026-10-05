@@ -218,3 +218,18 @@ Until the CLI is fully specified, examples may use the dev-time SDK directly.
 ## Runtime Boundary
 
 The compiler, parser, validator, `yaml`, and filesystem access are dev-time only. The browser runtime consumes only `RuntimeBundle` data, browser-loadable asset URLs, and generated built-ins such as `asset: text` and primitive assets.
+
+## Workflow Presentation State
+
+Carry `activity` and `message` into resolved element and connector snapshots.
+Each authored object replaces its preceding object as a whole; omission retains
+it. Do not use text/primitive sparse-merge semantics for these objects. Preserve
+explicit `message.enabled: false`. Validate all ranges and safe CSS colors.
+
+An external element asset patch updates only its asset identity and carries
+forward other placement metadata. Reject any swap involving generated built-ins.
+Collect external assets across all resolved stops, including patch-only uses.
+Compile beam defaults as width `6`, outline `#263746`, and outline width `2`.
+Keep new rounding/glow style fields optional for earlier bundle compatibility.
+The browser derives projected rounded geometry and CSS message paths from
+compiled route points; no routing or parsing dependency crosses the boundary.

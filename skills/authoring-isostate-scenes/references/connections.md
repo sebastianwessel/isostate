@@ -75,7 +75,7 @@ style:
 
 Supported:
 
-- `variant`: `line`, `road`
+- `variant`: `line`, `road`, `beam`
 - `pattern`: `solid`, `dashed`, `dotted`
 - `start`/`end`: `none`, `arrow`, `dot`, `circle`, `diamond`, `bar`
 - `ambient: [{ name: flow }]` for dashed/dotted flow animation
@@ -113,3 +113,25 @@ Connections do not auto-disappear. If a scene removes an endpoint element, remov
 ```
 
 Leaving a connection attached to a removed endpoint is invalid and should produce `CONNECTION_ENDPOINT_REMOVED`.
+
+## Rounded Beams And Message Traffic
+
+Use `style.variant: beam` for a dimensional generated SVG track. Set
+`cornerRadius` in projected SVG units (`>= 0`, default `0`); `glow` is an optional
+safe CSS color and `glowWidth` is positive (default `8`). Keep coordinates and
+raster objects on the whole-cell grid; never stretch arrows or message images.
+
+```yaml
+style: { variant: beam, cornerRadius: 12, stroke: "#15997e", glow: "#63d9ba" }
+message: { kind: envelope, color: "#ecfff7", size: 10, duration: 2200, count: 1 }
+```
+
+Message kinds are `packet`, `orb`, and `envelope`. Defaults: packet, size 10,
+duration 1800 ms, count 1, enabled true. Valid size is 2..32 SVG units, duration
+200..30000 ms, count integer 1..4. Motion follows the actual rounded route and
+`direction`. Reduced motion is static; controller pause freezes motion.
+
+Use messages selectively on the current handoff; most connections should be
+quiet. Later stops must explicitly set `message: { enabled: false }` when a
+stream should end. A supplied message replaces the entire previous object;
+omitted members reset to defaults. Omitting message retains previous values.

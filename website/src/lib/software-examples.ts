@@ -9,17 +9,17 @@ const examples = {
 		bundle: agentic,
 		labels: ['Manual', 'Agents', 'Review', 'Complete'],
 		descriptions: [
-			'A requester sends an email; a human operator triages and fulfills the interaction.',
-			'AI triage creates the request, requested item, and fulfillment task, consults knowledge, and prepares a tool action.',
-			'The workflow waits for human approval. Unclear cases can be handed to an expert before any prepared action executes.',
-			'An approved action executes, the task closes, and the decision is recorded in an audit trail.'
+			'Follow the mint messages from the requester into email intake and manual triage. Status rings identify the current work.',
+			'AI triage and knowledge retrieval are processing. A tool action is prepared; its amber status marks the approval wait.',
+			'The same AI worker now shows its waiting sprite. An amber envelope hands the decision to a human; unclear cases can go to an expert.',
+			'The worker changes to its completion sprite. Green statuses mark finished work while final delivery and audit messages travel onward.'
 		]
 	},
 	'provider-routing': {
 		bundle: providers,
 		labels: ['Provider', 'Context', 'Tools', 'Review'],
 		descriptions: [
-			'An orchestrator chooses a model platform: Microsoft Foundry, Amazon Bedrock, or Google Vertex AI.',
+			'The orchestrator routes a request to Bedrock. Foundry and Vertex remain visible as quiet alternatives.',
 			'Bedrock is selected while retrieval supplies context from a vector store and Redis caches reusable context.',
 			'A tool runner calls an API, appends an event to Redis Streams, and validates the result.',
 			'A human reviews the validated result before the approved output is delivered.'
@@ -43,6 +43,14 @@ export function initializeSoftwareExamples(): void {
 	const picker = document.querySelector<HTMLSelectElement>('#asset-example');
 	let mounted: ReturnType<typeof mountScene> | undefined;
 	let revision = 0;
+	const motion = document.querySelector<HTMLButtonElement>('#asset-motion');
+	motion?.addEventListener('click', () => {
+		const controller = mounted?.controller;
+		if (!controller) return;
+		if (controller.paused) controller.resume();
+		else controller.pause();
+		updateMotionControl(controller.paused);
+	});
 	const show = async () => {
 		const current = ++revision;
 		const key = picker?.value ?? 'agentic-workflow';
@@ -58,6 +66,7 @@ export function initializeSoftwareExamples(): void {
 			label: 'AI agent and software workflow example',
 			controller: {}
 		});
+		updateMotionControl(false);
 		renderSceneControls(mounted, example);
 		mounted.controller?.setProgress(0);
 		updateDescription(example.descriptions[0], 0, example.labels.length);
@@ -94,7 +103,10 @@ function renderSceneControls(
 		button.dataset.progress = String(index / (example.labels.length - 1));
 		button.setAttribute('aria-pressed', String(index === 0));
 		button.addEventListener('click', () => {
-			mounted?.controller?.setProgress(Number(button.dataset.progress));
+			// Navigation resumes playback so a paused controller can render the selected stop.
+			mounted.controller?.resume();
+			mounted.controller?.setProgress(Number(button.dataset.progress));
+			updateMotionControl(false);
 			controls.querySelectorAll('button').forEach((control) => {
 				control.setAttribute('aria-pressed', String(control === button));
 			});
@@ -106,6 +118,13 @@ function renderSceneControls(
 		});
 		controls.append(button);
 	});
+}
+
+function updateMotionControl(paused: boolean): void {
+	const button = document.querySelector<HTMLButtonElement>('#asset-motion');
+	if (!button) return;
+	button.textContent = paused ? 'Resume motion' : 'Pause motion';
+	button.setAttribute('aria-pressed', String(paused));
 }
 
 function updateDescription(

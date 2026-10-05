@@ -7,6 +7,7 @@ import { calculateVisualSize, projectToRaw, projectToScreen } from "../utils/pro
 import { buildKeyframeCSS } from "./animation-css.ts";
 import type { AssetResolver } from "./asset-node.ts";
 import { createAssetNode, createAssetResolver, createPrimitiveAssetNode, createTextAssetNode } from "./asset-node.ts";
+import { roundedPath, updateActivity, updateMessages, updateTrackEffects } from "./scene-effects.ts";
 import { applyThemeToElement } from "./theme.ts";
 
 const NS = "http://www.w3.org/2000/svg";
@@ -77,6 +78,7 @@ interface SceneSVG extends SVGSVGElement {
 	_viewBoxW: number;
 	_viewBoxH: number;
 	_depthGroup: SVGGElement;
+	_assetResolver: AssetResolver;
 }
 
 /** Options accepted by `buildSceneDOM()`. */
@@ -100,6 +102,7 @@ export function buildSceneDOM(container: HTMLElement, bundle: RuntimeBundle, con
 
 	const svg = createRootSvg(layout, config?.label, bundle.className);
 	const assetResolver = createAssetResolver(bundle);
+	svg._assetResolver = assetResolver;
 
 	svg.appendChild(createCssDefs());
 
@@ -182,6 +185,7 @@ export function updateElementTransforms(
 		_connectorMap?: Map<string, ConnectorState | unknown>;
 		_layout?: ResolvedLayoutState;
 		_depthGroup?: SVGGElement;
+		_assetResolver?: AssetResolver;
 	},
 	elements: RuntimeElementState[],
 	connectors: RuntimeConnectorState[] = [],
@@ -197,7 +201,11 @@ export function updateElementTransforms(
 			const previous = state.current;
 			state.current = def;
 			if (!hasEqualGeneratedContent(previous, def)) {
-				updateGeneratedElementContent(state.node, def, layout);
+				updateGeneratedElementContent(state.node, def, layout, svg._assetResolver);
+				state.anchor = svg._assetResolver?.(def.asset)?.anchor ?? [0.5, 1];
+			}
+			if (!hasEqualGeneratedContent(previous, def) || !deepEqual(previous.activity, def.activity)) {
+				updateActivity(state.node, def.activity, layout.cellSize);
 			}
 			applyElementTransform(state.node, def, layout);
 			applyAmbientClasses(state, def.ambient ?? []);
@@ -299,12 +307,14 @@ export function applySceneViewBox(svg: SVGSVGElement, viewBox: ViewBoxRect): voi
 
 /** Hide an element after its exit animation completes. */
 export function hideElementAfterExit(node: SVGElement): void {
+	node.classList.add("iso-motion-paused");
 	node.style.visibility = "hidden";
 	node.style.pointerEvents = "none";
 }
 
 /** Show an element on re-addition. */
 export function unhideElementOnReadd(node: SVGElement): void {
+	node.classList.remove("iso-motion-paused");
 	node.style.visibility = "visible";
 	node.style.pointerEvents = "auto";
 }
@@ -375,12 +385,18 @@ function calculateRawElementBounds(bundle: RuntimeBundle, element: RuntimeElemen
 	const { rawX, rawY } = projectToRaw(element.pos[0] + element.size, element.pos[1] + element.size, cellSize);
 	const visualSize = calculateVisualSize(element.size, cellSize);
 	const [anchorX, anchorY] = assetAnchorForBounds(bundle, element);
-	return {
-		minX: rawX - visualSize * anchorX,
-		minY: rawY - visualSize * anchorY,
-		maxX: rawX + visualSize * (1 - anchorX),
-		maxY: rawY + visualSize * (1 - anchorY),
-	};
+	return activityBounds(
+		{
+			minX: rawX - visualSize * anchorX,
+			minY: rawY - visualSize * anchorY,
+			maxX: rawX + visualSize * (1 - anchorX),
+			maxY: rawY + visualSize * (1 - anchorY),
+		},
+		element,
+		rawX,
+		rawY,
+		visualSize,
+	);
 }
 
 function calculateElementBounds(
@@ -398,12 +414,28 @@ function calculateElementBounds(
 		layout.padding.y,
 	);
 	const visualSize = calculateVisualSize(element.size, layout.cellSize);
-	return {
-		minX: screen.screenX - visualSize * anchor[0],
-		minY: screen.screenY - visualSize * anchor[1],
-		maxX: screen.screenX + visualSize * (1 - anchor[0]),
-		maxY: screen.screenY + visualSize * (1 - anchor[1]),
-	};
+	return activityBounds(
+		{
+			minX: screen.screenX - visualSize * anchor[0],
+			minY: screen.screenY - visualSize * anchor[1],
+			maxX: screen.screenX + visualSize * (1 - anchor[0]),
+			maxY: screen.screenY + visualSize * (1 - anchor[1]),
+		},
+		element,
+		screen.screenX,
+		screen.screenY,
+		visualSize,
+	);
+}
+
+function activityBounds(bounds: Bounds, element: RuntimeElementState, x: number, y: number, size: number): Bounds {
+	if (!element.activity || element.activity.state === "idle") return bounds;
+	return includeBounds(bounds, {
+		minX: x - size * 0.4,
+		maxX: x + size * 0.4,
+		minY: y - size * 0.72,
+		maxY: y + size * 0.18,
+	});
 }
 
 function assetAnchorForBounds(bundle: RuntimeBundle, element: RuntimeElementState): [number, number] {
@@ -418,7 +450,11 @@ function calculateConnectorBounds(connector: RuntimeConnectorState, cellSize: nu
 	}
 	const endpointPadding = Math.max(ARROW_LENGTH_GRID, BAR_WIDTH_GRID, ENDPOINT_RADIUS_GRID * 2) * cellSize;
 	const strokePadding = connector.style.strokeWidth / 2 + (connector.style.outlineWidth ?? 0);
-	const padding = endpointPadding + strokePadding;
+	const padding =
+		endpointPadding +
+		strokePadding +
+		(connector.style.glow ? (connector.style.glowWidth ?? 8) / 2 : 0) +
+		(connector.message?.size ?? 0) / 2;
 	return {
 		minX: bounds.minX - padding,
 		minY: bounds.minY - padding,
@@ -712,6 +748,7 @@ function createElementInstance(
 	node.style.overflow = "visible";
 	node.style.pointerEvents = "auto";
 	applyElementTransform(node, def, layout);
+	updateActivity(node, def.activity, layout.cellSize);
 
 	const entryAnim = def.enter;
 	if (entryAnim && entryAnim !== "none" && def.presence !== "removed") {
@@ -749,11 +786,18 @@ function createResolvedAssetNode(def: RuntimeElementState, resolveAsset: AssetRe
 	return createAssetNode(asset, def.asset, cellSize);
 }
 
-function updateGeneratedElementContent(node: SVGGElement, def: RuntimeElementState, layout: ResolvedLayoutState): void {
-	if (!isTextAsset(def.asset) && !isPrimitiveAsset(def.asset)) return;
+function updateGeneratedElementContent(
+	node: SVGGElement,
+	def: RuntimeElementState,
+	layout: ResolvedLayoutState,
+	resolveAsset?: AssetResolver,
+): void {
 	const replacement = isTextAsset(def.asset)
 		? createTextAssetNode(def.text, def.asset, layout.cellSize)
-		: createPrimitiveAssetNode(def.asset, def.primitive, layout.cellSize);
+		: isPrimitiveAsset(def.asset)
+			? createPrimitiveAssetNode(def.asset, def.primitive, layout.cellSize)
+			: createResolvedAssetNode(def, resolveAsset ?? createAssetResolver(), layout.cellSize);
+	node.setAttribute("data-asset", def.asset);
 	clearChildren(node);
 	while (replacement.firstChild) {
 		const child = replacement.firstChild;
@@ -793,6 +837,7 @@ function deepEqual(a: unknown, b: unknown): boolean {
 function createConnectorInstance(def: RuntimeConnectorState, layout: ResolvedLayoutState): ConnectorState {
 	const node = document.createElementNS(NS, "g") as SVGGElement;
 	const shaft = document.createElementNS(NS, "path") as SVGPathElement;
+	node.appendChild(shaft);
 	const state: ConnectorState = { node, shaft, isHidden: false, ambient: new Set<string>() };
 	applyConnectorState(state, def, layout);
 
@@ -827,7 +872,9 @@ function applyConnectorState(state: ConnectorState, def: RuntimeConnectorState, 
 	applyConnectorGroupAttrs(state.node, def, previous);
 
 	const geometryChanged = routeChanged || shapeChanged || styleChanged;
-	const d = geometryChanged ? routePath(def.route, layout) : (state.shaft.getAttribute("d") ?? "");
+	const d = geometryChanged
+		? routePath(def.route, layout, def.style.cornerRadius ?? 0)
+		: (state.shaft.getAttribute("d") ?? "");
 
 	if (shapeChanged) {
 		if (state.outline) state.node.removeChild(state.outline);
@@ -892,6 +939,13 @@ function applyConnectorState(state: ConnectorState, def: RuntimeConnectorState, 
 		state.endEndpoint = appendEndpoint(state.node, def, "end", layout);
 	}
 
+	if (geometryChanged) updateTrackEffects(state.node, state.shaft, def, d);
+	updateMessages(
+		state.node,
+		def,
+		d,
+		!previous || !deepEqual(previous.message, def.message) || previous.style.stroke !== def.style.stroke,
+	);
 	applyConnectorAmbientClasses(state, def.ambient ?? []);
 	state.previous = def;
 }
@@ -920,6 +974,9 @@ function connectorStylesEqual(a: RuntimeConnectorState["style"], b: RuntimeConne
 		a.outline === b.outline &&
 		a.outlineWidth === b.outlineWidth &&
 		a.lane === b.lane &&
+		a.cornerRadius === b.cornerRadius &&
+		a.glow === b.glow &&
+		a.glowWidth === b.glowWidth &&
 		(a.dash ?? []).join(",") === (b.dash ?? []).join(",")
 	);
 }
@@ -981,16 +1038,16 @@ function applyConnectorPathAttrs(
 	if (options.includeDash && def.style.pattern !== "solid") {
 		const dash = def.style.dash ?? DEFAULT_CONNECTOR_DASH[def.style.pattern];
 		path.setAttribute("stroke-dasharray", dash.join(" "));
+	} else {
+		path.setAttribute("stroke-dasharray", "none");
 	}
 }
 
-function routePath(route: [number, number][], layout: ResolvedLayoutState): string {
-	return route
-		.map((point, index) => {
-			const projected = projectGridPoint(point[0], point[1], layout);
-			return `${index === 0 ? "M" : "L"} ${projected.x} ${projected.y}`;
-		})
-		.join(" ");
+function routePath(route: [number, number][], layout: ResolvedLayoutState, radius: number): string {
+	return roundedPath(
+		route.map(([x, y]) => projectGridPoint(x, y, layout)),
+		radius,
+	);
 }
 
 function appendEndpoint(

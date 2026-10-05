@@ -50,7 +50,8 @@ scenes:
 			<div class="scene-card">
 				<div class="scene-heading"><span class="live-dot" aria-hidden="true"></span> From manual work to agentic automation <span class="scene-counter" id="asset-scene-counter">01 / 04</span></div>
 				<div id="software-architecture-scene" class="scene-canvas" aria-label="Interactive example of a human workflow migrating to AI agents"></div>
-				<p id="asset-scene-description" class="scene-description" aria-live="polite">A requester sends an email; a human operator triages and fulfills the interaction.</p>
+				<p id="asset-scene-description" class="scene-description" aria-live="polite">Follow the mint messages from the requester into email intake and manual triage. Status rings identify the current work.</p>
+				<div class="scene-motion"><div class="scene-legend" aria-label="Activity legend"><span><i class="processing" aria-hidden="true"></i>Processing</span><span><i class="waiting" aria-hidden="true"></i>Waiting</span><span><i class="complete" aria-hidden="true"></i>Complete</span></div><button id="asset-motion" type="button" aria-pressed="false" aria-controls="software-architecture-scene">Pause motion</button></div>
 				<div class="scene-controls" role="group" aria-label="Choose example scene">
 					<button type="button" data-progress="0" aria-pressed="true">01 Manual</button>
 					<button type="button" data-progress="0.3333333333333333" aria-pressed="false">02 Agents</button>
@@ -166,6 +167,15 @@ scenes:
 	.scene-counter { margin-left: auto; font-family: monospace; color: var(--muted); }
 	.scene-canvas { height: 430px; width: 100%; padding: 12px 20px; background: radial-gradient(ellipse at center, #edf4ed, #fffdf500 70%); }
 	.scene-description { margin: 0; padding: 0 26px 22px; min-height: 58px; font-size: .78rem; line-height: 1.65; color: var(--muted); }
+	.scene-motion { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 0 22px 18px; }
+	.scene-legend { display: flex; flex-wrap: wrap; gap: 12px; font-size: .64rem; color: var(--muted); }
+	.scene-legend span { display: inline-flex; align-items: center; gap: 5px; }
+	.scene-legend i { width: 7px; height: 7px; border-radius: 50%; }
+	.scene-legend .processing { background: #0f9f83; }
+	.scene-legend .waiting { background: #c68927; }
+	.scene-legend .complete { background: #418653; }
+	#asset-motion { background: transparent; border: 1px solid #b9c7bc; border-radius: 4px; padding: 7px 10px; font-size: .67rem; color: var(--green-dark); }
+	#asset-motion[aria-pressed="true"] { background: #e2ebe2; }
 	.scene-controls { display: grid; grid-template-columns: repeat(var(--scene-steps, 4), 1fr); border-top: 1px solid #d9dfd2; }
 	button { font: inherit; cursor: pointer; }
 	.scene-controls :global(button) { font: inherit; cursor: pointer; padding: 16px 10px; border: 0; background: #edf0e5; color: var(--muted); font-size: .73rem; }

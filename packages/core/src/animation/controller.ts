@@ -374,6 +374,7 @@ export class AnimationController {
 		this._cancelFrame();
 		this._cancelTransition();
 		this._cancelCameraAnimation();
+		this._getSceneSvg()?.classList.add("iso-motion-stopped");
 		if (this._ownsEngine) this._engine.destroy();
 		this._listeners.clear();
 		this._bundle = null;
@@ -461,6 +462,7 @@ export class AnimationController {
 			ambient: update.ambient,
 			text: update.text,
 			primitive: update.primitive,
+			activity: update.activity,
 		}));
 		const connectors = this._engine.getConnectorFrameUpdates().map((update) => ({
 			id: update.id,
@@ -471,6 +473,7 @@ export class AnimationController {
 			start: update.start,
 			end: update.end,
 			direction: update.direction,
+			message: update.message,
 			enter: update.entry as RuntimeConnectorState["enter"],
 			exit: update.exit as RuntimeConnectorState["exit"],
 			ambient: update.ambient,
@@ -1036,6 +1039,8 @@ export class AnimationController {
 		const svg = this._getSceneSvg();
 		if (!svg) return;
 
+		if (pause) svg.classList.add("iso-motion-paused");
+		else svg.classList.remove("iso-motion-paused");
 		const playState = pause ? "paused" : "running";
 		const ambientElements = svg.querySelectorAll('[class*="iso-ambient-"]');
 		for (let i = 0; i < ambientElements.length; i++) {

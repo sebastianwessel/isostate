@@ -11,6 +11,11 @@ The rendering DSL uses the term **element**. Logical diagram concepts such as no
 `elements[]` in the first scene and `add.elements[]` in later scenes use `ElementPlacement`.
 
 ```ts
+interface ElementActivity {
+  state: 'idle' | 'processing' | 'waiting' | 'complete' | 'error';
+  color?: string;
+}
+
 interface ElementPlacement {
   id: string;
   asset: string;
@@ -22,6 +27,7 @@ interface ElementPlacement {
   ambient?: AmbientAnimation[];
   text?: TextContent;
   primitive?: PrimitiveContent;
+  activity?: ElementActivity;
 }
 ```
 
@@ -52,12 +58,14 @@ interface ElementPatch {
   ambient?: AmbientAnimation[];
   text?: TextContentPatch;
   primitive?: PrimitiveContentPatch;
+  activity?: ElementActivity;
+  asset?: string;
 }
 ```
 
 Omitted fields retain the previous resolved value.
 
-Nested update payloads are sparse patches. `update.elements[].text` merges
+Text and primitive update payloads are sparse patches. `update.elements[].text` merges
 field-by-field into the previous resolved text payload, and
 `update.elements[].primitive.<kind>` merges field-by-field into the previous
 matching primitive payload. Updating only `text.fill` preserves `text.value`,
@@ -223,3 +231,24 @@ scenes:
         ambient:
           - name: pulse
 ```
+
+## Activity And Asset Changes
+
+`activity` communicates work through a generated SVG status indicator and halo.
+Its required state is `idle`, `processing`, `waiting`, `complete`, or `error`.
+`color` is an optional safe CSS color. Idle has no active indicator; processing
+may animate, while waiting, complete, and error remain distinguishable through
+status geometry. Reduced motion keeps indicators static. Controller pause
+freezes indicator animation. Activity does not alter element placement or size.
+
+Omitting `activity` in a patch retains it. Supplying it replaces the whole
+object, including any earlier color. Use `{ state: idle }` to end an active
+state. Activity changes apply at the destination scene boundary.
+
+`update.elements[].asset` changes the asset of an existing normal URL image or
+sprite element to another declared normal URL asset or sprite. Both sides must
+be external assets: conversion to or from text or generated primitives is
+invalid. The element retains its id, position, size, and endpoint references;
+the destination asset's crop and anchor apply. The asset changes discretely at
+the destination stop, including when scrubbing backward. Asset ids referenced
+only by patches still count as used and must be included in the runtime bundle.

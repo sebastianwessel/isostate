@@ -532,3 +532,15 @@ Browser UI automation is not required for v1 implementation. Interaction work
 must be covered by unit tests for workspace operations, serialization, command
 reducers, manifest handling, and component-level behavior where practical. V1
 acceptance does not depend on Playwright.
+
+## Workflow Presentation Controls
+
+The inspector exposes beam/line/road styling, corner radius, glow color/width,
+and message enablement, kind, color, size, duration, and count using the public
+DSL constraints. Element editing exposes activity state/color and external
+asset replacement. Author explicit idle/disabled states when clearing motion
+in later stops. Replacement preserves element identity and referenced routes.
+Preview and runtime export use the same compiled semantics; message and activity
+motion can be paused and respect reduced motion. The hosted editor defaults to
+the four-stop agentic workflow; embedding without initial content retains the
+minimal valid editor document.

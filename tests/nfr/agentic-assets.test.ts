@@ -155,6 +155,31 @@ function paeth(left: number, above: number, diagonal: number): number {
 }
 
 describe('agentic workflow assets', () => {
+	for (const id of ['human-to-ai-handoff', 'ai-to-human-handoff']) {
+		test(`${id} remains a separate unclipped transparent original asset`, async () => {
+			const entry = assets.find((asset) => asset.path === `agentic/${id}.png`);
+			if (!entry) throw new Error(`Missing directional handoff ${id}`);
+			expect(Object.keys(entry.sprites)).toEqual([id]);
+			const bytes = await readFile(join(source, entry.path));
+			expect(bytes.length).toBeLessThanOrEqual(2 * 1024 * 1024);
+			const { pixels, width, height } = rgbaPng(bytes);
+			expect(entry.sprites[id].rect).toEqual([0, 0, width, height]);
+			let transparent = 0;
+			let solid = 0;
+			let edgeAlpha = 0;
+			for (let y = 0; y < height; y++)
+				for (let x = 0; x < width; x++) {
+					const alpha = pixels[(y * width + x) * 4 + 3];
+					if (alpha === 0) transparent++;
+					if (alpha >= 200) solid++;
+					if (x === 0 || x === width - 1 || y === 0 || y === height - 1)
+						edgeAlpha = Math.max(edgeAlpha, alpha);
+				}
+			expect(transparent / (width * height)).toBeGreaterThan(0.2);
+			expect(solid / (width * height)).toBeGreaterThan(0.02);
+			expect(edgeAlpha).toBeLessThan(200);
+		});
+	}
 	for (const [group, ids] of Object.entries(required)) {
 		test(`${group} ships eight identifiable transparent objects without clipped solid edges`, async () => {
 			const path = `agentic/${group}-sprites.png`;

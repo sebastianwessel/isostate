@@ -239,7 +239,7 @@ assets:
       human-handoff:
         rect: [ 443, 443, 444, 444 ]
         anchor: [ 0.5383, 0.8288 ]
-        label: Human handoff
+        label: Human-to-human handoff
         tags: [ human, collaboration, workflow, handoff, human-in-the-loop, hitl ]
       human-escalation:
         rect: [ 887, 435, 443, 452 ]
@@ -538,3 +538,27 @@ assets:
         anchor: [ 0.4806, 0.8689 ]
         label: Secret vault
         tags: [ infrastructure, secret, vault ]
+  agentic/human-to-ai-handoff.png:
+    type: sprite-sheet
+    label: Human to AI handoff
+    sheetSize: [ 1254, 1254 ]
+    anchor: [ 0.51, 0.936 ]
+    tags: [ human, ai, handoff, delegation, collaboration ]
+    sprites:
+      human-to-ai-handoff:
+        rect: [ 0, 0, 1254, 1254 ]
+        anchor: [ 0.51, 0.936 ]
+        label: Human to AI handoff
+        tags: [ human-to-ai, handoff, delegation, intake, human, ai ]
+  agentic/ai-to-human-handoff.png:
+    type: sprite-sheet
+    label: AI to human handoff
+    sheetSize: [ 1254, 1254 ]
+    anchor: [ 0.5, 0.91 ]
+    tags: [ human, ai, handoff, escalation, collaboration ]
+    sprites:
+      ai-to-human-handoff:
+        rect: [ 0, 0, 1254, 1254 ]
+        anchor: [ 0.5, 0.91 ]
+        label: AI to human handoff
+        tags: [ ai-to-human, handoff, escalation, review, human, ai ]

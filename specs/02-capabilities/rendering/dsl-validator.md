@@ -100,7 +100,7 @@ map independently from elements.
 | Endpoint refs | `from`/`to` endpoint refs resolve element ids or explicit grid points | `CONNECTOR_ENDPOINT_NOT_FOUND`, `INVALID_CONNECTOR_ROUTE` |
 | Routing config | `routing` is valid only for endpoint-routed connectors and has supported values | `INVALID_CONNECTOR_ROUTING` |
 | Valid pattern | `style.pattern` is `solid`, `dashed`, or `dotted` | `INVALID_CONNECTOR_STYLE` |
-| Valid variant | `style.variant` is `line` or `road` | `INVALID_CONNECTOR_STYLE` |
+| Valid variant | `style.variant` is `line`, `road`, or `beam` | `INVALID_CONNECTOR_STYLE` |
 | Valid endpoint | `start`/`end` is `none`, `arrow`, `dot`, `circle`, `diamond`, or `bar` | `INVALID_CONNECTOR_ENDPOINT` |
 | Valid direction | `direction` is `route` or `reverse` | `INVALID_CONNECTOR_DIRECTION` |
 | Valid style numbers | stroke, outline, opacity, and dash fields are finite and in range | `INVALID_CONNECTOR_STYLE` |
@@ -153,3 +153,15 @@ interface DSLValidator {
 ```
 
 `resolveSceneSnapshots` is a dev-time helper used by tests and compiler diagnostics. It must not be imported by the browser runtime.
+
+## Workflow Presentation Validation
+
+Use `INVALID_ELEMENT_ACTIVITY`, `INVALID_CONNECTOR_MESSAGE`, and
+`INVALID_ELEMENT_ASSET_SWAP` for invalid activity, message, and built-in asset
+swaps, respectively. Invalid beam/rounding/glow styling uses
+`INVALID_CONNECTOR_STYLE`. Validate activity states/colors, message kinds/colors/ranges/booleans, and
+corner radius/glow widths against the scene-schema contract. Validate asset
+patches against both the existing resolved element and the declared destination
+asset; reject swaps involving generated text or primitive assets. Assets used
+only in patches count as referenced for unused-asset warnings. Whole-object
+message/activity replacement must also be applied in semantic timeline state.

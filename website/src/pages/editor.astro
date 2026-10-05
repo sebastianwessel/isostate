@@ -28,7 +28,7 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
 		const example = new URLSearchParams(window.location.search).get('example');
 		const selectedYaml = example === 'software-architecture' ? softwareExample
 			: example === 'agentic-workflow' ? agenticExample
-			: example === 'provider-routing' ? providerExample : undefined;
+			: example === 'provider-routing' ? providerExample : agenticExample;
 		const initialYaml = selectedYaml?.replace('assetBaseUrl: ./assets/software-architecture', `assetBaseUrl: ${base}/assets/software-architecture`);
 
 		const editor = mountEditor(target, {

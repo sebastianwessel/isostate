@@ -324,3 +324,18 @@ app or trigger `onExport`.
 
 Core parser, validator, compiler, runtime, and CLI error codes are preserved in
 diagnostics when those subsystems report failures.
+
+## Workflow Preview And Inspector
+
+The hosted editor opens the human-to-agentic workflow by default. Explicit
+`?example=provider-routing` and `?example=software-architecture` links select
+the other examples. Embedding `mountEditor` without initial content still
+starts a minimal valid document.
+
+Use **Glowing beam** or **Message link** presets as a starting point.
+Use the connection inspector to choose a beam, round its corners, tune its
+glow, and enable a packet, orb, or envelope with size, duration, and count.
+Use the element inspector to change activity state/color or replace an external
+image/sprite. YAML, preview, and exported runtime bundles share the same
+semantics. Activity and message objects replace prior objects in later stops;
+use idle and disabled states to stop earlier work explicitly.

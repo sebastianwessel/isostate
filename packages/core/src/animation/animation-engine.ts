@@ -26,6 +26,7 @@ interface ElementFrame {
 	exit?: string;
 	text?: TextContent;
 	primitive?: PrimitiveContent;
+	activity?: RuntimeElementState["activity"];
 }
 
 /** Internal state tracked per connector across frames. */
@@ -38,6 +39,7 @@ interface ConnectorFrame {
 	start: RuntimeConnectorState["start"];
 	end: RuntimeConnectorState["end"];
 	direction: RuntimeConnectorState["direction"];
+	message?: RuntimeConnectorState["message"];
 	ambient: AmbientAnimation[];
 	entry?: string;
 	exit?: string;
@@ -56,6 +58,7 @@ export interface FrameUpdate {
 	exit?: string;
 	text?: TextContent;
 	primitive?: PrimitiveContent;
+	activity?: RuntimeElementState["activity"];
 }
 
 /** Interpolation result for a connector frame update. */
@@ -68,6 +71,7 @@ export interface ConnectorFrameUpdate {
 	start: RuntimeConnectorState["start"];
 	end: RuntimeConnectorState["end"];
 	direction: RuntimeConnectorState["direction"];
+	message?: RuntimeConnectorState["message"];
 	ambient: AmbientAnimation[];
 	entry?: string;
 	exit?: string;
@@ -351,7 +355,7 @@ function interpolateElement(
 	const lifecycle = t < 1 ? prev.presence : next.presence;
 	return {
 		id,
-		asset: next.asset,
+		asset: t < 1 ? prev.asset : next.asset,
 		pos: interpolatePos(prev.pos, next.pos, t),
 		size: prev.size + (next.size - prev.size) * t,
 		lifecycle,
@@ -361,6 +365,7 @@ function interpolateElement(
 		exit: next.exit ?? prev.exit,
 		text: cloneText(next.text ?? prev.text),
 		primitive: clonePrimitive(next.primitive ?? prev.primitive),
+		activity: cloneOptional(t < 1 ? prev.activity : next.activity),
 	};
 }
 
@@ -393,6 +398,7 @@ function interpolateConnector(
 		start: t < 1 ? prev.start : next.start,
 		end: t < 1 ? prev.end : next.end,
 		direction: t < 1 ? prev.direction : next.direction,
+		message: cloneOptional(t < 1 ? prev.message : next.message),
 		ambient: cloneAmbient(t < 1 ? prev.ambient : next.ambient),
 		entry: next.enter ?? prev.enter,
 		exit: next.exit ?? prev.exit,
@@ -427,6 +433,7 @@ function withRemovedElementGeometry(
 		exit: reference.exit,
 		text: cloneText(reference.text),
 		primitive: clonePrimitive(reference.primitive),
+		activity: cloneOptional(reference.activity),
 	};
 }
 
@@ -465,6 +472,7 @@ function frameFromElement(element: RuntimeElementState, lifecycle: LifecycleStat
 		exit: element.exit,
 		text: cloneText(element.text),
 		primitive: clonePrimitive(element.primitive),
+		activity: cloneOptional(element.activity),
 	};
 }
 
@@ -481,6 +489,7 @@ function frameFromConnector(
 		start: connector.start,
 		end: connector.end,
 		direction: connector.direction,
+		message: cloneOptional(connector.message),
 		ambient: cloneAmbient(connector.ambient),
 		entry: connector.enter,
 		exit: connector.exit,
@@ -558,6 +567,7 @@ function frameToUpdate(frame: ElementFrame): FrameUpdate {
 		exit: frame.exit,
 		text: cloneText(frame.text),
 		primitive: clonePrimitive(frame.primitive),
+		activity: cloneOptional(frame.activity),
 	};
 }
 
@@ -571,6 +581,7 @@ function connectorFrameToUpdate(frame: ConnectorFrame): ConnectorFrameUpdate {
 		start: frame.start,
 		end: frame.end,
 		direction: frame.direction,
+		message: cloneOptional(frame.message),
 		ambient: cloneAmbient(frame.ambient),
 		entry: frame.entry,
 		exit: frame.exit,
@@ -586,6 +597,7 @@ function cloneFrameMap(map: Map<string, ElementFrame>): Map<string, ElementFrame
 			ambient: cloneAmbient(frame.ambient),
 			text: cloneText(frame.text),
 			primitive: clonePrimitive(frame.primitive),
+			activity: cloneOptional(frame.activity),
 		});
 	}
 	return clone;
@@ -650,4 +662,8 @@ function cloneConnectorFrameMap(map: Map<string, ConnectorFrame>): Map<string, C
 		});
 	}
 	return clone;
+}
+
+function cloneOptional<T extends object>(value: T | undefined): T | undefined {
+	return value ? { ...value } : undefined;
 }

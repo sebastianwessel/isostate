@@ -9,6 +9,7 @@ export function softwareCatalogFiles(
 		'IMAGEGEN-PROMPTS.md',
 		'agentic/AGENT-VISUAL-PROMPTS.md',
 		'agentic/PROCESS-VISUAL-PROMPTS.md',
+		'agentic/HANDOFF-PROMPTS.md',
 		...new Set(assets.map((asset) => asset.path))
 	];
 }

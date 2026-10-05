@@ -367,3 +367,13 @@ manually.
 | `guardEntryAnimation(v)` | Narrow an unknown value to `EntryAnimation`; returns `undefined` if invalid. |
 | `guardExitAnimation(v)` | Narrow an unknown value to `ExitAnimation`; returns `undefined` if invalid. |
 | `guardLifecycleStatus(v)` | Narrow an unknown value to `LifecycleStatus`; returns `undefined` if invalid. |
+
+## Workflow State And Motion
+
+Author element `activity`, connection `message`, and rounded `beam` styling in
+scene YAML, then compile normally. `ElementPatch.asset` can replace a declared
+external image or sprite at a scene stop while preserving its identity.
+`ConnectorMessage` and `ElementActivity` are public type exports. Existing
+controller `pause()`/`resume()` control message and processing-indicator motion;
+reduced-motion preference renders static indicators. See
+[Animation And Connections](../guides/animation-and-connections.md).

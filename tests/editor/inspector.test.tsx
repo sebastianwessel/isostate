@@ -370,7 +370,7 @@ beforeEach(() => {
 });
 
 describe('InspectorPanel', () => {
-	test('element inspector shows the selected asset without invalid patch editing', async () => {
+	test('element inspector offers registered assets for image swapping', async () => {
 		const container = document.createElement('div');
 		document.body.appendChild(container);
 		const workspace = makeWorkspace();
@@ -390,12 +390,9 @@ describe('InspectorPanel', () => {
 			row.textContent?.includes('Asset')
 		);
 		expect(assetRow).toBeTruthy();
-		const input = assetRow?.querySelector(
-			'.isostate-input'
-		) as HTMLInputElement;
-		expect(input).toBeTruthy();
-		expect(input.value).toBe('block');
-		expect(input.readOnly).toBe(true);
+		const select = assetRow?.querySelector('[role="combobox"]');
+		expect(select).toBeTruthy();
+		expect(select?.textContent).toBe('block');
 		root.unmount();
 		container.remove();
 	});
@@ -1622,5 +1619,190 @@ describe('InspectorPanel', () => {
 		expect(commandCount).toBe(0);
 		root.unmount();
 		container.remove();
+	});
+	test('glowing beam preset and message controls persist rounded lighting and discrete messages', async () => {
+		const workspace = makeWorkspace();
+		workspace.selection.connectionIds = ['c1'];
+		const panel = await renderPanel(workspace);
+		const preset = Array.from(panel.container.querySelectorAll('button')).find(
+			(button) => button.textContent === 'Glowing beam'
+		);
+		if (!preset) throw new Error('Missing Glowing beam preset');
+		preset.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(
+			panel.getWorkspace().document?.scenes[0].connections?.[0]
+		).toMatchObject({
+			style: { variant: 'beam', cornerRadius: 12, glow: '#38bdf8' },
+			message: { kind: 'orb', enabled: true, count: 2 }
+		});
+		await chooseSelectOption(
+			findRowByLabel(panel.container, 'Message kind'),
+			'envelope'
+		);
+		setInputValue(
+			numberInput(findRowByLabel(panel.container, 'Message size')),
+			'16'
+		);
+		blurInput(numberInput(findRowByLabel(panel.container, 'Message size')));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		setInputValue(
+			numberInput(findRowByLabel(panel.container, 'Message duration (ms)')),
+			'3200'
+		);
+		blurInput(
+			numberInput(findRowByLabel(panel.container, 'Message duration (ms)'))
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		setInputValue(
+			numberInput(findRowByLabel(panel.container, 'Message count')),
+			'4'
+		);
+		blurInput(numberInput(findRowByLabel(panel.container, 'Message count')));
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		const color = textInput(findRowByLabel(panel.container, 'Message color'));
+		setInputValue(color, '#fb7185');
+		blurInput(color);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(
+			panel.getWorkspace().document?.scenes[0].connections?.[0].message
+		).toMatchObject({
+			kind: 'envelope',
+			size: 16,
+			duration: 3200,
+			count: 4,
+			color: '#fb7185'
+		});
+		panel.container
+			.querySelector<HTMLButtonElement>('[aria-label="Enable messages"]')
+			?.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(
+			panel.getWorkspace().document?.scenes[0].connections?.[0].message?.enabled
+		).toBe(false);
+		panel.cleanup();
+	});
+
+	test('message numbers allow incremental typing, clearing, decimals and canceling before committing', async () => {
+		const workspace = makeWorkspace();
+		workspace.selection.connectionIds = ['c1'];
+		const panel = await renderPanel(workspace);
+		panel.container
+			.querySelector<HTMLButtonElement>('[aria-label="Enable messages"]')
+			?.click();
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		const duration = numberInput(
+			findRowByLabel(panel.container, 'Message duration (ms)')
+		);
+		setInputValue(duration, '');
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(duration.value).toBe('');
+		for (const draft of ['2', '24', '240', '2400']) {
+			setInputValue(duration, draft);
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			expect(duration.value).toBe(draft);
+			expect(
+				panel.getWorkspace().document?.scenes[0].connections?.[0].message
+					?.duration
+			).toBeUndefined();
+		}
+		blurInput(duration);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(
+			panel.getWorkspace().document?.scenes[0].connections?.[0].message
+				?.duration
+		).toBe(2400);
+		setInputValue(duration, '');
+		blurInput(duration);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(duration.value).toBe('2400');
+		const glow = numberInput(findRowByLabel(panel.container, 'Glow width'));
+		for (const draft of ['', '0', '0.', '0.5']) {
+			setInputValue(glow, draft);
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			expect(glow.value).toBe(draft);
+		}
+		blurInput(glow);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(
+			panel.getWorkspace().document?.scenes[0].connections?.[0].style?.glowWidth
+		).toBe(0.5);
+		setInputValue(duration, '3500');
+		duration.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Escape', bubbles: true })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(duration.value).toBe('2400');
+		blurInput(duration);
+		expect(
+			panel.getWorkspace().document?.scenes[0].connections?.[0].message
+				?.duration
+		).toBe(2400);
+		duration.focus();
+		setInputValue(duration, '3000');
+		duration.dispatchEvent(
+			new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })
+		);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(
+			panel.getWorkspace().document?.scenes[0].connections?.[0].message
+				?.duration
+		).toBe(3000);
+		for (const invalid of ['199', '30001']) {
+			setInputValue(duration, invalid);
+			blurInput(duration);
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			expect(duration.value).toBe('3000');
+		}
+		const count = numberInput(findRowByLabel(panel.container, 'Message count'));
+		for (const invalid of ['2.5', '0', '5']) {
+			setInputValue(count, invalid);
+			blurInput(count);
+			await new Promise((resolve) => setTimeout(resolve, 10));
+			expect(count.value).toBe('1');
+			expect(
+				panel.getWorkspace().document?.scenes[0].connections?.[0].message?.count
+			).toBeUndefined();
+		}
+		panel.cleanup();
+	});
+
+	test('node activity and registered asset swaps are editable while generated assets stay fixed', async () => {
+		const workspace = makeWorkspaceFrom(
+			BASE_YAML.replace(
+				'  layers:',
+				'    - id: replacement\n      path: replacement.svg\n  layers:'
+			)
+		);
+		workspace.selection.objectIds = ['e1'];
+		const panel = await renderPanel(workspace);
+		await chooseSelectOption(
+			findRowByLabel(panel.container, 'Asset'),
+			'replacement'
+		);
+		await chooseSelectOption(
+			findRowByLabel(panel.container, 'Activity state'),
+			'processing'
+		);
+		const color = textInput(findRowByLabel(panel.container, 'Activity color'));
+		setInputValue(color, '#34d399');
+		blurInput(color);
+		await new Promise((resolve) => setTimeout(resolve, 10));
+		expect(
+			panel.getWorkspace().document?.scenes[0].elements?.[0]
+		).toMatchObject({
+			asset: 'replacement',
+			activity: { state: 'processing', color: '#34d399' }
+		});
+		panel.cleanup();
+		const textWorkspace = makeWorkspace();
+		textWorkspace.selection.objectIds = ['e2'];
+		const textPanel = await renderPanel(textWorkspace);
+		expect(
+			textPanel.container.querySelector<HTMLInputElement>(
+				'[aria-label="Element asset"]'
+			)?.readOnly
+		).toBe(true);
+		textPanel.cleanup();
 	});
 });

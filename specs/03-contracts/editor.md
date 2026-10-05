@@ -329,3 +329,12 @@ Editor-specific errors use structured codes:
 
 Core parser, validator, compiler, runtime, and CLI error codes are preserved in
 diagnostics when those subsystems report failures.
+
+## Workflow State Editing
+
+Connection edits round-trip `style.variant: beam`, `cornerRadius`, `glow`,
+`glowWidth`, and `message` without dropping hidden fields. Element edits
+round-trip `activity` and external `asset` patches. Whole-object replacement
+semantics for activity/message match the DSL contract, including explicit idle
+and disabled values. Inspector constraints match the parser and validator;
+invalid YAML remains visible with diagnostics instead of being silently fixed.

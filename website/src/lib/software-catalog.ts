@@ -186,6 +186,8 @@ export function matchesSoftwareAsset(
 }
 
 function catalogGroup(id: string, fallback: string): string {
+	if (id === 'human-to-ai-handoff' || id === 'ai-to-human-handoff')
+		return 'human';
 	if (knowledgeIds.has(id)) return 'ai-knowledge';
 	if (lifecycleIds.has(id)) return 'agent-lifecycle';
 	if (id.startsWith('ai-')) return 'ai-roles';

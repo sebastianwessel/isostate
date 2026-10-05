@@ -25,6 +25,7 @@ import type {
 	ValidationWarning,
 } from "../types/index.ts";
 import type { SpriteDefinition } from "../types/scene.ts";
+import { validateActivity, validateMessage } from "./workflow-effects-validation.ts";
 
 const BUILT_IN_TEXT_ASSET_ID = "text";
 const BUILT_IN_PRIMITIVE_ASSET_IDS = new Set(["rectangle", "circle", "polygon", "line"]);
@@ -66,7 +67,7 @@ const VALID_AMBIENT_ANIMATIONS: ReadonlySet<string> = new Set([
 const VALID_CONNECTOR_AMBIENT_ANIMATIONS: ReadonlySet<string> = new Set([...VALID_AMBIENT_ANIMATIONS, "flow"]);
 
 const VALID_CONNECTOR_PATTERNS: ReadonlySet<string> = new Set(["solid", "dashed", "dotted"]);
-const VALID_CONNECTOR_VARIANTS: ReadonlySet<string> = new Set(["line", "road"]);
+const VALID_CONNECTOR_VARIANTS: ReadonlySet<string> = new Set(["line", "road", "beam"]);
 const VALID_CONNECTOR_ENDPOINTS: ReadonlySet<string> = new Set(["none", "arrow", "dot", "circle", "diamond", "bar"]);
 const VALID_CONNECTOR_DIRECTIONS: ReadonlySet<string> = new Set(["route", "reverse"]);
 const VALID_CONNECTOR_SIDES: ReadonlySet<string> = new Set(["auto", "top", "right", "bottom", "left", "front", "back"]);
@@ -93,6 +94,7 @@ interface ResolvedElementRecord {
 	ambient?: AmbientAnimation[];
 	text?: TextContent;
 	primitive?: PrimitiveContent;
+	activity?: ElementPlacement["activity"];
 }
 
 export interface ResolvedSceneSnapshot {
@@ -117,6 +119,7 @@ interface ResolvedConnectorRecord {
 	enter?: ConnectionPlacement["enter"];
 	exit?: ConnectionPlacement["exit"];
 	ambient?: AmbientAnimation[];
+	message?: ConnectionPlacement["message"];
 }
 
 function issue(code: string, message: string, extras: Partial<ValidationError> = {}): ValidationError {
@@ -602,8 +605,9 @@ function validatePatch(
 	currentAsset?: string,
 ): void {
 	validateElementCommon(patch, document, errors, sceneId, true);
+	if (patch.asset !== undefined) validateAssetSwap(patch, currentAsset, document, errors, sceneId);
 	if (currentAsset !== undefined) {
-		validateGeneratedContentForAsset(patch, currentAsset, errors, warnings, sceneId, true);
+		validateGeneratedContentForAsset(patch, patch.asset ?? currentAsset, errors, warnings, sceneId, true);
 	}
 	if (patch.at !== undefined && !isValidPosition(patch.at)) {
 		errors.push(
@@ -615,6 +619,33 @@ function validatePatch(
 			}),
 		);
 	}
+}
+
+function validateAssetSwap(
+	patch: ElementPatch,
+	currentAsset: string | undefined,
+	document: SceneDocument,
+	errors: ValidationError[],
+	sceneId: string,
+): void {
+	const target = patch.asset;
+	if (target === undefined) return;
+	const extras = { sceneId, elementId: patch.id, assetName: target, field: "asset", value: target };
+	if (isBuiltInAsset(target) || (currentAsset !== undefined && isBuiltInAsset(currentAsset))) {
+		errors.push(
+			issue(
+				"INVALID_ELEMENT_ASSET_SWAP",
+				"Asset updates only support external images or sprites; generated content cannot change asset type",
+				extras,
+			),
+		);
+		return;
+	}
+	const index = buildAssetIndex(document);
+	if (index.sheetAssetIds.has(target))
+		errors.push(issue("SPRITE_SHEET_NOT_PLACEABLE", "A sprite sheet namespace cannot be placed", extras));
+	else if (!index.placeableAssetIds.has(target))
+		errors.push(issue("ASSET_NOT_DECLARED", `Asset "${target}" is not declared`, extras));
 }
 
 function validateElementCommon(
@@ -688,6 +719,7 @@ function validateElementCommon(
 			}),
 		);
 	}
+	validateActivity(element.activity, errors, sceneId, element.id);
 	validateAmbient(element.ambient, errors, sceneId, element.id);
 }
 
@@ -1518,6 +1550,7 @@ function validateConnectionCommon(
 	validateConnectionEndpoints(connection, elements, errors, sceneId);
 	validateConnectionRouting(connection, errors, sceneId);
 	validateConnectorStyle(connection.style, errors, sceneId, connection.id);
+	validateMessage(connection.message, errors, sceneId, connection.id);
 	if (connection.start !== undefined && !VALID_CONNECTOR_ENDPOINTS.has(connection.start)) {
 		errors.push(
 			issue("INVALID_CONNECTOR_ENDPOINT", "Invalid connector start endpoint", {
@@ -1729,6 +1762,7 @@ function validateConnectorStyle(
 	for (const [name, value] of [
 		["strokeWidth", style.strokeWidth],
 		["outlineWidth", style.outlineWidth],
+		["glowWidth", style.glowWidth],
 	] as const) {
 		if (value !== undefined && !isValidPositiveNumber(value)) {
 			errors.push(
@@ -1758,7 +1792,16 @@ function validateConnectorStyle(
 			}),
 		);
 	}
-	for (const token of [style.stroke, style.outline]) {
+	if (style.cornerRadius !== undefined && (!Number.isFinite(style.cornerRadius) || style.cornerRadius < 0)) {
+		errors.push(
+			issue("INVALID_CONNECTOR_STYLE", "Corner radius must be finite and non-negative", {
+				sceneId,
+				elementId: connectionId,
+				field: "style.cornerRadius",
+			}),
+		);
+	}
+	for (const token of [style.stroke, style.outline, style.glow]) {
 		if (token !== undefined && !isSafeTextStyleToken(token)) {
 			errors.push(
 				issue("INVALID_CONNECTOR_STYLE", "Connector color token is unsafe", {
@@ -2080,6 +2123,7 @@ function normalizePlacement(document: SceneDocument, element: ElementPlacement):
 		ambient: element.ambient,
 		text: element.text,
 		primitive: element.primitive,
+		activity: element.activity,
 	};
 }
 
@@ -2101,6 +2145,7 @@ function normalizeConnectionPlacement(
 		enter: connection.enter,
 		exit: connection.exit,
 		ambient: connection.ambient,
+		message: connection.message,
 	};
 }
 
@@ -2121,6 +2166,7 @@ function toRuntimeState(
 		ambient: element.ambient,
 		text: element.text,
 		primitive: element.primitive,
+		activity: element.activity,
 	};
 }
 
@@ -2143,6 +2189,7 @@ function toRuntimeConnectorState(
 		enter: presence === "entering" ? (connection.enter ?? "fade-in") : connection.enter,
 		exit: presence === "exiting" ? (exit ?? connection.exit ?? "fade-out") : (exit ?? connection.exit),
 		ambient: connection.ambient,
+		message: connection.message,
 	};
 }
 
@@ -2153,16 +2200,19 @@ function resolveConnectorStyle(style: ConnectorStyle | undefined): RuntimeConnec
 		variant,
 		pattern,
 		stroke: style?.stroke ?? "#2563eb",
-		strokeWidth: style?.strokeWidth ?? (variant === "road" ? 14 : 3),
+		strokeWidth: style?.strokeWidth ?? (variant === "road" ? 14 : variant === "beam" ? 6 : 3),
 		opacity: style?.opacity ?? 1,
-		outlineWidth: style?.outlineWidth ?? (variant === "road" ? 2 : 0),
+		outlineWidth: style?.outlineWidth ?? (variant === "road" || variant === "beam" ? 2 : 0),
 		lane: style?.lane ?? "none",
 	};
+	if (style?.cornerRadius !== undefined) resolved.cornerRadius = style.cornerRadius;
+	if (style?.glow !== undefined) resolved.glow = style.glow;
+	if (style?.glowWidth !== undefined) resolved.glowWidth = style.glowWidth;
 	const dash = style?.dash ?? defaultDash(pattern);
 	if (dash) {
 		resolved.dash = dash;
 	}
-	const outline = style?.outline ?? (variant === "road" ? "#ffffff" : undefined);
+	const outline = style?.outline ?? (variant === "road" ? "#ffffff" : variant === "beam" ? "#263746" : undefined);
 	if (outline) {
 		resolved.outline = outline;
 	}

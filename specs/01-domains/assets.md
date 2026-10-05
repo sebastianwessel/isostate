@@ -293,11 +293,12 @@ Asset geometry only needs one color variable per material, and all depth shading
 
 ## Software Architecture and Agentic Workflow Catalog
 
-`assets/software-architecture/` is a first-party optional catalog of 92
+`assets/software-architecture/` is a first-party optional catalog of 94
 photorealistic isometric software, AI, and process objects distributed under the
 repository's MIT license. The original twenty objects remain available with
 the same identifiers, rectangles, and anchors. Nine additional transparent PNG
-sheets provide 72 objects for agentic work:
+sheets provide 72 objects for agentic work. Two additional single-object PNGs
+provide directional human/AI handoffs:
 
 | Sheet | Logical ids / purpose |
 | --- | --- |
@@ -310,8 +311,12 @@ sheets provide 72 objects for agentic work:
 | `servicenow-sprites.png` | `servicenow-` interaction, request, requested item, request task, catalog item, incident, problem, change |
 | `providers-sprites.png` | `provider-` Azure Foundry, AWS Bedrock, Anthropic, OpenAI, Google Vertex, Google Gemini, local model, Hugging Face |
 | `infrastructure-sprites.png` | `infra-` Redis cache, Redis stream, Redis pub/sub, vector database, object storage, knowledge base, API tool, secret vault |
+| `human-to-ai-handoff.png` | Human delegates a payload to an AI worker. |
+| `ai-to-human-handoff.png` | AI worker presents a payload to a human reviewer. |
 
-All nine new sheets live in `agentic/`. Provider/product assets are original
+The nine sheets and two directional images live in `agentic/`. The new images
+use full-image 1254 × 1254 crops with anchors `[0.51, 0.936]` and `[0.5, 0.91]`,
+respectively. `human-handoff` retains its existing human-to-human artwork. Provider/product assets are original
 conceptual illustrations; catalog labels and search aliases identify the
 corresponding products. They are not official vendor logo files. Provider
 choice, ticket type, human responsibility, and escalation meaning live in the
@@ -320,7 +325,7 @@ workflow execution or ticket schemas.
 
 The material palette combines graphite metal, cyan glass, teal accents, amber
 lights, realistic miniature people, and distinguishing product accents. Exact
-prompts are recorded in `IMAGEGEN-PROMPTS.md` and the two provenance documents
+prompts are recorded in `IMAGEGEN-PROMPTS.md` and the three provenance documents
 under `agentic/`. Original generated image bytes and genuine alpha channels are
 preserved. Each source sheet must fit the CLI's existing 2 MiB image limit.
 
@@ -334,7 +339,7 @@ native `size: 1`; a sheet namespace is not placeable. Labels remain generated
 The existing CLI generates `manifest.json`, including actual dimensions,
 source byte digests, and sprite labels/tags. Its `assetBaseUrl` is `./` because it
 resides beside the group directories. Website copies preserve ids, rectangles,
-anchors, digests, and source bytes. Gallery categories and search expose all 92
+anchors, digests, and source bytes. Gallery categories and search expose all 94
 objects; the editor registers the complete manifest.
 
 Three runnable website examples cover software architecture, human-to-agent
@@ -345,7 +350,7 @@ escalation, intake channels, ServiceNow records, and model/tool choices using
 ordinary scene deltas and visual connections. Each scene stays within the
 50-object target and uses whole grid cells.
 
-The core package build copies all eleven sheets, the generated manifest,
+The core package build copies all thirteen source PNGs, the generated manifest,
 README, image-generation provenance, and MIT LICENSE to
 `dist/assets/software-architecture/`, exposing the files through the static
 `./assets/software-architecture/*` package export. Consumers may copy these

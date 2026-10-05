@@ -58,3 +58,9 @@ prompts and inspected crop/anchor notes are preserved separately:
 All outputs retain generated source bytes; scene and gallery crops are metadata,
 not edited image files. Provider identities are illustrated with original
 material/product metaphors and displayed labels rather than official logo assets.
+
+## Directional handoffs
+
+Two additional original RGBA PNGs distinguish human-to-AI delegation and
+AI-to-human escalation from the existing human-to-human handoff. Exact prompts
+and measured source dimensions are in [Directional handoff prompts](./agentic/HANDOFF-PROMPTS.md).

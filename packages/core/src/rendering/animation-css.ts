@@ -33,6 +33,13 @@ export function buildKeyframeCSS(): string {
 		".iso-connector-direction-route .iso-connector-shaft.iso-ambient-flow{animation:iso-connector-flow-route 900ms linear infinite}",
 		".iso-connector-direction-reverse .iso-connector-shaft.iso-ambient-flow{animation:iso-connector-flow-reverse 900ms linear infinite}",
 		"@media (prefers-reduced-motion: reduce){.iso-element,.iso-connector{animation-duration:1ms!important}.iso-ambient-pulse,.iso-ambient-float,.iso-ambient-shake,.iso-ambient-glow,.iso-ambient-spin,.iso-ambient-blink,.iso-ambient-flow{animation:none!important}}",
+		"@keyframes iso-message-travel{from{offset-distance:0%}to{offset-distance:100%}}",
+		".iso-message{offset-anchor:0px 0px;offset-rotate:0deg;animation:iso-message-travel 1800ms linear infinite;pointer-events:none}",
+		"@keyframes iso-activity-breathe{0%,100%{opacity:.45}50%{opacity:1}}",
+		".iso-activity-processing .iso-activity-ring{animation:iso-activity-breathe 1800ms ease-in-out infinite}",
+		".iso-activity-waiting .iso-activity-badge{animation:iso-activity-breathe 2600ms ease-in-out infinite}",
+		".iso-motion-paused *{animation-play-state:paused!important}.iso-motion-stopped *{animation:none!important}",
+		"@media (prefers-reduced-motion:reduce){.iso-message{animation:none!important;offset-distance:50%}.iso-activity *{animation:none!important}}",
 		".iso-interactive g[data-id]{cursor:pointer}",
 	].join("\n");
 }

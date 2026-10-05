@@ -263,8 +263,7 @@ function getUsedAssetIds(workspace: EditorWorkspace): string[] {
 			if (element.asset) used.add(element.asset);
 		}
 		for (const element of scene.update?.elements ?? []) {
-			const asset = (element as { asset?: string }).asset;
-			if (asset) used.add(asset);
+			if (element.asset) used.add(element.asset);
 		}
 	}
 	return Array.from(used);

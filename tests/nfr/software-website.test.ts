@@ -34,10 +34,10 @@ describe('software collection website integration', () => {
 	test('shows every logical sprite in its domain with exact source crops', async () => {
 		const manifest = await readManifest();
 		const previews = softwareCatalogPreviews(manifest.assets);
-		expect(previews).toHaveLength(92);
+		expect(previews).toHaveLength(94);
 		for (const group of SOFTWARE_CATALOG_GROUPS.slice(0, 9)) {
 			expect(previews.filter((asset) => asset.group === group.id)).toHaveLength(
-				8
+				group.id === 'human' ? 10 : 8
 			);
 		}
 		expect(

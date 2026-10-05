@@ -249,3 +249,21 @@ When updating text or primitive elements, author only the nested fields that
 change. For example, `text: { fill: "#eeeeee" }` keeps the previous
 `text.value`, and `primitive.rectangle.opacity` keeps the previous rectangle
 fill/stroke fields.
+
+## Work States And Asset Swaps
+
+Use `activity: { state: processing }` on a working element. Other states are
+`waiting`, `complete`, `error`, and `idle`; `color` is optional safe CSS. Keep
+only the current work active, and explicitly return preceding work to idle or
+complete at later stops. Status labels should communicate meaning beyond color.
+
+`update.elements[].asset` can swap a normal image/sprite for another declared
+image/sprite while retaining its id, position, size, and connections. Both
+assets must be external: do not convert to/from text or generated primitives.
+Declare destination assets even when referenced only in patches. The runtime
+uses the destination crop/anchor.
+
+Activity and connection message objects replace whole previous objects;
+omission retains them. This differs from sparse text/primitive/style patches.
+Use `{ state: idle }` and `{ enabled: false }` explicitly. Asset, activity, and
+message changes happen at the destination scene stop and scrub backward.

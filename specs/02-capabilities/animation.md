@@ -59,6 +59,7 @@ interface RuntimeElementState {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
+  activity?: ElementActivity;
 }
 
 interface RuntimeConnectorState {
@@ -73,6 +74,7 @@ interface RuntimeConnectorState {
   enter?: EntryAnimation;
   exit?: ExitAnimation;
   ambient?: AmbientAnimation[];
+  message?: ConnectorMessage;
 }
 ```
 
@@ -100,7 +102,7 @@ For each progress update:
    and a later re-add, use the next non-removed element state. After the final
    removal, fall back to the previous non-removed state. Removed elements must
    never fall back to `[0, 0]` or blank asset/layer metadata.
-9. Apply discrete layer, style, endpoint, direction, and ambient changes at the
+9. Apply discrete asset, activity, message, layer, style, endpoint, direction, and ambient changes at the
    destination stop.
 
 Connector route interpolation rule:
@@ -223,3 +225,12 @@ The controller owns scroll binding and sends normalized progress to the animatio
 Default verification must cover add, update, remove, re-add, interpolation,
 ambient changes, connector route interpolation, connector flow direction, and
 paused/resumed controller updates.
+
+## Workflow Motion
+
+Messages follow the actual projected rounded connector path with CSS motion;
+reverse direction reverses travel. Activity is separate from lifecycle and
+ambient names: an element can remain present while processing changes to
+waiting, complete, error, or idle. All activity/message/asset changes select the
+source snapshot until the destination stop is reached. Controller pause freezes
+message and processing-indicator motion; reduced motion shows static glyphs.

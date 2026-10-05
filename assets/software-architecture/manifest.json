@@ -1,7 +1,7 @@
 {
   "format": "isostate.asset-manifest",
   "version": 1,
-  "generatedAt": "2026-10-05T12:41:31.553Z",
+  "generatedAt": "2026-10-05T13:26:14.415Z",
   "assetBaseUrl": "./",
   "assets": [
     {
@@ -352,6 +352,55 @@
       ]
     },
     {
+      "id": "agentic-ai-to-human-handoff",
+      "path": "agentic/ai-to-human-handoff.png",
+      "group": "agentic",
+      "name": "ai-to-human-handoff",
+      "digest": "sha256:e68f7425954c085c160998dcbe4800e307803b4b72a92c611a76df1e436695d9",
+      "type": "sprite-sheet",
+      "width": 1254,
+      "height": 1254,
+      "sheetSize": [
+        1254,
+        1254
+      ],
+      "sprites": {
+        "ai-to-human-handoff": {
+          "rect": [
+            0,
+            0,
+            1254,
+            1254
+          ],
+          "anchor": [
+            0.5,
+            0.91
+          ],
+          "label": "AI to human handoff",
+          "tags": [
+            "ai-to-human",
+            "handoff",
+            "escalation",
+            "review",
+            "human",
+            "ai"
+          ]
+        }
+      },
+      "label": "AI to human handoff",
+      "anchor": [
+        0.5,
+        0.91
+      ],
+      "tags": [
+        "human",
+        "ai",
+        "handoff",
+        "escalation",
+        "collaboration"
+      ]
+    },
+    {
       "id": "agentic-channels-sprites",
       "path": "agentic/channels-sprites.png",
       "group": "agentic",
@@ -540,6 +589,55 @@
       ]
     },
     {
+      "id": "agentic-human-to-ai-handoff",
+      "path": "agentic/human-to-ai-handoff.png",
+      "group": "agentic",
+      "name": "human-to-ai-handoff",
+      "digest": "sha256:9bcc56a5bdfa6c675592797670e2eaec6df7dc9645987f9c49df5b1203f8102f",
+      "type": "sprite-sheet",
+      "width": 1254,
+      "height": 1254,
+      "sheetSize": [
+        1254,
+        1254
+      ],
+      "sprites": {
+        "human-to-ai-handoff": {
+          "rect": [
+            0,
+            0,
+            1254,
+            1254
+          ],
+          "anchor": [
+            0.51,
+            0.936
+          ],
+          "label": "Human to AI handoff",
+          "tags": [
+            "human-to-ai",
+            "handoff",
+            "delegation",
+            "intake",
+            "human",
+            "ai"
+          ]
+        }
+      },
+      "label": "Human to AI handoff",
+      "anchor": [
+        0.51,
+        0.936
+      ],
+      "tags": [
+        "human",
+        "ai",
+        "handoff",
+        "delegation",
+        "collaboration"
+      ]
+    },
+    {
       "id": "agentic-humans-sprites",
       "path": "agentic/humans-sprites.png",
       "group": "agentic",
@@ -662,7 +760,7 @@
             0.5383,
             0.8288
           ],
-          "label": "Human handoff",
+          "label": "Human-to-human handoff",
           "tags": [
             "human",
             "collaboration",

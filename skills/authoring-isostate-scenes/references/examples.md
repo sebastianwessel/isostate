@@ -145,3 +145,13 @@ removals whenever endpoint elements leave. Website editor starters are
 `?example=agentic-workflow` and `?example=provider-routing`. The full inventory and
 semantic mappings live in `docs/guides/agentic-workflows.md`. Regenerate headers,
 compiled bundles, and downloads together with `bun run assets:build`.
+
+## Workflow Presentation Examples
+
+`website/src/scenes/agentic-workflow.isostate.yaml` demonstrates four steps from
+manual intake to automation, human review, and completion. It combines rounded
+beam tracks, selective envelope/packet/orb messages, activity states, and a
+stable triage element whose sprite changes for waiting and completion.
+`website/src/scenes/provider-routing.isostate.yaml` demonstrates a single active
+provider branch, retrieval, tools, and review. Use these as patterns for
+explicitly disabling prior streams and clearing prior processing states.

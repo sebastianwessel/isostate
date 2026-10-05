@@ -156,6 +156,7 @@ function applyControllerFrame(mounted: MountedScene): void {
 			ambient: update.ambient,
 			text: update.text,
 			primitive: update.primitive,
+			activity: update.activity,
 		}),
 	);
 	const connectorUpdates = mounted.engine.getConnectorFrameUpdates().map(
@@ -168,6 +169,7 @@ function applyControllerFrame(mounted: MountedScene): void {
 			start: update.start,
 			end: update.end,
 			direction: update.direction,
+			message: update.message,
 			enter: update.entry as RuntimeConnectorState["enter"],
 			exit: update.exit as RuntimeConnectorState["exit"],
 			ambient: update.ambient,

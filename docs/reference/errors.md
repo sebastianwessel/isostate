@@ -213,3 +213,15 @@ not part of `specs/03-contracts/errors.md`.
 |---|---|
 | `ASSET_MANIFEST_METADATA_NOT_FOUND` | Point `--metadata` at an existing file or remove the flag. |
 | `ASSET_MANIFEST_INVALID_METADATA` | Fix metadata fields; `sheetSize` must match the actual image dimensions. |
+
+## Workflow Presentation Validation
+
+| Code | Meaning | Fix |
+|---|---|---|
+| `INVALID_ELEMENT_ACTIVITY` | Activity state or color is invalid. | Use a supported state and safe CSS color. |
+| `INVALID_CONNECTOR_MESSAGE` | Message kind, color, numeric range, or enabled flag is invalid. | Use packet/orb/envelope, size 2..32, duration 200..30000, integer count 1..4, and boolean enabled. |
+| `INVALID_ELEMENT_ASSET_SWAP` | An asset patch converts from or to a generated built-in. | Replace only external images or sprites; remove/add to change generated element kind. |
+
+Invalid corner radius, glow color, or glow width uses `INVALID_CONNECTOR_STYLE`.
+Undeclared replacement assets use `ASSET_NOT_DECLARED`; sheet namespace ids use
+`SPRITE_SHEET_NOT_PLACEABLE`.

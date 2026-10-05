@@ -2,7 +2,11 @@
 
 ## 0.6.0
 
-- Add an optional catalog of 92 photorealistic isometric assets for software architecture, AI agents, human workflows, intake channels, ServiceNow records, providers, and supporting infrastructure, with transparent PNG sprites, checked anchors, a reusable manifest, and generation provenance.
+- Add rounded dimensional beam connections, configurable glow, moving packet/orb/envelope messages, and element activity indicators with pause and reduced-motion support.
+- Support scene-step image/sprite swaps while preserving element identity and connections; expose workflow controls in the editor and make the agentic example the hosted editor default.
+- Upgrade agentic and provider examples with selective traffic and work states, add gallery motion controls, and distinguish human-to-human, human-to-AI, and AI-to-human handoffs.
+
+- Add an optional catalog of 94 photorealistic isometric assets for software architecture, AI agents, human workflows, intake channels, ServiceNow records, providers, and supporting infrastructure, with transparent PNG sprites, checked anchors, a reusable manifest, and generation provenance.
 - Include the catalog in the core package and add a website gallery with downloads, runnable architecture, human-to-agent migration, and provider-routing examples, and editor integration.
 - Update direct dependencies to their latest stable releases, including TypeScript 7, Astro 7, React 19.3, Biome, and Bun 1.4.2. Use esbuild for JavaScript transforms and TypeScript for declarations and type checks.
 - Refresh generated scene and static deployment bundles for the 0.6.0 compiler and runtime.
