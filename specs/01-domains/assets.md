@@ -357,3 +357,13 @@ README, image-generation provenance, and MIT LICENSE to
 files into a public directory or use bundler URL imports. This distribution
 adds no runtime imports, browser dependencies, public DSL fields, or renderer
 behavior. Asset bytes remain outside the core engine's compressed bundle budget.
+
+## Generated Artwork Provenance
+
+The software-architecture catalog and Mermaid workflow sheet disclose generation
+using OpenAI image-generation models in their adjacent `NOTICE.md`, README or
+provenance document, and website credit. Their project distribution retains MIT
+licensing. Build/sync scripts copy the notice and licence with downloadable
+assets; the core package includes the software catalog's notice. Other asset
+families retain their own source/licensing records. Generation credit is kept
+outside the public scene/manifest schema and browser runtime.

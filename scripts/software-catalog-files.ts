@@ -6,6 +6,7 @@ export function softwareCatalogFiles(
 		'manifest.json',
 		'README.md',
 		'LICENSE',
+		'NOTICE.md',
 		'IMAGEGEN-PROMPTS.md',
 		'agentic/AGENT-VISUAL-PROMPTS.md',
 		'agentic/PROCESS-VISUAL-PROMPTS.md',

@@ -337,3 +337,13 @@ connection direction that match the story. Preserve checked one-cell anchors.
 For a changing worker, keep the element id and patch its external `asset` to a
 declared state sprite. Do not replace or resize the PNG source to communicate
 processing: use the generated `activity` indicator and an explanatory label.
+
+### Generation credit and licence notices
+
+When distributing generated image catalogs, retain their accompanying licence
+and provenance files. The software catalog and Mermaid workflow artwork were
+generated using OpenAI image-generation models; their `NOTICE.md` records that
+origin and links to the relevant OpenAI terms. Keep the project MIT licence and
+AI generation credit visible in website/download documentation. Attribute each
+asset family according to its actual source; do not label imported third-party
+artwork as AI-generated. No licence/provenance fields are added to scene YAML.

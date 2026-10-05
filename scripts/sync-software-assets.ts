@@ -133,7 +133,10 @@ const mermaidAssets = resolve(root, 'website/public/assets/isostate-story');
 await mkdir(mermaidAssets, { recursive: true });
 for (const path of [
 	'mermaid-workflow-sheet.png',
-	'mermaid-workflow.manifest.json'
+	'mermaid-workflow.manifest.json',
+	'LICENSE',
+	'NOTICE.md',
+	'MERMAID-ASSETS.md'
 ]) {
 	await cp(
 		resolve(root, 'assets/isostate-story', path),

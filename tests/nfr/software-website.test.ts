@@ -70,6 +70,7 @@ describe('software collection website integration', () => {
 		for (const path of [
 			'manifest.json',
 			'LICENSE',
+			'NOTICE.md',
 			...new Set(manifest.assets.map((asset) => asset.path))
 		]) {
 			expect(await readFile(join(siteCatalog, path))).toEqual(

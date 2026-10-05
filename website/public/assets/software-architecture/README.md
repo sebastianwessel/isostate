@@ -3,7 +3,9 @@
 Ninety-four photorealistic isometric objects for software architecture, AI agents,
 human-to-agent workflow migration, and business processes. Brushed graphite metal, translucent cyan glass, teal
 accents, and warm amber lights give the objects a consistent dimensional style.
-The catalog is distributed under the included MIT license.
+The illustrations were AI-generated using OpenAI image-generation models.
+The catalog is distributed under the included MIT license; see
+[NOTICE.md](./NOTICE.md) for generation provenance and OpenAI terms links.
 
 ## Catalog
 

@@ -42,13 +42,15 @@ cp -R node_modules/@sebastianwessel/isostate/dist/assets/software-architecture \
   public/assets/software-architecture
 ```
 
-This copies the sheets, editor manifest, and license. Serve the folder from
+This copies the sheets, editor manifest, license, and AI generation notice. Serve the folder from
 your host's public asset directory. For a site hosted under `/my-app`, the public
 URL is `/my-app/assets/software-architecture`; include that prefix in your
 `assetBaseUrl` and manifest URL.
 
 You can also download a sheet from a card on the showcase and download its
 **Editor manifest**. Keep the sheet paths relative to the manifest unchanged.
+The illustrations were AI-generated using OpenAI image-generation models.
+The included `NOTICE.md` records this provenance and links to OpenAI terms.
 The included MIT license allows use and adaptation; preserve the license notice
 when redistributing the catalog.
 

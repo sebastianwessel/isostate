@@ -283,3 +283,12 @@
 	stroke-width: 3px;
 	stroke-linejoin: round;
 }
+
+.artwork-note {
+	margin: 0;
+	padding: 8px 20px 12px;
+	font-size: 0.75rem;
+	line-height: 1.5;
+	color: var(--muted);
+}
+.artwork-note a { color: var(--green-dark); }

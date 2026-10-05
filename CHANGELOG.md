@@ -2,6 +2,8 @@
 
 ## 0.6.0
 
+- Disclose OpenAI image-model generation in asset licence/provenance notices, website credits, downloadable catalogs, and the npm asset distribution.
+
 - Add a local Mermaid workbench with source examples, line diagnostics, YAML copy/download, and direct editor handoff; preserve node and branch labels, reverse reading directions, fan-out, and dotted/thick links in deterministic conversion.
 - Refresh the Mermaid tutorial illustrations and native-cell layout, add manual story navigation and reduced-motion controls, and keep conversion docs, agent skills, source examples, and compiled bundles in sync.
 - Give homepage showcase captions a separate layout band and a contrasting outline for readable desktop and mobile scenes.
