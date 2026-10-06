@@ -670,6 +670,36 @@ describe('AnimationController', () => {
 		expect(controller.getProgress()).toBeCloseTo(0.75, 5);
 	});
 
+	test('setProgress() moves the scene index so nextScene()/prevScene() continue from the seek', () => {
+		installRaf();
+		const controller = new AnimationController();
+		controller.init(cameraBundle(), { transitionDuration: 0 });
+		const changes: number[] = [];
+		controller.on('scene-change', (index) => {
+			changes.push(index);
+		});
+
+		controller.setProgress(0.5);
+		flushRaf();
+		expect(controller.getSceneIndex()).toBe(1);
+
+		controller.nextScene();
+		expect(controller.getSceneIndex()).toBe(2);
+		expect(controller.getProgress()).toBe(1);
+
+		controller.setProgress(0.7);
+		flushRaf();
+		expect(controller.getSceneIndex()).toBe(1);
+
+		controller.prevScene();
+		expect(controller.getSceneIndex()).toBe(0);
+		expect(controller.getProgress()).toBe(0);
+
+		controller.setProgress(0.2);
+		expect(controller.getSceneIndex()).toBe(0);
+		expect(changes).toEqual([1, 2, 1, 0]);
+	});
+
 	test('setSceneIndex() resets progress and camera even when the target index matches the stale scene index', () => {
 		installRaf();
 		const controller = new AnimationController();
