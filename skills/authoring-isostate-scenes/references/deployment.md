@@ -68,6 +68,9 @@ public/isostate/scene/
 - Use `--asset-dir` when YAML asset paths are relative to a shared source
   asset directory.
 - Use `--public-asset-base` when copied assets are served from a non-default
-  URL such as `/isostate/scene/assets`.
+  URL such as `/isostate/scene/assets`. Compiled asset URLs resolve against the
+  page that mounts the scene (`document.baseURI`), not the bundle module: the
+  default `./assets` only fits a page served from the bundle directory, so a
+  page elsewhere needs the path from the page to the bundle's `assets/`.
 - Do not edit generated static bundle files by hand. Change the YAML or source
   assets and regenerate.
