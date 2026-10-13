@@ -10,7 +10,6 @@ on:
       - packages/core/package.json
       - packages/cli/package.json
       - packages/editor/package.json
-      - packages/core/jsr.json
 
 permissions:
   contents: read
