@@ -24,6 +24,25 @@ npx skills add sebastianwessel/isostate --skill authoring-isostate-scenes
 See [Install The Authoring Skill](./guides/install-authoring-skill.md) for
 agent-specific setup and verification.
 
+## Install The Browser Runtime
+
+Install the core package from JSR in a browser application. The import surface
+stays the same as npm, so choose the runtime-only entrypoint for the smallest
+browser dependency graph:
+
+```bash
+npx jsr add @sebastianwessel/isostate
+```
+
+```ts
+import { mountScene } from '@sebastianwessel/isostate/runtime';
+```
+
+Use this with a JSR-aware browser build tool. In Deno, use the native
+`jsr:@sebastianwessel/isostate/runtime` specifier instead. Browsers do not
+resolve `jsr:` specifiers by themselves, so a build tool must resolve the
+package before it is served.
+
 ## 1. Run The Demo
 
 From a source checkout of this repository:

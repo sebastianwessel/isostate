@@ -12,6 +12,25 @@ isostate has four core package entrypoints:
 
 Do not import `@sebastianwessel/isostate/dsl` from browser code.
 
+## Install From JSR
+
+The core package is also published to JSR. Add it to a browser application with
+a JSR-aware build tool:
+
+```bash
+npx jsr add @sebastianwessel/isostate
+```
+
+Then use the same package entrypoints, preferably the minimal browser runtime:
+
+```ts
+import { mountScene } from '@sebastianwessel/isostate/runtime';
+```
+
+For Deno, import the runtime directly as
+`jsr:@sebastianwessel/isostate/runtime`. A native browser cannot resolve a
+`jsr:` specifier on its own; use a bundler that resolves JSR.
+
 The website editor lives in a separate internal package,
 `@sebastianwessel/isostate-editor`. It is documented in
 [Editor Reference](./editor.md), but it is not planned for public npm publishing
