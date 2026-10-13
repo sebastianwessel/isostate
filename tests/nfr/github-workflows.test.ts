@@ -39,6 +39,7 @@ describe('GitHub workflows', () => {
 		);
 
 		expect(workflow).toContain('workflow_dispatch:');
+		expect(workflow).toContain('resume:');
 		expect(workflow).toContain('push:');
 		expect(workflow).toContain('- package.json');
 		expect(workflow).toContain('- packages/core/package.json');
@@ -64,6 +65,7 @@ describe('GitHub workflows', () => {
 			'bun scripts/check-release-versions.ts >> "$GITHUB_ENV"'
 		);
 		expect(workflow).toContain('bun scripts/check-npm-release.ts "$version"');
+		expect(workflow).toContain('if: inputs.resume != true');
 		expect(workflow).toContain(
 			'npm >=11.5.1 is required for trusted publishing'
 		);
@@ -76,6 +78,8 @@ describe('GitHub workflows', () => {
 		expect(workflow).toContain(
 			'npm publish --access public --provenance ./packages/cli'
 		);
+		expect(workflow).toContain('is already published; resuming release.');
+		expect(workflow).toContain('npx jsr publish --allow-dirty');
 		expect(workflow).not.toContain(
 			'npm publish --access public --provenance ./packages/editor'
 		);

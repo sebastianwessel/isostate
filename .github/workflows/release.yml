@@ -2,6 +2,12 @@ name: Release
 
 on:
   workflow_dispatch:
+    inputs:
+      resume:
+        description: Resume a release after an earlier registry publish succeeded
+        required: false
+        default: false
+        type: boolean
   push:
     branches:
       - main
@@ -64,6 +70,7 @@ jobs:
           fi
 
       - name: Verify npm versions are new
+        if: inputs.resume != true
         run: bun scripts/check-npm-release.ts "$version"
 
       - name: Lint
@@ -115,18 +122,28 @@ jobs:
           '
 
       - name: Publish core package
-        run: npm publish --access public --provenance ./packages/core
+        run: |
+          if [[ "${{ inputs.resume }}" == "true" ]] && npm view "@sebastianwessel/isostate@$version" version --json >/dev/null 2>&1; then
+            echo "@sebastianwessel/isostate@$version is already published; resuming release."
+          else
+            npm publish --access public --provenance ./packages/core
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish CLI package
-        run: npm publish --access public --provenance ./packages/cli
+        run: |
+          if [[ "${{ inputs.resume }}" == "true" ]] && npm view "@sebastianwessel/isostate-cli@$version" version --json >/dev/null 2>&1; then
+            echo "@sebastianwessel/isostate-cli@$version is already published; resuming release."
+          else
+            npm publish --access public --provenance ./packages/cli
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish core package to JSR
         working-directory: packages/core
-        run: npx jsr publish
+        run: npx jsr publish --allow-dirty
 
       - name: Create git tag
         run: |
