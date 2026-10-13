@@ -83,3 +83,9 @@ Use the published CLI directly for your own scene:
 ```bash
 npx --package @sebastianwessel/isostate-cli isostate bundle scene.isostate.yaml --out public/isostate/scene
 ```
+
+The core package is published to JSR on each release. Install it with:
+
+```bash
+npx jsr add @sebastianwessel/isostate
+```
