@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: bun ci
 
+      - name: Verify dependency installation does not modify the lockfile
+        run: git diff --exit-code -- bun.lock
+
       - name: Verify package versions
         run: bun scripts/check-release-versions.ts
 
