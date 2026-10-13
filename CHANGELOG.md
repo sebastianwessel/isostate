@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.1
+
+- Publish the core ESM package to JSR using GitHub Actions OIDC, alongside the
+  existing npm release, and document browser-runtime installation.
+- Update direct and transitive development dependencies to their latest stable
+  releases, including Astro, Happy DOM, CodeMirror, Radix UI, Rollup, and
+  Lucide.
+
 ## 0.6.0
 
 - Add the `creating-isostate-assets` agent skill for user-defined visual styles, SVG/raster creation, checked sprite crops and anchors, catalog lifecycle, provenance, and package/website distribution.

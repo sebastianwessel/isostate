@@ -1,6 +1,6 @@
 {
 	"name": "@sebastianwessel/isostate",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"description": "Isometric scene engine — SVG rendering, animation, and YAML DSL for browser-based isometric scenes.",
 	"keywords": [
 		"isostate",
@@ -57,7 +57,7 @@
 		"@biomejs/biome": "^2.5.15",
 		"yaml": "^2.9.1",
 		"publint": "^0.3.25",
-		"size-limit": "^14.1.0"
+		"size-limit": "^14.2.0"
 	},
 	"peerDependencies": {
 		"yaml": "^2.9.1"

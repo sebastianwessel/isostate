@@ -1,7 +1,7 @@
 export default {
-  "_digest": "c271767d0208e4b6cf601e32c87814c875e116d423f17d10e78e85b2acbddb2d",
+  "_digest": "67e0a2f87b74a28af69813fa970944ccf3b9da4b210d0b05c1db3b7135406a25",
   "_format": "isostate-runtime-bundle",
-  "_version": "0.6.0",
+  "_version": "0.6.1",
   "assets": {
     "aws-app-server": {
       "anchor": [
