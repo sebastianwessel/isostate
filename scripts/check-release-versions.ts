@@ -8,12 +8,19 @@ export const releaseManifestPaths = [
 	'packages/editor/package.json'
 ] as const;
 
+const jsrManifestPath = 'packages/core/jsr.json';
+
 type ManifestPath = (typeof releaseManifestPaths)[number];
 
 interface ReleaseManifest {
 	version: string;
 	packageManager?: string;
 	dependencies?: Record<string, string>;
+}
+
+interface JsrManifest {
+	name: string;
+	version: string;
 }
 
 const releaseSourcePaths = {
@@ -56,7 +63,8 @@ export function checkReleaseSources(
 
 /** Verify synchronized workspace versions before CI or a release. */
 export function checkReleaseVersions(
-	manifests: Record<ManifestPath, ReleaseManifest>
+	manifests: Record<ManifestPath, ReleaseManifest>,
+	jsrManifest?: JsrManifest
 ): { version: string; tag: string } {
 	const version = manifests['package.json'].version;
 	if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)) {
@@ -81,6 +89,18 @@ export function checkReleaseVersions(
 			);
 		}
 	}
+	if (jsrManifest) {
+		if (jsrManifest.name !== '@sebastianwessel/isostate') {
+			throw new Error(
+				`JSR package name must be @sebastianwessel/isostate: ${jsrManifest.name}`
+			);
+		}
+		if (jsrManifest.version !== version) {
+			throw new Error(
+				`JSR package version must match release version: jsr=${jsrManifest.version} version=${version}`
+			);
+		}
+	}
 	return { version, tag: `v${version}` };
 }
 
@@ -93,7 +113,10 @@ if (import.meta.main) {
 		])
 	);
 	const result = checkReleaseVersions(
-		Object.fromEntries(entries) as Record<ManifestPath, ReleaseManifest>
+		Object.fromEntries(entries) as Record<ManifestPath, ReleaseManifest>,
+		JSON.parse(
+			await readFile(resolve(root, jsrManifestPath), 'utf8')
+		) as JsrManifest
 	);
 	const sources = Object.fromEntries(
 		await Promise.all(

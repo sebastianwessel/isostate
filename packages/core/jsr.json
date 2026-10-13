@@ -1,0 +1,12 @@
+{
+	"name": "@sebastianwessel/isostate",
+	"version": "0.6.0",
+	"exports": {
+		".": "./src/index.ts",
+		"./runtime": "./src/runtime/index.ts",
+		"./dsl": "./src/dsl/index.ts",
+		"./dsl/browser": "./src/dsl/browser.ts",
+		"./editor-support": "./src/editor-support/index.ts"
+	},
+	"include": ["src", "README.md", "LICENSE"]
+}

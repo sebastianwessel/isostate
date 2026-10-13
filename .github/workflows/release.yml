@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   release:
-    name: Publish npm packages
+    name: Publish packages
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
     permissions:
@@ -122,6 +122,10 @@ jobs:
         run: npm publish --access public --provenance ./packages/cli
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish core package to JSR
+        working-directory: packages/core
+        run: npx jsr publish
 
       - name: Create git tag
         run: |

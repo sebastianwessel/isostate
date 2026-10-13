@@ -61,6 +61,15 @@ describe('release version checks', () => {
 		).toThrow('dep=undefined');
 	});
 
+	test('rejects an out-of-sync JSR version', () => {
+		expect(() =>
+			checkReleaseVersions(manifests(), {
+				name: '@sebastianwessel/isostate',
+				version: '0.5.0'
+			})
+		).toThrow('JSR package version must match release version');
+	});
+
 	for (const version of ['0.6.0-beta.1', 'v0.6.0', '00.6.0', '0.6', '']) {
 		test(`rejects invalid stable release version ${JSON.stringify(version)}`, () => {
 			const input = manifests();

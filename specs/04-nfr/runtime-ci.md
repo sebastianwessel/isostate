@@ -97,13 +97,16 @@ Opt-in checks:
   version. Compiler and runtime version constants must also match. The
   verifier checks the Bun package-manager pin against the workflow inputs.
 - Releases from `main`, triggered manually or by package manifest changes,
-  reject existing git tags and already published core/CLI npm versions.
+  reject existing git tags and already published core/CLI npm versions. The
+  core JSR manifest version must match the workspace release version.
   npm availability checks treat only an explicit registry 404 as unpublished;
   network, authentication, and other registry failures stop the release.
 - Releases run `bun ci`/format/lint/typecheck/build/tests/coverage/size/publint/
-  basic example bundle generation and the website build, publish only core
-  and CLI, create a `v<version>` git tag and GitHub release, and deploy the
-  static documentation site to GitHub Pages. The editor remains internal.
+  basic example bundle generation and the website build, publish core to npm
+  and JSR and the CLI to npm, create a `v<version>` git tag and GitHub release,
+  and deploy the static documentation site to GitHub Pages. JSR publishing uses
+  GitHub Actions OIDC and requires the JSR package to be linked to this
+  repository; the editor remains internal.
 - Publishing uses npm's trusted-publishing OIDC support with an optional
   `NPM_TOKEN` fallback. The publishing CLI must meet npm's minimum version
   requirement (11.5.1). Release and manual website workflows share a

@@ -110,13 +110,14 @@ the same change.
 | Tool | Version | Purpose |
 |---|---|---|
 | `publint` | ^0.3.25 | Validate package.json for npm publishing |
+| `jsr` CLI | latest in release CI | Publish and verify the JSR core package |
 | `size-limit` | ^14.1.0 | Monitor bundle size |
 
 Published packages:
 
 | Package | Published | Purpose |
 |---|---|---|
-| `@sebastianwessel/isostate` | yes | Browser runtime and dev-time DSL entrypoint |
+| `@sebastianwessel/isostate` | npm and JSR | Browser runtime and dev-time DSL entrypoint |
 | `@sebastianwessel/isostate-cli` | approved next wave | Local process CLI for validation, compilation, static bundling, and inspection |
 | `@sebastianwessel/isostate-editor` | planned | Browser authoring UI for visual editing, YAML editing, validation, preview, and export |
 
